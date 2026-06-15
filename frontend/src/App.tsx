@@ -1,15 +1,7 @@
-
-import Employee from "./pages/Employee"
-import './App.css'
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-
-
-  return (
-    <div>
-      <Employee/>
-    </div>
-  )
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
