@@ -4,6 +4,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.setGlobalPrefix('api');
   app.enableCors({
   // origin: 'http://localhost:5173',
   origin:true,
