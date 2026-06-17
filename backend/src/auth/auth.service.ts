@@ -1,0 +1,287 @@
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+
+import * as bcrypt from 'bcrypt';
+
+import { DatabaseService } from '../database/database.service';
+import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
+
+import { ResetPasswordDto } from './dto/reset-password.dto';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+  ) {}
+
+   async login(userId: string, password: string) {
+      const pool = await this.dbService.connect();
+  
+      const result = await pool
+        .request()
+        .input('UseridID', userId)
+        .execute('USP_Validateuser');
+  
+      console.log('UserId:', userId);
+      console.log('Password:', password);
+  
+      const user = result.recordset[0];
+  
+      console.log('User:', user);
+  
+      if (!user) {
+        throw new UnauthorizedException('Invalid UserID or Password');
+      }
+  
+      if (user.Isaccountlocked === 1 || user.Isaccountlocked === true) {
+        throw new UnauthorizedException(
+          'Account is locked. Contact administrator.',
+        );
+      }
+  
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        user.PasswordHash,
+      );
+      console.log('Password Match:', isPasswordValid);
+  
+  
+      if (!isPasswordValid) {
+        await pool
+          .request()
+          .input('EmployeeID', user.EmployeeID)
+          .input('flag', 1)
+          .execute('USP_UpdateLoginInfo');
+  
+        throw new UnauthorizedException('Invalid UserID or Password');
+      }
+  
+      const isFirstLogin =
+      user.LastLoginDateTime === null;
+  
+  
+      if (!isFirstLogin){
+        await pool
+        .request()
+        .input('EmployeeID', user.EmployeeID)
+        .input('flag', 2)
+        .execute('USP_UpdateLoginInfo');
+  
+      }
+      
+  
+      const payload = {
+        employeeId: user.EmployeeID,
+        userId: user.UserID,
+      };
+  
+      const accessToken = this.jwtService.sign(payload);
+  
+      
+  
+      return {
+        success: true,
+        message: 'Login successful',
+        accessToken,
+        expiresIn: '5m',
+        isFirstLogin,
+        data: {
+          employeeId: user.EmployeeID,
+          userId: user.UserID,
+        },
+      };
+    }
+
+
+    async verifyCompany(
+  tenantCode: string,
+) {
+  const pool = await this.dbService.connect();
+
+  const result = await pool
+    .request()
+    .execute('USP_GetCompanyInfo');
+
+  const company = result.recordset.find(
+    (x) =>
+      x.DomainName?.toLowerCase() ===
+      tenantCode.toLowerCase(),
+  );
+
+  if (!company) {
+    throw new NotFoundException(
+      'Company not found',
+    );
+  }
+
+  return {
+    exists: true,
+    companyId: company.CompanyID,
+    companyName: company.CompanyCode,
+    domain: company.DomainName,
+  };
+}
+
+
+async resetPassword(
+    employeeId: string,
+    dto: ResetPasswordDto,
+  ) {
+    const pool = await this.dbService.connect();
+
+    const result = await pool
+    .request()
+    .input('EmployeeID', employeeId)
+    .execute('USP_GetUserInfo');
+
+    const user = result.recordset[0];
+
+    console.log('User =>', user);
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.LastLoginDateTime !== null) {
+      throw new ForbiddenException(
+        'Password reset is only allowed on first login',
+      );
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      dto.currentPassword,
+      user.PasswordHash,
+    );
+
+    if (!passwordMatch) {
+      throw new BadRequestException(
+        'Current password is incorrect',
+      );
+    }
+
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const samePassword = await bcrypt.compare(
+      dto.newPassword,
+      user.PasswordHash,
+    );
+
+    if (samePassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      dto.newPassword,
+      10,
+    );
+
+    // await pool
+    //   .request()
+    //   .input('EmployeeID', employeeId)
+    //   .input('PasswordHash', hashedPassword)
+    //   .execute('USP_UpdatePassword');
+
+  await pool
+  .request()
+  .input('EmployeeID', employeeId)
+  .input('PasswordHash', hashedPassword)
+  .input('flag', 1)
+  .input('Modifiedby', employeeId)
+  .execute('USP_UpdatePassword');
+
+  await pool
+  .request()
+  .input('EmployeeID', employeeId)
+  .input('PasswordHash', hashedPassword)
+  .input('flag', 2)
+  .input('Modifiedby', employeeId)
+  .execute('USP_UpdatePassword');
+
+    return {
+      success: true,
+      message: 'Password changed successfully',
+    };
+  }
+
+   private generateTempPassword(length = 10): string {
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
+    let password = '';
+
+    for (let i = 0; i < length; i++) {
+      password += chars.charAt(
+        Math.floor(Math.random() * chars.length),
+      );
+    }
+
+    return password;
+  }
+
+
+  async sendTemporaryPassword(employeeId: string) {
+      const pool = await this.dbService.connect();
+  
+      const result = await pool
+        .request()
+        .input('EmployeeID', employeeId)
+        .execute('USP_GetUserInfo');
+  
+      const user = result.recordset[0];
+  
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+  
+      // 1. Generate temp password
+      const tempPassword = this.generateTempPassword();
+
+      console.log('Temp Password:', tempPassword);
+  
+      // 2. Hash password
+      const hashedPassword = await bcrypt.hash(
+        tempPassword,
+        10,
+      );
+  
+      // 3. Update DB
+      await pool
+        .request()
+        .input('EmployeeID', employeeId)
+        .input('PasswordHash', hashedPassword)
+        .input('flag', 1)
+        .input('Modifiedby', 'SYSTEM')
+        .execute('USP_UpdatePassword');
+  
+      // 4. Send email
+      await this.mailService.sendTempPassword(
+        user.Email,
+        tempPassword,
+      );
+  
+      return {
+        success: true,
+        message: 'Temporary password sent successfully',
+      };
+    }
+
+
+    async testMail() {
+  return this.mailService.sendTempPassword(
+    'nagarjunaputarun@gmail.com',
+    'TEST1234'
+  );
+}
+
+}
