@@ -60,3 +60,43 @@ export class JwtAuthGuard implements CanActivate {
     }
   }
 }
+
+
+//Cookie storage
+// import {
+//   CanActivate,
+//   ExecutionContext,
+//   Injectable,
+//   UnauthorizedException,
+// } from '@nestjs/common';
+// import { JwtService } from '@nestjs/jwt';
+
+// @Injectable()
+// export class JwtAuthGuard implements CanActivate {
+//   constructor(private readonly jwtService: JwtService) {}
+
+//   canActivate(context: ExecutionContext): boolean {
+//     const request = context.switchToHttp().getRequest();
+
+//     // READ TOKEN FROM COOKIE
+//     const token = request.cookies?.access_token;
+
+//     if (!token) {
+//       throw new UnauthorizedException('Token missing');
+//     }
+
+//     if (token === 'undefined' || token === 'null') {
+//       throw new UnauthorizedException('Invalid token');
+//     }
+
+//     try {
+//       const payload = this.jwtService.verify(token);
+
+//       request.user = payload; // attach user to request
+
+//       return true;
+//     } catch {
+//       throw new UnauthorizedException('Invalid or expired token');
+//     }
+//   }
+// }

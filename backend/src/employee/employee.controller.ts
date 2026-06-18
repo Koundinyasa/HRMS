@@ -22,8 +22,7 @@ import {
 } from '@nestjs/common';
 
 import { EmployeeService } from './employee.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('employee')
 export class EmployeeController {
@@ -45,6 +44,12 @@ export class EmployeeController {
     return this.employeeService.getProfile(
       req.user.employeeId,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('menus')
+  getMenus(@Req() req) {
+    return this.employeeService.getRoleMenus(req.user.employeeId);
   }
 
 
