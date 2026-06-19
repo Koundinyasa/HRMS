@@ -31,17 +31,9 @@ export default function DomainForm() {
                 </label>
 
                 <div
-                    className="
-      flex
-      items-center
-      h-[42px]
-      bg-[#EEF5FB]
-      border
-      border-[#D8E2EC]
-      rounded-lg
-      px-3
-    "
-                >
+                    className="flex items-center h-[42px] sm:h-[46px] bg-[#EEF5FB] border border-[#D8E2EC] rounded-lg px-3">
+    
+                
                     <span className="text-gray-400 text-sm mr-3">
                         👤
                     </span>
@@ -51,16 +43,9 @@ export default function DomainForm() {
                         value={domain}
                         onChange={(e) => setDomain(e.target.value)}
                         placeholder="https://hrms/"
-                        className="
-        w-full
-        bg-transparent
-        outline-none
-        border-none
-        text-gray-600
-        text-[14px]
-        placeholder:text-gray-400
-      "
-                    />
+                        className=" w-full bg-transparent outline-none border-none text-gray-600 text-xs sm:text-sm placeholder:text-gray-400"/>
+      
+                    
                 </div>
 
                 {error && (
@@ -72,19 +57,9 @@ export default function DomainForm() {
 
             <Button
                 onClick={handleSubmit}
-                className="
-    w-full
-    mt-10
-    h-[50px]
-    bg-[#2563EB]
-    hover:bg-[#1D4ED8]
-    text-white
-    text-lg
-    font-medium
-    rounded-xl
-    shadow-lg
-  "
-            >
+                className=" w-full mt-10 h-[46px] sm:h-[50px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-base sm:text-lg font-medium rounded-xl shadow-lg">
+  
+        
                 Proceed →
             </Button>
         </>
