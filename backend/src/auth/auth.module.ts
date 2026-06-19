@@ -8,6 +8,7 @@ import { DatabaseModule } from '../database/database.module';
 import { MailModule } from '../mail/mail.module';
 
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { PermissionGuard } from './permission.guard';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard],
+  providers: [AuthService, JwtAuthGuard,PermissionGuard,],
   exports: [JwtAuthGuard, JwtModule, AuthService],
 })
 export class AuthModule {}

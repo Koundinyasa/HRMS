@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-//import type { Response } from 'express';
+import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -26,39 +26,36 @@ import { ForgotResetPasswordDto } from './dto/forgot-reset-password.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  login(@Body() body: any) {
-    return this.authService.login(body.userId, body.password);
-  }
+  // @Post('login')
+  // login(@Body() body: any) {
+  //   return this.authService.login(body.userId, body.password);
+  // }
 
   //Cookies 
-  // @Post('login')
-  // async login(
-  //   @Body() body: any,
-  //   @Res() res: Response,
-  // ) {
-  //   const result = await this.authService.login(
-  //     body.userId,
-  //     body.password,
-  //   );
+  @Post('login')
+  async login(
+    @Body() body: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(
+      body.userId,
+      body.password,
+    );
 
-  //   //  SET COOKIE HERE
-  //   res.cookie('access_token', result.accessToken, {
-  //     httpOnly: true,
-  //     secure: false, // true in production (HTTPS)
-  //     sameSite: 'lax',
+    res.cookie('access_token', result.accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 5 * 60 * 1000,
+    });
 
-  //     // 5 MINUTES EXPIRY
-  //     maxAge: 5 * 60 * 1000,
-  //   });
-
-  //   return res.json({
-  //     success: true,
-  //     message: result.message,
-  //     isFirstLogin: result.isFirstLogin,
-  //     data: result.data,
-  //   });
-  // }
+    return {
+      success: true,
+      message: result.message,
+      isFirstLogin: result.isFirstLogin,
+      data: result.data,
+    };
+  }
 
   @Post('verify-company')
   verifyCompany(@Body('tenantCode') tenantCode: string) {
@@ -82,13 +79,13 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-forgotPassword(
-  @Body() dto: ForgotPasswordDto,
-) {
-  return this.authService.forgotPassword(
-    dto.userId,
-  );
-}
+  forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ) {
+    return this.authService.forgotPassword(
+      dto.userId,
+    );
+  }
 
 @Post('verify-otp')
 verifyOtp(
@@ -107,6 +104,11 @@ resetForgotPassword(
   return this.authService.resetForgotPassword(
     dto,
   );
+}
+
+@Post('test-mail')
+testMail() {
+  return this.authService.testMail();
 }
 
 }

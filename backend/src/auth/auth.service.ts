@@ -362,6 +362,7 @@ export class AuthService {
     const accessToken = this.jwtService.sign({
       employeeId: user.EmployeeID,
       userId: user.UserID,
+      roleId: user.RoleID,
     });
 
     return {
@@ -475,7 +476,7 @@ export class AuthService {
     await pool
       .request()
       .input('EmployeeID', user.EmployeeID)
-      .input('PasswordHash', hashedPassword) // keep because SP parameter exists
+      .input('PasswordHash', hashedPassword) 
       .input('flag', 2)
       .input('Modifiedby', user.EmployeeID)
       .execute('USP_UpdatePassword');
@@ -546,10 +547,17 @@ export class AuthService {
   async sendTemporaryPassword(employeeId: string) {
     const pool = await this.dbService.connect();
 
+    console.time('GetUser');
+
     const result = await pool
       .request()
       .input('EmployeeID', employeeId)
       .execute('USP_GetUserInfo');
+
+    console.timeEnd('GetUser');
+
+    console.time('Hash');
+
 
     const user = result.recordset[0];
 
@@ -559,11 +567,16 @@ export class AuthService {
 
     const tempPassword = this.generateTempPassword();
 
-     console.log('EmployeeID:', employeeId);
+    console.log('EmployeeID:', employeeId);
     console.log('Email:', user.Email);
     console.log('Temp Password:', tempPassword);
 
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    console.timeEnd('Hash');
+
+    console.time('UpdatePassword');
+
 
     await pool
       .request()
@@ -572,6 +585,10 @@ export class AuthService {
       .input('flag', 1)
       .input('Modifiedby', 'SYSTEM')
       .execute('USP_UpdatePassword');
+
+    console.timeEnd('UpdatePassword');
+
+    console.time('SendMail');
 
     await this.mailService.sendTempPassword(
       user.Email,

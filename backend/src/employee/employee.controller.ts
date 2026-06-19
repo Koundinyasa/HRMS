@@ -23,6 +23,8 @@ import {
 
 import { EmployeeService } from './employee.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionGuard } from '../auth/permission.guard';
+import { Permission } from '../auth/permission.decorator';
 
 @Controller('employee')
 export class EmployeeController {
@@ -56,6 +58,19 @@ export class EmployeeController {
   @Get('welcome/:employeeId')
   getWelcome(@Param('employeeId') employeeId: string) {
     return this.employeeService.getWelcomeMessage(employeeId);
+  }
+
+  @Post('test-rbac')
+  @UseGuards(
+    JwtAuthGuard,
+    PermissionGuard,
+  )
+  @Permission(16, 'CanAdd')
+  testRBAC() {
+    return {
+      success: true,
+      message: 'RBAC test passed',
+    };
   }
 
 
