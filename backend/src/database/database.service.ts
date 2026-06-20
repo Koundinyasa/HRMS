@@ -10,7 +10,7 @@ export class DatabaseService {
   async connect() {
     if (!this.pool) {
       this.pool = await sql.connect({
-        server: process.env.DB_SERVER,
+        server: process.env.DB_HOST,
         port: Number(process.env.DB_PORT),
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,

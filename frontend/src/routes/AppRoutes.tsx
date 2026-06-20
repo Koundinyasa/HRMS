@@ -1,14 +1,31 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import type { ComponentType } from "react";
+import { BrowserRouter, Routes, Route ,Navigate} from "react-router-dom";
 import Login from "../features/auth/pages/Login";
 
-const LoginComponent = Login as ComponentType<any>;
+// function AppRoutes() {
+//   return (
+//     <BrowserRouter>
+//       <Routes>
+//         <Route
+//           path="/login"
+//           element={<Login />}
+//         />
+//       </Routes>
+//     </BrowserRouter>
+//   );
+// }
+
+// export default AppRoutes;
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginComponent />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
       </Routes>
     </BrowserRouter>
   );

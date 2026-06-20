@@ -1,28 +1,29 @@
-// 
-
-
-
-
-import {
-  Controller,
-  Post,
-  Body,
-  Param,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-
+import { Controller, Post, Get, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { CaptchaService } from './captcha/captcha.service';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly captchaService: CaptchaService,
+  ) { }
 
+  @Get('captcha')
+  getCaptcha() {
+    return this.captchaService.generate();
+  }
+
+  @Get('captcha-debug')
+  getCaptchaDebug() {
+    return this.captchaService.debugStore();
+  }
   @Post('login')
-  login(@Body() body: any) {
-    return this.authService.login(body.userId, body.password);
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
   @Post('verify-company')
