@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUUID, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsUUID, MinLength, IsOptional } from 'class-validator';
 
 export class LoginDto {
   @IsString()
@@ -10,8 +10,8 @@ export class LoginDto {
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   password: string;
 
+  @IsOptional()
   @IsUUID('4', { message: 'Invalid captcha session' })
-  @IsNotEmpty({ message: 'Captcha ID is required' })
   captchaId: string;
 
   @IsString()

@@ -100,8 +100,7 @@ export class AuthService {
       .execute('USP_GetCompanyInfo');
 
     const company = result.recordset.find(
-      (x) =>
-        x.DomainName?.toLowerCase() === tenantCode.toLowerCase(),
+      (x) =>x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
     );
 
     if (!company) {

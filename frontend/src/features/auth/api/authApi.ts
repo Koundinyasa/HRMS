@@ -1,14 +1,51 @@
-import axiosInstance from '../../../services/axios';
-import type {LoginRequest,LoginResponse,CaptchaResponse} from '../types/auth.types';
+import { baseApi } from '@/app/baseApi';
+import type { LoginRequest, LoginResponse, CaptchaResponse } from '../types/auth.types';
 
-export const getCaptchaApi = async (): Promise<CaptchaResponse> => {
-  const response = await axiosInstance.get('/auth/captcha');
-  return response.data;
-};
+export const authApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getCaptcha: builder.query<CaptchaResponse, void>({
+      query: () => '/auth/captcha',
+    }),
 
-export const loginApi = async (
-  payload: LoginRequest,
-): Promise<LoginResponse> => {
-  const response = await axiosInstance.post('/auth/login', payload);
-  return response.data;
-};
+    login: builder.mutation<LoginResponse, LoginRequest>({
+      query: (body) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    forgotPassword: builder.mutation<void, { email: string }>({
+      query: (body) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    verifyOtp: builder.mutation<void, { otp: string; email: string }>({
+      query: (body) => ({
+        url: '/auth/verify-otp',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    resetPassword: builder.mutation<void, { password: string; token: string }>({
+      query: (body) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+  }),
+});
+
+export const {
+  useGetCaptchaQuery,
+  useLazyGetCaptchaQuery,
+  useLoginMutation,
+  useForgotPasswordMutation,
+  useVerifyOtpMutation,
+  useResetPasswordMutation,
+} = authApi;

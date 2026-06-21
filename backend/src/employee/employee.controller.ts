@@ -1,16 +1,3 @@
-// import { Controller, Get } from '@nestjs/common';
-
-// @Controller('employee')
-// export class EmployeeController {
-
-//   @Get()
-//   getAll() {
-//     return {
-//       message: 'Employee List'
-//     };
-//   }
-// }
-
 import {
   Controller,
   Post,
@@ -22,7 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { EmployeeService } from './employee.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResetPasswordDto } from '../auth/dto/reset-password.dto';
 
 @Controller('employee')
@@ -31,13 +18,6 @@ export class EmployeeController {
     private readonly employeeService: EmployeeService,
   ) {}
 
-  // @Post('login')
-  // async login(@Body() body: any) {
-  //   return this.employeeService.login(
-  //     body.userId,
-  //     body.password,
-  //   );
-  // }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')

@@ -8,7 +8,7 @@ import { CaptchaService } from './captcha/captcha.service';
 import { DatabaseModule } from '../database/database.module';
 import { MailModule } from '../mail/mail.module';
 
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Module({
   imports: [

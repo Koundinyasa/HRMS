@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CaptchaService } from './captcha/captcha.service';
 import { LoginDto } from './dto/login.dto';

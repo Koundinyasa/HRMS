@@ -1,3 +1,86 @@
+// import LoginForm from "../components/LoginForm";
+
+// import bgImage from "@/assets/images/background-bg.png";
+// import peopleImage from "@/assets/images/people.png";
+// import logoImage from "@/assets/images/koundinyasa-logo.png";
+
+// import { BarChart2, Clock, TrendingUp } from "lucide-react";
+
+// export default function Login() {
+//   return (
+//     <div
+//       className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"
+//       style={{ backgroundImage: `url(${bgImage})` }}
+//     >
+
+//       <div className="flex-1 flex justify-center items-center px-8 py-4">
+//         <div className="w-full max-w-[1350px] flex flex-col lg:flex-row items-center justify-center gap-15">
+//           {/* LEFT SIDE */}
+
+//           <div className="w-full lg:w-[46%] flex flex-col items-center justify-center">
+//             <div className="w-full max-w-[700px] h-[430px] bg-[#000033]/40 border border-white/10 rounded-[28px] backdrop-blur-sm px-10 py-10 text-center flex flex-col items-center justify-center">
+//               <h1 className="text-white text-4xl lg:text-5xl font-semibold leading-tight">
+//                 People-first HR,
+//               </h1>
+
+//               <p className="text-white text-lg mt-6 max-w-[540px]">
+//                 Manage your workforce, payroll, attendance and
+//                 performance — all from one unified platform.
+//               </p>
+
+//               {/* FEATURES */}
+
+//               <div className="flex flex-wrap justify-center gap-4 mt-8">
+//                 <div
+//                   className="flex items-center gap-2 px-5 py-2 border border-cyan-400 rounded-full text-white">
+//                   <BarChart2 size={16} />
+//                   Payroll
+//                 </div>
+//                 <div className="flex items-center gap-2 px-5 py-2 border border-cyan-400 rounded-full text-white">
+//                   <Clock size={16} />
+//                   Attendance
+//                 </div>
+
+//                 <div className="flex items-center gap-2 px-5 py-2 border border-cyan-400 rounded-full text-white">
+//                   <TrendingUp size={16} />
+//                   Analytics
+//                 </div>
+//               </div>
+
+//               <p className="text-white text-2xl mt-10">
+//                 Powered By
+//               </p>
+
+//               <img
+//                 src={logoImage}
+//                 alt="logo"
+//                 className="w-[320px] mt-4 object-contain"
+//               />
+//             </div>
+
+//             <img
+//               src={peopleImage}
+//               alt="people"
+//               className="w-[260px] sm:w-[320px] lg:w-[420px] mt-4 object-contain"
+//             />
+//           </div>
+
+//           {/* ── RIGHT SIDE ── */}
+//           <div className="w-full lg:w-[54%] flex items-center justify-center py-10">
+//             <LoginForm />
+//           </div>
+
+//         </div>
+//         </div>
+
+//         {/* Footer bar */}
+//         <footer className="h-[32px] h-[32px] bg-sky-300 flex items-center justify-center text-[10px] sm:text-xs text-black">
+//           © 2026 Koundinyasa Technology Services Pvt. Ltd. All rights reserved. Unauthorized access is strictly prohibited.
+//         </footer>
+//     </div>
+// );
+// }
+
 import LoginForm from "../components/LoginForm";
 
 import bgImage from "@/assets/images/background-bg.png";
@@ -9,130 +92,61 @@ import { BarChart2, Clock, TrendingUp } from "lucide-react";
 export default function Login() {
   return (
     <div
-      className="min-h-screen bg-cover bg-center relative overflow-hidden"
+      className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <div className="max-w-[1500px] mx-auto grid lg:grid-cols-[55%_45%] min-h-screen">
+      <div className="flex-1 flex justify-center items-center px-4 sm:px-6 lg:px-8 py-6">
+        <div className="w-full max-w-[1350px] flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
 
-        {/* ── LEFT SIDE ── */}
-        <div className="relative min-h-screen">
-
-          {/* Glass card — compact size, top-anchored */}
-          <div
-            className="absolute border border-white/20 bg-white/10 backdrop-blur-sm shadow-xl text-white"
-            style={{
-              width: "500px",
-              top: "60px",
-              left: "40px",
-              borderRadius: "20px",
-              padding: "32px 40px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "28px",
-            }}
-          >
-            {/* Heading + subtitle + pills */}
-            <div className="flex flex-col items-center" style={{ gap: "14px" }}>
-              <h1
-                style={{
-                  fontFamily: "Urbanist, sans-serif",
-                  fontWeight: 600,
-                  fontSize: "40px",
-                  lineHeight: "65px",
-                  textAlign: "center",
-                  color: "#FFFFFF",
-                  margin: 0,
-                }}
-              >
+          {/* LEFT SIDE — hidden on mobile, visible from lg up */}
+          <div className="hidden lg:flex w-full lg:w-[46%] flex-col items-center justify-center">
+            <div className="w-full max-w-[600px] bg-[#000033]/40 border border-white/10 rounded-[28px] backdrop-blur-sm px-8 xl:px-10 py-10 text-center flex flex-col items-center justify-center">
+              <h1 className="text-white text-4xl xl:text-5xl font-semibold leading-tight">
                 People-first HR,
               </h1>
-
-              <p
-                style={{
-                  fontFamily: "Urbanist, sans-serif",
-                  fontWeight: 600,
-                  fontSize: "17px",
-                  lineHeight: "28px",
-                  textAlign: "center",
-                  color: "#DDDDDD",
-                  margin: 0,
-                }}
-              >
-                Manage your workforce, payroll, attendance, and performance —
-                all from one unified platform.
+              <p className="text-white text-base xl:text-lg mt-6 max-w-[500px]">
+                Manage your workforce, payroll, attendance and
+                performance — all from one unified platform.
               </p>
-
-              {/* Feature pills */}
-              <div className="flex items-center gap-2.5 flex-wrap justify-center">
-                {[
-                  { label: "Payroll", Icon: BarChart2 },
-                  { label: "Attendance", Icon: Clock },
-                  { label: "Analytics", Icon: TrendingUp },
-                ].map(({ label, Icon }) => (
-                  <div
-                    key={label}
-                    className="flex items-center text-white/90"
-                    style={{
-                      height: "30px",
-                      borderRadius: "9999px",
-                      padding: "5px 14px 5px 10px",
-                      gap: "5px",
-                      border: "0.75px solid rgba(255,255,255,0.45)",
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <Icon size={12} strokeWidth={1.8} />
-                    {label}
-                  </div>
-                ))}
+              <div className="flex flex-wrap justify-center gap-3 mt-8">
+                <div className="flex items-center gap-2 px-4 py-2 border border-cyan-400 rounded-full text-white text-sm">
+                  <BarChart2 size={15} /> Payroll
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 border border-cyan-400 rounded-full text-white text-sm">
+                  <Clock size={15} /> Attendance
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 border border-cyan-400 rounded-full text-white text-sm">
+                  <TrendingUp size={15} /> Analytics
+                </div>
               </div>
-            </div>
-
-            {/* Powered By + logo */}
-            <div className="flex flex-col items-center" style={{ gap: "10px" }}>
-              <p
-                style={{
-                  fontFamily: "Urbanist, sans-serif",
-                  fontWeight: 400,
-                  fontSize: "18px",
-                  lineHeight: "24px",
-                  color: "#FFFFFF",
-                  margin: 0,
-                }}
-              >
-                Powered By
-              </p>
+              <p className="text-white text-xl mt-8">Powered By</p>
               <img
                 src={logoImage}
-                alt="Koundinyasa logo"
-                style={{ width: "280px", objectFit: "contain" }}
+                alt="logo"
+                className="w-[260px] xl:w-[320px] mt-4 object-contain"
               />
+            </div>
+            <img
+              src={peopleImage}
+              alt="people"
+              className="w-[320px] xl:w-[420px] mt-4 object-contain"
+            />
+          </div>
+
+          {/* RIGHT SIDE — full width on mobile, 54% on desktop */}
+          <div className="w-full lg:w-[54%] flex items-center justify-center py-4 lg:py-10">
+            {/* On mobile: constrain card width; on desktop: fill the column */}
+            <div className="w-full max-w-[500px] sm:max-w-[560px] lg:max-w-full">
+              <LoginForm />
             </div>
           </div>
 
-          {/* People silhouette — pinned to bottom-left */}
-          <img
-            src={peopleImage}
-            alt="Team silhouette"
-            className="absolute bottom-10 left-4"
-            style={{ width: "520px", maxWidth: "90%" }}
-          />
         </div>
-
-        {/* ── RIGHT SIDE ── */}
-        <div className="flex items-center justify-center py-10">
-          <LoginForm />
-        </div>
-
       </div>
 
-      {/* Footer bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-10 bg-sky-400 flex items-center justify-center text-white text-xs font-medium">
-        © 2026 Koundinyasa Technology Services Pvt. Ltd. All rights reserved · Unauthorized access is strictly prohibited.
-      </div>
+      <footer className="bg-sky-300 flex items-center justify-center py-2 px-4 text-[10px] sm:text-xs text-black text-center">
+        © 2026 Koundinyasa Technology Services Pvt. Ltd. All rights reserved. Unauthorized access is strictly prohibited.
+      </footer>
     </div>
   );
 }
