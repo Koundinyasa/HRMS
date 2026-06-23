@@ -92,7 +92,7 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const payload = this.jwtService.verify(token);
 
-      request.user = payload; // attach user to request
+      request.user = payload; 
 
       return true;
     } catch {

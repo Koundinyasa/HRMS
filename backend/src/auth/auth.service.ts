@@ -363,16 +363,28 @@ export class AuthService {
       employeeId: user.EmployeeID,
       userId: user.UserID,
       roleId: user.RoleID,
+      //roleName: user.RoleName,
     });
+
+     //Role-based login message
+    let loginMessage = 'Login successful';
+
+    if (user.RoleID === 1) {
+      loginMessage = 'Super Admin login successful';
+    } else if (user.RoleID === 2) {
+      loginMessage = 'HR Admin login successful';
+    }
 
     return {
       success: true,
-      message: 'Login successful',
+      message: loginMessage,
       accessToken,
       isFirstLogin,
       data: {
         employeeId: user.EmployeeID,
         userId: user.UserID,
+        roleId: user.RoleID,
+        //roleName: user.RoleName,
       },
     };
   }
@@ -709,7 +721,7 @@ async resetForgotPassword(
     .request()
     .input('EmployeeID', dto.employeeId)
     .input('PasswordHash', hashedPassword)
-    .input('flag', 1)
+    .input('flag', 2)
     .input('Modifiedby', dto.employeeId)
     .execute('USP_UpdatePassword');
 
