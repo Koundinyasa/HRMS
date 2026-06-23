@@ -3,11 +3,7 @@ import { rootReducer } from "./rootReducer";
 import { baseApi } from "./baseApi";
 
 export const store = configureStore({
-  reducer: {
-    ...rootReducer,
-    [baseApi.reducerPath]:
-      baseApi.reducer,
-  },
+  reducer: rootReducer,
 
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -17,3 +13,6 @@ export const store = configureStore({
 
 export type AppDispatch =
   typeof store.dispatch;
+
+export type RootState =
+  ReturnType<typeof store.getState>;

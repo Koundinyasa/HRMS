@@ -5,6 +5,7 @@ import DomainVerification from "../features/domain-verification/pages/DomainVeri
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import VerifyOtp from "../features/auth/pages/VerifyOtp";
 import ResetPassword from "../features/auth/pages/ResetPassword";
+import EmployeeDashboard from "../features/dashboard/employee/pages/EmployeeDashboard";
 
 const LoginComponent = Login as ComponentType<any>;
 
@@ -40,6 +41,11 @@ function AppRoutes() {
           element={
             <ResetPassword />
           }
+        />
+
+        <Route
+          path="/employee/dashboard"
+          element={<EmployeeDashboard />}
         />
 
       </Routes>
