@@ -1,114 +1,148 @@
 import {
-  FileText,
-  Clock,
-  Ticket,
-  User,
+  CheckCheck,
+  MessageSquareMore,
+  ReceiptText,
+  BarChart3,
+  CalendarDays,
 } from "lucide-react";
 
 import { useAppSelector } from "../../../../hooks/useAppSelector";
-
-const quickLinks = [
-  {
-    title: "Apply Leave",
-    icon: FileText,
-  },
-  {
-    title: "Attendance",
-    icon: Clock,
-  },
-  {
-    title: "Raise Ticket",
-    icon: Ticket,
-  },
-  {
-    title: "My Profile",
-    icon: User,
-  },
-];
 
 export default function QuickAccessCard() {
   const themeColor = useAppSelector(
     (state) => state.theme.primaryColor
   );
 
+  const quickLinks = [
+    {
+      title: "My Approvals",
+      subtitle: "2 pending",
+      icon: CheckCheck,
+    },
+    {
+      title: "My Requests",
+      subtitle: "1 pending",
+      icon: MessageSquareMore,
+    },
+    {
+      title: "Payslip Report",
+      subtitle: "View Payslip",
+      icon: ReceiptText,
+    },
+    {
+      title: "STI Reports",
+      subtitle: "Performance & Statistics",
+      icon: BarChart3,
+    },
+    {
+      title: "Holiday List",
+      subtitle: "View List",
+      icon: CalendarDays,
+    },
+  ];
+
   return (
     <div
       className="
-        rounded-2xl
-        border
-        border-slate-200
-        p-5
-        min-h-[220px]
+        bg-white
+        rounded-3xl
+        p-6
         shadow-sm
+        border
+        border-slate-100
+        h-full
       "
-      style={{
-        backgroundColor: `${themeColor}15`,
-      }}
     >
       {/* Header */}
 
-      <h3
-        className="font-medium mb-5"
-        style={{
-          color: themeColor,
-        }}
-      >
+      <h3 className="text-2xl font-medium text-slate-800">
         Quick Access
       </h3>
 
-      {/* Links */}
+      <div
+        className="h-[2px] mt-4 mb-6"
+        style={{
+          backgroundColor: `${themeColor}70`,
+        }}
+      />
 
-      <div className="grid grid-cols-2 gap-4">
-        {quickLinks.map((item) => {
-          const Icon = item.icon;
+      {/* Items */}
 
-          return (
-            <button
-              key={item.title}
-              className="
-                flex
-                flex-col
-                items-center
-                justify-center
-                gap-2
-                h-24
-                rounded-xl
-                border
-                border-slate-200
-                transition
-                hover:scale-105
-              "
-              style={{
-                backgroundColor: "white",
-              }}
-            >
+      <div className="space-y-5">
+        {quickLinks.map(
+          (
+            item,
+            index
+          ) => {
+            const Icon =
+              item.icon;
+
+            return (
               <div
+                key={index}
                 className="
-                  w-10
-                  h-10
-                  rounded-full
+                  rounded-2xl
+                  p-4
                   flex
                   items-center
-                  justify-center
+                  gap-4
                 "
                 style={{
-                  backgroundColor: `${themeColor}25`,
+                  background: `linear-gradient(
+                    90deg,
+                    ${themeColor}15,
+                    #DFF8FF
+                  )`,
                 }}
               >
-                <Icon
-                  size={18}
+                <div
+                  className="
+                    w-14
+                    h-14
+                    rounded-xl
+                    flex
+                    items-center
+                    justify-center
+                  "
                   style={{
-                    color: themeColor,
+                    backgroundColor:
+                      `${themeColor}15`,
                   }}
-                />
-              </div>
+                >
+                  <Icon
+                    size={30}
+                    color={
+                      themeColor
+                    }
+                  />
+                </div>
 
-              <span className="text-xs text-slate-700">
-                {item.title}
-              </span>
-            </button>
-          );
-        })}
+                <div>
+                  <h4
+                    className="
+                      text-lg
+                      font-medium
+                      text-slate-800
+                    "
+                  >
+                    {item.title}
+                  </h4>
+
+                  <p
+                    className="
+                      text-slate-500
+                      mt-1
+                    "
+                  >
+                    {
+                      item.subtitle
+                    }
+                  </p>
+                </div>
+              </div>
+            );
+          }
+        )}
       </div>
     </div>
   );

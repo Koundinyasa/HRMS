@@ -1,13 +1,16 @@
 import Header from "../../common/components/Header";
 import Sidebar from "../../common/components/Sidebar";
 import GreetingCard from "../../common/components/GreetingCard";
-import LeaveCard from "../components/LeaveCard";
-import PunchCard from "../components/PunchCard";
-import NotificationCard from "../../common/components/NotificationCard";
-import CalendarCard from "../../common/components/CalendarCard";
-import WhoIsOffCard from "../components/WhoIsOffCard";
+
+import AttendanceCard from "../components/AttendanceCard";
+import StatsLeaveCard from "../components/StatsLeaveCard";
 import QuickAccessCard from "../components/QuickAccessCard";
+import AnnouncementCard from "../components/AnnouncementCard";
 import BirthdayCard from "../components/BirthdayCard";
+import TeamAttendanceCard from "../components/TeamAttendanceCard";
+import TaskCard from "../components/TaskCard";
+
+import CalendarCard from "../../common/components/CalendarCard";
 
 import { useAppSelector } from "../../../../hooks/useAppSelector";
 
@@ -32,25 +35,63 @@ export default function EmployeeDashboard() {
         <Sidebar />
 
         <main
-          className="flex-1 p-6"
+          className="flex-1 p-4"
           style={{
-            backgroundColor:
-              "var(--theme-light)",
+            backgroundColor: "var(--theme-light)",
           }}
         >
+          {/* Greeting Card */}
+
           <GreetingCard />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-5">
-            <LeaveCard />
-            <PunchCard />
-            <NotificationCard />
-            <CalendarCard />
+          {/* Row 1 */}
+
+          <div className="grid grid-cols-12 gap-4 mt-4">
+            {/* Attendance */}
+
+            <div className="col-span-3">
+              <AttendanceCard />
+            </div>
+
+            {/* Stats + Leaves */}
+
+            <div className="col-span-6">
+              <StatsLeaveCard />
+            </div>
+
+            {/* Calendar */}
+
+            <div className="col-span-3">
+              <CalendarCard />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
-            <WhoIsOffCard />
-            <QuickAccessCard />
-            <BirthdayCard />
+          {/* Row 2 */}
+
+          <div className="grid grid-cols-12 gap-4 mt-4">
+            <div className="col-span-3">
+              <QuickAccessCard />
+            </div>
+
+            <div className="col-span-6">
+              <AnnouncementCard />
+            </div>
+
+            <div className="col-span-3">
+              <BirthdayCard />
+            </div>
+          </div>
+
+          {/* Row 3 */}
+
+          <div className="grid grid-cols-12 gap-4 mt-4">
+            <div className="col-span-7">
+              <TeamAttendanceCard />
+            </div>
+
+            <div className="col-span-5">
+              <TaskCard />
+            </div>
           </div>
         </main>
       </div>

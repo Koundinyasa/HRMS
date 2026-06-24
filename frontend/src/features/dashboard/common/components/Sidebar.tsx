@@ -1,83 +1,70 @@
 import {
   FileText,
-  User,
-  Settings,
-  BarChart3,
-  ClipboardList,
   ChevronDown,
 } from "lucide-react";
+import { useGetProfileQuery } from "../../employee/api/employeeApi";
 
 export default function Sidebar() {
-  const menuItems = [
-    {
-      name: "Request",
-      icon: FileText,
-    },
-    {
-      name: "Profile",
-      icon: User,
-    },
-    {
-      name: "MISC",
-      icon: Settings,
-    },
-    {
-      name: "Report",
-      icon: BarChart3,
-    },
-    {
-      name: "Review",
-      icon: ClipboardList,
-    },
-  ];
+  const { data: profileData } =
+  useGetProfileQuery();
+
+  const menuItems =
+  profileData?.data?.menus?.[0]
+    ?.children || [];
 
   return (
     <aside
       className="
-        w-[170px]
-        border-r
-        border-slate-200
-        min-h-[calc(100vh-56px)]
+        w-[140px]
+        min-h-[calc(100vh-64px)]
         shrink-0
+        border-r
       "
       style={{
-        backgroundColor: "var(--theme-light)",
+        background:
+          "linear-gradient(180deg, #1E88F5 0%, #1976D2 100%)",
+        borderRight: "1px solid rgba(255,255,255,0.2)",
       }}
     >
-      <nav className="py-6">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
+      <nav className="pt-4">
+        {menuItems.map((item: any) => {
+          const Icon = FileText;
 
           return (
             <button
-              key={item.name}
+              key={item.menuName}
               className="
                 w-full
                 flex
                 items-center
                 justify-between
-                px-4
+                px-3
                 py-4
-                text-sm
-                text-slate-700
-                hover:bg-white
-                transition-colors
+                text-white
+                hover:bg-white/10
+                transition-all
+                duration-200
               "
             >
               <div className="flex items-center gap-3">
                 <Icon
                   size={16}
-                  style={{
-                    color: "var(--theme-color)",
-                  }}
+                  className="text-white"
                 />
 
-                <span>{item.name}</span>
+                <span
+                  className="
+                    text-sm
+                    font-medium
+                  "
+                >
+                  {item.menuName}
+                </span>
               </div>
 
               <ChevronDown
                 size={14}
-                className="text-slate-500"
+                className="text-white/80"
               />
             </button>
           );

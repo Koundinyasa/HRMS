@@ -1,5 +1,4 @@
-import { Gift } from "lucide-react";
-import { Button } from "../../../../components/ui/button";
+import birthdayImage from "../../../../assets/birthday.png";
 import { useAppSelector } from "../../../../hooks/useAppSelector";
 
 export default function BirthdayCard() {
@@ -10,100 +9,94 @@ export default function BirthdayCard() {
   return (
     <div
       className="
-        rounded-2xl
-        border
-        border-slate-200
-        p-5
-        min-h-[220px]
+        bg-white
+        rounded-3xl
+        p-6
         shadow-sm
+        border
+        border-slate-100
+        h-full
       "
-      style={{
-        backgroundColor: `${themeColor}15`,
-      }}
     >
       {/* Header */}
 
       <div className="flex items-center justify-between">
-        <h3
-          className="font-medium"
+        <h3 className="text-2xl font-medium text-slate-800">
+          Birthdays
+        </h3>
+
+        <button
+          className="text-sm font-medium"
           style={{
             color: themeColor,
           }}
         >
-          Birthdays
-        </h3>
-
-        <span className="text-xs text-slate-500">
-          This Month
-        </span>
+          View All
+        </button>
       </div>
-
-      {/* Birthday Employee */}
-
-      <div className="mt-6 flex items-center gap-3">
-        <div
-          className="
-            w-12
-            h-12
-            rounded-full
-            flex
-            items-center
-            justify-center
-            text-white
-            font-semibold
-          "
-          style={{
-            backgroundColor: themeColor,
-          }}
-        >
-          SA
-        </div>
-
-        <div>
-          <p className="font-medium text-slate-800">
-            Sathwika Achugatla
-          </p>
-
-          <p className="text-xs text-slate-500">
-            24 June
-          </p>
-        </div>
-      </div>
-
-      {/* Birthday Message */}
 
       <div
-        className="
-          mt-5
-          rounded-xl
-          p-3
-          text-sm
-        "
+        className="h-[2px] mt-4"
         style={{
-          backgroundColor: `${themeColor}25`,
-          color: themeColor,
+          backgroundColor: `${themeColor}70`,
         }}
-      >
-        🎉 Wish your colleague a happy birthday and make their day special.
+      />
+
+      {/* Content */}
+
+      <div className="flex flex-col items-center pt-8">
+        <h4
+          className="
+            text-[18px]
+            font-medium
+            text-slate-700
+            text-center
+          "
+        >
+          User Lorem Ipsum Birthday
+        </h4>
+
+        <p
+          className="
+            text-slate-600
+            text-lg
+            mt-12
+          "
+        >
+          ● 23 June Birthday
+        </p>
+
+        <button
+          className="
+            mt-8
+            w-[220px]
+            h-11
+            rounded-lg
+            text-white
+            font-medium
+          "
+          style={{
+            background: `linear-gradient(
+              90deg,
+              ${themeColor},
+              #00C2FF
+            )`,
+          }}
+        >
+          Wish
+        </button>
+
+        <div className="mt-10 flex justify-center">
+          <img
+            src={birthdayImage}
+            alt="Birthday"
+            className="
+              w-[260px]
+              object-contain
+            "
+          />
+        </div>
       </div>
-
-      {/* Button */}
-
-      <Button
-        className="
-          w-full
-          mt-5
-          text-white
-        "
-        style={{
-          backgroundColor: themeColor,
-        }}
-      >
-        <Gift size={16} />
-        <span className="ml-2">
-          Send Wishes
-        </span>
-      </Button>
     </div>
   );
 }

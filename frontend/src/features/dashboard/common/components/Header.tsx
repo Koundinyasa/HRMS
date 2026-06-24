@@ -4,15 +4,18 @@ import { useNavigate } from "react-router-dom";
 import {
   Menu,
   Bell,
-  CircleHelp,
+  Info,
   Palette,
   LogOut,
   KeyRound,
   HelpCircle,
 } from "lucide-react";
 
+import hrmsIcon from "../../../../assets/hrms-icon.png";
+
 import { useAppSelector } from "../../../../hooks/useAppSelector";
 import ThemePreset from "./ThemePreset";
+import { useGetProfileQuery } from "../../employee/api/employeeApi";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -27,6 +30,9 @@ export default function Header() {
     (state) => state.theme.primaryColor
   );
 
+  const { data: profileData } =
+    useGetProfileQuery();
+
   const handleLogout = () => {
     navigate("/");
   };
@@ -34,7 +40,8 @@ export default function Header() {
   return (
     <header
       className="
-        h-14
+        h-16
+        bg-white
         border-b
         flex
         items-center
@@ -44,73 +51,55 @@ export default function Header() {
         relative
       "
       style={{
-        backgroundColor: `${themeColor}15`,
-        borderColor: `${themeColor}30`,
+        borderColor: `${themeColor}20`,
       }}
     >
-      {/* LEFT */}
+      {/* LEFT SECTION */}
 
       <div className="flex items-center gap-4">
-        {/* Logo */}
-
-        <div
-          className="
-            w-9
-            h-9
-            rounded-lg
-            text-white
-            flex
-            items-center
-            justify-center
-            font-bold
-          "
-          style={{
-            backgroundColor: themeColor,
-          }}
-        >
-          K
-        </div>
-
-        {/* Menu */}
+        <img
+          src={hrmsIcon}
+          alt="HRMS"
+          className="w-12 h-12 object-contain"
+        />
 
         <button>
           <Menu
-            size={20}
+            size={22}
             style={{
               color: themeColor,
             }}
           />
         </button>
-
-        {/* Company Name */}
 
         <h1
           className="
-            text-sm
-            lg:text-base
-            font-semibold
-            text-slate-900
-          "
+    text-base
+    lg:text-lg
+    font-semibold
+    text-slate-900
+  "
         >
-          Koundinyasa Technology Services Pvt. Ltd.
+          {profileData?.data?.CompanyName ||
+            "Koundinyasa Technology Services Pvt. Ltd"}
         </h1>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT SECTION */}
 
-      <div className="flex items-center gap-4">
-        {/* Help */}
+      <div className="flex items-center gap-5">
+        {/* INFO */}
 
         <button>
-          <CircleHelp
-            size={18}
+          <Info
+            size={16}
             style={{
               color: themeColor,
             }}
           />
         </button>
 
-        {/* Theme */}
+        {/* THEME */}
 
         <div className="relative">
           <button
@@ -133,7 +122,7 @@ export default function Header() {
           )}
         </div>
 
-        {/* Notification */}
+        {/* NOTIFICATION */}
 
         <button>
           <Bell
@@ -160,39 +149,43 @@ export default function Header() {
               border
               rounded-full
               px-3
-              py-1
-              min-w-[280px]
+              h-11
+              min-w-[250px]
+              bg-white
             "
             style={{
-              borderColor: `${themeColor}50`,
+              borderColor: `${themeColor}40`,
             }}
           >
             <div
               className="
-                w-9
-                h-9
+                w-8
+                h-8
                 rounded-full
                 text-white
                 flex
                 items-center
                 justify-center
+                text-sm
                 font-semibold
               "
               style={{
                 backgroundColor: themeColor,
               }}
             >
-              SA
+              {profileData?.data?.ShortName || "SA"}
             </div>
 
             <span
               className="
-                text-sm
+                text-xs
+                font-medium
                 text-slate-700
                 truncate
               "
             >
-              user@koundinyasatech.com
+              {profileData?.data?.Email ||
+                "user@koundinyasatech.com"}
             </span>
           </button>
 
@@ -201,7 +194,7 @@ export default function Header() {
               className="
                 absolute
                 right-0
-                top-14
+                top-12
                 w-[330px]
                 bg-white
                 rounded-xl
@@ -212,7 +205,7 @@ export default function Header() {
                 z-50
               "
             >
-              {/* User Info */}
+              {/* USER DETAILS */}
 
               <div className="p-4 flex gap-3">
                 <div
@@ -232,23 +225,23 @@ export default function Header() {
                       themeColor,
                   }}
                 >
-                  S
+                  {profileData?.data?.ShortName || "S"}
                 </div>
 
                 <div>
                   <h3 className="font-semibold text-slate-800">
-                    Sathwika.A@koundinyasatech.com
+                    {profileData?.data?.FullName ||
+                      "Employee"}
                   </h3>
 
                   <p className="text-sm text-slate-500">
-                    Sathwika.A@koundinyasatech.com
+                    {profileData?.data?.Email ||
+                      "user@koundinyasatech.com"}
                   </p>
                 </div>
               </div>
 
               <div className="border-t" />
-
-              {/* Change Password */}
 
               <button
                 className="
@@ -263,13 +256,10 @@ export default function Header() {
                 "
               >
                 <KeyRound size={18} />
-
                 <span>
                   Change Password
                 </span>
               </button>
-
-              {/* Help */}
 
               <button
                 className="
@@ -284,11 +274,8 @@ export default function Header() {
                 "
               >
                 <HelpCircle size={18} />
-
                 <span>Help</span>
               </button>
-
-              {/* Sign Out */}
 
               <button
                 onClick={handleLogout}
@@ -304,7 +291,6 @@ export default function Header() {
                 "
               >
                 <LogOut size={18} />
-
                 <span>Sign Out</span>
               </button>
             </div>
