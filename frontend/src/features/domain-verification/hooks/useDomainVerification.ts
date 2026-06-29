@@ -20,16 +20,25 @@ export const useDomainVerification = () => {
     try {
       const response =
         await verifyDomainApi({
-          domain,
+          tenantCode: domain,
         }).unwrap();
 
-      console.log(response);
+      if (response.exists) {
 
-      dispatch(setDomain(domain));
+        dispatch(setDomain(domain));
 
-      navigate("/login");
+        navigate("/login");
+
+        return true;
+
+      } else {
+
+        return false;
+
+      }
     } catch (error) {
       console.error(error);
+      return false;
     }
   };
 

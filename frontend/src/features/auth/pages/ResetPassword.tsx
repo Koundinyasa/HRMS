@@ -1,14 +1,7 @@
-import backgroundImg from "../../../assets/background.png";
-import logoImg from "../../../assets/logo.png";
-import peopleImg from "../../../assets/people.png";
-
-import {
-  BarChart3,
-  Clock3,
-  TrendingUp,
-  KeyRound,
-} from "lucide-react";
-
+import backgroundImg from "@/assets/images/background-bg.png";
+import logoImg from "@/assets/images/koundinyasa-logo.png";
+import peopleImg from "@/assets/images/people.png";
+import {BarChart3,Clock3,TrendingUp,KeyRound} from "lucide-react";
 import ResetPasswordForm from "../components/ResetPasswordForm";
 
 function ResetPassword() {
@@ -171,21 +164,8 @@ function ResetPassword() {
         </div>
       </div>
 
-      <footer
-        className="
-          h-[32px]
-          bg-sky-300
-          flex
-          items-center
-          justify-center
-          text-[10px]
-          sm:text-xs
-          text-black
-        "
-      >
-        © 2026 Koundinyasa Technology Services Pvt. Ltd.
-        All rights reserved. Unauthorized access is
-        strictly prohibited.
+      <footer className="h-[32px] bg-sky-300 flex items-center justify-center text-[10px] sm:text-xs text-black">
+        © 2026 Koundinyasa Technology Services Pvt. Ltd. All rights reserved. Unauthorized access is strictly prohibited.
       </footer>
     </div>
   );

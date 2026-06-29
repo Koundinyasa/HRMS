@@ -3,7 +3,7 @@ import {
   fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
 
-export const baseApi = createApi({
+ export const baseApi = createApi({
   reducerPath: "api",
 
   baseQuery: fetchBaseQuery({
@@ -13,3 +13,4 @@ export const baseApi = createApi({
 
   endpoints: () => ({}),
 });
+

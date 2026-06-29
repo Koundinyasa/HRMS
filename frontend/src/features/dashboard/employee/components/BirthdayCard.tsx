@@ -1,4 +1,4 @@
-import birthdayImage from "../../../../assets/birthday.png";
+import birthdayImage from "../../../../assets/images/birthday.png";
 import { useAppSelector } from "../../../../hooks/useAppSelector";
 
 export default function BirthdayCard() {

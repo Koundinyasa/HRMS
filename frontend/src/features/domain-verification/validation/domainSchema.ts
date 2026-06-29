@@ -6,5 +6,4 @@ export const domainSchema = z.object({
     .min(1, "Domain is required"),
 });
 
-export type DomainFormData =
-  z.infer<typeof domainSchema>;
+export type DomainFormData = z.infer<typeof domainSchema>;

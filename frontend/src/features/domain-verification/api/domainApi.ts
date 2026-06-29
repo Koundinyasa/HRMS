@@ -1,4 +1,4 @@
-import { baseApi } from "../../../app/baseApi";
+import {baseApi} from "@/app/baseApi";
 
 export const domainApi =
   baseApi.injectEndpoints({

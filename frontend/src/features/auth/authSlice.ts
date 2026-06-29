@@ -1,51 +1,50 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
+import type { LoginResponse } from './types/auth.types';
 
-interface User {
-  id: number;
-  name: string;
-  role: string;
-}
 
 interface AuthState {
-  user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  employeeId: string | null;
+  userId: string | null;
+  isFirstLogin: boolean;
   isAuthenticated: boolean;
   forgotPasswordUserId: string;
   forgotPasswordMobile: string;
   isOtpVerified: boolean;
   isPasswordReset: boolean;
+  forgotPasswordEmployeeId: string;
 }
 
 const initialState: AuthState = {
-  user: null,
-  token: null,
+  accessToken: null,
+  employeeId: null,
+  userId: null,
+  isFirstLogin: false,
   isAuthenticated: false,
   forgotPasswordUserId: "",
   forgotPasswordMobile: "",
   isOtpVerified: false,
   isPasswordReset: false,
+  forgotPasswordEmployeeId: "",
 };
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
-    loginSuccess: (
-      state,
-      action: PayloadAction<{
-        user: User;
-        token: string;
-      }>
-    ) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+    loginSuccess(state, action: PayloadAction<LoginResponse>) {
+      state.accessToken = action.payload.accessToken;
+      state.employeeId = action.payload.data.employeeId;
+      state.userId = action.payload.data.userId;
+      state.isFirstLogin = action.payload.isFirstLogin;
       state.isAuthenticated = true;
     },
-
-    logout: (state) => {
-      state.user = null;
-      state.token = null;
+    logout(state) {
+      state.accessToken = null;
+      state.employeeId = null;
+      state.userId = null;
+      state.isFirstLogin = false;
       state.isAuthenticated = false;
     },
 
@@ -54,10 +53,12 @@ const authSlice = createSlice({
       action: PayloadAction<{
         userId: string;
         mobileNumber: string;
+        employeeId: string;
       }>
     ) => {
       state.forgotPasswordUserId = action.payload.userId;
       state.forgotPasswordMobile = action.payload.mobileNumber;
+      state.forgotPasswordEmployeeId = action.payload.employeeId;
     },
 
     setOtpVerified: (

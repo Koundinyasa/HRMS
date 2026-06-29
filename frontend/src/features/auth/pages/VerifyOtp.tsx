@@ -1,20 +1,11 @@
-import backgroundImg from "../../../assets/background.png";
-import logoImg from "../../../assets/logo.png";
-import peopleImg from "../../../assets/people.png";
-
-import {
-    BarChart3,
-    Clock3,
-    TrendingUp,
-    Mail,
-} from "lucide-react";
-
+import backgroundImg from "@/assets/images/background-bg.png";
+import logoImg from "@/assets/images/koundinyasa-logo.png";
+import peopleImg from "@/assets/images/people.png";
+import {BarChart3,Clock3,TrendingUp,Mail} from "lucide-react";
 import VerifyOtpForm from "../components/VerifyOtpForm";
 
 
 function VerifyOtp() {
-
-
     return (
         <div
             className="h-screen flex flex-col bg-cover bg-center bg-no-repeat overflow-hidden"
@@ -24,38 +15,12 @@ function VerifyOtp() {
         >
             <div className="flex-1 flex justify-center items-center px-8 py-4">
                 <div
-                    className="
-            w-full
-            max-w-[1350px]
-            flex
-            flex-col
-            lg:flex-row
-            items-center
-            justify-center
-            gap-15
-          "
-                >
+                    className="w-full max-w-[1350px] flex flex-col lg:flex-row items-center justify-center gap-15">
                     {/* LEFT SIDE */}
 
                     <div className="w-full lg:w-[46%] flex flex-col items-center justify-center">
-                        <div
-                            className="
-                w-full
-                max-w-[700px]
-                h-[430px]
-                bg-[#000033]/40
-                border
-                border-white/10
-                rounded-[28px]
-                backdrop-blur-sm
-                px-10
-                py-10
-                text-center
-                flex
-                flex-col
-                items-center
-                justify-center
-              "
+                        <div className="w-full max-w-[700px] h-[430px] bg-[#000033]/40 border border-white/10 rounded-[28px] backdrop-blur-sm 
+                             px-10 text-center flex flex-col items-center justify-center"
                         >
                             <h1 className="text-white text-4xl lg:text-5xl font-semibold leading-tight">
                                 People-first HR,

@@ -11,9 +11,9 @@ import {
   HelpCircle,
 } from "lucide-react";
 
-import hrmsIcon from "../../../../assets/hrms-icon.png";
+import hrmsIcon from "@/assets/images/hrms-icon.png";
 
-import { useAppSelector } from "../../../../hooks/useAppSelector";
+import { useAppSelector } from "@/hooks/useAppSelector";
 import ThemePreset from "./ThemePreset";
 import { useGetProfileQuery } from "../../employee/api/employeeApi";
 

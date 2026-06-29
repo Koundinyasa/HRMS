@@ -1,67 +1,30 @@
-import {
-  useState,
-} from "react";
-
-import {
-  Button,
-} from "../../../components/ui/button";
-
-import {
-  resetPasswordSchema,
-} from "../validation/resetPasswordSchema";
-
-import {
-  useResetPassword,
-} from "../hooks/useResetPassword";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { resetPasswordSchema } from "../validation/resetPasswordSchema";
+import { useResetPassword } from "../hooks/useResetPassword";
+import { useNavigate } from "react-router-dom";
 
 export default function ResetPasswordForm() {
-  const [
-    password,
-    setPassword,
-  ] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const { handleResetPassword } = useResetPassword();
+  const navigate = useNavigate();
 
-  const [
-    confirmPassword,
-    setConfirmPassword,
-  ] = useState("");
 
-  const [
-    error,
-    setError,
-  ] = useState("");
+  const handleSubmit = async () => {
+    const result = resetPasswordSchema.safeParse({ password, confirmPassword });
 
-  const {
-    handleResetPassword,
-  } =
-    useResetPassword();
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
+    }
 
-  const handleSubmit =
-    () => {
-      const result =
-        resetPasswordSchema.safeParse(
-          {
-            password,
-            confirmPassword,
-          }
-        );
+    setError("");
 
-      if (
-        !result.success
-      ) {
-        setError(
-          result.error.issues[0]
-            .message
-        );
-
-        return;
-      }
-
-      setError("");
-
-      handleResetPassword(
-        password
-      );
-    };
+    const success = await handleResetPassword(password, confirmPassword);
+    if (success) navigate("/login"); // ✅ component owns navigation
+  };
 
   return (
     <div className="space-y-5">
@@ -81,15 +44,7 @@ export default function ResetPasswordForm() {
               e.target.value
             )
           }
-          className="
-            w-full
-            h-[48px]
-            px-4
-            rounded-lg
-            border
-            border-[#D8E2EC]
-            bg-[#EEF5FB]
-          "
+          className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
         />
 
         <p className="text-sm text-gray-500 mt-2">
@@ -116,15 +71,7 @@ export default function ResetPasswordForm() {
               e.target.value
             )
           }
-          className="
-            w-full
-            h-[48px]
-            px-4
-            rounded-lg
-            border
-            border-[#D8E2EC]
-            bg-[#EEF5FB]
-          "
+          className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
         />
       </div>
 
@@ -138,13 +85,7 @@ export default function ResetPasswordForm() {
         onClick={
           handleSubmit
         }
-        className="
-          w-full
-          h-[50px]
-          bg-blue-600
-          hover:bg-blue-700
-          rounded-xl
-        "
+        className="w-full h-[50px] bg-blue-600 hover:bg-blue-700 rounded-xl"
       >
         Reset Password
       </Button>
