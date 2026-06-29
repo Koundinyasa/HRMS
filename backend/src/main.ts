@@ -1,22 +1,31 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import * as dotenv from 'dotenv';
+import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
-dotenv.config();
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  app.use(cookieParser());
 
   app.setGlobalPrefix('api');
 
   app.enableCors({
+
     // origin: 'http://localhost:5173',
-    origin: true,
+    origin: configService.get<string>('frontendUrl'),
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   });
+
+  app.useGlobalFilters(new HttpExceptionFilter());
+
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -26,7 +35,10 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3001);
+
+  const port = configService.get<number>('port') ?? 3001;
+  await app.listen(port);
+  console.log(`Application running on port ${port}`);
 }
 
 bootstrap();

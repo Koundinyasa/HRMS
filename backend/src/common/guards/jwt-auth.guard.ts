@@ -6,57 +6,29 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+/**
+ * Single source of truth for JWT auth.
+ * Reads the token from the httpOnly cookie set at login.
+ * Delete any other copy of this file in the project.
+ */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean {
-    const request =
-      context.switchToHttp().getRequest();
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    const token = request.cookies?.access_token;
 
-    const authHeader =
-      request.headers.authorization;
-
-    if (!authHeader) {
-      throw new UnauthorizedException(
-        'Token missing',
-      );
-    }
-
-    if (!authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException(
-        'Invalid auth format',
-      );
-    }
-
-    const token =
-      authHeader.split(' ')[1];
-
-    if (
-      !token ||
-      token === 'undefined' ||
-      token === 'null'
-    ) {
-      throw new UnauthorizedException(
-        'Invalid token',
-      );
+    if (!token || token === 'undefined' || token === 'null') {
+      throw new UnauthorizedException('Token missing or invalid');
     }
 
     try {
-      const payload =
-        this.jwtService.verify(token);
-
+      const payload = this.jwtService.verify(token);
       request.user = payload;
-
       return true;
     } catch {
-      throw new UnauthorizedException(
-        'Invalid or expired token',
-      );
+      throw new UnauthorizedException('Invalid or expired token');
     }
   }
 }

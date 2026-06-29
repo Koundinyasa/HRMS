@@ -1,40 +1,22 @@
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
-import {
-  useVerifyOtpMutation,
-} from "../api/authApi";
+import { useVerifyOtpMutation } from "../api/authApi";
 
 export const useVerifyOtp = () => {
-  const navigate = useNavigate();
+  const [verifyOtp] = useVerifyOtpMutation();
 
-  const [verifyOtp] =
-    useVerifyOtpMutation();
-
-  const handleVerifyOtp =
-    async (
-      employeeId: string,
-      otp: string
-    ) => {
-      try {
-        await verifyOtp({
-          employeeId,
-          otp,
-        }).unwrap();
-
-        toast.success(
-          "OTP verified successfully"
-        );
-
-        navigate("/reset-password");
-      } catch {
-        toast.error(
-          "Invalid OTP"
-        );
-      }
-    };
-
-  return {
-    handleVerifyOtp,
+  const handleVerifyOtp = async (employeeId: string, otp: string) => {
+    console.log("Sending:", { employeeId, otp }); // 👈
+    try {
+      const res = await verifyOtp({ employeeId, otp }).unwrap();
+      console.log("Success response:", res); // 👈
+      toast.success("OTP verified successfully");
+      return true;
+    } catch (err) {
+      console.error("Verify OTP error:", err); // 👈
+      toast.error("Invalid OTP");
+      return false;
+    }
   };
+
+  return { handleVerifyOtp };
 };

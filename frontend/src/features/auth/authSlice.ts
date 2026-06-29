@@ -13,6 +13,9 @@ interface AuthState {
   forgotPasswordMobile: string;
   isOtpVerified: boolean;
   isPasswordReset: boolean;
+  forgotPasswordEmployeeId: string;
+  otpRemainingMinutes?: number;
+  otpRemainingSeconds?: number;
 }
 
 const initialState: AuthState = {
@@ -25,6 +28,9 @@ const initialState: AuthState = {
   forgotPasswordMobile: "",
   isOtpVerified: false,
   isPasswordReset: false,
+  forgotPasswordEmployeeId: sessionStorage.getItem("hrms_employeeId") ?? "",
+  otpRemainingSeconds: 0,
+  otpRemainingMinutes: 3,
 };
 
 const authSlice = createSlice({
@@ -46,15 +52,16 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
     },
 
-    setForgotPasswordData: (
-      state,
-      action: PayloadAction<{
+    setForgotPasswordData: (state,action: PayloadAction<{
         userId: string;
         mobileNumber: string;
+        employeeId: string;
       }>
     ) => {
       state.forgotPasswordUserId = action.payload.userId;
       state.forgotPasswordMobile = action.payload.mobileNumber;
+      state.forgotPasswordEmployeeId = action.payload.employeeId;
+      sessionStorage.setItem("hrms_employeeId", action.payload.employeeId);
     },
 
     setOtpVerified: (
@@ -62,6 +69,11 @@ const authSlice = createSlice({
       action: PayloadAction<boolean>
     ) => {
       state.isOtpVerified = action.payload;
+    },
+
+    setOtpExpiry: (state, action: PayloadAction<{ remainingSeconds: number; remainingMinutes: number }>) => {
+      state.otpRemainingSeconds = action.payload.remainingSeconds;
+      state.otpRemainingMinutes = action.payload.remainingMinutes;
     },
 
     setPasswordReset: (
@@ -80,6 +92,7 @@ export const {
   setForgotPasswordData,
   setOtpVerified,
   setPasswordReset,
+  setOtpExpiry,
 } = authSlice.actions;
 
 export default authSlice.reducer;

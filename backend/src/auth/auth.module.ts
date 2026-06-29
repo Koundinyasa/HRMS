@@ -7,22 +7,13 @@ import { CaptchaService } from './captcha/captcha.service';
 
 import { DatabaseModule } from '../database/database.module';
 import { MailModule } from '../mail/mail.module';
-
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { PermissionGuard } from '../common/guards/permission.guard';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    MailModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'HRMS_SECRET_KEY',
-      signOptions: {
-        expiresIn: '5m',
-      },
-    }),
-  ],
+  imports: [DatabaseModule,MailModule],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard,CaptchaService],
-  exports: [JwtAuthGuard, JwtModule, AuthService],
+  providers: [AuthService, JwtAuthGuard,CaptchaService,PermissionGuard,],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -6,6 +6,7 @@ import VerifyOtp from "../features/auth/pages/VerifyOtp";
 import ResetPassword from "../features/auth/pages/ResetPassword";
 
 
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -19,7 +20,7 @@ function AppRoutes() {
         />
 
         <Route
-          path="/login"
+          path="/:domain/login"
           element={<Login />}
         />
 
@@ -39,6 +40,7 @@ function AppRoutes() {
             <ResetPassword />
           }
         />
+
 
       </Routes>
     </BrowserRouter>

@@ -1,29 +1,52 @@
-import { Controller, Post, Get, Body, Param, Req, UseGuards } from '@nestjs/common';
+import {Controller,Post,Get,Body,Param,Req,Res,UseGuards} from '@nestjs/common';
+import type { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CaptchaService } from './captcha/captcha.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
+
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly captchaService: CaptchaService,
-  ) { }
+    private readonly configService: ConfigService,
+  ) {}
 
+  // ── Captcha ──────────────────────────────────────────────────────────────
   @Get('captcha')
   getCaptcha() {
     return this.captchaService.generate();
   }
 
-  @Get('captcha-debug')
-  getCaptchaDebug() {
-    return this.captchaService.debugStore();
-  }
+  // ── Auth flow ─────────────────────────────────────────────────────────────
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(dto);
+    const isProd = this.configService.get<string>('environment') === 'production';
+
+    res.cookie('access_token', result.accessToken, {
+      httpOnly: true,
+      secure: isProd,           // HTTPS only in production
+      sameSite: isProd ? 'strict' : 'lax',
+      maxAge: 15 * 60 * 1000,  // matches JWT_EXPIRES_IN (15m)
+    });
+
+    return {
+      success: true,
+      message: result.message,
+      isFirstLogin: result.isFirstLogin,
+      data: result.data,
+    };
   }
 
   @Post('verify-company')
@@ -31,17 +54,31 @@ export class AuthController {
     return this.authService.verifyCompany(tenantCode);
   }
 
+  // ── First-login password reset (requires auth) ───────────────────────────
   @UseGuards(JwtAuthGuard)
   @Post('reset-password')
   resetPassword(@Req() req, @Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(
-      req.user.employeeId,
-      dto,
-    );
+    return this.authService.resetPassword(req.user.userId, dto);
   }
 
+  // ── Forgot password flow (3 steps) ───────────────────────────────────────
   @Post('send-temp-password/:employeeId')
   sendTempPassword(@Param('employeeId') employeeId: string) {
     return this.authService.sendTemporaryPassword(employeeId);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.userId);
+  }
+
+  @Post('verify-otp')
+  verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyOtp(dto.employeeId, dto.otp);
+  }
+
+  @Post('forgot-password/reset')
+  resetForgotPassword(@Body() dto: ResetForgotPasswordDto) {
+    return this.authService.resetForgotPassword(dto);
   }
 }

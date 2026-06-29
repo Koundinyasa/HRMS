@@ -1,50 +1,43 @@
-import {
-  useNavigate,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useResetForgotPasswordMutation } from "../api/authApi";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import type { RootState } from "../../../app/store";
 
-import {
-  toast,
-} from "react-toastify";
+export const useResetPassword = () => {
+  const navigate = useNavigate();
+  const [resetForgotPassword] = useResetForgotPasswordMutation();
 
-import {
-  useResetPasswordMutation,
-} from "../api/authApi";
+  // ✅ Redux first, sessionStorage as fallback
+  const employeeIdFromRedux = useAppSelector(
+    (state: RootState) => state.auth.forgotPasswordEmployeeId
+  );
+  const employeeId = employeeIdFromRedux || sessionStorage.getItem("hrms_employeeId") || "";
 
-export const useResetPassword =
-  () => {
-    const navigate =
-      useNavigate();
+  const handleResetPassword = async (
+    newPassword: string,
+    confirmPassword: string
+  ) => {
+    if (!employeeId) {
+      toast.error("Session expired. Please start over.");
+      navigate("/forgot-password");
+      return false;
+    }
 
-    const [
-      resetPassword,
-    ] =
-      useResetPasswordMutation();
+    try {
+      await resetForgotPassword({
+        employeeId,
+        newPassword,
+        confirmPassword,
+      }).unwrap();
 
-    const
-      handleResetPassword =
-      async (
-        password: string
-      ) => {
-        try {
-          await resetPassword({
-            password,
-          }).unwrap();
-
-          toast.success(
-            "Password reset successful"
-          );
-
-          navigate(
-            "/login"
-          );
-        } catch {
-          toast.error(
-            "Failed to reset password"
-          );
-        }
-      };
-
-    return {
-      handleResetPassword,
-    };
+      toast.success("Password reset successful");
+      return true;
+    } catch {
+      toast.error("Failed to reset password");
+      return false;
+    }
   };
+
+  return { handleResetPassword };
+};

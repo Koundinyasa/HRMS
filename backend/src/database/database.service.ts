@@ -1,23 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
-
 
 @Injectable()
 export class DatabaseService {
-  
   private pool: sql.ConnectionPool;
 
-  async connect() {
+  constructor(private readonly configService: ConfigService) {}
+
+  async connect(): Promise<sql.ConnectionPool> {
     if (!this.pool) {
       this.pool = await sql.connect({
-        server: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT),
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+        server: this.configService.get<string>('database.host'),
+        port: this.configService.get<number>('database.port'),
+        user: this.configService.get<string>('database.user'),
+        password: this.configService.get<string>('database.password'),
+        database: this.configService.get<string>('database.name'),
         options: {
-          encrypt: false,
-          trustServerCertificate: true,
+          encrypt: this.configService.get<boolean>('database.encrypt'),
+          trustServerCertificate: this.configService.get<boolean>(
+            'database.trustServerCertificate',
+          ),
         },
       });
     }
@@ -25,9 +28,9 @@ export class DatabaseService {
     return this.pool;
   }
 
-  async testConnection() {
+  async healthCheck(): Promise<boolean> {
     const pool = await this.connect();
-    const result = await pool.request().query('SELECT * from Employee');
-    return result.recordset;
+    await pool.request().query('SELECT 1 AS ok');
+    return true;
   }
 }

@@ -6,25 +6,21 @@ interface DomainState {
 }
 
 const initialState: DomainState = {
-  domain: "",
+  // ✅ rehydrate from sessionStorage on page refresh/navigation
+  domain: sessionStorage.getItem("hrms_domain") ?? "",
 };
 
 const domainSlice = createSlice({
   name: "domain",
-
   initialState,
-
   reducers: {
-    setDomain: (
-      state,
-      action: PayloadAction<string>
-    ) => {
+    setDomain: (state, action: PayloadAction<string>) => {
       state.domain = action.payload;
+      // ✅ persist so it survives multi-step navigation
+      sessionStorage.setItem("hrms_domain", action.payload);
     },
   },
 });
 
-export const { setDomain } =
-  domainSlice.actions;
-
+export const { setDomain } = domainSlice.actions;
 export default domainSlice.reducer;
