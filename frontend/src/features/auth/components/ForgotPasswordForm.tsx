@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { forgotPasswordSchema } from "../validation/forgotPasswordSchema";
 import { useForgotPassword } from "../hooks/useForgotPassword";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function ForgotPasswordForm() {
   const [userId, setUserId] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { domain } = useParams();
 
   const { handleForgotPassword } = useForgotPassword();
 
@@ -26,7 +27,7 @@ export default function ForgotPasswordForm() {
   const success = await handleForgotPassword(userId, mobileNumber);
   
   if (success) {
-    navigate("/verify-otp");
+    navigate(`/${domain}/verify-otp`);
   }
 };
 

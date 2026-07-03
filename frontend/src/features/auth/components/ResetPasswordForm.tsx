@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { resetPasswordSchema } from "../validation/resetPasswordSchema";
 import { useResetPassword } from "../hooks/useResetPassword";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
 
 export default function ResetPasswordForm() {
   const [password, setPassword] = useState("");
@@ -10,6 +10,7 @@ export default function ResetPasswordForm() {
   const [error, setError] = useState("");
   const { handleResetPassword } = useResetPassword();
   const navigate = useNavigate();
+  const { domain } = useParams();
 
 
   const handleSubmit = async () => {
@@ -23,7 +24,7 @@ export default function ResetPasswordForm() {
     setError("");
 
     const success = await handleResetPassword(password, confirmPassword);
-    if (success) navigate("/login"); // ✅ component owns navigation
+    if (success) navigate(`/${domain}/login`); // ✅ component owns navigation
   };
 
   return (

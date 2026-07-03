@@ -11,5 +11,5 @@ export const AUTH_ROUTES = {
 export const DASHBOARD_ROUTES = {
   admin: "/admin/dashboard",
   hr: "/hr/dashboard",
-  employee: "/employee/dashboard",
+  employee: (domain: string) => `/${domain}/employee/dashboard`,
 };

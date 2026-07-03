@@ -1,5 +1,129 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #2563eb;
+:root {
+  --primary-color: #2563EB;
+  --primary-light: #DBEAFE;
+  --primary-border: #93C5FD;
+  --primary-gradient: linear-gradient(90deg,#2563EB,#00C2FF);
+  --card-bg: #FFFFFF;
+}
+
+@keyframes bubble1 {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes bubble2 {
+  0% {
+    transform: translateY(0px) translateX(0px);
+  }
+
+  50% {
+    transform: translateY(-20px) translateX(8px);
+  }
+
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+}
+
+@keyframes bubble3 {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-bubble1 {
+  animation: bubble1 4s ease-in-out infinite;
+}
+
+.animate-bubble2 {
+  animation: bubble2 6s ease-in-out infinite;
+}
+
+.animate-bubble3 {
+  animation: bubble3 5s ease-in-out infinite;
+}
+
+/* ---------- Large Circle ---------- */
+
+@keyframes circle1 {
+  0% {
+    transform: translate(0px, -50%);
+  }
+
+  50% {
+    transform: translate(-260px, -45%);
+  }
+
+  100% {
+    transform: translate(0px, -50%);
+  }
+}
+
+.animate-circle1 {
+  animation: circle1 18s ease-in-out infinite;
+}
+
+
+/* ---------- Medium Circle ---------- */
+
+@keyframes circle2 {
+
+  0% {
+    transform: translate(0px, 0px);
+  }
+
+  50% {
+    transform: translate(-180px, -25px);
+  }
+
+  100% {
+    transform: translate(0px, 0px);
+  }
+
+}
+
+.animate-circle2 {
+  animation: circle2 14s ease-in-out infinite;
+}
+
+
+/* ---------- Small Circle ---------- */
+
+@keyframes circle3 {
+
+  0% {
+    transform: translate(0px, 0px);
+  }
+
+  50% {
+    transform: translate(-120px, 20px);
+  }
+
+  100% {
+    transform: translate(0px, 0px);
+  }
+
+}
+
+.animate-circle3 {
+  animation: circle3 10s ease-in-out infinite;
 }

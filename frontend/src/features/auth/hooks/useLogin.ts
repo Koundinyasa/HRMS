@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import { useLoginMutation, useLazyGetCaptchaQuery } from '../api/authApi';
@@ -11,6 +11,8 @@ import type { LoginFormData } from '../validation/loginSchema';
 export const useLogin = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { domain } = useParams();
+  console.log("Current domain:", domain);
 
   const [triggerGetCaptcha, { data: captcha, isFetching: captchaLoading }] =
     useLazyGetCaptchaQuery();
@@ -51,9 +53,13 @@ export const useLogin = () => {
       toast.success(response.message ?? 'Login successful');
 
       if (response.isFirstLogin) {
-        navigate('/auth/reset-password');
+        setTimeout(() => {
+          navigate(`/${domain}/reset-password`);
+        }, 1000);
       } else {
-        navigate('/dashboard');
+        setTimeout(() => {
+          navigate(`/${domain}/employee/dashboard`);
+        }, 1000);
       }
     } catch (err: any) {
       const message =

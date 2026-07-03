@@ -1,25 +1,27 @@
-import { BrowserRouter, Routes, Route} from "react-router-dom";
-import Login from "../features/auth/pages/Login";
-import DomainVerification from "../features/domain-verification/pages/DomainVerification";
-import ForgotPassword from "../features/auth/pages/ForgotPassword";
-import VerifyOtp from "../features/auth/pages/VerifyOtp";
-import ResetPassword from "../features/auth/pages/ResetPassword";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import EmployeeDashboard from "../features/dashboard/employee/pages/EmployeeDashboard";
+import DomainVerification from "@/features/domain-verification/pages/DomainVerification";
 
+import Login from "@/features/auth/pages/Login";
+import ForgotPassword from "@/features/auth/pages/ForgotPassword";
+import VerifyOtp from "@/features/auth/pages/VerifyOtp";
+import ResetPassword from "@/features/auth/pages/ResetPassword";
 
+import EmployeeRoutes from "./EmployeeRoutes";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
 
+        {/* Domain Verification */}
+
         <Route
           path="/"
-          element={
-            <DomainVerification />
-          }
+          element={<DomainVerification />}
         />
+
+        {/* Authentication */}
 
         <Route
           path="/:domain/login"
@@ -27,26 +29,23 @@ function AppRoutes() {
         />
 
         <Route
-          path="/forgot-password"
+          path="/:domain/forgot-password"
           element={<ForgotPassword />}
         />
 
         <Route
-          path="/verify-otp"
+          path="/:domain/verify-otp"
           element={<VerifyOtp />}
         />
 
         <Route
-          path="/reset-password"
-          element={
-            <ResetPassword />
-          }
+          path="/:domain/reset-password"
+          element={<ResetPassword />}
         />
 
-        <Route
-          path="/employee/dashboard"
-          element={<EmployeeDashboard />}
-        />
+        {/* Employee Module */}
+
+        {EmployeeRoutes()}
 
       </Routes>
     </BrowserRouter>

@@ -74,6 +74,7 @@ import { domainSchema } from "../validation/domainSchema";
 export default function DomainForm() {
     const [domain, setDomain] = useState("");
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const { verifyDomain } = useDomainVerification();
 
@@ -82,6 +83,7 @@ export default function DomainForm() {
 
         if (!result.success) {
             setError(result.error.issues[0].message);
+            setSuccess("");
             return false;
         }
 
@@ -94,9 +96,14 @@ export default function DomainForm() {
             return;
         }
 
+        setError("");
+        setSuccess("");
+
         const isValid = await verifyDomain(domain);
 
-        if (!isValid) {
+        if (isValid) {
+            setSuccess("Valid domain name");
+        } else {
             setError("Invalid domain name");
         }
     };
@@ -110,10 +117,11 @@ export default function DomainForm() {
 
                 <div className="flex items-start gap-3">
                     <div
-                        className={`flex flex-1 items-center h-[48px] bg-[#EEF5FB] border rounded-lg px-3 gap-2 transition-colors ${error
+                        className={`flex flex-1 items-center h-[48px] bg-[#EEF5FB] border rounded-lg px-3 gap-2 transition-colors ${
+                            error
                                 ? "border-red-400"
                                 : "border-[#D8E2EC] focus-within:border-blue-400"
-                            }`}
+                        }`}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -140,6 +148,7 @@ export default function DomainForm() {
 
                                 if (value.trim() === "") {
                                     setError("");
+                                    setSuccess("");
                                     return;
                                 }
 
@@ -164,6 +173,12 @@ export default function DomainForm() {
                 {error && (
                     <p className="text-red-500 text-xs mt-1.5">
                         {error}
+                    </p>
+                )}
+
+                {success && (
+                    <p className="text-green-500 text-xs mt-1.5">
+                        {success}
                     </p>
                 )}
             </div>

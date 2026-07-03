@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RefreshCw, Eye, EyeOff, User, Lock, Smartphone, ShieldCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,9 @@ const urbanist: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
 export default function LoginForm() {
   const { captcha, captchaLoading, loadCaptcha, login } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
+  
   const navigate = useNavigate();
+  const { domain } = useParams();
 
   const {
     register,
@@ -285,7 +287,7 @@ export default function LoginForm() {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/forgot-password")}
+            onClick={() => navigate(`/${domain}/forgot-password`)}
             style={{
               ...urbanist,
               fontSize: "clamp(11px, 0.85vw, 13px)",

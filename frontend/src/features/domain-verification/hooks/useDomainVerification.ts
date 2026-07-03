@@ -27,7 +27,9 @@ export const useDomainVerification = () => {
 
         dispatch(setDomain(domain));
 
-        navigate("/login");
+        setTimeout(() => {
+          navigate(`/${domain}/login`);
+        }, 1000);
 
         return true;
 
