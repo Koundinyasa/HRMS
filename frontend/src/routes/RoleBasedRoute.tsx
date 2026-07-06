@@ -10,10 +10,7 @@ function RoleBasedRoute({
   children,
   allowedRoles,
 }: Props) {
-  const role =
-    useAppSelector(
-      (state) => state.auth.user?.role
-    );
+  const role =useAppSelector((state) => state.auth.user?.role);
 
   if (!role) {
     return <Navigate to="/login" />;

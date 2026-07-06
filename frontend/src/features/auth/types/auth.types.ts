@@ -1,6 +1,6 @@
 export interface CaptchaResponse {
   captchaId: string;   
-  svg: string;         
+  image: string;         
 }
 
 export interface LoginRequest {

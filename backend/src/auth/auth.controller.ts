@@ -36,17 +36,13 @@ export class AuthController {
 
     res.cookie('access_token', result.accessToken, {
       httpOnly: true,
-      secure: isProd,           // HTTPS only in production
-      sameSite: isProd ? 'strict' : 'lax',
-      maxAge: 15 * 60 * 1000,  // matches JWT_EXPIRES_IN (15m)
+      secure: false,           // HTTPS only in production
+      // sameSite: isProd ? 'strict' : 'lax',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,  // matches JWT_EXPIRES_IN (24h)
     });
 
-    return {
-      success: true,
-      message: result.message,
-      isFirstLogin: result.isFirstLogin,
-      data: result.data,
-    };
+    return result;
   }
 
   @Post('verify-company')

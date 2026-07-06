@@ -83,7 +83,7 @@ export class AuthService {
 
     let loginMessage = 'Login successful';
     if (user.RoleID === 1) {
-      loginMessage = 'Super Admin login successful';
+      loginMessage = 'Admin login successful';
     } else if (user.RoleID === 2) {
       loginMessage = 'HR Admin login successful';
     }

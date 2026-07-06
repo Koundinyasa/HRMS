@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { LoginResponse } from './types/auth.types';
+// import {roleId} from '../../routes/ProtectedRoute';
 
 
 interface AuthState {
@@ -14,6 +15,7 @@ interface AuthState {
   isOtpVerified: boolean;
   isPasswordReset: boolean;
   forgotPasswordEmployeeId: string;
+  roleId:null;
   otpRemainingMinutes?: number;
   otpRemainingSeconds?: number;
 }
@@ -29,6 +31,7 @@ const initialState: AuthState = {
   isOtpVerified: false,
   isPasswordReset: false,
   forgotPasswordEmployeeId: sessionStorage.getItem("hrms_employeeId") ?? "",
+  roleId:null,
   otpRemainingSeconds: 0,
   otpRemainingMinutes: 3,
 };
@@ -41,6 +44,7 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.employeeId = action.payload.data.employeeId;
       state.userId = action.payload.data.userId;
+      state.roleId =action.payload.data.roleId;
       state.isFirstLogin = action.payload.isFirstLogin;
       state.isAuthenticated = true;
     },
