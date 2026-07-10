@@ -5,6 +5,7 @@ import { DatabaseService } from './database/database.service';
 export class AppController {
   constructor(private readonly dbService: DatabaseService) {}
 
+  
   @Get('db-check')
   async checkDb() {
     try {

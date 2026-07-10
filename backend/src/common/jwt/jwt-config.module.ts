@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
 
 @Global()
 @Module({
@@ -8,12 +9,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const expiresIn = config.get<string>('jwt.expiresIn');
+      useFactory: (config: ConfigService): JwtModuleOptions => {
+        const expiresIn = config.get<number | string>('jwt.expiresIn');
         return {
           secret: config.get<string>('jwt.secret'),
           signOptions: {
-            expiresIn: expiresIn ? parseInt(expiresIn, 10) : undefined,
+            expiresIn:  '24h', // Default
           },
         };
       },

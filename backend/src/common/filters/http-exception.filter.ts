@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
+
+
 /**
  * Global exception filter — normalises all HTTP error responses to:
  * { success: false, statusCode, message }

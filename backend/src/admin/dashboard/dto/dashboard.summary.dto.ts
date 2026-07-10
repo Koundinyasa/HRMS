@@ -73,4 +73,30 @@ export class DashboardSummaryDto {
   departmentWiseCount!: DepartmentCountDto[];
   genderWiseCount!:     GenderCountDto[];
   ageGroupWiseCount!:   AgeGroupCountDto[];
+  upcomingEvents!:      UpcomingEventDto[];
+  team!:                TeamMemberDto[];
+  avgTenure!:           string;
 }
+
+
+export class UpcomingEventDto {
+  fullName!:  string;
+  code!:      string;
+  eventName!: 'Birthday' | 'Work Anniversary';
+  eventDate!: string; // "2026-07-08"
+}
+
+export class TeamMemberDto {
+  leadName!:     string;
+  profilePhoto!: string | null;
+  team!:         string;
+  badgeColor!:   string;
+  email!:        string;
+}
+
+
+
+export class AvgTenureDto {
+  avgTenure!: string; // e.g. "2 Months 3 Days"
+}
+

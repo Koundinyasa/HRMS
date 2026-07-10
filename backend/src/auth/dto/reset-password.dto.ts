@@ -1,5 +1,6 @@
 import {IsNotEmpty,MinLength,Matches} from 'class-validator';
 
+
 export class ResetPasswordDto {
   @IsNotEmpty()
   currentPassword!: string;

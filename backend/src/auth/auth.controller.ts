@@ -1,4 +1,4 @@
-import {Controller,Post,Get,Body,Param,Req,Res,UseGuards} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Req, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
@@ -17,7 +17,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly captchaService: CaptchaService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   // ── Captcha ──────────────────────────────────────────────────────────────
   @Get('captcha')
@@ -76,5 +76,27 @@ export class AuthController {
   @Post('forgot-password/reset')
   resetForgotPassword(@Body() dto: ResetForgotPasswordDto) {
     return this.authService.resetForgotPassword(dto);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.logout(req.user.employeeId);
+
+    const isProd =
+      this.configService.get<string>('environment') === 'production';
+
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'strict' : 'lax',
+    });
+
+    return {
+      success: true,
+      message: 'Logged out successfully',
+    };
   }
 }

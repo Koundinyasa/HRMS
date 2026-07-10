@@ -1,0 +1,31 @@
+export const PII_PATTERNS = [
+  'ssn', 'bank account', 'account number', 'personal identification', 'passport',
+];
+
+export const PAYROLL_KEYWORDS = [
+  'salary', 'pay', 'earn', 'compensation', 'form16', 'form 16',
+  'payslip', 'salary slip', 'tax',
+];
+
+export const PERSONAL_INFO_KEYWORDS = [
+  'my details', 'my profile', 'about me', 'who am i',
+  'my certificate', 'my certificates', 'my qualification',
+  'my credential', 'my skill',
+];
+
+export const LEAVE_ACTION_TRIGGERS = ['leave', 'cancel', 'confirm', 'apply', 'discard'];
+
+export const LOCAL_INTENT_KEYWORDS = [
+  'date', 'today', 'time', 'day',
+  'holiday', 'holidays', 'vacation', 'festive', 'announcement', 'news', 'update',
+  'policy', 'pto', 'procedure', 'wfh', 'work from home', 'remote',
+  'who are you', 'what can you do', 'help', 'hello', 'hi', 'hey',
+  'good morning', 'good afternoon', 'good evening', 'thank',
+  'office', 'cafe', 'canteen', 'lunch', 'food', 'parking', 'gym', 'wifi', 'internet',
+  'vpn', 'transport', 'cab', 'dress code', 'attire', 'training', 'course',
+  'office hours', 'working hours', 'timing', 'benefit', 'insurance', 'portal',
+  'dashboard', 'department', 'team', 'attendance', 'probation', 'performance',
+  'emergency', 'career', 'growth', 'it support', 'contact',
+  'details', 'profile', 'about me', 'basic info',
+  'menu',
+];
