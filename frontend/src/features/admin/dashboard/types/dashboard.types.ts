@@ -67,6 +67,9 @@ export interface DashboardSummary {
   departmentWiseCount: DepartmentCount[];
   genderWiseCount:     GenderCount[];
   ageGroupWiseCount:   AgeGroupCount[];
+  upcomingEvents:      UpcomingEvent[];
+  team:                TeamMember[];
+  avgTenure:           string;
 }
 
 // ── Stat card config ──────────────────────────────────────────
@@ -84,4 +87,20 @@ export interface ActivityItem {
   priority:     'High' | 'Medium' | 'Low';
   scheduledFor: string;
   done?:        boolean;
+}
+
+
+export interface UpcomingEvent {
+  fullName:  string;
+  code:      string;
+  eventName: 'Birthday' | 'Work Anniversary';
+  eventDate: string;
+}
+
+export interface TeamMember {
+  leadName:     string;
+  profilePhoto: string | null;
+  team:         string;
+  badgeColor:   string;
+  email:        string;
 }

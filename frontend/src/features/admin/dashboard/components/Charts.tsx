@@ -27,10 +27,12 @@ export function EmployeeCompositionChart({
 
   return (
     <div className="flex flex-col items-center">
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={140}>
         <PieChart>
           <Pie
             data={data}
+            cx="50%"
+            cy="100%"          // ✅ anchor center to bottom of chart area
             startAngle={180}
             endAngle={0}
             innerRadius={70}
@@ -45,7 +47,7 @@ export function EmployeeCompositionChart({
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="flex items-center gap-8 -mt-4">
+      <div className="flex items-center gap-8 mt-2">
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
           <span className="text-sm font-semibold text-slate-700">

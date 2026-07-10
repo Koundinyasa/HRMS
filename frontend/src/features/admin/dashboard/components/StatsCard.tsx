@@ -29,7 +29,7 @@ export default function StatsCard({ config, value, change }: StatsCardProps) {
           style={{
             width: 38,
             height: 38,
-            background: "var(--theme-primary)", 
+            background: config.iconBg, // ✅ per-card color, matches Figma
           }}
         >
           <Icon className="text-white" size={18} />

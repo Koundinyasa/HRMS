@@ -1,6 +1,7 @@
 import { useDashboard } from "../hooks/useDashboard";
 import StatsCard from "../components/StatsCard";
 import RecentActivity from "../components/RecentActivity";
+import WelcomeCard from "../components/welcomeCard";
 import {
   EmployeeCompositionChart,
   AgeRangeChart,
@@ -8,16 +9,25 @@ import {
   TenureDistributionChart,
 } from "../components/Charts";
 import { STAT_CARDS } from "../constants/dashboard.constants";
+import CelebrationsCard from "../components/CelebrationsCard";
+
+import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
+import { useState } from "react";
 
 const TENURE_DATA = [{ label: "0-3 mo", count: 58 }];
 
 export default function DashboardPage() {
+
+      const [chatbotOpen, setChatbotOpen] =useState(false);
   const {
     welcome,
     summary,
     departmentWiseCount,
     genderWiseCount,
     ageGroupWiseCount,
+    upcomingEvents,
+    team,
+    avgTenure,
     isLoading,
     isError,
   } = useDashboard();
@@ -38,18 +48,18 @@ export default function DashboardPage() {
     );
   }
 
-  const menPct   = genderWiseCount.find((g) => g.gender === "Male")?.percentage   ?? 0;
+  const menPct = genderWiseCount.find((g) => g.gender === "Male")?.percentage ?? 0;
   const womenPct = genderWiseCount.find((g) => g.gender === "Female")?.percentage ?? 0;
 
   const ageRangeData = ageGroupWiseCount.map((a) => ({
     range: a.ageBetween,
-    men:   a.male,
+    men: a.male,
     women: a.female,
   }));
 
   const DEPT_COLORS = ["#3B82F6", "#F97316", "#7C3AED", "#EC4899", "#10B981", "#F59E0B"];
   const deptData = departmentWiseCount.map((d, i) => ({
-    name:  d.department,
+    name: d.department,
     value: d.count,
     color: DEPT_COLORS[i % DEPT_COLORS.length],
   }));
@@ -60,37 +70,8 @@ export default function DashboardPage() {
       {/* ── Top row: Welcome card + stat cards ── */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
 
-        {/* Welcome card */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col items-center text-center gap-3">
-          {welcome.profilePhoto ? (
-            <img
-              src={welcome.profilePhoto}
-              alt={welcome.fullName}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center font-semibold text-lg text-white"
-              style={{ background: "var(--theme-primary)" }} 
-            >
-              {welcome.shortName}
-            </div>
-          )}
+        <WelcomeCard welcomeMessage={welcome.welcomeMessage} />
 
-          {/* Welcome banner */}
-          <div
-            className="w-full rounded-xl py-4 px-3 text-white"
-            style={{ background: "var(--theme-gradient)" }} 
-          >
-            <p className="text-sm font-semibold">
-              Welcome back, {welcome.fullName.split(" ")[0]}
-            </p>
-            <p className="text-xs text-white/80 mt-0.5">{welcome.designation}</p>
-          </div>
-          <p className="text-xs text-slate-400">{welcome.welcomeMessage}</p>
-        </div>
-
-        {/* Stat cards */}
         <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {STAT_CARDS.map((card) => (
             <StatsCard
@@ -181,83 +162,78 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-          <TenureDistributionChart data={TENURE_DATA} avgTenure="2 Months 3 Days" />
+          <TenureDistributionChart data={TENURE_DATA} avgTenure={avgTenure} />
         </div>
       </div>
 
-      {/* ── Notifications + Team + Birthdays ── */}
+      {/* ── Notifications + Team + Celebrations ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <RecentActivity />
 
-        {/* Team */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <div className="flex items-center justify-between border-b border-red-200 pb-2 mb-2">
             <h3 className="text-sm font-semibold text-slate-800">Team</h3>
             <button
               className="text-xs font-medium border border-slate-200 rounded-md px-2 py-1 hover:opacity-80"
-              style={{ color: "var(--theme-primary)" }} 
+              style={{ color: "var(--theme-primary)" }}
             >
               Manage Team
             </button>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-slate-400 text-xs">
-                <th className="font-medium pb-2">Lead Name</th>
-                <th className="font-medium pb-2">Team</th>
-                <th className="font-medium pb-2">Email</th>
-              </tr>
-            </thead>
-            <tbody className="text-slate-600">
-              {[
-                { name: "User 1 name", team: "React", email: "ryan@example.com" },
-                { name: "User 2 name", team: "PHP",   email: "braun@example.com" },
-                { name: "User 3 name", team: "IOS",   email: "sarah@example.com" },
-              ].map((m) => (
-                <tr key={m.email} className="border-t border-slate-50">
-                  <td className="py-2.5 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-slate-200 shrink-0" />
-                    {m.name}
-                  </td>
-                  <td className="py-2.5">
-                    <span
-                      className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                      style={{
-                        background: "var(--theme-light)",   
-                        color: "var(--theme-primary)",
-                      }}
-                    >
-                      {m.team}
-                    </span>
-                  </td>
-                  <td className="py-2.5 text-slate-500 truncate">{m.email}</td>
+
+          {team.length === 0 ? (
+            <p className="text-sm text-slate-400 py-4">No team members found.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-slate-400 text-xs">
+                  <th className="font-medium pb-2">Lead Name</th>
+                  <th className="font-medium pb-2">Team</th>
+                  <th className="font-medium pb-2">Email</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="text-slate-600">
+                {team.map((m) => (
+                  <tr key={m.email} className="border-t border-slate-50">
+                    <td className="py-2.5 flex items-center gap-2">
+                      {m.profilePhoto ? (
+                        <img
+                          src={m.profilePhoto}
+                          alt={m.leadName}
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-slate-200 shrink-0" />
+                      )}
+                      <span className="truncate">{m.leadName}</span>
+                    </td>
+                    <td className="py-2.5">
+                      <span
+                        className="text-[11px] px-2 py-0.5 rounded-full font-medium text-white"
+                        style={{ background: m.badgeColor }}
+                      >
+                        {m.team}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-slate-500 truncate">{m.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {/* Birthdays */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-          <div className="flex items-center justify-between border-b border-red-200 pb-2 mb-3">
-            <h3 className="text-sm font-semibold text-slate-800">Birthdays</h3>
-            <button
-              className="text-xs font-medium border border-slate-200 rounded-md px-2 py-1 hover:opacity-80"
-              style={{ color: "var(--theme-primary)" }} 
-            >
-              View All
-            </button>
-          </div>
-          <p className="text-sm font-medium text-slate-700">User Lorem Ipsum Birthday</p>
-          <p className="text-xs text-slate-400 mt-1">23 June Birthday</p>
-          <button
-            className="w-full mt-4 h-9 rounded-lg text-white text-sm font-medium hover:opacity-90 transition-opacity"
-            style={{ background: "var(--theme-gradient)" }}
-          >
-            Wish
-          </button>
-        </div>
+        <CelebrationsCard events={upcomingEvents} />
+
+
       </div>
+
+      <ChatbotWidget
+        isOpen={chatbotOpen}
+        onToggle={() =>
+          setChatbotOpen(!chatbotOpen)
+        }
+      />
     </div>
   );
 }
