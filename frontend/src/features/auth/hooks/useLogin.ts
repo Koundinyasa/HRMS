@@ -10,6 +10,7 @@ import type { LoginFormData } from '../validation/loginSchema';
 
 import type { RootState } from "@/app/store";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import { showPageLoader } from '@/features/employee/employeeSlice';
 
 
 export const useLogin = () => {
@@ -55,6 +56,8 @@ export const useLogin = () => {
 
 
       dispatch(loginSuccess(response));
+      dispatch(showPageLoader());
+      
       toast.success(response.message ?? 'Login successful');
 
       if (response.isFirstLogin) {
