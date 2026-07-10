@@ -1,12 +1,22 @@
 import backgroundImg from "@/assets/images/background-bg.png";
 import logoImg from "@/assets/images/koundinyasa-logo.png";
 import peopleImg from "@/assets/images/people.png";
+import { useEffect } from "react";
+
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { hidePageLoader } from "@/features/employee/employeeSlice";
 
 import { BarChart3, Clock3, TrendingUp, KeyRound } from "lucide-react";
 
 import ForgotPasswordForm from "../components/ForgotPasswordForm";
 
 function ForgotPassword() {
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        dispatch(hidePageLoader());
+    }, [dispatch]);
     return (
         <div
             className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"

@@ -3,8 +3,18 @@ import logoImg from "@/assets/images/koundinyasa-logo.png";
 import peopleImg from "@/assets/images/people.png";
 import {BarChart3,Clock3,TrendingUp,KeyRound} from "lucide-react";
 import ResetPasswordForm from "../components/ResetPasswordForm";
+import { useEffect } from "react";
+
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { hidePageLoader } from "../../employee/employeeSlice";
 
 function ResetPassword() {
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(hidePageLoader());
+  }, [dispatch]);
   return (
     <div
       className="h-screen flex flex-col bg-cover bg-center bg-no-repeat overflow-hidden"

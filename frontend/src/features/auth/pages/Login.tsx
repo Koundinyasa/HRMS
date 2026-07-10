@@ -1,15 +1,22 @@
 
 import LoginForm from "../components/LoginForm";
-
 import bgImage from "@/assets/images/background-bg.png";
 import peopleImage from "@/assets/images/people.png";
 import logoImage from "@/assets/images/koundinyasa-logo.png";
-
 import { BarChart2, Clock, TrendingUp } from "lucide-react";
+import { useEffect } from "react";
+
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { hidePageLoader } from "@/features/employee/employeeSlice";
 
 const urbanist: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
 
 export default function Login() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(hidePageLoader());
+  }, [dispatch]);
   return (
     <div
       className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"

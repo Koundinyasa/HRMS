@@ -1,11 +1,21 @@
 import backgroundImg from "@/assets/images/background-bg.png";
 import logoImg from "@/assets/images/koundinyasa-logo.png";
 import peopleImg from "@/assets/images/people.png";
-import {BarChart3,Clock3,TrendingUp,Mail} from "lucide-react";
+import { BarChart3, Clock3, TrendingUp, Mail } from "lucide-react";
 import VerifyOtpForm from "../components/VerifyOtpForm";
+import { useEffect } from "react";
+
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { hidePageLoader } from "../../employee/employeeSlice";
 
 
 function VerifyOtp() {
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        dispatch(hidePageLoader());
+    }, [dispatch]);
     return (
         <div
             className="h-screen flex flex-col bg-cover bg-center bg-no-repeat overflow-hidden"

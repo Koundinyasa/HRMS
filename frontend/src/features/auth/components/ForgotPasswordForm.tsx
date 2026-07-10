@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import { forgotPasswordSchema } from "../validation/forgotPasswordSchema";
 import { useForgotPassword } from "../hooks/useForgotPassword";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { showPageLoader } from "../../employee/employeeSlice";
 
 export default function ForgotPasswordForm() {
   const [userId, setUserId] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { domain } = useParams();
 
   const { handleForgotPassword } = useForgotPassword();
@@ -27,8 +30,12 @@ export default function ForgotPasswordForm() {
   const success = await handleForgotPassword(userId, mobileNumber);
   
   if (success) {
+  dispatch(showPageLoader());
+
+  setTimeout(() => {
     navigate(`/${domain}/verify-otp`);
-  }
+  }, 1000);
+}
 };
 
   return (

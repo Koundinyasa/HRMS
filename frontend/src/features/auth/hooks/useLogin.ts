@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useLoginMutation, useLazyGetCaptchaQuery } from '../api/authApi';
 import { loginSuccess } from '../authSlice';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
+import { showPageLoader } from "../../employee/employeeSlice";
 
 import type { LoginFormData } from '../validation/loginSchema';
 
@@ -12,7 +13,7 @@ export const useLogin = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { domain } = useParams();
-  console.log("Current domain:", domain);
+  
 
   const [triggerGetCaptcha, { data: captcha, isFetching: captchaLoading }] =
     useLazyGetCaptchaQuery();
@@ -46,11 +47,13 @@ export const useLogin = () => {
         captchaAnswer: data.captchaAnswer,
       }).unwrap();
 
-      localStorage.setItem('accessToken', response.accessToken);
+
 
       dispatch(loginSuccess(response));
 
-      toast.success(response.message ?? 'Login successful');
+      dispatch(showPageLoader());
+
+      toast.success("Login successful.");
 
       if (response.isFirstLogin) {
         setTimeout(() => {

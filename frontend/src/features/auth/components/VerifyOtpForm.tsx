@@ -1,9 +1,11 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { verifyOtpSchema } from "../validation/verifyOtpSchema";
 import { useVerifyOtp } from "../hooks/useVerifyOtp";
 import { useAppSelector } from "../../../hooks/useAppSelector";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { showPageLoader } from "../../employee/employeeSlice";
 
 export default function VerifyOtpForm() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -16,6 +18,8 @@ export default function VerifyOtpForm() {
 
   const { handleVerifyOtp } = useVerifyOtp();
   const navigate = useNavigate();
+  const { domain } = useParams();
+  const dispatch = useAppDispatch();
 
   const forgotPasswordEmployeeId = useAppSelector(
     (state) => state.auth.forgotPasswordEmployeeId
@@ -58,7 +62,11 @@ export default function VerifyOtpForm() {
     );
 
     if (success) {
-      navigate("/reset-password");
+      dispatch(showPageLoader());
+
+      setTimeout(() => {
+        navigate(`/${domain}/reset-password`);
+      }, 1000);
     }
   };
 

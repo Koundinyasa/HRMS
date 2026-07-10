@@ -2,14 +2,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { resetPasswordSchema } from "../validation/resetPasswordSchema";
 import { useResetPassword } from "../hooks/useResetPassword";
-import { useNavigate,useParams } from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { showPageLoader } from "../../employee/employeeSlice";
 export default function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const { handleResetPassword } = useResetPassword();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { domain } = useParams();
 
 
@@ -23,73 +25,83 @@ export default function ResetPasswordForm() {
 
     setError("");
 
-    const success = await handleResetPassword(password, confirmPassword);
-    if (success) navigate(`/${domain}/login`); // ✅ component owns navigation
+    const success = await handleResetPassword(
+      password,
+      confirmPassword
+    );
+
+    if (success) {
+      dispatch(showPageLoader());
+
+      setTimeout(() => {
+        navigate(`/${domain}/login`);
+      }, 1000);
+    }
   };
 
-  return (
-    <div className="space-y-5">
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Password
-          <span className="text-red-500">
-            *
-          </span>
-        </label>
+    return (
+      <div className="space-y-5">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Password
+            <span className="text-red-500">
+              *
+            </span>
+          </label>
 
-        <input
-          type="password"
-          value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
+          <input
+            type="password"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
+          />
+
+          <p className="text-sm text-gray-500 mt-2">
+            Must be at least
+            8 characters
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Confirm Password
+            <span className="text-red-500">
+              *
+            </span>
+          </label>
+
+          <input
+            type="password"
+            value={
+              confirmPassword
+            }
+            onChange={(e) =>
+              setConfirmPassword(
+                e.target.value
+              )
+            }
+            className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
+          />
+        </div>
+
+        {error && (
+          <p className="text-red-500 text-sm">
+            {error}
+          </p>
+        )}
+
+        <Button
+          onClick={
+            handleSubmit
           }
-          className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
-        />
-
-        <p className="text-sm text-gray-500 mt-2">
-          Must be at least
-          8 characters
-        </p>
+          className="w-full h-[50px] bg-blue-600 hover:bg-blue-700 rounded-xl"
+        >
+          Reset Password
+        </Button>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Confirm Password
-          <span className="text-red-500">
-            *
-          </span>
-        </label>
-
-        <input
-          type="password"
-          value={
-            confirmPassword
-          }
-          onChange={(e) =>
-            setConfirmPassword(
-              e.target.value
-            )
-          }
-          className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
-        />
-      </div>
-
-      {error && (
-        <p className="text-red-500 text-sm">
-          {error}
-        </p>
-      )}
-
-      <Button
-        onClick={
-          handleSubmit
-        }
-        className="w-full h-[50px] bg-blue-600 hover:bg-blue-700 rounded-xl"
-      >
-        Reset Password
-      </Button>
-    </div>
-  );
-}
+    );
+  }

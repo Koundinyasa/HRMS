@@ -51,13 +51,13 @@
 
 
 
-import { useNavigate } from "react-router-dom";
+
 import { toast } from "react-toastify";
 import { useResetForgotPasswordMutation } from "../api/authApi";
 import { useAppSelector } from "../../../hooks/useAppSelector";
 
 export const useResetPassword = () => {
-  const navigate = useNavigate();
+ 
   const [resetForgotPassword] = useResetForgotPasswordMutation();
 
   // ✅ get employeeId saved during forgot-password step
@@ -76,7 +76,7 @@ export const useResetPassword = () => {
         confirmPassword,
       }).unwrap();
 
-      toast.success("Password reset successful");
+      toast.success("Password reset successfully.");
       return true;
     } catch {
       toast.error("Failed to reset password");

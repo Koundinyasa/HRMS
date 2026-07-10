@@ -13,11 +13,13 @@ import type { LoginFormData } from "../validation/loginSchema";
 import { useLogin } from "../hooks/useLogin";
 
 const urbanist: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
+const inputCls =
+  "h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400";
 
 export default function LoginForm() {
   const { captcha, captchaLoading, loadCaptcha, login } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const navigate = useNavigate();
   const { domain } = useParams();
 
@@ -193,60 +195,72 @@ export default function LoginForm() {
           )}
         </div>
 
-        {/* ── Captcha ── */}
+      
+        {/* Captcha */}
         <div className="flex flex-col gap-1.5">
           <Label
             style={{
               ...urbanist,
               fontWeight: 500,
-              fontSize: "clamp(11px, 0.85vw, 13px)",
-              color: "#131313",
+              fontSize: "clamp(11px,0.85vw,13px)",
+              color: "#1E293B",
             }}
           >
             Captcha <span className="text-red-500">*</span>
           </Label>
 
-          {/* Captcha image + refresh + input all on one row — matches Figma */}
-          <div className="flex items-stretch gap-2 w-full">
-            {/* SVG captcha box */}
+          <div className="flex items-center gap-2">
+            {/* Captcha Image */}
             <div
               className="rounded-lg border border-blue-100 bg-[#EEF5FE] overflow-hidden flex items-center justify-center shrink-0"
-              style={{ height: 42, width: "clamp(100px, 30%, 140px)" }}
+              style={{
+                width: 120,
+                height: 44,
+              }}
             >
               {captchaLoading ? (
                 <div className="w-full h-full animate-pulse bg-blue-100" />
-              ) : (
-                <div
-                  className="w-full h-full [&>svg]:w-full [&>svg]:h-full"
-                  dangerouslySetInnerHTML={{ __html: captcha?.svg ?? "" }}
+              ) : captcha?.image ? (
+                <img
+                  src={captcha.image}
+                  alt="Captcha"
+                  className="w-full h-full object-contain"
                 />
+              ) : (
+                <div className="text-xs text-gray-400">
+                  No Captcha
+                </div>
               )}
             </div>
 
-            {/* Refresh button */}
+            {/* Refresh Button */}
             <button
               type="button"
               onClick={loadCaptcha}
               disabled={captchaLoading}
-              className="h-[42px] w-[42px] shrink-0 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-500 transition-colors disabled:opacity-60"
               title="Refresh captcha"
+              className="h-[44px] w-[44px] shrink-0 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-500 transition-colors disabled:opacity-60"
             >
               <RefreshCw
-                size={15}
+                size={14}
                 className={captchaLoading ? "animate-spin" : ""}
               />
             </button>
 
-            {/* Captcha input — takes remaining space */}
+            {/* Captcha Input */}
             <div className="relative flex-1">
               <ShieldCheck
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                size={15}
+                size={14}
               />
+
               <Input
-                placeholder="Enter Captcha code"
-                className="pl-9 h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
-                style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
+                placeholder="Enter captcha"
+                className={`pl-9 ${inputCls}`}
+                style={{
+                  ...urbanist,
+                  fontSize: "clamp(11px,0.85vw,13px)",
+                }}
                 {...register("captchaAnswer")}
               />
             </div>
@@ -259,8 +273,9 @@ export default function LoginForm() {
               color: "#9CA3AF",
             }}
           >
-            Case sensitive . Refresh if unclear
+            Case sensitive · Refresh if unclear
           </p>
+
           {errors.captchaAnswer && (
             <p className="text-[11px] text-red-500">
               {errors.captchaAnswer.message}

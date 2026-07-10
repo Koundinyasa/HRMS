@@ -1,5 +1,5 @@
 import { baseApi } from '@/app/baseApi';
-import type { LoginRequest, LoginResponse, CaptchaResponse } from '../types/auth.types';
+import type { LoginRequest, LoginResponse, CaptchaResponse, LogoutResponse } from '../types/auth.types';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -33,19 +33,26 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    resetForgotPassword: builder.mutation<void,{ employeeId: string; newPassword: string; confirmPassword: string }> ({
-    query: (body) => ({
-      url: '/auth/forgot-password/reset',
-      method: 'POST',
-      body,
+    resetForgotPassword: builder.mutation<void, { employeeId: string; newPassword: string; confirmPassword: string }>({
+      query: (body) => ({
+        url: '/auth/forgot-password/reset',
+        method: 'POST',
+        body,
+      }),
     }),
-  }),
 
     resetPassword: builder.mutation<void, { password: string; token: string }>({
       query: (body) => ({
         url: '/auth/reset-password',
         method: 'POST',
         body,
+      }),
+    }),
+
+    logout: builder.mutation<LogoutResponse, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
       }),
     }),
 
@@ -61,4 +68,5 @@ export const {
   useVerifyOtpMutation,
   useResetPasswordMutation,
   useResetForgotPasswordMutation,
+  useLogoutMutation,
 } = authApi;

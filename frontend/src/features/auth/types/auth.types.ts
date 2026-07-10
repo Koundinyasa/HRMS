@@ -1,6 +1,6 @@
 export interface CaptchaResponse {
-  captchaId: string;   
-  svg: string;         
+  captchaId: string;  
+  image: string;        
 }
 
 export interface LoginRequest {
@@ -30,24 +30,14 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
+export interface LogoutResponse {
+  success: boolean;
+  message: string;
+}
 
 
 export interface User {
   id: number;
   name: string;
-<<<<<<< HEAD
   role: "admin" | "hr" | "employee";
-=======
-  role: "ADMIN" | "HR" | "EMPLOYEE";
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-  mobile: string;
-}
-
-export interface ForgotPasswordResponse {
-  success: boolean;
-  message: string;
->>>>>>> 94e4f21d9417bafe72cde53b4b961013fa321668
 }
