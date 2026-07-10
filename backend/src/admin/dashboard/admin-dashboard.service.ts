@@ -8,13 +8,16 @@ import {
   DepartmentCountDto,
   GenderCountDto,
   AgeGroupCountDto,
+  UpcomingEventDto,
+  TeamMemberDto,
+  AvgTenureDto,
 } from './dto/dashboard.summary.dto';
 
 @Injectable()
 export class AdminDashboardService {
   private readonly logger = new Logger(AdminDashboardService.name);
 
-  constructor(private readonly db: DatabaseService) {}
+  constructor(private readonly db: DatabaseService) { }
 
   async getDashboard(employeeId: string): Promise<DashboardSummaryDto> {
     try {
@@ -38,6 +41,9 @@ export class AdminDashboardService {
         departmentRows,
         genderRows,
         ageGroupRows,
+        eventRows,
+        teamRows,
+        avgTenureRows,
       ] = result.recordsets;
 
       this.logger.log(`[5] welcomeRows[0]: ${JSON.stringify(welcomeRows?.[0])}`);
@@ -46,40 +52,40 @@ export class AdminDashboardService {
       // ── Result Set 0 : Welcome ──────────────────────────────
       const w = welcomeRows[0];
       const welcome: WelcomeDto = {
-        fullName:           w.FullName,
-        shortName:          w.ShortName,
-        code:               w.Code,
-        profilePhoto:       w.ProfilePhoto       ?? null,
-        companyId:          Number(w.CompanyID),
-        companyCode:        w.CompanyCode,
-        companyName:        w.CompanyName,
-        branchName:         w.BranchName,
-        branchCode:         w.BranchCode,
-        routingUrl:         w.RoutingUrl,
-        deptId:             Number(w.DeptID),
-        department:         w.Department,
-        roleId:             Number(w.RoleID),
-        defaultRole:        w.DefaultRole,
-        designationId:      Number(w.DesignationID),
-        designation:        w.Designation,
-        welcomeMessage:     w.WelcomeMessage,
-        lastLoginDateTime:  w.LastLoginDateTime  ?? null,
+        fullName: w.FullName,
+        shortName: w.ShortName,
+        code: w.Code,
+        profilePhoto: w.ProfilePhoto ?? null,
+        companyId: Number(w.CompanyID),
+        companyCode: w.CompanyCode,
+        companyName: w.CompanyName,
+        branchName: w.BranchName,
+        branchCode: w.BranchCode,
+        routingUrl: w.RoutingUrl,
+        deptId: Number(w.DeptID),
+        department: w.Department,
+        roleId: Number(w.RoleID),
+        defaultRole: w.DefaultRole,
+        designationId: Number(w.DesignationID),
+        designation: w.Designation,
+        welcomeMessage: w.WelcomeMessage,
+        lastLoginDateTime: w.LastLoginDateTime ?? null,
         lastLogoutDateTime: w.LastLogoutDateTime ?? null,
-        loginFailedCount:   Number(w.LoginFailedCount),
-        isAccountLocked:    Boolean(w.Isaccountlocked),
-        accountLockedTime:  w.Accountlockedtime  ?? null,
-        employeeId:         w.EmployeeID,
-        email:              w.Email,
-        mobileNo:           w.Mobileno           ?? null,
+        loginFailedCount: Number(w.LoginFailedCount),
+        isAccountLocked: Boolean(w.Isaccountlocked),
+        accountLockedTime: w.Accountlockedtime ?? null,
+        employeeId: w.EmployeeID,
+        email: w.Email,
+        mobileNo: w.Mobileno ?? null,
       };
       this.logger.log(`[7] welcome mapped`);
 
       // ── Result Set 1 : Menus ────────────────────────────────
       const menus: MenuDto[] = menuRows.map((m: any) => ({
-        menuId:       Number(m.MenuId),
-        parentId:     m.ParentId != null ? Number(m.ParentId) : null,
-        menuName:     m.MenuName,
-        routeUrl:     m.RouteUrl,
+        menuId: Number(m.MenuId),
+        parentId: m.ParentId != null ? Number(m.ParentId) : null,
+        menuName: m.MenuName,
+        routeUrl: m.RouteUrl,
         displayOrder: Number(m.DisplayOrder),
       }));
       this.logger.log(`[8] menus mapped: ${menus.length} items`);
@@ -87,11 +93,11 @@ export class AdminDashboardService {
       // ── Result Set 2 : KPI Summary ──────────────────────────
       const s = summaryRows[0];
       const summary: KpiSummaryDto = {
-        totalEmployees:      Number(s.totalEmployees),
-        joinedEmployee:      Number(s.joinedEmployee),
+        totalEmployees: Number(s.totalEmployees),
+        joinedEmployee: Number(s.joinedEmployee),
         confirmationPending: Number(s.confirmationPending),
-        leftEmployee:        Number(s.leftEmployee),
-        openPositions:       Number(s.openPositions),
+        leftEmployee: Number(s.leftEmployee),
+        openPositions: Number(s.openPositions),
       };
       this.logger.log(`[9] summary mapped`);
 
@@ -99,15 +105,15 @@ export class AdminDashboardService {
       const departmentWiseCount: DepartmentCountDto[] = departmentRows.map(
         (d: any) => ({
           department: d.Department,
-          count:      Number(d.Count),
+          count: Number(d.Count),
         }),
       );
       this.logger.log(`[10] departmentWiseCount mapped: ${departmentWiseCount.length} items`);
 
       // ── Result Set 4 : Gender Wise Count ────────────────────
       const genderWiseCount: GenderCountDto[] = genderRows.map((g: any) => ({
-        gender:     g.Gender,
-        count:      Number(g.Count),
+        gender: g.Gender,
+        count: Number(g.Count),
         percentage: Number(g.Percentage),
       }));
       this.logger.log(`[11] genderWiseCount mapped: ${genderWiseCount.length} items`);
@@ -116,11 +122,38 @@ export class AdminDashboardService {
       const ageGroupWiseCount: AgeGroupCountDto[] = ageGroupRows.map(
         (a: any) => ({
           ageBetween: a.AgeBetween,
-          female:     Number(a.Female),
-          male:       Number(a.Male),
+          female: Number(a.Female),
+          male: Number(a.Male),
         }),
       );
       this.logger.log(`[12] ageGroupWiseCount mapped: ${ageGroupWiseCount.length} items`);
+
+      
+
+      // ── Result Set 6 : Upcoming Events (Birthday / Work Anniversary) ───
+      const upcomingEvents: UpcomingEventDto[] = (eventRows ?? []).map((e: any) => ({
+        fullName: e.FullName,
+        code: e.Code,
+        eventName: e.EventName,
+        eventDate: e.EventDate,
+      }));
+      this.logger.log(`[13] upcomingEvents mapped: ${upcomingEvents.length} items`);
+
+
+      // ── Result Set 7 : Team ─────────────────────────────────────
+      const team: TeamMemberDto[] = (teamRows ?? []).map((t: any) => ({
+        leadName: t.LeadName,
+        profilePhoto: t.ProfilePhoto ?? null,
+        team: t.Team,
+        badgeColor: t.Badgecolor,
+        email: t.Email,
+      }));
+      this.logger.log(`[14] team mapped: ${team.length} items`);
+
+      // ── Result Set 8 : Avg Tenure ───────────────────────────────
+      const avgTenure: string = avgTenureRows?.[0]?.AvgTenure ?? '—';
+      this.logger.log(`[15] avgTenure: ${avgTenure}`);
+
 
       return {
         welcome,
@@ -129,6 +162,9 @@ export class AdminDashboardService {
         departmentWiseCount,
         genderWiseCount,
         ageGroupWiseCount,
+        upcomingEvents,
+        team,
+        avgTenure,
       };
 
     } catch (error: unknown) {

@@ -6,10 +6,9 @@ import { PermissionGuard } from '../../common/guards/permission.guard';
 import { Permission } from '../../common/decorators/permission.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
-// TODO: replace with the real menu id for "Admin Dashboard" from your
-// menus table / MenuId enum — check how employee.controller.ts
-// references its menu id and follow the same source.
 const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
+
+
 
 @Controller('admin/dashboard')
 @UseGuards(JwtAuthGuard, PermissionGuard)

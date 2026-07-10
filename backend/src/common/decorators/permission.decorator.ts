@@ -9,6 +9,8 @@ export type PermissionAction =
   | 'CanDelete'
   | 'CanApprove';
 
+
+  
 export interface PermissionMeta {
   menuId: number;
   action: PermissionAction;

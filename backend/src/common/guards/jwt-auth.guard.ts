@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+
+
 /**
  * Single source of truth for JWT auth.
  * Reads the token from the httpOnly cookie set at login.

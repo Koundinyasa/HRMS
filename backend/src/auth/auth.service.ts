@@ -78,6 +78,8 @@ export class AuthService {
       employeeId: user.EmployeeID,
       userId: user.UserID,
       roleId: user.RoleID,
+      companyId: user.CompanyID,
+      name: user.FullName,
     });
 
 
@@ -96,7 +98,7 @@ export class AuthService {
       data: {
         employeeId: user.EmployeeID,
         userId: user.UserID,
-        roleId:user.RoleID,
+        roleId: user.RoleID,
       },
     };
   }
@@ -377,6 +379,29 @@ export class AuthService {
     return {
       success: true,
       message: 'Password updated successfully',
+    };
+  }
+
+  verifyAccessToken(token: string): Record<string, any> | null {
+    try {
+      return this.jwtService.verify(token);
+    } catch {
+      return null;
+    }
+  }
+
+  async logout(employeeId: string) {
+    const pool = await this.dbService.connect();
+ 
+    await pool
+      .request()
+      .input('EmployeeID', employeeId)
+      .input('flag', 3)
+      .execute('USP_UpdateLoginInfo');
+ 
+    return {
+      success: true,
+      message: 'Logout successful',
     };
   }
 }

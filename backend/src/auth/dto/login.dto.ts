@@ -1,5 +1,6 @@
 import { IsString, IsNotEmpty, IsUUID, MinLength, IsOptional } from 'class-validator';
 
+
 export class LoginDto {
   @IsString()
   @IsNotEmpty({ message: 'User ID is required' })
