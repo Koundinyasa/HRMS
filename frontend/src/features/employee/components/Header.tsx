@@ -2,10 +2,15 @@ import {
   Menu,
   UsersRound,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { useDashboard } from "../dashboard/hooks/useDashboard";
+import type { HeaderProps } from "../dashboard/types/dashboard.types";
 
-export default function Header() {
+export default function Header({
+  isSidebarOpen,
+  setIsSidebarOpen,
+}: HeaderProps) {
   const { profileData, isLoading } = useDashboard();
 
   return (
@@ -33,20 +38,20 @@ export default function Header() {
 
       {/* Menu */}
 
-      <button
+      <Button
         type="button"
-        className="
-          p-1
-          rounded-md
-          hover:bg-white/10
-          transition
-        "
+        variant="ghost"
+        size="icon"
+        onClick={() =>
+          setIsSidebarOpen(!isSidebarOpen)
+        }
+        className="hover:bg-white/10"
       >
         <Menu
           size={22}
           color="white"
         />
-      </button>
+      </Button>
 
       {/* Company Name */}
 
@@ -62,8 +67,8 @@ export default function Header() {
       >
         {isLoading
           ? "Loading..."
-          : profileData?.data?.CompanyName ??
-            "Koundinyasa Technology Services Pvt. Ltd"}
+          : profileData?.data?.profile.CompanyName ??
+          "Koundinyasa Technology Services Pvt. Ltd"}
       </h1>
     </div>
   );

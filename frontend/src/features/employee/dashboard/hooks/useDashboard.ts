@@ -9,6 +9,7 @@ import {
 import {
   useGetProfileQuery,
   useGetHolidayListQuery,
+  useGetMenusQuery,
 } from "../api/dashboardApi";
 
 export const useDashboard = () => {
@@ -32,25 +33,32 @@ export const useDashboard = () => {
     isError: holidayError,
   } = useGetHolidayListQuery();
 
+  //Menu API
+  const {
+    data: menuData,
+    isLoading: menuLoading,
+    isError: menuError,
+  } = useGetMenusQuery();
+
   useEffect(() => {
     if (profileData?.data) {
       dispatch(
         setEmployeeProfile({
-          companyName: profileData.data.CompanyName,
+          companyName: profileData.data.profile.CompanyName,
 
-          fullName: profileData.data.FullName,
+          fullName: profileData.data.profile.FullName,
 
-          shortName: profileData.data.ShortName,
+          shortName: profileData.data.profile.ShortName,
 
-          email:profileData.data.Email,
+          email: profileData.data.profile.Email,
 
-          employeeId: profileData.data.Code,
+          employeeId: profileData.data.profile.Code,
 
-          designation:profileData.data.Designation,
+          designation: profileData.data.profile.Designation,
 
-          department: profileData.data.Department,
-          
-          lastLoginDateTime:profileData.data.LastLoginDateTime,
+          department: profileData.data.profile.Department,
+
+          lastLoginDateTime: profileData.data.profile.LastLoginDateTime,
         })
       );
     }
@@ -59,12 +67,15 @@ export const useDashboard = () => {
   return {
     profileData,
     holidayData,
+    menuData,
 
     isLoading,
     holidayLoading,
+    menuLoading,
 
     isError,
     holidayError,
+    menuError,
 
     error,
     refetch,

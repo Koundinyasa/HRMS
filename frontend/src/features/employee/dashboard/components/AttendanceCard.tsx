@@ -10,6 +10,13 @@ export default function AttendanceCard() {
   const [timeLeft, setTimeLeft] = useState("");
   const [officePercentage, setOfficePercentage] = useState(0);
 
+  const [attendanceStatus, setAttendanceStatus] =
+    useState<
+      "upcoming" | "present" | "absent" | "completed"
+    >("upcoming");
+
+  const [punchedIn, setPunchedIn] = useState(false);
+
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -21,21 +28,32 @@ export default function AttendanceCard() {
       end.setHours(OFFICE_END, 0, 0, 0);
 
       if (now < start) {
+        setAttendanceStatus("upcoming");
+        setOfficePercentage(0);
+
         const diff = end.getTime() - start.getTime();
 
         setTimeLeft(
           `${Math.floor(diff / (1000 * 60 * 60))}h 0m 0s`
         );
 
-        setOfficePercentage(0);
         return;
       }
 
       if (now >= end) {
-        setTimeLeft("0h 0m 0s");
+        setAttendanceStatus("completed");
         setOfficePercentage(100);
+        setTimeLeft("0h 0m 0s");
+
         return;
       }
+
+      // Demo logic
+
+
+      setAttendanceStatus(
+        punchedIn ? "present" : "absent"
+      );
 
       const total = end.getTime() - start.getTime();
       const remaining = end.getTime() - now.getTime();
@@ -64,7 +82,16 @@ export default function AttendanceCard() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [punchedIn]);
+
+  const handlePunchIn = () => {
+    setPunchedIn(true);
+    setAttendanceStatus("present");
+  };
+
+  const handleCheckOut = () => {
+    setAttendanceStatus("completed");
+  };
 
   return (
     <div
@@ -95,17 +122,30 @@ export default function AttendanceCard() {
         </h3>
 
         <span
-          className="
-            px-4
-            py-1
-            rounded-full
-            text-xs
-            font-medium
-            bg-red-500
-            text-white
-          "
+          className={`
+    px-4
+    py-1
+    rounded-full
+    text-xs
+    font-medium
+    text-white
+    ${attendanceStatus === "present"
+              ? "bg-green-500"
+              : attendanceStatus === "completed"
+                ? "bg-green-600"
+                : attendanceStatus === "upcoming"
+                  ? "bg-gray-500"
+                  : "bg-red-500"
+            }
+  `}
         >
-          Absent
+          {attendanceStatus === "present"
+            ? "Present"
+            : attendanceStatus === "completed"
+              ? "Completed"
+              : attendanceStatus === "upcoming"
+                ? "Upcoming"
+                : "Absent"}
         </span>
       </div>
 
@@ -124,13 +164,20 @@ export default function AttendanceCard() {
         <div className="max-w-[150px]">
           <p
             className="
-              text-slate-700
-              text-[15px]
-              leading-8
-            "
+    text-slate-700
+    text-[15px]
+    leading-8
+  "
           >
-            You have not marked yourself as
-            present today!
+            {
+              attendanceStatus === "upcoming"
+                ? "Office hours have not started yet."
+                : attendanceStatus === "present"
+                  ? "You are currently checked in."
+                  : attendanceStatus === "completed"
+                    ? "You have successfully completed today's work."
+                    : "You haven't checked in today."
+            }
           </p>
         </div>
 
@@ -147,10 +194,13 @@ export default function AttendanceCard() {
               justify-center
             "
             style={{
-              background: `conic-gradient(
-                #fb923c ${officePercentage * 3.6}deg,
-                #e2e8f0 ${officePercentage * 3.6}deg
-              )`,
+              background:
+                attendanceStatus === "absent"
+                  ? "#E2E8F0"
+                  : `conic-gradient(
+        #fb923c ${officePercentage * 3.6}deg,
+        #e2e8f0 ${officePercentage * 3.6}deg
+      )`,
             }}
           >
             <div
@@ -168,11 +218,21 @@ export default function AttendanceCard() {
               }}
             >
               <h4 className="text-2xl font-bold text-slate-800">
-                {officePercentage}%
+                {attendanceStatus === "absent"
+                  ? 0
+                  : officePercentage}%
               </h4>
 
               <p className="text-xs text-slate-500">
-                in office
+                {
+                  attendanceStatus === "upcoming"
+                    ? "Upcoming"
+                    : attendanceStatus === "absent"
+                      ? "Absent"
+                      : attendanceStatus === "completed"
+                        ? "Completed"
+                        : "In Office"
+                }
               </p>
             </div>
           </div>
@@ -185,15 +245,19 @@ export default function AttendanceCard() {
         <div className="flex items-center justify-center gap-2 mb-6">
           <Clock
             size={14}
-            className="text-orange-500"
+            className={
+              attendanceStatus === "completed"
+                ? "text-green-600"
+                : "text-orange-500"
+            }
           />
 
           <span
-            className="
-              text-sm
-              font-medium
-              text-orange-500
-            "
+            className={
+              attendanceStatus === "completed"
+                ? "text-green-600"
+                : "text-orange-500"
+            }
           >
             Time left - {timeLeft}
           </span>
@@ -203,33 +267,59 @@ export default function AttendanceCard() {
 
         <div className="space-y-3">
           <button
-            className="
-              w-full
-              h-10
-              rounded-lg
-              text-white
-              text-sm
-              font-medium
-              transition
-            "
-            style={{
-              background: "var(--primary-gradient)",
-            }}
+            onClick={handlePunchIn}
+            disabled={
+              attendanceStatus === "present" ||
+              attendanceStatus === "completed"
+            }
+            className={`
+      w-full
+      h-10
+      rounded-lg
+      text-sm
+      font-medium
+      text-white
+      transition
+      ${attendanceStatus === "present" ||
+                attendanceStatus === "completed"
+                ? "bg-slate-300 cursor-not-allowed"
+                : ""
+              }
+    `}
+            style={
+              attendanceStatus === "present" ||
+                attendanceStatus === "completed"
+                ? {}
+                : {
+                  background:
+                    "var(--primary-gradient)",
+                }
+            }
           >
-            Punch In
+            {attendanceStatus === "present"
+              ? "Punched In"
+              : attendanceStatus === "completed"
+                ? "Completed"
+                : "Punch In"}
           </button>
 
           <button
-            className="
-              w-full
-              h-10
-              rounded-lg
-              bg-slate-300
-              text-white
-              text-sm
-              font-medium
-              cursor-not-allowed
-            "
+            onClick={handleCheckOut}
+            disabled={
+              attendanceStatus !== "present"
+            }
+            className={`
+      w-full
+      h-10
+      rounded-lg
+      text-sm
+      font-medium
+      transition
+      ${attendanceStatus === "present"
+                ? "bg-orange-500 text-white hover:bg-orange-600"
+                : "bg-slate-300 text-white cursor-not-allowed"
+              }
+    `}
           >
             Check Out
           </button>

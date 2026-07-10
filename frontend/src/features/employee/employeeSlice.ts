@@ -10,6 +10,7 @@ interface EmployeeState {
   designation: string;
   department: string;
   lastLoginDateTime: string;
+  isPageLoading: boolean;
 }
 
 const initialState: EmployeeState = {
@@ -21,6 +22,7 @@ const initialState: EmployeeState = {
   designation: "",
   department: "",
   lastLoginDateTime: "",
+  isPageLoading: false,
 };
 
 const employeeSlice = createSlice({
@@ -31,7 +33,7 @@ const employeeSlice = createSlice({
   reducers: {
     setEmployeeProfile: (
       state,
-      action: PayloadAction<EmployeeState>
+      action: PayloadAction<Omit<EmployeeState, "isPageLoading">>
     ) => {
       state.companyName = action.payload.companyName;
       state.fullName = action.payload.fullName;
@@ -53,12 +55,22 @@ const employeeSlice = createSlice({
       state.department = "";
       state.lastLoginDateTime = "";
     },
+
+    showPageLoader: (state) => {
+      state.isPageLoading = true;
+    },
+
+    hidePageLoader: (state) => {
+      state.isPageLoading = false;
+    },
   },
 });
 
 export const {
   setEmployeeProfile,
   clearEmployeeProfile,
+  showPageLoader,
+  hidePageLoader,
 } = employeeSlice.actions;
 
 export default employeeSlice.reducer;

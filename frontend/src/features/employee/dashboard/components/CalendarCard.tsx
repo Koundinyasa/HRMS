@@ -42,16 +42,7 @@ export default function CalendarCard() {
     "Sat",
   ];
 
-  const presentDays = [
-    1, 4, 5, 8, 9,
-    11, 12, 15, 16,
-    19, 22, 23, 24,
-    25, 26,
-  ];
 
-  const absentDays = [
-    3, 10, 17,
-  ];
 
   const year =
     currentDate.getFullYear();
@@ -69,9 +60,9 @@ export default function CalendarCard() {
 
         return (
           holidayDate.getMonth() ===
-            month &&
+          month &&
           holidayDate.getFullYear() ===
-            year
+          year
         );
       }
     ) || [];
@@ -175,7 +166,7 @@ export default function CalendarCard() {
 
   const upcomingHoliday =
     upcomingHolidays[
-      currentHolidayIndex
+    currentHolidayIndex
     ];
 
   useEffect(() => {
@@ -292,51 +283,31 @@ export default function CalendarCard() {
             }
 
             let bg = "";
+            let text = "text-slate-700";
 
-            let text =
-              "text-slate-700";
+            // Find actual weekday in the calendar grid
+            const weekDay = index % 7;
 
-            if (
-              presentDays.includes(
-                day
-              )
-            ) {
-              text =
-                "text-green-600";
+            // Sunday (0) or Saturday (6)
+            if (weekDay === 0 || weekDay === 6) {
+              bg = "bg-red-100";
+              text = "text-red-500";
             }
 
-            if (
-              absentDays.includes(
-                day
-              )
-            ) {
-              bg =
-                "bg-red-100";
-
-              text =
-                "text-red-500";
-            }
-
-            if (
-              holidayDays.includes(
-                day
-              )
-            ) {
+            // Holiday overrides week off
+            if (holidayDays.includes(day)) {
               bg = "";
-
-              text =
-                "text-white";
+              text = "text-white";
             }
-
             return (
               <div
-                key={day}
+                key={`${year}-${month}-${day}-${index}`}
                 className="flex justify-center"
               >
                 <div
                   title={
                     holidayMap[
-                      day
+                    day
                     ] || ""
                   }
                   className={`
@@ -356,9 +327,9 @@ export default function CalendarCard() {
                       day
                     )
                       ? {
-                          backgroundColor:
-                            "var(--primary-color)",
-                        }
+                        backgroundColor:
+                          "var(--primary-color)",
+                      }
                       : {}
                   }
                 >
@@ -372,27 +343,19 @@ export default function CalendarCard() {
 
       {/* Legend */}
 
-      <div className="flex justify-center gap-4 mt-5 text-xs">
-        <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-slate-600">
-            Present
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1">
+      <div className="flex justify-center gap-5 mt-5 text-xs">
+        <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-red-500" />
           <span className="text-slate-600">
-            Absent
+            Week Off
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <span
             className="w-2 h-2 rounded-full"
             style={{
-              backgroundColor:
-                "var(--primary-color)",
+              backgroundColor: "var(--primary-color)",
             }}
           />
           <span className="text-slate-600">

@@ -7,8 +7,23 @@ import AnnouncementCard from "../components/AnnouncementCard";
 import BirthdayCard from "../components/BirthdayCard";
 import TeamAttendanceCard from "../components/TeamAttendanceCard";
 import TaskCard from "../components/TaskCard";
+import { useEffect, useState } from "react";
+
+import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
+
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+
+import { hidePageLoader } from "../../employeeSlice";
 
 export default function DashboardPage() {
+
+    const dispatch = useAppDispatch();
+    const [chatbotOpen, setChatbotOpen] =
+    useState(false);
+
+    useEffect(() => {
+        dispatch(hidePageLoader());
+    }, [dispatch]);
     return (
         <div className="space-y-6">
             {/* Greeting */}
@@ -57,6 +72,13 @@ export default function DashboardPage() {
                     <TaskCard />
                 </div>
             </div>
+
+            <ChatbotWidget
+                isOpen={chatbotOpen}
+                onToggle={() =>
+                    setChatbotOpen(!chatbotOpen)
+                }
+            />
         </div>
     );
 }

@@ -39,8 +39,8 @@ const colors: {
       color: "#F59E0B",
     },
     {
-      key: "red",
-      color: "#E11D48",
+      key: "emerald",
+      color: "#10B981",
     },
     {
       key: "slate",

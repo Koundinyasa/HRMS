@@ -2,8 +2,12 @@ import Header from "./Header";
 import ThemePreset from "./ThemePreset";
 import NotificationCard from "./NotificationCard";
 import ProfileMenu from "./ProfileMenu";
+import type { NavbarProps } from "../dashboard/types/dashboard.types";
 
-export default function Navbar() {
+export default function Navbar({
+  isSidebarOpen,
+  setIsSidebarOpen,
+}: NavbarProps) {
   return (
     <header
       className="
@@ -18,7 +22,10 @@ export default function Navbar() {
         backgroundColor: "var(--primary-color)",
       }}
     >
-      <Header />
+      <Header
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
 
       <div
         className="

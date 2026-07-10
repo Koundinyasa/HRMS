@@ -194,7 +194,7 @@ export default function GreetingCard() {
                 mt-2
               "
             >
-              Hi {profile?.FullName}
+              Hi {profile?.profile.FullName}
             </h2>
 
             <p
@@ -254,7 +254,7 @@ export default function GreetingCard() {
                 text-slate-700
               "
             >
-              Employee ID : {profile?.Code}
+              Employee ID : {profile?.profile.EmployeeID}
             </span>
           </div>
 
@@ -293,7 +293,7 @@ export default function GreetingCard() {
                 text-slate-700
               "
             >
-              Designation : {profile?.Designation}
+              Designation : {profile?.profile.Designation}
             </span>
           </div>
 
@@ -332,7 +332,7 @@ export default function GreetingCard() {
                 text-slate-700
               "
             >
-              Department : {profile?.Department}
+              Department : {profile?.profile.Department}
             </span>
           </div>
         </div>

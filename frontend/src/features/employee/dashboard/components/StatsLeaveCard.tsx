@@ -5,7 +5,15 @@ import {
   ArrowDownLeft,
 } from "lucide-react";
 
+import { useDashboard } from "../hooks/useDashboard";
+
 export default function StatsLeaveCard() {
+
+  const { profileData } = useDashboard();
+
+  const attendance =
+    profileData?.data.attendanceSummary;
+
   return (
     <div className="flex flex-col gap-4">
       {/* Top Stats */}
@@ -38,7 +46,7 @@ export default function StatsLeaveCard() {
           </p>
 
           <h3 className="text-3xl font-semibold mt-1 text-slate-800">
-            8 Hours
+            {attendance?.AverageHours ?? "--"}
           </h3>
         </div>
 
@@ -68,7 +76,7 @@ export default function StatsLeaveCard() {
           </p>
 
           <h3 className="text-3xl font-semibold mt-1 text-slate-800">
-            10:33 AM
+            {attendance?.["AverageCheck-In"] ?? "--"}
           </h3>
         </div>
 
@@ -103,7 +111,7 @@ export default function StatsLeaveCard() {
               color: "#22C55E",
             }}
           >
-            98.56%
+            {attendance?.["On-TimeArrival"] ?? "--"}
           </h3>
         </div>
 
@@ -133,7 +141,7 @@ export default function StatsLeaveCard() {
           </p>
 
           <h3 className="text-3xl font-semibold mt-1 text-slate-800">
-            19:12 PM
+            {attendance?.["AverageCheck-Out"] ?? "--"}
           </h3>
         </div>
       </div>

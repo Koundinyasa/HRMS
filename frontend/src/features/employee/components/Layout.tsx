@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Outlet } from "react-router-dom";
 
@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 import { loadTheme } from "./theme";
 
 export default function Layout() {
+  const [isSidebarOpen, setIsSidebarOpen] =useState(true);
 
   useEffect(() => {
     loadTheme();
@@ -16,11 +17,16 @@ export default function Layout() {
   return (
     <div className="h-screen flex flex-col">
 
-      <Navbar />
+      <Navbar
+  isSidebarOpen={isSidebarOpen}
+  setIsSidebarOpen={setIsSidebarOpen}
+/>
 
       <div className="flex flex-1 overflow-hidden">
 
-        <Sidebar />
+        <Sidebar
+  isSidebarOpen={isSidebarOpen}
+/>
 
         <main
           className="

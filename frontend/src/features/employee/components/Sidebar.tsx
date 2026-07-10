@@ -1,44 +1,68 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { SidebarProps } from "../dashboard/types/dashboard.types";
 
 import {
-  FileText,
-  ChevronDown,
+  UserRound,
+  CalendarDays,
+  Package,
+  LifeBuoy,
+  GraduationCap,
+  LogOut,
+
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 
-import type {
-  MenuItem,
-} from "../dashboard/types/dashboard.types";
+import type { MenuItem, } from "../dashboard/types/dashboard.types";
+const menuIcons: Record<string, React.ReactNode> = {
+  "My Profile": <UserRound size={20} />,
 
-export default function Sidebar() {
+  "Leave Management": <CalendarDays size={20} />,
+
+  Assets: <Package size={20} />,
+
+  "Help Desk": <LifeBuoy size={20} />,
+
+  "Learning & Development": (
+    <GraduationCap size={20} />
+  ),
+
+  Separation: <LogOut size={20} />,
+};
+
+export default function Sidebar({
+  isSidebarOpen,
+}: SidebarProps) {
   const navigate = useNavigate();
 
-  const { profileData } = useDashboard();
+  const { menuData } = useDashboard();
 
   const [expandedMenu, setExpandedMenu] =
     useState<number | null>(null);
 
   const menuItems =
-    profileData?.data?.menus?.[0]?.children || [];
+    menuData?.data?.[0]?.children || [];
 
   const handleNavigation = (
     child: MenuItem
   ) => {
-    if (child.routingUrl) {
-      navigate(child.routingUrl);
+    if (child.routeUrl) {
+      navigate(child.routeUrl);
     }
   };
 
   return (
     <aside
-      className="
-        w-64
-        h-[calc(100vh-64px)]
-        overflow-y-auto
-      "
+      className={`
+    ${isSidebarOpen ? "w-72" : "w-20"}
+    h-[calc(100vh-64px)]
+    overflow-y-auto
+    transition-all
+    duration-300
+  `}
       style={{
         backgroundColor: "var(--primary-color)",
       }}
@@ -67,22 +91,26 @@ export default function Sidebar() {
                 transition
               "
             >
-              <div className="flex items-center gap-3">
-                <FileText size={18} />
+              <div className="flex items-center gap-3 flex-1">
+                {menuIcons[item.menuName]}
 
-                <span>
-                  {item.menuName}
-                </span>
+                {isSidebarOpen && (
+                  <span className="whitespace-nowrap">
+                    {item.menuName}
+                  </span>
+                )}
               </div>
 
-              {expandedMenu === item.menuId ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
+              {isSidebarOpen &&
+                (expandedMenu === item.menuId ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                ))}
             </button>
 
-            {expandedMenu === item.menuId &&
+            {isSidebarOpen &&
+              expandedMenu === item.menuId &&
               item.children?.map(
                 (child: MenuItem) => (
                   <button

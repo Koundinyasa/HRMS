@@ -53,14 +53,14 @@ export const themes = {
       "linear-gradient(90deg,#F59E0B,#FBBF24)",
   },
 
-  red: {
-    primary: "#E11D48",
-    light: "#FFE4E6",
-    border: "#FDA4AF",
-    cardBg: "#FFF5F5",
-    gradient:
-      "linear-gradient(90deg,#E11D48,#FB7185)",
-  },
+ emerald: {
+  primary: "#10B981",
+  light: "#D1FAE5",
+  border: "#6EE7B7",
+  cardBg: "#F0FDF4",
+  gradient:
+    "linear-gradient(90deg,#10B981,#34D399)",
+},
 
   slate: {
     primary: "#607D8B",

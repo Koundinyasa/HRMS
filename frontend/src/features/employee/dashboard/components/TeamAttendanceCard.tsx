@@ -1,11 +1,15 @@
 import { ChevronsUpDown } from "lucide-react";
+import { useDashboard } from "../hooks/useDashboard";
 
 export default function TeamAttendanceCard() {
-  const teamData = [
+  const { profileData } = useDashboard();
+
+  const employeeNames =
+    profileData?.data?.upcomingEvents ?? [];
+
+  const staticData = [
     {
-      initials: "AD",
-      name: "Alena Douse",
-      role: "UI Designer - UXD",
+      role: "UI Designer",
       today: "11:56 AM",
       day25: "12:45 AM",
       day24: "10:44 AM",
@@ -14,8 +18,6 @@ export default function TeamAttendanceCard() {
       textColor: "#4F46E5",
     },
     {
-      initials: "MV",
-      name: "Miracle Vetrovs",
       role: "Developer",
       today: "wfh",
       day25: "10:53 AM",
@@ -25,8 +27,6 @@ export default function TeamAttendanceCard() {
       textColor: "#DB2777",
     },
     {
-      initials: "AA",
-      name: "Avery Arwood",
       role: "Developer",
       today: "wfh",
       day25: "10:21 AM",
@@ -36,8 +36,6 @@ export default function TeamAttendanceCard() {
       textColor: "#166534",
     },
     {
-      initials: "JS",
-      name: "Jake Stinson",
       role: "Developer",
       today: "office",
       day25: "10:45 AM",
@@ -47,6 +45,24 @@ export default function TeamAttendanceCard() {
       textColor: "#B45309",
     },
   ];
+
+  const teamData = staticData.map(
+    (item, index) => ({
+      initials:
+        employeeNames[index]?.FullName
+          ?.split(" ")
+          .map((word) => word[0])
+          .join("")
+          .substring(0, 2)
+          .toUpperCase() ?? "--",
+
+      name:
+        employeeNames[index]?.FullName ??
+        "No Employee",
+
+      ...item,
+    })
+  );
 
   return (
     <div
@@ -103,14 +119,7 @@ export default function TeamAttendanceCard() {
       {/* Table Header */}
 
       <div
-        className="
-          grid
-          grid-cols-5
-          px-2
-          pb-3
-          text-sm
-          font-medium
-        "
+        className="grid grid-cols-[2.4fr_1fr_1fr_1fr_1fr]"
         style={{
           color: "var(--primary-color)",
         }}
@@ -156,29 +165,32 @@ export default function TeamAttendanceCard() {
         <div
           key={index}
           className="
-            grid
-            grid-cols-5
-            items-center
-            py-5
-            border-t
-          "
+  grid
+  grid-cols-[2.4fr_1fr_1fr_1fr_1fr]
+  items-center
+  py-5
+  border-t
+"
           style={{
             borderColor: "var(--primary-border)",
           }}
         >
           {/* Member */}
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 pl-2">
             <div
               className="
-                w-12
-                h-12
-                rounded-full
-                flex
-                items-center
-                justify-center
-                font-semibold
-              "
+    w-12
+    h-12
+    min-w-[48px]
+    min-h-[48px]
+    shrink-0
+    rounded-full
+    flex
+    items-center
+    justify-center
+    font-semibold
+  "
               style={{
                 backgroundColor: member.color,
                 color: member.textColor,
@@ -187,12 +199,19 @@ export default function TeamAttendanceCard() {
               {member.initials}
             </div>
 
-            <div>
-              <h4 className="font-medium text-slate-800">
+            <div className="min-w-0 flex-1">
+              <h4
+                className="
+    font-medium
+    text-slate-800
+    leading-6
+    break-words
+  "
+              >
                 {member.name}
               </h4>
 
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 mt-0.5">
                 {member.role}
               </p>
             </div>
@@ -214,7 +233,7 @@ export default function TeamAttendanceCard() {
 
           {/* 25/9 */}
 
-          <div className="text-sm text-slate-700">
+          <div>
             {member.day25}
           </div>
 
@@ -236,7 +255,7 @@ export default function TeamAttendanceCard() {
 
           {/* 23/9 */}
 
-          <div className="text-sm text-slate-500">
+          <div>
             {member.day23}
           </div>
         </div>
