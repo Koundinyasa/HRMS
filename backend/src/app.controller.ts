@@ -8,14 +8,9 @@ export class AppController {
   @Get('db-check')
   async checkDb() {
     try {
-      const result = await this.dbService.testConnection();
-
-      return {
-        success: true,
-        message: 'Database connected successfully',
-        data: result,
-      };
-    } catch (error:any) {
+      await this.dbService.healthCheck();
+      return { success: true, message: 'Database connected successfully' };
+    } catch (error: any) {
       return {
         success: false,
         message: 'Database connection failed',
