@@ -5,6 +5,8 @@ import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { setDomain } from "../domainSlice";
 
 import { useVerifyDomainMutation } from "../api/domainApi";
+import { showPageLoader } from "../../employee/employeeSlice";
+import { toast } from "react-toastify";
 
 export const useDomainVerification = () => {
   const navigate = useNavigate();
@@ -27,13 +29,18 @@ export const useDomainVerification = () => {
 
         dispatch(setDomain(domain));
 
+        dispatch(showPageLoader());
+
+        toast.success("Domain verified successfully.");
+
         setTimeout(() => {
           navigate(`/${domain}/login`);
         }, 1000);
 
         return true;
+      }
 
-      } else {
+      else {
 
         return false;
 
