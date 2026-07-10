@@ -7,15 +7,11 @@ import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage
 export default function EmployeeRoutes() {
   return (
     <>
-      <Route
-        path="/:domain/employee"
-        element={<Layout />}
-      >
-        <Route
-          path="dashboard"
-          element={<EmployeeDashboard />}
-        />
+      <Route path="/:domain/employee" element={<Layout />} >
+        <Route path="dashboard" element={<EmployeeDashboard />} />
       </Route>
     </>
   );
 }
+
+
