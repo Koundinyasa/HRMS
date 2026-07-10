@@ -1,5 +1,5 @@
 import { baseApi } from '@/app/baseApi';
-import type { LoginRequest, LoginResponse, CaptchaResponse } from '../types/auth.types';
+import type { LoginRequest, LoginResponse, CaptchaResponse,LogoutResponse } from '../types/auth.types';
 import type { DomainRequest } from '@/features/domain-verification/types/domain.types';
 
 export const authApi = baseApi.injectEndpoints({
@@ -8,7 +8,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => '/auth/captcha',
     }),
 
-    login: builder.mutation<LoginResponse, LoginRequest,DomainRequest>({
+    login: builder.mutation<LoginResponse, LoginRequest, DomainRequest>({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
@@ -16,8 +16,15 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    logout: builder.mutation<LogoutResponse, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+    }),
 
-    forgotPassword: builder.mutation<{ success: boolean; employeeId: string,remainingSeconds: number,remainingMinutes: number, }, { userId: string }>({
+
+    forgotPassword: builder.mutation<{ success: boolean; employeeId: string, remainingSeconds: number, remainingMinutes: number, }, { userId: string }>({
       query: (body) => ({
         url: '/auth/forgot-password',
         method: 'POST',
@@ -34,13 +41,13 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    resetForgotPassword: builder.mutation<void,{ employeeId: string; newPassword: string; confirmPassword: string }> ({
-    query: (body) => ({
-      url: '/auth/forgot-password/reset',
-      method: 'POST',
-      body,
+    resetForgotPassword: builder.mutation<void, { employeeId: string; newPassword: string; confirmPassword: string }>({
+      query: (body) => ({
+        url: '/auth/forgot-password/reset',
+        method: 'POST',
+        body,
+      }),
     }),
-  }),
 
     resetPassword: builder.mutation<void, { password: string; token: string }>({
       query: (body) => ({
@@ -62,4 +69,5 @@ export const {
   useVerifyOtpMutation,
   useResetPasswordMutation,
   useResetForgotPasswordMutation,
+  useLogoutMutation,
 } = authApi;

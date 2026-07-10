@@ -22,6 +22,12 @@ export interface LoginResponse {
 }
 
 
+export interface LogoutResponse {
+  success: boolean;
+  message: string;
+}
+
+
 export interface AuthState {
   accessToken: string | null;
   employeeId: string | null;

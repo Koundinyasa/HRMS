@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { loginSchema } from "../validation/loginSchema";
 import type { LoginFormData } from "../validation/loginSchema";
 import { useLogin } from "../hooks/useLogin";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { baseApi } from "@/app/baseApi"; 
 
 const U: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
 
@@ -19,12 +21,14 @@ export default function LoginForm() {
   const { captcha, captchaLoading, loadCaptcha, login } = useLogin();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } =
     useForm<LoginFormData>({ resolver: zodResolver(loginSchema), mode: "onChange" });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
+      dispatch(baseApi.util.resetApiState()); // ✅ clear any stale cache from a previous session before logging in
       await login(data);
     } catch (err: any) {
       const msg = err?.data?.message ?? err?.response?.data?.message ?? "";
@@ -54,8 +58,6 @@ export default function LoginForm() {
           HRMS
         </span>
       </div>
-
-      {/* Heading */}
       <div className="mb-5">
         <h1 style={{ ...U, fontWeight: 500, fontSize: "clamp(17px,1.7vw,22px)", color: "#0F172A", lineHeight: 1.2 }}>
           Sign in to your workspace
@@ -94,9 +96,6 @@ export default function LoginForm() {
           </div>
           {errors.password && <p className="text-[11px] text-red-500">{errors.password.message}</p>}
         </div>
-
-        {/* Captcha */}
-         {/* Captcha */}
         <div className="flex flex-col gap-1.5">
           <Label
             style={{
@@ -108,7 +107,7 @@ export default function LoginForm() {
           >
             Captcha <span className="text-red-500">*</span>
           </Label>
- 
+
           <div className="flex items-center gap-2">
             {/* Captcha Image */}
             <div
@@ -132,8 +131,6 @@ export default function LoginForm() {
                 </div>
               )}
             </div>
- 
-            {/* Refresh Button */}
             <button
               type="button"
               onClick={loadCaptcha}
@@ -146,14 +143,14 @@ export default function LoginForm() {
                 className={captchaLoading ? "animate-spin" : ""}
               />
             </button>
- 
+
             {/* Captcha Input */}
             <div className="relative flex-1">
               <ShieldCheck
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 size={14}
               />
- 
+
               <Input
                 placeholder="Enter captcha"
                 className={`pl-9 ${inputCls}`}
@@ -165,7 +162,6 @@ export default function LoginForm() {
               />
             </div>
           </div>
- 
           <p
             style={{
               ...U,
@@ -175,7 +171,7 @@ export default function LoginForm() {
           >
             Case sensitive · Refresh if unclear
           </p>
- 
+
           {errors.captchaAnswer && (
             <p className="text-[11px] text-red-500">
               {errors.captchaAnswer.message}
@@ -204,8 +200,6 @@ export default function LoginForm() {
           style={{ height: 44, borderRadius: 10, background: "linear-gradient(90deg,#1D4ED8,#3B82F6)", boxShadow: "0 4px 18px rgba(59,130,246,0.38)", ...U, fontSize: "clamp(12px,0.9vw,14px)", fontWeight: 600, letterSpacing: "0.02em" }}>
           {isSubmitting ? "Signing In…" : "Sign In →"}
         </button>
-
-        {/* OR divider */}
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-slate-200" />
           <span style={{ ...U, fontSize: 11, color: "#9CA3AF" }}>or</span>
