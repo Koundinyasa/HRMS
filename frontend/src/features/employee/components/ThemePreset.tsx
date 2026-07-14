@@ -1,15 +1,17 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { useDashboard } from "../dashboard/hooks/useDashboard";
+ 
 import {
   Palette,
   Sun,
 } from "lucide-react";
-
+ 
 import {
   applyTheme,
+  loadTheme,
   type ThemeName,
 } from "./theme";
-
+ 
 const colors: {
   key: ThemeName;
   color: string;
@@ -39,23 +41,31 @@ const colors: {
       color: "#F59E0B",
     },
     {
-      key: "red",
-      color: "#E11D48",
+      key: "emerald",
+      color: "#10B981",
     },
     {
       key: "slate",
       color: "#607D8B",
     },
   ];
-
+ 
 export default function ThemePreset() {
-  const [open, setOpen] =
-    useState(false);
-
+  const [open, setOpen] =useState(false);
+  const { profileData } = useDashboard();
+ 
+const employeeId =
+  profileData?.data?.profile.EmployeeID;
+ 
+  useEffect(() => {
+  if (employeeId) {
+    loadTheme(employeeId);
+  }
+}, [employeeId]);
   return (
     <div className="relative">
       {/* Theme Icon */}
-
+ 
       <button
         type="button"
         onClick={() =>
@@ -73,9 +83,9 @@ export default function ThemePreset() {
           color="white"
         />
       </button>
-
+ 
       {/* Popup */}
-
+ 
       {open && (
         <div
           className="
@@ -93,27 +103,27 @@ export default function ThemePreset() {
           "
         >
           {/* Header */}
-
+ 
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-slate-800">
               Presets
             </h3>
-
+ 
             <Sun
               size={18}
               className="text-slate-500"
             />
           </div>
-
+ 
           {/* Theme Colors */}
-
+ 
           <div className="grid grid-cols-4 gap-3">
             {colors.map((item) => (
               <button
                 key={item.key}
                 type="button"
                 onClick={() => {
-                  applyTheme(item.key);
+                  applyTheme(item.key,employeeId);
                   setOpen(false);
                 }}
                 className="
@@ -143,3 +153,4 @@ export default function ThemePreset() {
     </div>
   );
 }
+ 

@@ -38,8 +38,8 @@ export class DashboardService {
     }
  
     // Debug logs (remove after testing)
-    console.log('DB Value:', profile.LastLoginDateTime);
-    console.log('Type:', typeof profile.LastLoginDateTime);
+    // console.log('DB Value:', profile.LastLoginDateTime);
+    // console.log('Type:', typeof profile.LastLoginDateTime);
  
     const menus = result.recordsets?.[1] || [];
     const attendanceSummary = result.recordsets?.[3]?.[0] || null;

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
- 
+
 interface EmployeeState {
   companyName: string;
   fullName: string;
@@ -12,7 +12,7 @@ interface EmployeeState {
   lastLoginDateTime: string;
   isPageLoading: boolean;
 }
- 
+
 const initialState: EmployeeState = {
   companyName: "",
   fullName: "",
@@ -24,12 +24,12 @@ const initialState: EmployeeState = {
   lastLoginDateTime: "",
   isPageLoading: false,
 };
- 
+
 const employeeSlice = createSlice({
   name: "employee",
- 
+
   initialState,
- 
+
   reducers: {
     setEmployeeProfile: (
       state,
@@ -44,7 +44,7 @@ const employeeSlice = createSlice({
       state.department = action.payload.department;
       state.lastLoginDateTime = action.payload.lastLoginDateTime;
     },
- 
+
     clearEmployeeProfile: (state) => {
       state.companyName = "";
       state.fullName = "";
@@ -55,22 +55,22 @@ const employeeSlice = createSlice({
       state.department = "";
       state.lastLoginDateTime = "";
     },
- 
+
     showPageLoader: (state) => {
       state.isPageLoading = true;
     },
- 
+
     hidePageLoader: (state) => {
       state.isPageLoading = false;
     },
   },
 });
- 
+
 export const {
   setEmployeeProfile,
   clearEmployeeProfile,
   showPageLoader,
   hidePageLoader,
 } = employeeSlice.actions;
- 
+
 export default employeeSlice.reducer;

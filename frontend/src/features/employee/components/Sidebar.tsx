@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams,  } from "react-router-dom";
 import type { SidebarProps } from "../dashboard/types/dashboard.types";
  
 import {
@@ -37,6 +37,7 @@ export default function Sidebar({
   isSidebarOpen,
 }: SidebarProps) {
   const navigate = useNavigate();
+  const { domain } = useParams();
  
   const { menuData } = useDashboard();
  
@@ -46,13 +47,16 @@ export default function Sidebar({
   const menuItems =
     menuData?.data?.[0]?.children || [];
  
-  const handleNavigation = (
-    child: MenuItem
-  ) => {
-    if (child.routeUrl) {
-      navigate(child.routeUrl);
-    }
-  };
+ const handleNavigation = (child: MenuItem) => {
+  if (!child.routeUrl) return;
+ 
+  const route = child.routeUrl.replace(
+    "/Employee",
+    `/${domain}/employee`
+  );
+ 
+  navigate(route);
+};
  
   return (
     <aside
@@ -140,3 +144,4 @@ export default function Sidebar({
     </aside>
   );
 }
+ 
