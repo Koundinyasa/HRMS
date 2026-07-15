@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useResetForgotPasswordMutation } from "../api/authApi";
 import { useAppSelector } from "../../../hooks/useAppSelector";
-import type { RootState } from "../../../app/store";
 
 export const useResetPassword = () => {
   const navigate = useNavigate();

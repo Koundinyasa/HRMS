@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { resetPasswordSchema } from "../validation/resetPasswordSchema";
 import { useResetPassword } from "../hooks/useResetPassword";
-import type { RootState } from "../../../app/store";
 import { useAppSelector } from "../../../hooks/useAppSelector";
 
 const U: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };

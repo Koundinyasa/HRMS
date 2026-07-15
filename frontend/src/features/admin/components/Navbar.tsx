@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { Menu, Search, Info, Calendar, Bell, X, Users } from "lucide-react";
-import { useAppSelector } from "@/hooks/useAppSelector";
 import NotificationPanel from "./Notificationpanel";
 import ThemePreset from "./ThemePreset";
 import UserMenu from "./UserMenu";

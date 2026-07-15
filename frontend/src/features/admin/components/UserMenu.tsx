@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { KeyRound, HelpCircle, LogOut, ChevronDown } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+
 import { useLogoutMutation } from "@/features/auth/api/authApi";
 
 interface UserMenuProps {

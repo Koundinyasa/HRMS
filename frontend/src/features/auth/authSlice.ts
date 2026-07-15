@@ -15,7 +15,7 @@ interface AuthState {
   isOtpVerified: boolean;
   isPasswordReset: boolean;
   forgotPasswordEmployeeId: string;
-  roleId:null;
+  roleId: string | null;
   otpRemainingMinutes?: number;
   otpRemainingSeconds?: number;
 }
