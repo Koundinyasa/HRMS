@@ -8,12 +8,13 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const roleId = useAppSelector((state) => state.auth.roleId);
+  const roleIdNumber = roleId === null ? null : Number(roleId);
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  if (!allowedRoles.includes(roleId as number)) {
+  if (roleIdNumber === null || Number.isNaN(roleIdNumber) || !allowedRoles.includes(roleIdNumber)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
