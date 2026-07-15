@@ -10,7 +10,7 @@ export const useResetPassword = () => {
 
   // ✅ Redux first, sessionStorage as fallback
   const employeeIdFromRedux = useAppSelector(
-    (state: RootState) => state.auth.forgotPasswordEmployeeId
+    (state) => state.auth.forgotPasswordEmployeeId
   );
   const employeeId = employeeIdFromRedux || sessionStorage.getItem("hrms_employeeId") || "";
 
