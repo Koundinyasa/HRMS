@@ -18,5 +18,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/unauthorized" replace />;
   }
 
+
+  
   return <Outlet />;
 }
