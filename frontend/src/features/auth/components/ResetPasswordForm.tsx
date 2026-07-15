@@ -44,7 +44,7 @@ export default function ResetPasswordForm() {
   const navigate = useNavigate();
 
   // ✅ read from Redux, fall back to sessionStorage if Redux is empty
-  const domainFromRedux = useAppSelector((state: RootState) => state.domain.domain);
+  const domainFromRedux = useAppSelector(state => state.domain.domain);
   const domain = domainFromRedux || sessionStorage.getItem("hrms_domain") || "";
 
   const loginPath = domain ? `/${domain}/login` : "/login";
