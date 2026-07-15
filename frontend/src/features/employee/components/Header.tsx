@@ -41,7 +41,7 @@ export default function Header({
       <Button
         type="button"
         variant="ghost"
-        size="icon"
+        size="sm"
         onClick={() =>
           setIsSidebarOpen(!isSidebarOpen)
         }
