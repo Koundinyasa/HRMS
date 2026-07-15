@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Menu, Search, Info, Calendar, Bell, ChevronDown, X, Users } from "lucide-react";
+import { Menu, Search, Info, Calendar, Bell, X, Users } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import NotificationPanel from "./Notificationpanel";
 import ThemePreset from "./ThemePreset";
@@ -9,7 +9,7 @@ import { useDashboard } from "../dashboard/hooks/useDashboard";
 import { useSidebar } from "./SidebarContext";
 
 export default function Navbar() {
-  const employeeId = useAppSelector((state) => state.auth.employeeId);
+  // const employeeId = useAppSelector((state) => state.auth.employeeId);
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
