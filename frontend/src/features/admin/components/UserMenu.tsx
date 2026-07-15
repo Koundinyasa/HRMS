@@ -14,7 +14,7 @@ interface UserMenuProps {
 export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { domain } = useParams();
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
