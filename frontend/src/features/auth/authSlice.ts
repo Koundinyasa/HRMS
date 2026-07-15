@@ -44,7 +44,7 @@ const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.employeeId = action.payload.data.employeeId;
       state.userId = action.payload.data.userId;
-      state.roleId =action.payload.data.roleId;
+      state.roleId = (action.payload.data as { roleId?: string | null }).roleId ?? null;
       state.isFirstLogin = action.payload.isFirstLogin;
       state.isAuthenticated = true;
     },
