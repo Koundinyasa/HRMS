@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,6 +31,7 @@ import { ChatbotModule } from './chatbot/chatbot.module';
     EmployeeModule,
     AdminModule,
     ChatbotModule,
+
 
   ],
   controllers: [AppController],
