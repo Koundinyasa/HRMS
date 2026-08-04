@@ -7,17 +7,17 @@ import * as sql from 'mssql';
 export class HrmsDbService {
   private pool?: sql.ConnectionPool;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(private readonly config: ConfigService) { }
 
   private async getPool() {
     if (this.pool?.connected) return this.pool;
 
     this.pool = await new sql.ConnectionPool({
-      user:     this.config.get<string>('DB_USER')     || '',
+      user: this.config.get<string>('DB_USER') || '',
       password: this.config.get<string>('DB_PASSWORD') || '',
-      server:   this.config.get<string>('DB_HOST')     || 'localhost',
-      database: this.config.get<string>('DB_NAME')     || '',
-      options:  { encrypt: false, trustServerCertificate: true },
+      server: this.config.get<string>('DB_HOST') || 'localhost',
+      database: this.config.get<string>('DB_NAME') || '',
+      options: { encrypt: false, trustServerCertificate: true },
     }).connect();
 
     return this.pool;
@@ -37,25 +37,26 @@ export class HrmsDbService {
       return null;
     }
 
-    const profileRow  = result.recordsets[0]?.[0];
-    const holidayRows  = (result.recordsets[2] as any[]) ?? [];
+    const profileRow = result.recordsets[0]?.[0];
+    const holidayRows = (result.recordsets[2] as any[]) ?? [];
 
     if (!profileRow) return null;
 
     const self = {
-      id:          profileRow.EmployeeID,
-      name:        profileRow.FullName,
-      department:  profileRow.Department   ?? 'N/A',
-      designation: profileRow.Designation  ?? 'N/A',
-      company:     profileRow.CompanyName  ?? '',
-      companyId:   profileRow.CompanyID    ?? null,
-      email:       profileRow.Email        ?? '',
-      role:        profileRow.DefaultRole  ?? '',
+      id: profileRow.EmployeeID,
+      name: profileRow.FullName,
+      department: profileRow.Department ?? 'N/A',
+      designation: profileRow.Designation ?? 'N/A',
+      company: profileRow.CompanyName ?? '',
+      companyId: profileRow.CompanyID ?? null,
+      email: profileRow.Email ?? '',
+      role: profileRow.DefaultRole ?? '',
     };
 
     const holidays = holidayRows.map((h: any) => ({
       date: h.HolidayDate ? new Date(h.HolidayDate).toISOString().slice(0, 10) : '',
       name: h.HolidayName,
+      stateCode: h.StateCode ?? null,
     }));
 
     return { self, holidays };
@@ -76,17 +77,16 @@ export class HrmsDbService {
     const pool = await this.getPool();
     try {
       const result = await pool.request().query(
-        `SELECT ID, Name, Code, Description, AnnualQuota
+        `SELECT ID, Name, Code, Description
          FROM Mst_LeaveType
          WHERE IsActive = 1
          ORDER BY ID`,
       );
       return result.recordset.map((r: any) => ({
-        id:          Number(r.ID),
-        name:        r.Name,
-        code:        r.Code,
+        id: Number(r.ID),
+        name: r.Name,
+        code: r.Code,
         description: r.Description,
-        annualQuota: r.AnnualQuota === null ? null : Number(r.AnnualQuota),
       }));
     } catch (err) {
       console.error('getLeaveTypes failed -', (err as Error).message);
@@ -136,10 +136,10 @@ export class HrmsDbService {
       const r = result.recordset[0];
       if (!r) return null;
       return {
-        name:          r.CompanyName as string,
-        code:          r.CompanyCode as string,
+        name: r.CompanyName as string,
+        code: r.CompanyCode as string,
         contactPerson: r.ContactPerson ?? '',
-        contactEmail:  r.ContactEmail ?? '',
+        contactEmail: r.ContactEmail ?? '',
       };
     } catch (err) {
       console.error('getCompanyInfo failed -', (err as Error).message);
@@ -148,6 +148,36 @@ export class HrmsDbService {
   }
 
   // ─── HRMSDEV: office branches for the logged-in user's company ─────────────────
+  // Regular employees should only see their OWN branch, not every branch in
+  // the company — resolved directly via Employee.BranchID, independent of
+  // whatever USP_GetUserInfo does or doesn't return.
+  async getEmployeeOffice(employeeId: string) {
+    const pool = await this.getPool();
+    try {
+      const result = await pool.request()
+        .input('EmployeeID', sql.VarChar, employeeId)
+        .query(
+          `SELECT cb.BranchID, cb.BranchName, cb.Address1, cb.City, cb.PhoneNo, cb.StateCode
+           FROM Employee e
+           INNER JOIN CompanyBranches cb ON e.BranchID = cb.BranchID
+           WHERE e.EmployeeID = @EmployeeID AND e.Deleted = 0 AND cb.IsActive = 1`,
+        );
+      const r = result.recordset[0];
+      if (!r) return null;
+      return {
+        branchId: r.BranchID as number,
+        branchName: r.BranchName as string,
+        address: r.Address1 ?? '',
+        city: r.City ?? '',
+        phone: r.PhoneNo ?? '',
+        stateCode: r.StateCode ?? '',
+      };
+    } catch (err) {
+      console.error('getEmployeeOffice failed -', (err as Error).message);
+      return null;
+    }
+  }
+
   async getBranches(companyId: number) {
     const pool = await this.getPool();
     try {
@@ -161,9 +191,9 @@ export class HrmsDbService {
         );
       return result.recordset.map((r: any) => ({
         branchName: r.BranchName as string,
-        address:    r.Address1 ?? '',
-        city:       r.City ?? '',
-        phone:      r.PhoneNo ?? '',
+        address: r.Address1 ?? '',
+        city: r.City ?? '',
+        phone: r.PhoneNo ?? '',
       }));
     } catch (err) {
       console.error('getBranches failed -', (err as Error).message);
@@ -184,12 +214,64 @@ export class HrmsDbService {
            ORDER BY FullName`,
         );
       return result.recordset.map((r: any) => ({
-        id:   r.EmployeeID as string,
+        id: r.EmployeeID as string,
         name: r.FullName as string,
         code: r.Code ?? '',
       }));
     } catch (err) {
       console.error('getEmployeeDirectory failed -', (err as Error).message);
+      return [];
+    }
+  }
+
+  // ─── TEAMS ───────────────────────────────────────────────────────────────────
+
+  async getActiveTeams() {
+    const pool = await this.getPool();
+    try {
+      const result = await pool.request().query(
+        `SELECT ID, TechName, BadgeColorHex
+         FROM Mst_TeamTechnology
+         WHERE IsActive = 1
+         ORDER BY TechName`,
+      );
+      return result.recordset.map((r: any) => ({
+        id: r.ID as number,
+        name: r.TechName as string,
+        badgeColor: r.BadgeColorHex ?? '',
+      }));
+    } catch (err) {
+      console.error('getActiveTeams failed -', (err as Error).message);
+      return [];
+    }
+  }
+
+  // Team membership = employees reporting to that team's current lead.
+  // There is no direct Employee->Team column today; this is the agreed
+  // workaround via ReportingManagerID until the DB team adds a real link.
+  async getTeamMembers(teamTechId: number) {
+    const pool = await this.getPool();
+    try {
+      const result = await pool.request()
+        .input('TeamTechID', sql.Int, teamTechId)
+        .query(
+          `SELECT e.EmployeeID, e.FullName, d.Name AS Designation
+           FROM Employee e
+           LEFT JOIN Mst_Designation d ON e.DesignationID = d.ID
+           WHERE e.Deleted = 0
+             AND e.ReportingManagerID IN (
+               SELECT LeadEmployeeID FROM TeamLeadAssignment
+               WHERE TeamTechID = @TeamTechID AND IsCurrentLead = 1
+             )
+           ORDER BY e.FullName`,
+        );
+      return result.recordset.map((r: any) => ({
+        employeeId: r.EmployeeID as string,
+        name: r.FullName as string,
+        designation: (r.Designation as string) ?? 'N/A',
+      }));
+    } catch (err) {
+      console.error('getTeamMembers failed -', (err as Error).message);
       return [];
     }
   }
@@ -205,29 +287,29 @@ export class HrmsDbService {
     const row = result.recordset[0];
     if (!row) return null;
     return {
-      userId:     row.user_id     as string,
+      userId: row.user_id as string,
       employeeId: row.employee_id as string,
-      email:      row.email       as string,
-      role:       row.role        as string,
-      name:       row.name        as string,
+      email: row.email as string,
+      role: row.role as string,
+      name: row.name as string,
     };
   }
 
   async findUserByEmailAndPassword(email: string, password: string) {
     const pool = await this.getPool();
     const result = await pool.request()
-      .input('Email',    sql.NVarChar, email.toLowerCase())
+      .input('Email', sql.NVarChar, email.toLowerCase())
       .input('Password', sql.NVarChar, password)
       .execute('usp_LoginUser');
 
     const row = result.recordset[0];
     if (!row) return null;
     return {
-      userId:     row.user_id     as string,
+      userId: row.user_id as string,
       employeeId: row.employee_id as string,
-      email:      row.email       as string,
-      role:       row.role        as string,
-      name:       row.name        as string,
+      email: row.email as string,
+      role: row.role as string,
+      name: row.name as string,
     };
   }
 
@@ -250,10 +332,10 @@ export class HrmsDbService {
       ...row,
       certificates: JSON.parse(row.certificates_json || '[]'),
       form16: {
-        year:        row.form16_year,
-        baseSalary:  row.form16_base_salary,
-        deductions:  row.form16_deductions,
-        tax:         row.form16_tax,
+        year: row.form16_year,
+        baseSalary: row.form16_base_salary,
+        deductions: row.form16_deductions,
+        tax: row.form16_tax,
         downloadUrl: row.form16_download_url,
       },
       joinDate: row.join_date,
@@ -269,10 +351,10 @@ export class HrmsDbService {
       ? Math.round(row.totalPayroll / row.employeeCount)
       : 0;
     return {
-      totalPayroll:    row.totalPayroll,
+      totalPayroll: row.totalPayroll,
       averageSalary,
-      highestSalary:   row.highestSalary,
-      employeeCount:   row.employeeCount,
+      highestSalary: row.highestSalary,
+      employeeCount: row.employeeCount,
     };
   }
 
@@ -286,12 +368,12 @@ export class HrmsDbService {
 
     return result.recordset.map((row) => ({
       ...row,
-      leaveDate:   row.leave_date,
-      startDate:   row.start_date,
-      endDate:     row.end_date,
+      leaveDate: row.leave_date,
+      startDate: row.start_date,
+      endDate: row.end_date,
       requestCode: row.request_code,
-      createdAt:   row.created_at,
-      approvedAt:  row.approved_at,
+      createdAt: row.created_at,
+      approvedAt: row.approved_at,
       cancelledAt: row.cancelled_at,
     }));
   }
@@ -315,146 +397,30 @@ export class HrmsDbService {
 
     const rawStart = toDateStr(row.start_date);
     const rawLeave = toDateStr(row.leave_date);
-    const rawEnd   = toDateStr(row.end_date);
+    const rawEnd = toDateStr(row.end_date);
     const startDate = rawStart || rawLeave;
-    const endDate   = rawEnd   || startDate;
+    const endDate = rawEnd || startDate;
 
     return {
-      id:          row.id          as number,
+      id: row.id as number,
       requestCode: row.request_code as string,
-      employeeId:  row.employee_id  as string,
-      leaveType:   row.leave_type   as string,
+      employeeId: row.employee_id as string,
+      leaveType: row.leave_type as string,
       startDate,
       endDate,
-      leaveDate:   rawLeave,
-      duration:    Number(row.duration) || 1,
-      dayType:     row.day_type    as string,
-      reason:      row.reason      as string,
-      status:      row.status      as string,
+      leaveDate: rawLeave,
+      duration: Number(row.duration) || 1,
+      dayType: row.day_type as string,
+      reason: row.reason as string,
+      status: row.status as string,
     };
-  }
-
-  // ─── HRMSDEV: apply leave via USP_LeaveRequestSubmission ──────────────────────
-  // The proc now takes 9 params (half-day + document support added by the team).
-  // Full-day is the default: isHalfDay=0, sessions null, documentPath null.
-  // Returns { ok, statusCode, message } from the proc's own 200/400/404/409/500 response.
-  async createLeaveRequest(
-    employeeId: string,
-    body: {
-      leaveTypeId: number;
-      fromDate: string;
-      toDate: string;
-      reason?: string | null;
-      isHalfDay?: boolean;
-      sessionFrom?: string | null;
-      sessionTo?: string | null;
-      documentPath?: string | null;
-    },
-  ): Promise<{ ok: boolean; statusCode: number; message: string }> {
-    const pool = await this.getPool();
-    try {
-      const result = await pool.request()
-        .input('EmployeeId',   sql.VarChar,   employeeId)
-        .input('LeaveTypeId',  sql.Int,       body.leaveTypeId)
-        .input('FromDate',     sql.Date,      body.fromDate)
-        .input('ToDate',       sql.Date,      body.toDate)
-        .input('SessionFrom',  sql.VarChar,   body.sessionFrom ?? null)
-        .input('SessionTo',    sql.VarChar,   body.sessionTo ?? null)
-        .input('IsHalfDay',    sql.Bit,       body.isHalfDay ? 1 : 0)
-        .input('Reason',       sql.NVarChar,  body.reason ?? null)
-        .input('DocumentPath', sql.NVarChar,  body.documentPath ?? null)
-        .input('CreatedBy',    sql.VarChar,   employeeId)
-        .execute('USP_LeaveRequestSubmission');
-
-      const row = result.recordset?.[0] ?? {};
-      const statusCode = Number(row.StatusCode ?? 500);
-      const message = String(row.Message ?? 'Unknown response from server.');
-      return { ok: statusCode === 200, statusCode, message };
-    } catch (err) {
-      console.error('createLeaveRequest failed for', employeeId, '-', (err as Error).message);
-      return { ok: false, statusCode: 500, message: 'Could not submit leave request. Please try again.' };
-    }
-  }
-
-  // ─── HRMSDEV: a user's leave history via USP_GetLeaveHistory ──────────────────
-  // NOTE: this proc returns ACTED-ON leaves only (StatusId 4,5,6,13) and excludes
-  // Pending (3). For the latest pending/most-recent leave, use getLeaveStatus below.
-  async getLeaveHistory(employeeId: string) {
-    const pool = await this.getPool();
-    try {
-      const result = await pool.request()
-        .input('EmployeeId', sql.VarChar, employeeId)
-        .execute('USP_GetLeaveHistory');
-
-      const rows = result.recordset ?? [];
-      if (!rows.length || rows[0].StatusCode !== undefined) {
-        return [];
-      }
-
-      const toDateStr = (v: unknown) => {
-        if (!v) return '';
-        const d = v instanceof Date ? v : new Date(String(v));
-        return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
-      };
-
-      return rows.map((r: any) => ({
-        leaveId:   Number(r.LeaveId),
-        leaveType: r.LeaveTypeName as string,
-        fromDate:  String(r.FromDate ?? ''),   // proc already returns dd-MM-yyyy
-        toDate:    String(r.ToDate ?? ''),     // pass through, don't re-parse
-        noOfDays:  Number(r.NoOfDays ?? 0),
-        reason:    (r.Reason ?? '') as string,
-        statusId:  Number(r.StatusId),
-        status:    r.Status as string,
-        appliedDate: toDateStr(r.AppliedDate),  // AppliedDate is a real datetime, keep parsing
-      }));
-    } catch (err) {
-      console.error('getLeaveHistory failed for', employeeId, '-', (err as Error).message);
-      return [];
-    }
-  }
-
-  // ─── HRMSDEV: latest leave status via USP_GetLeaveStatus ──────────────────────
-  // Returns only the SINGLE most recent leave (proc uses TOP 1), any status.
-  // Used for a "what happened to my latest leave?" check — complements history
-  // (which shows acted-on leaves only and excludes pending).
-async getLeaveStatus(employeeId: string) {
-    const pool = await this.getPool();
-    try {
-      const result = await pool.request()
-        .input('EmployeeId', sql.VarChar, employeeId)
-        .execute('USP_GetLeaveStatus');
-
-      const rows = result.recordset ?? [];
-      if (!rows.length || rows[0].StatusCode !== undefined) {
-        return [];
-      }
-
-      const toDateStr = (v: unknown) => {
-        if (!v) return '';
-        const d = v instanceof Date ? v : new Date(String(v));
-        return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
-      };
-
-      return rows.map((r: any) => ({
-        leaveId:     Number(r.LeaveId),
-        leaveType:   r.Name as string,
-        fromDate:    String(r.FromDate ?? ''),
-        toDate:      String(r.ToDate ?? ''),
-        appliedDate: toDateStr(r.AppliedDate),
-        status:      r.Status as string,
-      }));
-    } catch (err) {
-      console.error('getLeaveStatus failed for', employeeId, '-', (err as Error).message);
-      return [];
-    }
   }
 
   async approveLeaveRequest(code: string, approverId: string) {
     const pool = await this.getPool();
     await pool.request()
       .input('RequestCode', sql.NVarChar, code)
-      .input('ApproverId',  sql.VarChar,  approverId)
+      .input('ApproverId', sql.VarChar, approverId)
       .execute('usp_ApproveLeaveRequest');
 
     return { requestCode: code, status: 'approved' };
@@ -473,10 +439,10 @@ async getLeaveStatus(employeeId: string) {
     const pool = await this.getPool();
     try {
       const result = await pool.request()
-        .input('EmployeeId',         sql.VarChar,  employeeId)
-        .input('LeaveApplicationId', sql.BigInt,   leaveApplicationId)
-        .input('ActionId',           sql.Int,      actionId)
-        .input('Reason',             sql.NVarChar, reason ?? null)
+        .input('EmployeeId', sql.VarChar, employeeId)
+        .input('LeaveApplicationId', sql.BigInt, leaveApplicationId)
+        .input('ActionId', sql.Int, actionId)
+        .input('Reason', sql.NVarChar, reason ?? null)
         .execute('USP_LeaveWithdrawCancel');
 
       const row = result.recordset?.[0] ?? {};
@@ -495,8 +461,8 @@ async getLeaveStatus(employeeId: string) {
       : null;
 
     const result = await pool.request()
-      .input('RequestCode',    sql.NVarChar,           code)
-      .input('CancelledDates', sql.NVarChar(sql.MAX),  cancelledDates)
+      .input('RequestCode', sql.NVarChar, code)
+      .input('CancelledDates', sql.NVarChar(sql.MAX), cancelledDates)
       .execute('usp_CancelLeaveRequestByCode');
 
     const row = result.recordset[0];
@@ -510,24 +476,24 @@ async getLeaveStatus(employeeId: string) {
       return s <= '1900-01-02' ? '' : s;
     };
 
-    const rawStart  = toDateStr(row.start_date);
-    const rawLeave  = toDateStr(row.leave_date);
-    const rawEnd    = toDateStr(row.end_date);
+    const rawStart = toDateStr(row.start_date);
+    const rawLeave = toDateStr(row.leave_date);
+    const rawEnd = toDateStr(row.end_date);
     const startDate = rawStart || rawLeave;
-    const endDate   = rawEnd   || startDate;
+    const endDate = rawEnd || startDate;
 
     return {
-      id:          row.id           as number,
+      id: row.id as number,
       requestCode: row.request_code as string,
-      employeeId:  row.employee_id  as string,
-      leaveType:   row.leave_type   as string,
+      employeeId: row.employee_id as string,
+      leaveType: row.leave_type as string,
       startDate,
       endDate,
-      leaveDate:   rawLeave,
-      duration:    Number(row.duration) || 1,
-      dayType:     row.day_type     as string,
-      reason:      row.reason       as string,
-      status:      row.status       as string,
+      leaveDate: rawLeave,
+      duration: Number(row.duration) || 1,
+      dayType: row.day_type as string,
+      reason: row.reason as string,
+      status: row.status as string,
     };
   }
 
@@ -552,10 +518,10 @@ async getLeaveStatus(employeeId: string) {
     return {
       initialised: true,
       rows: rows.map((r: any) => ({
-        leaveTypeId:    Number(r.LeaveTypeId),
+        leaveTypeId: Number(r.LeaveTypeId),
         openingBalance: Number(r.OpeningBalance ?? 0),
-        accrued:        Number(r.Accrued ?? 0),
-        availed:        Number(r.Availed ?? 0),
+        accrued: Number(r.Accrued ?? 0),
+        availed: Number(r.Availed ?? 0),
         closingBalance: Number(r.ClosingBalance ?? 0),
       })),
     };
@@ -565,7 +531,7 @@ async getLeaveStatus(employeeId: string) {
 
   async getCompanyData() {
     const pool = await this.getPool();
-    let holidays:      Array<{ date: string; name: string }>  = [];
+    let holidays: Array<{ date: string; name: string }> = [];
     let announcements: Array<{ date: string; title: string }> = [];
 
     try {
