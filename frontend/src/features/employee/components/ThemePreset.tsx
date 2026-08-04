@@ -1,71 +1,71 @@
 import { useEffect, useState } from "react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
- 
+
 import {
   Palette,
   Sun,
 } from "lucide-react";
- 
+
 import {
   applyTheme,
   loadTheme,
   type ThemeName,
 } from "./theme";
- 
+
 const colors: {
   key: ThemeName;
   color: string;
 }[] = [
-    {
-      key: "blue",
-      color: "#2563EB",
-    },
-    {
-      key: "sky",
-      color: "#0EA5E9",
-    },
-    {
-      key: "purple",
-      color: "#6D28D9",
-    },
-    {
-      key: "teal",
-      color: "#14B8A6",
-    },
-    {
-      key: "pink",
-      color: "#C026D3",
-    },
-    {
-      key: "orange",
-      color: "#F59E0B",
-    },
-    {
-      key: "emerald",
-      color: "#10B981",
-    },
-    {
-      key: "slate",
-      color: "#607D8B",
-    },
-  ];
- 
+  {
+    key: "blue",
+    color: "#3B82F6",
+  },
+  {
+    key: "sky",
+    color: "#38BDF8",
+  },
+  {
+    key: "purple",
+    color: "#8B5CF6",
+  },
+  {
+  key: "teal",
+  color: "#4F46E5",
+},
+  {
+    key: "pink",
+    color: "#EC4899",
+  },
+  {
+  key: "cyan",
+  color: "#06B6D4",
+},
+{
+  key: "indigo",
+  color: "#6366F1",
+},
+  {
+    key: "slate",
+    color: "#64748B",
+  },
+];
+
 export default function ThemePreset() {
-  const [open, setOpen] =useState(false);
+  const [open, setOpen] = useState(false);
   const { profileData } = useDashboard();
- 
-const employeeId =
-  profileData?.data?.profile.EmployeeID;
- 
+
+  const employeeId =
+    profileData?.data?.profile.EmployeeID;
+
   useEffect(() => {
-  if (employeeId) {
-    loadTheme(employeeId);
-  }
-}, [employeeId]);
+    if (employeeId) {
+      loadTheme(employeeId);
+    }
+  }, [employeeId]);
   return (
     <div className="relative">
       {/* Theme Icon */}
- 
+
       <button
         type="button"
         onClick={() =>
@@ -83,9 +83,9 @@ const employeeId =
           color="white"
         />
       </button>
- 
+
       {/* Popup */}
- 
+
       {open && (
         <div
           className="
@@ -103,27 +103,27 @@ const employeeId =
           "
         >
           {/* Header */}
- 
+
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-slate-800">
               Presets
             </h3>
- 
+
             <Sun
               size={18}
               className="text-slate-500"
             />
           </div>
- 
+
           {/* Theme Colors */}
- 
+
           <div className="grid grid-cols-4 gap-3">
             {colors.map((item) => (
               <button
                 key={item.key}
                 type="button"
                 onClick={() => {
-                  applyTheme(item.key,employeeId);
+                  applyTheme(item.key, employeeId);
                   setOpen(false);
                 }}
                 className="
@@ -153,4 +153,3 @@ const employeeId =
     </div>
   );
 }
- 

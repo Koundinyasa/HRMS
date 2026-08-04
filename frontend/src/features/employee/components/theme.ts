@@ -1,118 +1,123 @@
 export const themes = {
   blue: {
-    primary: "#2563EB",
-    light: "#DBEAFE",
-    border: "#93C5FD",
+    primary: "#3B82F6",
+    light: "#EFF6FF",
+    border: "#BFDBFE",
     cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#2563EB,#00C2FF)",
+      "linear-gradient(90deg,#3B82F6,#60A5FA)",
   },
- 
+
   sky: {
-    primary: "#0EA5E9",
-    light: "#E0F2FE",
-    border: "#7DD3FC",
-    cardBg: "#F2FBFF",
+    primary: "#38BDF8",
+    light: "#F0F9FF",
+    border: "#BAE6FD",
+    cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#0EA5E9,#38BDF8)",
+      "linear-gradient(90deg,#38BDF8,#7DD3FC)",
   },
- 
+
   purple: {
-    primary: "#6D28D9",
-    light: "#EDE9FE",
-    border: "#C4B5FD",
-    cardBg: "#F8F5FF",
+    primary: "#8B5CF6",
+    light: "#F5F3FF",
+    border: "#DDD6FE",
+    cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#6D28D9,#8B5CF6)",
+      "linear-gradient(90deg,#8B5CF6,#A78BFA)",
   },
- 
+
   teal: {
-    primary: "#14B8A6",
-    light: "#CCFBF1",
-    border: "#5EEAD4",
-    cardBg: "#F0FDFA",
+    primary: "#4F46E5",
+    light: "#EEF2FF",
+    border: "#C7D2FE",
+    cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#14B8A6,#2DD4BF)",
+      "linear-gradient(90deg,#4F46E5,#818CF8)",
   },
- 
+
   pink: {
-    primary: "#C026D3",
-    light: "#F5D0FE",
-    border: "#E879F9",
-    cardBg: "#FFF5FD",
+    primary: "#EC4899",
+    light: "#FDF2F8",
+    border: "#FBCFE8",
+    cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#C026D3,#E879F9)",
+      "linear-gradient(90deg,#EC4899,#F472B6)",
   },
- 
-  orange: {
-    primary: "#F59E0B",
-    light: "#FEF3C7",
-    border: "#FCD34D",
-    cardBg: "#FFF9EC",
+
+  cyan: {
+    primary: "#06B6D4",
+    light: "#ECFEFF",
+    border: "#A5F3FC",
+    cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#F59E0B,#FBBF24)",
+      "linear-gradient(90deg,#06B6D4,#67E8F9)",
   },
- 
- emerald: {
-  primary: "#10B981",
-  light: "#D1FAE5",
-  border: "#6EE7B7",
-  cardBg: "#F0FDF4",
-  gradient:
-    "linear-gradient(90deg,#10B981,#34D399)",
-},
- 
+
+  indigo: {
+    primary: "#6366F1",
+    light: "#EEF2FF",
+    border: "#C7D2FE",
+    cardBg: "#FFFFFF",
+    gradient:
+      "linear-gradient(90deg,#6366F1,#A5B4FC)",
+  },
+
   slate: {
-    primary: "#607D8B",
-    light: "#ECEFF1",
-    border: "#B0BEC5",
-    cardBg: "#F8FAFC",
+    primary: "#64748B",
+    light: "#F8FAFC",
+    border: "#CBD5E1",
+    cardBg: "#FFFFFF",
     gradient:
-      "linear-gradient(90deg,#607D8B,#90A4AE)",
+      "linear-gradient(90deg,#64748B,#94A3B8)",
   },
 };
- 
+
 export type ThemeName = keyof typeof themes;
- 
+
 export const applyTheme = (
   theme: ThemeName,
   employeeId?: string
 ) => {
+
+
+
   const selected = themes[theme];
- 
+
+
+
   document.documentElement.style.setProperty(
     "--primary-color",
     selected.primary
   );
- 
+
   document.documentElement.style.setProperty(
     "--primary-light",
     selected.light
   );
- 
+
   document.documentElement.style.setProperty(
     "--primary-border",
     selected.border
   );
- 
+
   document.documentElement.style.setProperty(
     "--primary-gradient",
     selected.gradient
   );
- 
+
   document.documentElement.style.setProperty(
     "--card-bg",
     selected.cardBg
   );
- 
+
   if (employeeId) {
-  localStorage.setItem(
-    `selectedTheme_${employeeId}`,
-    theme
-  );
-}
+    localStorage.setItem(
+      `selectedTheme_${employeeId}`,
+      theme
+    );
+  }
 };
- 
+
 export const loadTheme = (
   employeeId?: string
 ) => {
@@ -120,12 +125,12 @@ export const loadTheme = (
     applyTheme("blue");
     return;
   }
- 
+
   const savedTheme =
     localStorage.getItem(
       `selectedTheme_${employeeId}`
     ) as ThemeName | null;
- 
+
   if (
     savedTheme &&
     themes[savedTheme]
@@ -135,4 +140,3 @@ export const loadTheme = (
     applyTheme("blue");
   }
 };
- 

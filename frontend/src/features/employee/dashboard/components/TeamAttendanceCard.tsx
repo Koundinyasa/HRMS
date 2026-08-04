@@ -1,12 +1,12 @@
 import { ChevronsUpDown } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
- 
+
 export default function TeamAttendanceCard() {
   const { profileData } = useDashboard();
- 
+
   const employeeNames =
     profileData?.data?.upcomingEvents ?? [];
- 
+
   const staticData = [
     {
       role: "UI Designer",
@@ -45,7 +45,7 @@ export default function TeamAttendanceCard() {
       textColor: "#B45309",
     },
   ];
- 
+
   const teamData = staticData.map(
     (item, index) => ({
       initials:
@@ -55,15 +55,15 @@ export default function TeamAttendanceCard() {
           .join("")
           .substring(0, 2)
           .toUpperCase() ?? "--",
- 
+
       name:
         employeeNames[index]?.FullName ??
         "No Employee",
- 
+
       ...item,
     })
   );
- 
+
   return (
     <div
       className="
@@ -78,7 +78,7 @@ export default function TeamAttendanceCard() {
       }}
     >
       {/* Header */}
- 
+
       <div className="flex items-center justify-between">
         <h3
           className="text-xl font-semibold"
@@ -88,36 +88,36 @@ export default function TeamAttendanceCard() {
         >
           Team
         </h3>
- 
+
         <div className="flex items-center gap-5 text-sm">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-green-500" />
             <span>In Office</span>
           </div>
- 
+
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500" />
             <span>Work From Home</span>
           </div>
- 
+
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500" />
             <span>Absent</span>
           </div>
         </div>
       </div>
- 
+
       {/* Divider */}
- 
+
       <div
         className="h-[2px] mt-4 mb-4"
         style={{
           backgroundColor: "var(--primary-border)",
         }}
       />
- 
+
       {/* Table Header */}
- 
+
       <div
         className="grid grid-cols-[2.4fr_1fr_1fr_1fr_1fr]"
         style={{
@@ -125,7 +125,7 @@ export default function TeamAttendanceCard() {
         }}
       >
         <div>Members</div>
- 
+
         <div className="flex items-center gap-1">
           Today
           <ChevronsUpDown
@@ -133,7 +133,7 @@ export default function TeamAttendanceCard() {
             color="var(--primary-color)"
           />
         </div>
- 
+
         <div className="flex items-center gap-1">
           25/9
           <ChevronsUpDown
@@ -141,7 +141,7 @@ export default function TeamAttendanceCard() {
             color="var(--primary-color)"
           />
         </div>
- 
+
         <div className="flex items-center gap-1">
           24/9
           <ChevronsUpDown
@@ -149,7 +149,7 @@ export default function TeamAttendanceCard() {
             color="var(--primary-color)"
           />
         </div>
- 
+
         <div className="flex items-center gap-1">
           23/9
           <ChevronsUpDown
@@ -158,9 +158,9 @@ export default function TeamAttendanceCard() {
           />
         </div>
       </div>
- 
+
       {/* Rows */}
- 
+
       {teamData.map((member, index) => (
         <div
           key={index}
@@ -176,7 +176,7 @@ export default function TeamAttendanceCard() {
           }}
         >
           {/* Member */}
- 
+
           <div className="flex items-center gap-4 pl-2">
             <div
               className="
@@ -198,7 +198,7 @@ export default function TeamAttendanceCard() {
             >
               {member.initials}
             </div>
- 
+
             <div className="min-w-0 flex-1">
               <h4
                 className="
@@ -210,15 +210,15 @@ export default function TeamAttendanceCard() {
               >
                 {member.name}
               </h4>
- 
+
               <p className="text-sm text-slate-500 mt-0.5">
                 {member.role}
               </p>
             </div>
           </div>
- 
+
           {/* Today */}
- 
+
           <div>
             {member.today === "office" ? (
               <span className="w-3 h-3 rounded-full bg-green-500 block" />
@@ -230,15 +230,15 @@ export default function TeamAttendanceCard() {
               </span>
             )}
           </div>
- 
+
           {/* 25/9 */}
- 
+
           <div>
             {member.day25}
           </div>
- 
+
           {/* 24/9 */}
- 
+
           <div>
             {member.day24 === "on leave" ? (
               <span className="text-orange-500 text-sm">
@@ -252,9 +252,9 @@ export default function TeamAttendanceCard() {
               </span>
             )}
           </div>
- 
+
           {/* 23/9 */}
- 
+
           <div>
             {member.day23}
           </div>

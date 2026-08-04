@@ -1,31 +1,35 @@
-import {
-  Menu,
-  UsersRound,
-} from "lucide-react";
+import { Menu, UsersRound, } from "lucide-react";
+import { useNavigate, useParams, } from "react-router-dom";
 import { Button } from "@/components/ui/button";
- 
+
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import type { HeaderProps } from "../dashboard/types/dashboard.types";
- 
+
 export default function Header({
   isSidebarOpen,
   setIsSidebarOpen,
 }: HeaderProps) {
   const { profileData, isLoading } = useDashboard();
- 
+  const navigate = useNavigate();
+  const { domain } = useParams();
+
   return (
     <div className="flex items-center gap-4">
       {/* HRMS Icon */}
- 
+
       <div
+        onClick={() =>
+          navigate(`/${domain}/employee/dashboard`)
+        }
         className="
-          w-12
-          h-12
-          rounded-md
-          flex
-          items-center
-          justify-center
-        "
+    w-12
+    h-12
+    rounded-md
+    flex
+    items-center
+    justify-center
+    cursor-pointer
+  "
         style={{
           background: "var(--primary-gradient)",
         }}
@@ -35,13 +39,13 @@ export default function Header({
           color="white"
         />
       </div>
- 
+
       {/* Menu */}
- 
+
       <Button
         type="button"
         variant="ghost"
-        size="sm"
+        size="icon"
         onClick={() =>
           setIsSidebarOpen(!isSidebarOpen)
         }
@@ -52,9 +56,9 @@ export default function Header({
           color="white"
         />
       </Button>
- 
+
       {/* Company Name */}
- 
+
       <h1
         className="
           text-base
@@ -67,8 +71,7 @@ export default function Header({
       >
         {isLoading
           ? "Loading..."
-          : profileData?.data?.profile.CompanyName ??
-          "Koundinyasa Technology Services Pvt. Ltd"}
+          : profileData?.data?.profile?.CompanyName}
       </h1>
     </div>
   );

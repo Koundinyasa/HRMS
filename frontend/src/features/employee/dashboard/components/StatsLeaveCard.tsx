@@ -4,24 +4,24 @@ import {
   CircleCheck,
   ArrowDownLeft,
 } from "lucide-react";
- 
+
 import { useDashboard } from "../hooks/useDashboard";
- 
+
 export default function StatsLeaveCard() {
- 
+
   const { profileData } = useDashboard();
- 
+
   const attendance =
     profileData?.data.attendanceSummary;
- 
+
   return (
     <div className="flex flex-col gap-4">
       {/* Top Stats */}
- 
+
       <div className="grid grid-cols-4 gap-4">
- 
+
         {/* Average Hours */}
- 
+
         <div
           className="rounded-2xl p-4 border shadow-sm"
           style={{
@@ -40,18 +40,18 @@ export default function StatsLeaveCard() {
               color="var(--primary-color)"
             />
           </div>
- 
+
           <p className="text-sm text-slate-500 mt-3">
             Average hours
           </p>
- 
+
           <h3 className="text-3xl font-semibold mt-1 text-slate-800">
             {attendance?.AverageHours ?? "--"}
           </h3>
         </div>
- 
+
         {/* Average Check In */}
- 
+
         <div
           className="rounded-2xl p-4 border shadow-sm"
           style={{
@@ -70,18 +70,18 @@ export default function StatsLeaveCard() {
               color="#22C55E"
             />
           </div>
- 
+
           <p className="text-sm text-slate-500 mt-3">
             Average check-in
           </p>
- 
+
           <h3 className="text-3xl font-semibold mt-1 text-slate-800">
             {attendance?.["AverageCheck-In"] ?? "--"}
           </h3>
         </div>
- 
+
         {/* On Time Arrival */}
- 
+
         <div
           className="rounded-2xl p-4 border shadow-sm"
           style={{
@@ -100,11 +100,11 @@ export default function StatsLeaveCard() {
               color="#10B981"
             />
           </div>
- 
+
           <p className="text-sm text-slate-500 mt-3">
             On-time arrival
           </p>
- 
+
           <h3
             className="text-3xl font-semibold mt-1"
             style={{
@@ -114,9 +114,9 @@ export default function StatsLeaveCard() {
             {attendance?.["On-TimeArrival"] ?? "--"}
           </h3>
         </div>
- 
+
         {/* Average Check Out */}
- 
+
         <div
           className="rounded-2xl p-4 border shadow-sm"
           style={{
@@ -135,21 +135,21 @@ export default function StatsLeaveCard() {
               color="#F97316"
             />
           </div>
- 
+
           <p className="text-sm text-slate-500 mt-3">
             Average check-out
           </p>
- 
+
           <h3 className="text-3xl font-semibold mt-1 text-slate-800">
             {attendance?.["AverageCheck-Out"] ?? "--"}
           </h3>
         </div>
       </div>
- 
+
       {/* My Leaves */}
- 
+
             {/* My Leaves */}
- 
+
       <div
         className="rounded-2xl border shadow-sm p-6"
         style={{
@@ -166,7 +166,7 @@ export default function StatsLeaveCard() {
           >
             My Leaves
           </h3>
- 
+
           <button
             className="
               px-3
@@ -183,18 +183,18 @@ export default function StatsLeaveCard() {
             Apply Leave +
           </button>
         </div>
- 
+
         {/* Divider */}
- 
+
         <div
           className="h-[2px] mt-4"
           style={{
             backgroundColor: "var(--primary-border)",
           }}
         />
- 
+
         {/* Restricted Holiday */}
- 
+
         <div
           className="
             mt-8
@@ -212,19 +212,19 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-red-300" />
- 
+
             <span className="text-xl text-slate-700">
               Restricted Holiday
             </span>
           </div>
- 
+
           <span className="text-2xl font-medium text-slate-800">
             2
           </span>
         </div>
- 
+
         {/* Upcoming Holiday */}
- 
+
         <div
           className="
             mt-4
@@ -242,12 +242,12 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-emerald-400" />
- 
+
             <span className="text-xl text-slate-700">
               Upcoming Holiday
             </span>
           </div>
- 
+
           <span className="text-2xl font-medium text-slate-800">
             1
           </span>

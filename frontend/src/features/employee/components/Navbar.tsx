@@ -3,7 +3,7 @@ import ThemePreset from "./ThemePreset";
 import NotificationCard from "./NotificationCard";
 import ProfileMenu from "./ProfileMenu";
 import type { NavbarProps } from "../dashboard/types/dashboard.types";
- 
+
 export default function Navbar({
   isSidebarOpen,
   setIsSidebarOpen,
@@ -26,7 +26,7 @@ export default function Navbar({
   isSidebarOpen={isSidebarOpen}
   setIsSidebarOpen={setIsSidebarOpen}
 />
- 
+
       <div
         className="
           flex
@@ -35,12 +35,11 @@ export default function Navbar({
         "
       >
         <ThemePreset />
- 
+
         <NotificationCard />
- 
+
         <ProfileMenu />
       </div>
     </header>
   );
 }
- 

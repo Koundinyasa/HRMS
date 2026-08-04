@@ -1,3 +1,4 @@
+import type React from "react";
 export interface EmployeeProfile {
   FullName: string;
   ShortName: string;
@@ -11,7 +12,7 @@ export interface EmployeeProfile {
   WelcomeMessage: string;
   LastLoginDateTime: string;
 }
- 
+
 export interface MenuItem {
   menuId: number;
   menuName: string;
@@ -19,7 +20,7 @@ export interface MenuItem {
   iconClass?: string | null;
   children?: MenuItem[];
 }
- 
+
 export interface AttendanceSummary {
   EmployeeID: string;
   AverageHours: string;
@@ -27,14 +28,14 @@ export interface AttendanceSummary {
   "On-TimeArrival": string;
   "AverageCheck-Out": string;
 }
- 
+
 export interface UpcomingEvent {
   FullName: string;
   Code: string;
   EventName: string;
   EventDate: string;
 }
- 
+
 export interface ProfileResponse {
   success: boolean;
   data: {
@@ -43,12 +44,12 @@ export interface ProfileResponse {
     upcomingEvents: UpcomingEvent[];
   };
 }
- 
+
 export interface MenuResponse {
   success: boolean;
   data: MenuItem[];
 }
- 
+
 export interface Holiday {
   HolidayId: number;
   HolidayName: string;
@@ -57,32 +58,27 @@ export interface Holiday {
   HolidayYear: number;
   IsOptional: boolean;
 }
- 
-export interface HolidayResponse {
-  success: boolean;
-  data: Holiday[];
-}
 
 export interface HolidayResponse {
   success: boolean;
   data: Holiday[];
 }
- 
+
 export interface HeaderProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: React.Dispatch<
     React.SetStateAction<boolean>
   >;
 }
- 
+
 export interface NavbarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: React.Dispatch<
     React.SetStateAction<boolean>
   >;
 }
- 
+
 export interface SidebarProps {
   isSidebarOpen: boolean;
 }
- 
+

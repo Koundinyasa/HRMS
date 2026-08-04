@@ -12,12 +12,12 @@ export default function CelebrationsCard() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const celebrations = profileData?.data?.upcomingEvents ?? [];
   const celebration = celebrations[currentIndex];
- 
+
   // Auto Change Celebration
- 
+
   useEffect(() => {
     if (celebrations.length <= 1) return;
- 
+
     const interval = setInterval(() => {
       setCurrentIndex(
         (prev) =>
@@ -25,44 +25,44 @@ export default function CelebrationsCard() {
           celebrations.length
       );
     }, 3000);
- 
+
     return () =>
       clearInterval(interval);
   }, [celebrations]);
- 
+
   // Days Remaining
- 
+
   const getDaysRemaining = (
     date: string
   ) => {
     const today = new Date();
- 
+
     today.setHours(0, 0, 0, 0);
- 
+
     const eventDate = new Date(date);
- 
+
     eventDate.setHours(0, 0, 0, 0);
- 
+
     const diff = Math.ceil(
       (eventDate.getTime() -
         today.getTime()) /
       (1000 * 60 * 60 * 24)
     );
- 
+
     if (diff === 0)
       return "Today";
- 
+
     if (diff === 1)
       return "Tomorrow";
- 
+
     if (diff > 1)
       return `In ${diff} Days`;
- 
+
     return "Completed";
   };
- 
+
   // Greeting
- 
+
   const greeting = useMemo(() => {
     if (
       celebration?.EventName ===
@@ -70,12 +70,12 @@ export default function CelebrationsCard() {
     ) {
       return "Let's celebrate their special day! 🎉";
     }
- 
+
     return "Congratulations on another successful milestone! 👏";
   }, [celebration]);
- 
+
   // Default Wish Message
- 
+
   const defaultWish = useMemo(() => {
     if (
       selectedEvent?.EventName ===
@@ -83,10 +83,10 @@ export default function CelebrationsCard() {
     ) {
       return "Wishing you a wonderful birthday filled with happiness, success and good health. Have an amazing year ahead!";
     }
- 
+
     return "Congratulations on your Work Anniversary! Thank you for your dedication and commitment. Wishing you continued success and many more milestones ahead!";
   }, [selectedEvent]);
- 
+
   return (
     <div
       className="rounded-2xl border shadow-sm h-full flex flex-col p-5"
@@ -98,11 +98,11 @@ export default function CelebrationsCard() {
       }}
     >
       {/* Header */}
- 
+
       <div className="flex items-center justify-between">
- 
+
         <div>
- 
+
           <h3
             className="text-lg font-semibold"
             style={{
@@ -112,13 +112,13 @@ export default function CelebrationsCard() {
           >
             Celebrations
           </h3>
- 
+
           <p className="text-xs text-slate-500 mt-1">
             Birthdays & Work Anniversaries
           </p>
- 
+
         </div>
- 
+
         <Button
           variant="ghost"
           onClick={() =>
@@ -132,22 +132,22 @@ export default function CelebrationsCard() {
         >
           View All
         </Button>
- 
+
       </div>
- 
+
       {/* Divider */}
- 
+
       <div
         className="-mx-5 h-[2px] mt-3"
         style={{
           backgroundColor: "var(--primary-border)",
         }}
       />
- 
+
       {/* Counter */}
- 
+
       <div className="flex justify-end mt-5">
- 
+
         <div
           className=" px-3 py-1 rounded-full text-xs font-medium"
           style={{
@@ -159,15 +159,15 @@ export default function CelebrationsCard() {
         >
           {celebrations.length} Upcoming
         </div>
- 
+
       </div>
       {/* Celebration Content */}
- 
+
       <div
         key={currentIndex}
         className="flex flex-col items-center justify-center flex-1 text-center animate-in fade-in duration-500">
         {/* Celebration Image */}
- 
+
         <img
           src={
             celebration?.EventName === "Birthday"
@@ -177,9 +177,9 @@ export default function CelebrationsCard() {
           alt={celebration?.EventName}
           className=" w-40 h-40 object-contain mt-2 transition-all duration-500"
         />
- 
+
         {/* Event Badge */}
- 
+
         <div
           className=" flex items-center gap-2 rounded-full px-4 py-1 mt-3"
           style={{
@@ -200,33 +200,33 @@ export default function CelebrationsCard() {
               color="#2563EB"
             />
           )}
- 
+
           <span className="text-sm font-medium">
             {celebration?.EventName}
           </span>
         </div>
- 
+
         {/* Employee Name */}
- 
+
         <h2 className=" text-xl font-semibold mt-5 text-slate-800">
           {celebration?.FullName ??
             "No Upcoming Celebrations"}
         </h2>
- 
+
         {/* Greeting */}
- 
+
         <p className=" text-sm text-slate-500 mt-3 px-6 leading-6">
           {celebration
             ? greeting
             : "No upcoming birthdays or work anniversaries."}
         </p>
- 
+
         {/* Event Date */}
- 
+
         {celebration && (
           <div className=" flex items-center gap-2 mt-5 text-sm text-slate-600">
             <CalendarDays size={16} />
- 
+
             {new Date(
               celebration.EventDate
             ).toLocaleDateString(
@@ -239,21 +239,21 @@ export default function CelebrationsCard() {
             )}
           </div>
         )}
- 
+
         {/* Countdown */}
- 
+
         {celebration && (
           <div className=" flex items-center gap-2 mt-2 text-xs font-medium text-orange-500">
             <Clock3 size={14} />
- 
+
             {getDaysRemaining(
               celebration.EventDate
             )}
           </div>
         )}
- 
+
         {/* Wish Button */}
- 
+
         {celebration && (
           <Button
             type="button"
@@ -261,7 +261,7 @@ export default function CelebrationsCard() {
               setSelectedEvent(
                 celebration
               );
- 
+
               setOpenWishModal(true);
             }}
             className=" mt-8 w-full h-11 text-white rounded-xl"
@@ -277,15 +277,15 @@ export default function CelebrationsCard() {
           </Button>
         )}
       </div>
- 
+
       {/* Wish Dialog */}
- 
+
       {openWishModal &&
         selectedEvent && (
           <div className=" fixed inset-0 bg-black/40 flex items-center justify-center z-50">
             <div className=" w-[430px] rounded-2xl bg-white shadow-2xl overflow-hidden">
               {/* Header */}
- 
+
               <div
                 className="
                   px-6
@@ -298,7 +298,7 @@ export default function CelebrationsCard() {
                 }}
               >
                 <div className="flex items-center gap-3">
- 
+
                   <div
                     className="
                       w-12
@@ -329,9 +329,9 @@ export default function CelebrationsCard() {
                       />
                     )}
                   </div>
- 
+
                   <div>
- 
+
                     <h2
                       className="text-xl font-semibold"
                       style={{
@@ -344,20 +344,20 @@ export default function CelebrationsCard() {
                         ? "Send Birthday Wishes"
                         : "Send Congratulations"}
                     </h2>
- 
+
                     <p className="text-sm text-slate-500">
                       {selectedEvent.FullName}
                     </p>
- 
+
                   </div>
- 
+
                 </div>
               </div>
- 
+
               {/* Body */}
- 
+
               <div className="p-5">
- 
+
                 <textarea
                   rows={5}
                   defaultValue={
@@ -376,13 +376,13 @@ export default function CelebrationsCard() {
                       "var(--primary-border)",
                   }}
                 />
- 
+
                 <div className="mt-4 text-sm text-slate-500">
- 
+
                   Event Date :
- 
+
                   {" "}
- 
+
                   {new Date(
                     selectedEvent.EventDate
                   ).toLocaleDateString(
@@ -393,12 +393,12 @@ export default function CelebrationsCard() {
                       year: "numeric",
                     }
                   )}
- 
+
                 </div>
- 
+
               </div>
               {/* Footer */}
- 
+
               <div
                 className="
                   flex
@@ -421,7 +421,7 @@ export default function CelebrationsCard() {
                 >
                   Close
                 </Button>
- 
+
                 <Button
                   type="button"
                   onClick={() => {
@@ -432,7 +432,7 @@ export default function CelebrationsCard() {
                         : "Congratulations"
                       } sent successfully!`
                     );
- 
+
                     setOpenWishModal(false);
                   }}
                   style={{
@@ -447,11 +447,11 @@ export default function CelebrationsCard() {
             </div>
           </div>
         )}
- 
+
       {/* ============================= */}
       {/* View All Celebrations Dialog */}
       {/* ============================= */}
- 
+
       {openAllCelebrations && (
         <div
           className="
@@ -475,7 +475,7 @@ export default function CelebrationsCard() {
             "
           >
             {/* Header */}
- 
+
             <div
               className="
                 flex
@@ -500,12 +500,12 @@ export default function CelebrationsCard() {
                 >
                   All Celebrations
                 </h2>
- 
+
                 <p className="text-sm text-slate-500">
                   Birthdays & Work Anniversaries
                 </p>
               </div>
- 
+
               <div
                 className="
                   px-4
@@ -524,19 +524,19 @@ export default function CelebrationsCard() {
                 {celebrations.length} Events
               </div>
             </div>
- 
+
             {/* Body */}
- 
+
             <div className="max-h-[470px] overflow-y-auto">
- 
+
               {celebrations.length > 0 ? (
- 
+
                 celebrations.map(
                   (
                     item,
                     index
                   ) => (
- 
+
                     <div
                       key={index}
                       className="
@@ -554,11 +554,11 @@ export default function CelebrationsCard() {
                           "var(--primary-border)",
                       }}
                     >
- 
+
                       {/* Left */}
- 
+
                       <div className="flex items-center gap-4">
- 
+
                         <div
                           className="
                             w-14
@@ -589,15 +589,15 @@ export default function CelebrationsCard() {
                             />
                           )}
                         </div>
- 
+
                         <div>
- 
+
                           <h3 className="font-semibold text-slate-800">
                             {item.FullName}
                           </h3>
- 
+
                           <div className="flex gap-2 mt-2">
- 
+
                             <span
                               className="
                                 px-3
@@ -616,7 +616,7 @@ export default function CelebrationsCard() {
                             >
                               {item.EventName}
                             </span>
- 
+
                             <span className="text-sm text-slate-500">
                               {new Date(
                                 item.EventDate
@@ -629,31 +629,31 @@ export default function CelebrationsCard() {
                                 }
                               )}
                             </span>
- 
+
                           </div>
- 
+
                           <p className="text-xs text-orange-500 mt-2">
                             {getDaysRemaining(
                               item.EventDate
                             )}
                           </p>
- 
+
                         </div>
- 
+
                       </div>
- 
+
                       {/* Right */}
- 
+
                       <Button
                         onClick={() => {
                           setSelectedEvent(
                             item
                           );
- 
+
                           setOpenAllCelebrations(
                             false
                           );
- 
+
                           setOpenWishModal(
                             true
                           );
@@ -669,12 +669,12 @@ export default function CelebrationsCard() {
                           ? "Wish"
                           : "Congratulate"}
                       </Button>
- 
+
                     </div>
- 
+
                   )
                 )
- 
+
               ) : (
                 <div
                   className="
@@ -690,22 +690,22 @@ export default function CelebrationsCard() {
                     size={60}
                     className="text-slate-300"
                   />
- 
+
                   <h3 className="mt-5 text-xl font-semibold text-slate-700">
                     No Celebrations
                   </h3>
- 
+
                   <p className="mt-2 text-slate-500">
                     There are no upcoming birthdays or
                     work anniversaries.
                   </p>
                 </div>
               )}
- 
+
             </div>
- 
+
             {/* Footer */}
- 
+
             <div
               className="
                 flex
@@ -727,12 +727,11 @@ export default function CelebrationsCard() {
                 Close
               </Button>
             </div>
- 
+
           </div>
         </div>
       )}
- 
+
     </div>
   );
 }
- 

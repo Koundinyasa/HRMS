@@ -1,98 +1,98 @@
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
- 
+
 import {
   OFFICE_START,
   OFFICE_END,
 } from "../constants/dashboard.constants";
- 
+
 export default function AttendanceCard() {
   const [timeLeft, setTimeLeft] = useState("");
   const [officePercentage, setOfficePercentage] = useState(0);
- 
+
   const [attendanceStatus, setAttendanceStatus] =
     useState<
       "upcoming" | "present" | "absent" | "completed"
     >("upcoming");
- 
+
   const [punchedIn, setPunchedIn] = useState(false);
- 
+
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
- 
+
       const start = new Date();
       start.setHours(OFFICE_START, 0, 0, 0);
- 
+
       const end = new Date();
       end.setHours(OFFICE_END, 0, 0, 0);
- 
+
       if (now < start) {
         setAttendanceStatus("upcoming");
         setOfficePercentage(0);
- 
+
         const diff = end.getTime() - start.getTime();
- 
+
         setTimeLeft(
           `${Math.floor(diff / (1000 * 60 * 60))}h 0m 0s`
         );
- 
+
         return;
       }
- 
+
       if (now >= end) {
         setAttendanceStatus("completed");
         setOfficePercentage(100);
         setTimeLeft("0h 0m 0s");
- 
+
         return;
       }
- 
+
       // Demo logic
- 
- 
+
+
       setAttendanceStatus(
         punchedIn ? "present" : "absent"
       );
- 
+
       const total = end.getTime() - start.getTime();
       const remaining = end.getTime() - now.getTime();
       const completed = total - remaining;
- 
+
       setOfficePercentage(
         Math.floor((completed / total) * 100)
       );
- 
+
       const hrs = Math.floor(
         remaining / (1000 * 60 * 60)
       );
- 
+
       const mins = Math.floor(
         (remaining % (1000 * 60 * 60)) /
         (1000 * 60)
       );
- 
+
       const secs = Math.floor(
         (remaining % (1000 * 60)) / 1000
       );
- 
+
       setTimeLeft(
         `${hrs}h ${mins}m ${secs}s`
       );
     }, 1000);
- 
+
     return () => clearInterval(timer);
   }, [punchedIn]);
- 
+
   const handlePunchIn = () => {
     setPunchedIn(true);
     setAttendanceStatus("present");
   };
- 
+
   const handleCheckOut = () => {
     setAttendanceStatus("completed");
   };
- 
+
   return (
     <div
       className="
@@ -110,7 +110,7 @@ export default function AttendanceCard() {
       }}
     >
       {/* Header */}
- 
+
       <div className="flex items-center justify-between">
         <h3
           className="text-lg font-medium"
@@ -120,7 +120,7 @@ export default function AttendanceCard() {
         >
           Today
         </h3>
- 
+
         <span
           className={`
     px-4
@@ -148,18 +148,18 @@ export default function AttendanceCard() {
                 : "Absent"}
         </span>
       </div>
- 
+
       {/* Divider */}
- 
+
       <div
         className="h-[2px] mt-3"
         style={{
           backgroundColor: "var(--primary-border)",
         }}
       />
- 
+
       {/* Content */}
- 
+
       <div className="mt-7 flex items-center justify-between">
         <div className="max-w-[150px]">
           <p
@@ -180,9 +180,9 @@ export default function AttendanceCard() {
             }
           </p>
         </div>
- 
+
         {/* Progress Circle */}
- 
+
         <div className="relative">
           <div
             className="
@@ -222,7 +222,7 @@ export default function AttendanceCard() {
                   ? 0
                   : officePercentage}%
               </h4>
- 
+
               <p className="text-xs text-slate-500">
                 {
                   attendanceStatus === "upcoming"
@@ -238,10 +238,10 @@ export default function AttendanceCard() {
           </div>
         </div>
       </div>
- 
+
       <div className="mt-auto">
         {/* Timer */}
- 
+
         <div className="flex items-center justify-center gap-2 mb-6">
           <Clock
             size={14}
@@ -251,7 +251,7 @@ export default function AttendanceCard() {
                 : "text-orange-500"
             }
           />
- 
+
           <span
             className={
               attendanceStatus === "completed"
@@ -262,9 +262,9 @@ export default function AttendanceCard() {
             Time left - {timeLeft}
           </span>
         </div>
- 
+
         {/* Buttons */}
- 
+
         <div className="space-y-3">
           <button
             onClick={handlePunchIn}
@@ -302,7 +302,7 @@ export default function AttendanceCard() {
                 ? "Completed"
                 : "Punch In"}
           </button>
- 
+
           <button
             onClick={handleCheckOut}
             disabled={

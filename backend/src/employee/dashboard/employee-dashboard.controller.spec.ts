@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardController } from './employee-dashboard.controller';
 
-
 describe('DashboardController', () => {
   let controller: DashboardController;
 

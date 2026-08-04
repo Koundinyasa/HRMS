@@ -3,25 +3,25 @@ import {
   Building2,
   IdCard,
 } from "lucide-react";
- 
+
 import { useDashboard } from "../hooks/useDashboard";
- 
+
 export default function GreetingCard() {
   const { profileData } = useDashboard();
- 
+
   const profile = profileData?.data;
- 
+
   const currentDate = new Date();
- 
+
   const hour = currentDate.getHours();
- 
+
   const greeting =
     hour < 12
       ? "Good Morning"
       : hour < 17
         ? "Good Afternoon"
         : "Good Evening";
- 
+
   const formattedDate =
     currentDate.toLocaleDateString(
       "en-IN",
@@ -32,7 +32,7 @@ export default function GreetingCard() {
         year: "numeric",
       }
     );
- 
+
   return (
     <div
       className="
@@ -49,7 +49,7 @@ export default function GreetingCard() {
       }}
     >
       {/* Large Background Circle */}
- 
+
       <div
         className="
           absolute
@@ -66,9 +66,9 @@ export default function GreetingCard() {
           }}
         />
       </div>
- 
+
       {/* Medium Background Circle */}
- 
+
       <div
         className="
           absolute
@@ -85,9 +85,9 @@ export default function GreetingCard() {
           }}
         />
       </div>
- 
+
       {/* Small Background Circle */}
- 
+
       <div
         className="
           absolute
@@ -104,9 +104,9 @@ export default function GreetingCard() {
           }}
         />
       </div>
- 
+
       {/* Dotted Pattern */}
- 
+
       <div
         className="
           absolute
@@ -134,7 +134,7 @@ export default function GreetingCard() {
           />
         ))}
       </div>
- 
+
       <div
         className="
           relative
@@ -143,8 +143,8 @@ export default function GreetingCard() {
           items-center
         "
       >
- 
- 
+
+
         <div
           className="
             flex
@@ -171,7 +171,7 @@ export default function GreetingCard() {
                 ? "☀️"
                 : "🌙"}
           </div>
- 
+
           <div>
             <p
               className="
@@ -185,7 +185,7 @@ export default function GreetingCard() {
               {greeting},{" "}
               Have a productive day.
             </p>
- 
+
             <h2
               className="
                 text-[22px]
@@ -196,7 +196,7 @@ export default function GreetingCard() {
             >
               Hi {profile?.profile.FullName}
             </h2>
- 
+
             <p
               className="
                 text-sm
@@ -208,9 +208,9 @@ export default function GreetingCard() {
             </p>
           </div>
         </div>
- 
+
         {/* Employee Details */}
- 
+
         <div
           className="
             flex
@@ -220,7 +220,7 @@ export default function GreetingCard() {
           "
         >
           {/* Employee ID */}
- 
+
           <div
             className="
               flex
@@ -247,7 +247,7 @@ export default function GreetingCard() {
                 color="var(--primary-color)"
               />
             </div>
- 
+
             <span
               className="
                 text-sm
@@ -257,9 +257,9 @@ export default function GreetingCard() {
               Employee ID : {profile?.profile.EmployeeID}
             </span>
           </div>
- 
+
           {/* Designation */}
- 
+
           <div
             className="
               flex
@@ -286,7 +286,7 @@ export default function GreetingCard() {
                 color="var(--primary-color)"
               />
             </div>
- 
+
             <span
               className="
                 text-sm
@@ -296,9 +296,9 @@ export default function GreetingCard() {
               Designation : {profile?.profile.Designation}
             </span>
           </div>
- 
+
           {/* Department */}
- 
+
           <div
             className="
               flex
@@ -325,7 +325,7 @@ export default function GreetingCard() {
                 color="var(--primary-color)"
               />
             </div>
- 
+
             <span
               className="
                 text-sm
@@ -337,9 +337,9 @@ export default function GreetingCard() {
           </div>
         </div>
       </div>
- 
+
       {/* Floating Bubble Animations */}
- 
+
       <div
         className="
           absolute
@@ -352,7 +352,7 @@ export default function GreetingCard() {
           animate-bubble1
         "
       />
- 
+
       <div
         className="
           absolute
@@ -365,7 +365,7 @@ export default function GreetingCard() {
           animate-bubble2
         "
       />
- 
+
       <div
         className="
           absolute
@@ -378,7 +378,7 @@ export default function GreetingCard() {
           animate-bubble3
         "
       />
- 
+
       <div
         className="
           absolute
@@ -391,7 +391,7 @@ export default function GreetingCard() {
           animate-bubble1
         "
       />
- 
+
       <div
         className="
           absolute
