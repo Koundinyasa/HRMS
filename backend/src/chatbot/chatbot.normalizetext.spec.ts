@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import * as assert from 'assert/strict';
-import { ChatbotService } from './services/chatbot.service';
+import { ChatbotService } from './chatbot.service';
 
 const configStub = { get: (_k: string) => undefined } as any;
 const dbStub = {} as any;

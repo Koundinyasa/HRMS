@@ -28,4 +28,5 @@ export const LOCAL_INTENT_KEYWORDS = [
   'emergency', 'career', 'growth', 'it support', 'contact',
   'details', 'profile', 'about me', 'basic info',
   'menu',
+  'teams', 'team',
 ];

@@ -6,13 +6,14 @@ export interface IntentCtx {
   employeeId: string;
   name: string;
   employees: Record<string, any>[];
-  companyData: { holidays: { date: string; name: string }[]; announcements: { date: string; title: string }[] };
+  companyData: { holidays: { date: string; name: string; stateCode: string | null }[]; announcements: { date: string; title: string }[] };
   selfEmployee: Record<string, any> | null;
   leaveTypes: { id: number; name: string; code: string; description: string; annualQuota: number | null }[];
   departments: string[];
   designations: string[];
   companyInfo: { name: string; code: string; contactPerson: string; contactEmail: string } | null;
   branches: { branchName: string; address: string; city: string; phone: string }[];
+  ownOffice: { branchId: number; branchName: string; address: string; city: string; phone: string; stateCode: string } | null;
   directory: { id: string; name: string; code: string }[];
 }
 

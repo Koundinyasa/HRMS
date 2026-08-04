@@ -29,6 +29,7 @@ export class MenuService {
     const isPrivileged = role === 'admin' || role === 'hr';
     const actions = MENUS.main.buttons
       .filter(b => !b.hrOnly || isPrivileged)
+      .filter(b => !b.employeeOnly || !isPrivileged)
       .map(b => ({ label: b.label, send: b.send }));
     return { title: MENUS.main.title, actions };
   }

@@ -5,10 +5,11 @@ export const MENUS: Record<string, Menu> = {
     title: 'Main Menu — what would you like to do?',
     buttons: [
       { label: 'My Details',         send: 'my details' },
-      { label: 'Leave',              send: 'menu:leave' },
+      { label: 'Leave',              send: 'menu:leave', employeeOnly: true },
       { label: 'Company Info',       send: 'menu:company' },
       { label: 'Documents',          send: 'menu:documents' },
       { label: 'Employee Directory', send: 'menu:directory', hrOnly: true },
+      { label: 'Teams',              send: 'teams',          hrOnly: true },
     ],
   },
   leave: {
@@ -27,7 +28,7 @@ export const MENUS: Record<string, Menu> = {
     title: 'Company Info — choose an option:',
     buttons: [
       { label: 'Holidays',        send: 'holiday list' },
-      { label: 'Departments',     send: 'department' },
+      { label: 'Departments',     send: 'department', hrOnly: true },
       { label: 'Designations',    send: 'designation' },
       { label: 'Office Location', send: 'office location' },
       { label: 'Company Details', send: 'company info' },
@@ -50,6 +51,13 @@ export const MENUS: Record<string, Menu> = {
       { label: 'Employee Names', send: 'list employee names' },
       { label: 'Employee IDs',   send: 'list employee ids' },
       { label: '← Main Menu',    send: 'menu:main' },
+    ],
+  },
+  officeChoice: {
+    title: 'Office Location — choose an option:',
+    buttons: [
+      { label: 'Current Office', send: 'current office' },
+      { label: 'All Offices',    send: 'all offices' },
     ],
   },
 };

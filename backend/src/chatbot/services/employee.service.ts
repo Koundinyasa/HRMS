@@ -1,10 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { IntentDefinition } from '../types';
 import { fuzzyContains } from '../utils/fuzzy.util';
-import { buildMenuGuide } from '../utils/string.util';
+import { DraftService } from './draft.service';
 
 @Injectable()
 export class EmployeeService {
+  constructor(private readonly draftService: DraftService) {}
+
+  private notify(
+    employeeId: string,
+    tone: 'info' | 'warning' | 'danger',
+    suggestions: { label: string; send: string }[] = [{ label: 'Main Menu', send: 'menu:main' }],
+  ) {
+    this.draftService.pendingNotice.set(employeeId, { tone });
+    if (suggestions.length) this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
+  }
+
   getEmployeeCard(employee: Record<string, any>): string {
     return [
       `Name: ${employee.name}`,
@@ -14,25 +25,38 @@ export class EmployeeService {
     ].join('\n');
   }
 
-  getOwnProfileGuide(employee: Record<string, any>): string {
-    return buildMenuGuide(
-      'Your profile in the portal',
-      ['Open the Employees menu.', 'Click your profile card.', 'Use the profile panel to review your basic details.', 'Open the payroll/document section for salary, Form16, or payslip actions.'],
-      `Current snapshot: ${employee.name} | ${employee.department} | ${employee.designation}`,
-    );
+  getOwnProfileGuide(employeeId: string, employee: Record<string, any>): string {
+    this.draftService.pendingSteps.set(employeeId, {
+      title: 'Your profile in the portal',
+      items: [
+        'Open the Employees menu.',
+        'Click your profile card.',
+        'Use the profile panel to review your basic details.',
+        'Open the payroll/document section for salary, Form16, or payslip actions.',
+      ],
+      note: `Current snapshot: ${employee.name} | ${employee.department} | ${employee.designation}`,
+    });
+    return `Here's how to find your profile:`;
   }
 
-  getPrivateDocGuide(role: string): string {
+  getPrivateDocGuide(employeeId: string, role: string): string {
     const baseSteps = [
       'Open the Employees menu.',
       'Select the employee card.',
       'Open the payroll or documents panel inside the profile.',
       'Download Form16, payslip, or appraisal files from there.',
     ];
-    if (role === 'admin' || role === 'hr') {
-      return buildMenuGuide('Employee private details access', baseSteps, 'You can review all employee public details from the directory, then open the secure document area for private files.');
-    }
-    return buildMenuGuide('Your private documents', baseSteps, 'Regular employees can only open their own secure documents.');
+    const isPrivileged = role === 'admin' || role === 'hr';
+    this.draftService.pendingSteps.set(employeeId, {
+      title: isPrivileged ? 'Employee private details access' : 'Your private documents',
+      items: baseSteps,
+      note: isPrivileged
+        ? 'You can review all employee public details from the directory, then open the secure document area for private files.'
+        : 'Regular employees can only open their own secure documents.',
+    });
+    return isPrivileged
+      ? `Here's how to access employee private details:`
+      : `Here's how to open your private documents:`;
   }
 
   getIntents(): IntentDefinition[] {
@@ -47,20 +71,32 @@ export class EmployeeService {
            ctx.msg.includes('id')   || ctx.msg.includes('ids')),
         handle: async (ctx) => {
           if (ctx.msg.includes('name') || ctx.msg.includes('names')) {
-            if (ctx.role === 'admin' || ctx.role === 'hr')
-              return `Employee names:\n${ctx.directory.map(e => `• ${e.name}`).join('\n')}`;
-            return `Access Denied: You don't have permission to list all employee names.`;
+            if (ctx.role === 'admin' || ctx.role === 'hr') {
+              this.draftService.pendingListPreview.set(ctx.employeeId, {
+                title: 'Employee Names',
+                rows: ctx.directory.map(e => ({ primary: e.name })),
+              });
+              return `Here are all employee names (${ctx.directory.length}):`;
+            }
+            this.notify(ctx.employeeId, 'danger');
+            return `Access denied: you don't have permission to list all employee names.`;
           }
-          if (ctx.role === 'admin' || ctx.role === 'hr')
-            return `Employee IDs:\n${ctx.directory.map(e => `• ${e.id}`).join('\n')}`;
-          return `Access Denied: You don't have permission to list all employee IDs.`;
+          if (ctx.role === 'admin' || ctx.role === 'hr') {
+            this.draftService.pendingListPreview.set(ctx.employeeId, {
+              title: 'Employee IDs',
+              rows: ctx.directory.map(e => ({ primary: e.id })),
+            });
+            return `Here are all employee IDs (${ctx.directory.length}):`;
+          }
+          this.notify(ctx.employeeId, 'danger');
+          return `Access denied: you don't have permission to list all employee IDs.`;
         },
       },
 
       {
         name: 'myDetails',
         test: (ctx) =>
-          ctx.msg.includes('my details') || ctx.msg.includes('my profile') ||
+          (ctx.msg.includes('my details') || ctx.msg.includes('my profile') ||
           ctx.msg.includes('my basic info') || ctx.msg.includes('basic info') ||
           ctx.msg.includes('show my info') || ctx.msg.includes('show my details') ||
           ctx.msg.includes('show my profile') || ctx.msg.includes('about me') ||
@@ -70,20 +106,50 @@ export class EmployeeService {
           ctx.msg.includes('whats my role') || ctx.msg.includes('my designation') ||
           ctx.msg.includes('my department') || ctx.msg.includes('which department') ||
           ctx.msg === 'details' || ctx.msg === 'profile' ||
-          ctx.msg === 'role' || ctx.msg === 'id' || ctx.msg === 'designation',
+          ctx.msg === 'role' || ctx.msg === 'id' || ctx.msg === 'designation') &&
+          // Don't swallow bulk/company-wide requests — "employee id" is a
+          // substring of "employee ids", so without this guard a query meant
+          // for the full directory gets misrouted to this personal-details reply.
+          !ctx.msg.includes('employee ids') &&
+          !ctx.msg.includes('all employee') &&
+          !ctx.msg.includes('list employee'),
         handle: async (ctx) => {
           if (!ctx.selfEmployee) return 'Employee data not found.';
           const e = ctx.selfEmployee;
           if ((ctx.msg.includes('role') || ctx.msg.includes('designation')) && !ctx.msg.includes('detail') && !ctx.msg.includes('profile')) {
-            return `Your designation is ${e.designation}.`;
+            this.draftService.pendingDataCard.set(ctx.employeeId, {
+              title: e.name,
+              subtitle: e.designation,
+              fields: [{ label: 'Designation', value: e.designation }],
+            });
+            return `Here's your designation:`;
           }
           if (ctx.msg.includes('employee id') || ctx.msg === 'id' || (ctx.msg.includes('my id') && !ctx.msg.includes('detail'))) {
-            return `Your employee ID is ${e.id}.`;
+            this.draftService.pendingDataCard.set(ctx.employeeId, {
+              title: e.name,
+              subtitle: e.designation,
+              fields: [{ label: 'Employee ID', value: e.id }],
+            });
+            return `Here's your employee ID:`;
           }
           if (ctx.msg.includes('department') && !ctx.msg.includes('detail') && !ctx.msg.includes('profile')) {
-            return `You are in the ${e.department} department.`;
+            this.draftService.pendingDataCard.set(ctx.employeeId, {
+              title: e.name,
+              subtitle: e.designation,
+              fields: [{ label: 'Department', value: e.department }],
+            });
+            return `Here's your department:`;
           }
-          return `Profile summary:\n${this.getEmployeeCard(e)}`;
+          this.draftService.pendingDataCard.set(ctx.employeeId, {
+            title: e.name,
+            subtitle: e.designation,
+            fields: [
+              { label: 'Employee ID', value: e.id },
+              { label: 'Department', value: e.department },
+              { label: 'Role', value: e.designation },
+            ],
+          });
+          return `Here's your profile:`;
         },
       },
 
@@ -92,30 +158,61 @@ export class EmployeeService {
         test: (ctx) =>
           ctx.msg.includes('my salary history') || ctx.msg.includes('salary history') ||
           ctx.msg.includes('past salary') || ctx.msg.includes('previous salary') || ctx.msg.includes('pay history'),
-        handle: async (ctx) =>
-          ctx.selfEmployee
-            ? buildMenuGuide('How to view your salary history', [
-                'Open the Employees section from the top menu.',
-                'Click your profile card.',
-                'Open the Payroll / Salary History tab.',
-                'Review your year-on-year salary records and download payslip documents from there.',
-              ], 'Detailed payroll history is private and accessible only to you and HR/Admin.')
-            : 'Employee data not found.',
+        handle: async (ctx) => {
+          if (!ctx.selfEmployee) return 'Employee data not found.';
+          this.draftService.pendingSteps.set(ctx.employeeId, {
+            title: 'How to view your salary history',
+            items: [
+              'Open the Employees section from the top menu.',
+              'Click your profile card.',
+              'Open the Payroll / Salary History tab.',
+              'Review your year-on-year salary records and download payslip documents from there.',
+            ],
+            note: 'Detailed payroll history is private and accessible only to you and HR/Admin.',
+          });
+          return `Here's how to view your salary history:`;
+        },
       },
 
       {
         name: 'mySalary',
         test: (ctx) =>
-          ctx.msg.includes('my salary') || ctx.msg.includes('my pay') ||
-          fuzzyContains(ctx.msg, 'earn') || fuzzyContains(ctx.msg, 'compensation'),
-        handle: async (ctx) =>
-          ctx.selfEmployee
-            ? buildMenuGuide('How to view your salary details', [
-                'Open the Employees section from the top menu.',
-                'Click your profile card.',
-                'Open the Payroll tab inside your profile to view your current salary, deductions, and net pay.',
-              ], 'Your payroll records are private and visible only to you and HR/Admin.')
-            : 'Employee data not found. Please contact HR.',
+          (ctx.msg.includes('my salary') || ctx.msg.includes('my pay') ||
+          fuzzyContains(ctx.msg, 'earn') || fuzzyContains(ctx.msg, 'compensation')) &&
+          !ctx.msg.includes('payslip'),
+        handle: async (ctx) => {
+          if (!ctx.selfEmployee) return 'Salary details are available in the portal. Contact HR for access.';
+          this.draftService.pendingSteps.set(ctx.employeeId, {
+            title: 'How to view your salary details',
+            items: [
+              'Open the Employees section from the top menu.',
+              'Click your profile card.',
+              'Open the Payroll tab inside your profile to view your current salary, deductions, and net pay.',
+            ],
+            note: 'Your payroll records are private and visible only to you and HR/Admin.',
+          });
+          return `Here's how to view your salary details:`;
+        },
+      },
+
+      {
+        name: 'myPayslip',
+        test: (ctx) =>
+          ctx.msg.includes('my payslip') || ctx.msg.includes('my salary slip') ||
+          ctx.msg === 'payslip',
+        handle: async (ctx) => {
+          if (!ctx.selfEmployee) return 'Payslip not available. Contact Finance team.';
+          this.draftService.pendingSteps.set(ctx.employeeId, {
+            title: 'How to open your payslip',
+            items: [
+              'Open Employees.',
+              'Select your profile card.',
+              'Open the Documents / Payroll section.',
+              'Click Payslip to download it.',
+            ],
+          });
+          return `Here's how to open your payslip:`;
+        },
       },
 
       {
@@ -123,15 +220,19 @@ export class EmployeeService {
         test: (ctx) =>
           ctx.msg.includes('my form16') || ctx.msg.includes('my tax') || ctx.msg.includes('my document') ||
           ctx.msg.includes('form16') || fuzzyContains(ctx.msg, 'payslip') || ctx.msg.includes('salary slip'),
-        handle: async (ctx) =>
-          ctx.selfEmployee
-            ? buildMenuGuide('How to open your Form16', [
-                'Open Employees.',
-                'Select your profile card.',
-                'Open the Documents / Payroll section.',
-                'Click Form16 to download it.',
-              ])
-            : 'Form16 not available. Contact Finance team.',
+        handle: async (ctx) => {
+          if (!ctx.selfEmployee) return 'Form16 not available. Contact Finance team.';
+          this.draftService.pendingSteps.set(ctx.employeeId, {
+            title: 'How to open your Form16',
+            items: [
+              'Open Employees.',
+              'Select your profile card.',
+              'Open the Documents / Payroll section.',
+              'Click Form16 to download it.',
+            ],
+          });
+          return `Here's how to open your Form16:`;
+        },
       },
 
       {
@@ -139,10 +240,17 @@ export class EmployeeService {
         test: (ctx) =>
           ctx.msg.includes('list') && fuzzyContains(ctx.msg, 'employee') &&
           (ctx.msg.includes('name') || ctx.msg.includes('names')),
-        handle: async (ctx) =>
-          (ctx.role === 'admin' || ctx.role === 'hr')
-            ? `Employee names:\n${ctx.directory.map(e => `• ${e.name}`).join('\n')}`
-            : `Access Denied: You don't have permission to list all employee names.`,
+        handle: async (ctx) => {
+          if (ctx.role !== 'admin' && ctx.role !== 'hr') {
+            this.notify(ctx.employeeId, 'danger');
+            return `Access denied: you don't have permission to list all employee names.`;
+          }
+          this.draftService.pendingListPreview.set(ctx.employeeId, {
+            title: 'Employee Names',
+            rows: ctx.directory.map(e => ({ primary: e.name })),
+          });
+          return `Here are all employee names (${ctx.directory.length}):`;
+        },
       },
 
       {
@@ -150,10 +258,17 @@ export class EmployeeService {
         test: (ctx) =>
           ctx.msg.includes('list') && fuzzyContains(ctx.msg, 'employee') &&
           (ctx.msg.includes('id') || ctx.msg.includes('ids')),
-        handle: async (ctx) =>
-          (ctx.role === 'admin' || ctx.role === 'hr')
-            ? `Employee IDs:\n${ctx.directory.map(e => `• ${e.id}`).join('\n')}`
-            : `Access Denied: You don't have permission to list all employee IDs.`,
+        handle: async (ctx) => {
+          if (ctx.role !== 'admin' && ctx.role !== 'hr') {
+            this.notify(ctx.employeeId, 'danger');
+            return `Access denied: you don't have permission to list all employee IDs.`;
+          }
+          this.draftService.pendingListPreview.set(ctx.employeeId, {
+            title: 'Employee IDs',
+            rows: ctx.directory.map(e => ({ primary: e.id })),
+          });
+          return `Here are all employee IDs (${ctx.directory.length}):`;
+        },
       },
 
       {
@@ -161,13 +276,19 @@ export class EmployeeService {
         test: (ctx) =>
           ctx.msg.includes('my certificate') || ctx.msg.includes('my certificates') ||
           ctx.msg.includes('my qualification') || ctx.msg.includes('my credential') || ctx.msg.includes('my skill'),
-        handle: async (_ctx) =>
-          `${buildMenuGuide('How to view your certificates', [
-            'Open the Employees menu.',
-            'Click your profile card.',
-            'Open the Documents / Certificates section.',
-            'View or download the certificate files from there.',
-          ])}\n\nIf you need to add a new certificate, upload it from the Documents area in your portal.`,
+        handle: async (ctx) => {
+          this.draftService.pendingSteps.set(ctx.employeeId, {
+            title: 'How to view your certificates',
+            items: [
+              'Open the Employees menu.',
+              'Click your profile card.',
+              'Open the Documents / Certificates section.',
+              'View or download the certificate files from there.',
+            ],
+            note: 'To add a new certificate, upload it from the Documents area in your portal.',
+          });
+          return `Here's how to view your certificates:`;
+        },
       },
 
       {
@@ -177,10 +298,11 @@ export class EmployeeService {
           (ctx.msg.includes('form16') || fuzzyContains(ctx.msg, 'payslip') ||
            ctx.msg.includes('salary slip') || ctx.msg.includes('appraisal') ||
            ctx.msg.includes('private detail') || ctx.msg.includes('private details')),
-        handle: async (ctx) =>
-          (ctx.role === 'admin' || ctx.role === 'hr')
-            ? this.getPrivateDocGuide(ctx.role)
-            : `Access Denied: Private employee documents are only visible for your own profile.\n\n${this.getPrivateDocGuide(ctx.role)}`,
+        handle: async (ctx) => {
+          const guideIntro = this.getPrivateDocGuide(ctx.employeeId, ctx.role);
+          if (ctx.role === 'admin' || ctx.role === 'hr') return guideIntro;
+          return `Access denied: private employee documents are only visible for your own profile. ${guideIntro}`;
+        },
       },
 
       {
@@ -190,45 +312,74 @@ export class EmployeeService {
           ctx.msg.includes('show me all') || ctx.msg.includes('all the employee'),
         handle: async (ctx) => {
           if (ctx.msg.includes('id') || ctx.msg.includes('ids')) {
-            if (ctx.role === 'admin' || ctx.role === 'hr')
-              return `Employee IDs:\n${ctx.directory.map(e => `• ${e.id}`).join('\n')}`;
-            return `Access Denied: You don't have permission to list all employee IDs.`;
+            if (ctx.role === 'admin' || ctx.role === 'hr') {
+              this.draftService.pendingListPreview.set(ctx.employeeId, {
+                title: 'Employee IDs',
+                rows: ctx.directory.map(e => ({ primary: e.id })),
+              });
+              return `Here are all employee IDs (${ctx.directory.length}):`;
+            }
+            this.notify(ctx.employeeId, 'danger');
+            return `Access denied: you don't have permission to list all employee IDs.`;
           }
           if (ctx.role === 'admin' || ctx.role === 'hr') {
-            const lines = ctx.directory.map(e => `• ${e.name}${e.code ? ` (${e.code})` : ''} - ${e.id}`).join('\n');
-            return `Employee directory (${ctx.directory.length} active):\n${lines}`;
+            this.draftService.pendingListPreview.set(ctx.employeeId, {
+              title: `All Employees (${ctx.directory.length} active)`,
+              rows: ctx.directory.map(e => ({
+                primary: e.code ? `${e.name} (${e.code})` : e.name,
+                secondary: e.id,
+              })),
+            });
+            return `Here's the employee directory (${ctx.directory.length} active):`;
           }
-          return `Access Denied: You don't have permission to view all employee details.\n\n${this.getOwnProfileGuide(ctx.selfEmployee ?? { name: ctx.name, department: 'N/A', designation: 'Employee' })}`;
+          this.notify(ctx.employeeId, 'danger', [{ label: 'My Details', send: 'my details' }]);
+          return `Access denied: you don't have permission to view all employee details.`;
         },
       },
 
       {
         name: 'salaryNotMine',
         test: (ctx) => (fuzzyContains(ctx.msg, 'salary') || ctx.msg.includes('pay')) && !ctx.msg.includes('my'),
-        handle: async (ctx) =>
-          (ctx.role === 'admin' || ctx.role === 'hr')
-            ? `${buildMenuGuide('How to view employee salary details', [
+        handle: async (ctx) => {
+          if (ctx.role === 'admin' || ctx.role === 'hr') {
+            this.draftService.pendingSteps.set(ctx.employeeId, {
+              title: 'How to view employee salary details',
+              items: [
                 'Open the Employees menu.',
                 'Select the employee card.',
                 'Open the payroll panel to review salary, deductions, and tax.',
                 'Use the documents area for Form16 or payslip downloads.',
-              ])}\n\nIf you want a public snapshot, browse the directory; if you need the private payroll file, open the secure payroll panel in the portal.`
-            : `Access Denied: Salary information for other employees is confidential. Use "my salary" to view yours.\n\n${this.getOwnProfileGuide(ctx.selfEmployee ?? { name: ctx.name, department: 'N/A', designation: 'Employee' })}`,
+              ],
+              note: 'For a public snapshot, browse the directory; for the private payroll file, open the secure payroll panel in the portal.',
+            });
+            return `Here's how to view employee salary details:`;
+          }
+          this.notify(ctx.employeeId, 'danger', [{ label: 'My Salary', send: 'my salary' }]);
+          return `Access denied: salary information for other employees is confidential.`;
+        },
       },
 
       {
         name: 'employeeDetail',
         test: (ctx) =>
           fuzzyContains(ctx.msg, 'employee') && fuzzyContains(ctx.msg, 'detail') && !ctx.msg.includes('my'),
-        handle: async (ctx) =>
-          (ctx.role === 'admin' || ctx.role === 'hr')
-            ? `${buildMenuGuide('Employee details navigation', [
+        handle: async (ctx) => {
+          if (ctx.role === 'admin' || ctx.role === 'hr') {
+            this.draftService.pendingSteps.set(ctx.employeeId, {
+              title: 'Employee details navigation',
+              items: [
                 'Open the Employees menu.',
                 'Search or click the employee card.',
                 'Review the public profile details on the card.',
                 'Open the secure documents panel for private details.',
-              ])}\n\nYou can access all employee directory cards from the portal, while private files stay in the secure document section.`
-            : `You can only access your own details. Use "my details" to view yours.\n\n${this.getOwnProfileGuide(ctx.selfEmployee ?? { name: ctx.name, department: 'N/A', designation: 'Employee' })}`,
+              ],
+              note: 'All employee directory cards are accessible from the portal, while private files stay in the secure document section.',
+            });
+            return `Here's how to navigate employee details:`;
+          }
+          this.notify(ctx.employeeId, 'info', [{ label: 'My Details', send: 'my details' }]);
+          return `You can only access your own details.`;
+        },
       },
     ];
   }

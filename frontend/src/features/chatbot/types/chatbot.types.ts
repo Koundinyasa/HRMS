@@ -3,19 +3,50 @@ export interface ChatAction {
   send: string;
 }
 
-
-
 export interface ChatLeaveTypeOption {
   code: string;
   name: string;
   balance: number | null;
 }
 
+export interface ChatTeamMember {
+  employeeId: string;
+  name: string;
+  designation: string;
+}
+
+export interface ChatListPreviewRow {
+  primary: string;
+  secondary?: string;
+  meta?: string;
+  status?: string;
+  tone?: "pending" | "success" | "danger" | "neutral";
+  action?: string;
+}
+
+export interface ChatDataCardField {
+  label: string;
+  value: string;
+}
+
 export interface ChatWidget {
-  type: "date" | "leaveTypes";
+  type: "date" | "leaveTypes" | "download" | "teamPreview" | "listPreview" | "dataCard" | "notice" | "steps";
   step?: string;
   minDate?: string;
   options?: ChatLeaveTypeOption[];
+  url?: string;
+  filename?: string;
+  teamName?: string;
+  members?: ChatTeamMember[];
+  listTitle?: string;
+  listRows?: ChatListPreviewRow[];
+  cardTitle?: string;
+  cardSubtitle?: string;
+  cardFields?: ChatDataCardField[];
+  noticeTone?: "info" | "warning" | "danger";
+  stepsTitle?: string;
+  stepsList?: string[];
+  stepsNote?: string;
 }
 
 export interface ChatMessage {
@@ -25,6 +56,7 @@ export interface ChatMessage {
   timestamp: Date;
   actions?: ChatAction[];
   widget?: ChatWidget;
+  retryText?: string;
 }
 
 export interface ChatRequest {
