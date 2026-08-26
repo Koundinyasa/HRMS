@@ -1,94 +1,80 @@
 import { NavLink, useParams } from "react-router-dom";
-
-import type { ProfileTabsProps } from "../types/profile.types";
-
-export default function ProfileTabs({
-  tabs,
-}: ProfileTabsProps) {
+ 
+import { useDashboard } from "../../dashboard/hooks/useDashboard";
+ 
+import type { MenuItem } from "../../dashboard/types/dashboard.types";
+ 
+export default function ProfileTabs() {
   const { domain } = useParams();
-
+ 
+  const { menuData } = useDashboard();
+ 
+  // Get "My Profile" dynamically from backend
+  const profileMenu =
+    menuData?.data?.[0]?.children?.find(
+      (item: MenuItem) =>
+        item.menuName === "My Profile"
+    );
+ 
+  // Get profile submenus dynamically
+  const tabs = profileMenu?.children ?? [];
+ 
   return (
     <div
-      className="
-        w-full
-        flex
-        border-b
-        overflow-x-auto
-      "
+      className="w-full overflow-x-auto border-b scrollbar-thin"
       style={{
         borderColor: "var(--primary-border)",
       }}
     >
-      {tabs.map((tab) => {
-        let route = "";
-
-        switch (tab.menuName) {
-          case "Personal Information":
-            route = `/${domain}/employee/profile/personal`;
-            break;
-
-          case "Family Details":
-            route = `/${domain}/employee/profile/family`;
-            break;
-
-          case "Education Details":
-            route = `/${domain}/employee/profile/education`;
-            break;
-
-          case "Experience Details":
-            route = `/${domain}/employee/profile/experience`;
-            break;
-
-          case "Bank Information":
-            route = `/${domain}/employee/profile/bank`;
-            break;
-
-          case "Uploaded Documents":
+      <div className="flex w-max">
+        {tabs.map((tab: MenuItem) => {
+ 
+          let route =
+            tab.routeUrl?.replace(
+              "/Employee",
+              `/${domain}/employee`
+            ) ?? "";
+ 
+          // Fix profile document route
+          if (tab.menuName === "Uploaded Documents") {
             route = `/${domain}/employee/profile/documents`;
-            break;
-
-          default:
-            route =
-              tab.routeUrl?.replace(
-                "/Employee",
-                `/${domain}/employee`
-              ) ?? "";
-        }
-
-        return (
-          <NavLink
-            key={tab.menuId}
-            to={route}
-            className={({ isActive }) =>
-              `
-                flex-1
-                text-center
-                py-4
-                whitespace-nowrap
-                font-medium
-                border-b-2
-                transition-all
-                duration-300
-                ${
-                  isActive
-                    ? ""
-                    : "border-transparent text-slate-500 hover:text-slate-700"
-                }
-              `
-            }
-            style={({ isActive }) =>
-              isActive
-                ? {
-                    color: "var(--primary-color)",
-                    borderColor: "var(--primary-color)",
+          }
+ 
+          return (
+            <NavLink
+              key={tab.menuId}
+              to={route}
+              className={({ isActive }) =>
+                `
+                  shrink-0
+                  px-4
+                  py-3
+                  text-sm
+                  font-medium
+                  whitespace-nowrap
+                  border-b-2
+                  transition-all
+                  ${
+                    isActive
+                      ? ""
+                      : "border-transparent text-slate-500 hover:text-slate-700"
                   }
-                : {}
-            }
-          >
-            {tab.menuName}
-          </NavLink>
-        );
-      })}
+                `
+              }
+              style={({ isActive }) =>
+                isActive
+                  ? {
+                      color: "var(--primary-color)",
+                      borderColor: "var(--primary-color)",
+                    }
+                  : {}
+              }
+            >
+              {tab.menuName}
+            </NavLink>
+          );
+        })}
+      </div>
     </div>
   );
 }

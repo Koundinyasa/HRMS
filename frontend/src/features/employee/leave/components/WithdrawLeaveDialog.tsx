@@ -154,7 +154,7 @@ export default function WithdrawLeaveDialog({
                         Reason
                     </Label>
 
-                    <div className="mt-2 rounded-md border bg-slate-50 px-3 py-2 text-sm whitespace-pre-wrap">
+                    <div className="mt-2 min-h-[30px] rounded-md border bg-slate-50 px-3 py-3 text-sm whitespace-pre-wrap">
                         {values["Reason"]}
                     </div>
 

@@ -14,17 +14,17 @@ export default function LeaveBalanceCard({
   if (records.length === 0) return null;
 
   return (
-    <Card className="h-full min-h-[520px] rounded-2xl border border-slate-200 shadow-sm">
+    <Card className="h-full rounded-2xl border border-slate-200 shadow-sm">
       <CardContent className="p-5">
         <h3 className="text-xl font-bold">
           Available Leave Balance
         </h3>
 
-        <p className="mb-4 text-sm text-slate-500">
+        <p className="mb-3 text-sm text-slate-500">
           Available leaves for this year.
         </p>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {records.map((record, index) => {
             const leaveType =
               record.fields.find(
@@ -48,7 +48,7 @@ export default function LeaveBalanceCard({
                   border-slate-200
                   bg-white
                   px-4
-                  py-3
+                  py-2
                   transition
                   hover:shadow-sm
                 "

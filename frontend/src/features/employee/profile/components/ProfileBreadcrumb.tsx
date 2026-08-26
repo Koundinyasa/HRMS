@@ -11,7 +11,7 @@ export default function ProfileBreadcrumb() {
       ?.replace("-", " ") ?? "";
 
   return (
-    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500 mb-3 sm:gap-2 sm:text-sm sm:mb-4">
 
       <span>Employee</span>
 

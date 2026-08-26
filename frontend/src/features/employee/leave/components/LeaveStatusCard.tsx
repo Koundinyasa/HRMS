@@ -84,12 +84,12 @@ export default function LeaveStatusCard({
           {/* Summary */}
 
           <div
-            className="flex cursor-pointer items-center justify-between p-5 transition-colors hover:bg-slate-50"
+            className="flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-slate-50"
             onClick={() =>
               setExpanded((prev) => !prev)
             }
           >
-            <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-4">
+            <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-4">
 
               {/* Leave */}
 
@@ -98,11 +98,11 @@ export default function LeaveStatusCard({
                   Leave
                 </p>
 
-                <h3 className="mt-1 text-lg font-semibold text-slate-800">
+                <h3 className="text-base font-semibold text-slate-800">
                   {leave.LeaveName}
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="text-xs text-slate-500">
                   {formatDate(leave.FromDate)} →{" "}
                   {formatDate(leave.ToDate)}
                 </p>
@@ -141,21 +141,21 @@ export default function LeaveStatusCard({
                   Progress
                 </p>
 
-                <div className="mt-3 flex items-center gap-3">
+                <div className="mt-2 flex items-center gap-3">
 
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
 
                     <div
                       className={`h-full transition-all duration-500 ${overallStatus === "APPROVED"
-                          ? "bg-emerald-500"
-                          : overallStatus === "REJECTED"
-                            ? "bg-red-500"
-                            : "bg-amber-500"
+                        ? "bg-emerald-500"
+                        : overallStatus === "REJECTED"
+                          ? "bg-red-500"
+                          : "bg-amber-500"
                         }`}
                       style={{
                         width: `${overallStatus === "APPROVED"
-                            ? 100
-                            : progress
+                          ? 100
+                          : progress
                           }%`,
                       }}
                     />
@@ -175,7 +175,7 @@ export default function LeaveStatusCard({
 
             </div>
 
-            <div className="ml-5 flex items-center gap-4">
+            <div className="ml-3 flex items-center gap-2">
 
               {(overallStatus === "SUBMITTED" ||
                 overallStatus === "APPROVED") && (

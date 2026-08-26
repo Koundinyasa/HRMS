@@ -6,7 +6,19 @@ export default function PersonalInformationPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-10">
+      <div
+        className="
+          flex
+          w-full
+          min-w-0
+          items-center
+          justify-center
+          px-3
+          py-6
+          sm:px-4
+          sm:py-10
+        "
+      >
         Loading...
       </div>
     );
@@ -14,7 +26,21 @@ export default function PersonalInformationPage() {
 
   if (isError) {
     return (
-      <div className="flex justify-center items-center py-10 text-red-500">
+      <div
+        className="
+          flex
+          w-full
+          min-w-0
+          items-center
+          justify-center
+          px-3
+          py-6
+          text-center
+          text-red-500
+          sm:px-4
+          sm:py-10
+        "
+      >
         Failed to load profile information.
       </div>
     );
@@ -29,7 +55,17 @@ export default function PersonalInformationPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div
+      className="
+        w-full
+        min-w-0
+        max-w-full
+        overflow-x-hidden
+        space-y-5
+        sm:space-y-6
+        lg:space-y-8
+      "
+    >
       {personalSection && (
         <ProfileSection section={personalSection} />
       )}

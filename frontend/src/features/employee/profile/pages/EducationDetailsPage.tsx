@@ -9,12 +9,15 @@ export default function EducationDetailsPage() {
   } = useProfile();
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-4 sm:p-6 text-slate-500">
+        {/* Responsive padding: smaller on mobile, larger on desktop */}
+        Loading education details...
+      </div>
   }
 
   if (isError) {
     return (
-      <div className="p-6 text-red-500">
+      <div className="p-4 sm:p-6 text-red-500">
         Failed to load education details.
       </div>
     );
@@ -26,11 +29,16 @@ export default function EducationDetailsPage() {
 
   if (!educationSection) {
     return (
-      <div className="p-6">
+     <div className="p-4 sm:p-6 text-slate-500">
         No Education Details Found.
       </div>
     );
   }
 
-  return <ProfileTable section={educationSection} />;
+  return (
+    <div className="w-full min-w-0">
+    
+      <ProfileTable section={educationSection} />
+    </div>
+  );
 }

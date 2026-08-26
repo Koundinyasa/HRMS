@@ -9,12 +9,14 @@ export default function UploadedDocumentsPage() {
   } = useProfile();
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="w-full min-w-0 px-3 py-6 sm:px-4 sm:py-10">
+        Loading...
+      </div>
   }
 
   if (isError) {
     return (
-      <div className="p-6 text-red-500">
+      <div className="w-full min-w-0 px-3 py-6 text-center text-red-500 sm:px-4 sm:py-10">
         Failed to load documents.
       </div>
     );
@@ -26,11 +28,15 @@ export default function UploadedDocumentsPage() {
 
   if (!documentsSection) {
     return (
-      <div className="p-6">
+      <div className="w-full min-w-0 px-3 py-6 sm:px-4 sm:py-10">
         No Documents Found.
       </div>
     );
   }
 
-  return <ProfileTable section={documentsSection} />;
+   return (
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden">
+      <ProfileTable section={documentsSection} />
+    </div>
+  );
 }

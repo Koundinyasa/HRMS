@@ -10,8 +10,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 import DateField from "../components/DateField";
@@ -199,49 +207,41 @@ export default function LeaveApply() {
                     control={control}
                     name="leaveType"
                     render={({ field }) => (
-
-                      <select
-                        id="leaveType"
+                      <Select
                         value={field.value}
-                        disabled={
-                          leaveTypesLoading ||
-                          isSubmitting
-                        }
-                        onChange={(e) =>
-                          field.onChange(e.target.value)
-                        }
-                        className="
-w-full
-h-12
-rounded-xl
-border
-border-slate-300
-bg-white
-px-4
-text-sm
-transition
-focus:outline-none
-focus:ring-2
-focus:ring-blue-500
-"
+                        onValueChange={field.onChange}
+                        disabled={leaveTypesLoading || isSubmitting}
                       >
-                        {field.value === "" && (
-                          <option value="" >
-                            Select Leave Type
-                          </option>
-                        )}
+                        <SelectTrigger
+                          id="leaveType"
+                          className="!h-[47px] w-full rounded-xl border border-slate-300 bg-white px-4 text-sm"
+                        >
+                          <SelectValue>
+                            {
+                              leaveTypes.find(
+                                (leave) => String(leave.ID) === String(field.value)
+                              )?.Name || "Select Leave Type"
+                            }
+                          </SelectValue>
+                        </SelectTrigger>
 
-                        {leaveTypes.map((leave) => (
-                          <option
-                            key={leave.ID}
-                            value={leave.ID}
-                          >
-                            {leave.Name}
-                          </option>
-                        ))}
-
-                      </select>
-
+                        <SelectContent
+                          side="bottom"
+                          align="start"
+                          sideOffset={4}
+                          alignItemWithTrigger={false}
+                          className="max-h-[90px] overflow-y-auto bg-white text-slate-900"
+                        >
+                          {leaveTypes.map((leave) => (
+                            <SelectItem
+                              key={leave.ID}
+                              value={String(leave.ID)}
+                            >
+                              {leave.Name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
                   />
 

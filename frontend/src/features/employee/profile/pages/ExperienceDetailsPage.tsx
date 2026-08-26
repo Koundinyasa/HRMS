@@ -9,12 +9,14 @@ export default function ExperienceDetailsPage() {
   } = useProfile();
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-4 sm:p-6 text-slate-500">
+        Loading experience details...
+      </div>
   }
 
   if (isError) {
     return (
-      <div className="p-6 text-red-500">
+      <div className="p-4 sm:p-6 text-red-500">
         Failed to load experience details.
       </div>
     );
@@ -26,11 +28,16 @@ export default function ExperienceDetailsPage() {
 
   if (!experienceSection) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6 text-slate-500">
         No Experience Details Found.
       </div>
     );
   }
 
-  return <ProfileTable section={experienceSection} />;
+  return (
+    <div className="w-full min-w-0">
+      {/* Prevents table from causing horizontal scroll on small screens */}
+      <ProfileTable section={experienceSection} />
+    </div>
+  );
 }
