@@ -84,9 +84,9 @@ export default function ResignationPage() {
     <div className="w-full">
       <SeparationNavbar />
 
-      <div className="mt-8 px-8">
-        <Card className="mx-auto max-w-6xl rounded-2xl border shadow-sm">
-          <CardHeader className="px-8 pt-8">
+      <div className="mt-4 min-w-0 px-3 sm:mt-6 sm:px-4 md:px-6 lg:mt-8 lg:px-8">
+        <Card className="mx-auto w-full min-w-0 max-w-6xl overflow-visible rounded-xl border shadow-sm sm:rounded-2xl">
+          <CardHeader className="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8">
             <CardTitle className="text-2xl font-bold">
               Resignation Request
             </CardTitle>
@@ -97,10 +97,13 @@ export default function ResignationPage() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-8 px-8 pb-8">
+          <CardContent className="w-full min-w-0 space-y-6 px-4 pb-6 sm:space-y-8 sm:px-6 sm:pb-8 lg:px-8">
             {/* Requested Last Working Date */}
-            <div className="space-y-2">
-              <Label htmlFor="lastWorkingDate">
+            <div className="w-full min-w-0 space-y-2">
+              <Label
+                htmlFor="lastWorkingDate"
+                className="text-sm sm:text-base"
+              >
                 Requested Last Working Date
               </Label>
 
@@ -109,11 +112,17 @@ export default function ResignationPage() {
                 type="date"
                 value={requestedLastWorkingDate}
                 onChange={(e) =>
-                  setRequestedLastWorkingDate(
-                    e.target.value
-                  )
+                  setRequestedLastWorkingDate(e.target.value)
                 }
-                className="h-11"
+                className="
+      h-11
+      w-full
+      min-w-0
+      max-w-full
+      rounded-lg
+      text-sm
+      sm:text-base
+    "
               />
             </div>
 

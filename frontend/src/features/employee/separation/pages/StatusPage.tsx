@@ -23,22 +23,10 @@ export default function StatusPage() {
     <div className="w-full">
       <SeparationNavbar />
 
-      <Card className="mt-6 shadow-sm">
-        <CardHeader className="border-b">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle className="flex items-center gap-3 text-2xl font-semibold">
-              <Menu className="h-5 w-5" />
-              Separation Approval Hierarchy
-            </CardTitle>
+      <Card className="mt-2 shadow-sm">
+        
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              Employee
-              <UserCircle2 className="h-6 w-6" />
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="pt-6">
+        <CardContent className="pt-2">
           {isLoading ? (
             <div className="flex h-40 items-center justify-center">
               <p className="text-muted-foreground">

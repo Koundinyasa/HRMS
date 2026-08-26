@@ -134,17 +134,17 @@ export default function SeparationStatusTimeline({
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {/* Header */}
         <div
-          className="flex cursor-pointer items-center justify-between border-b p-5 transition-colors hover:bg-slate-50"
+          className="flex cursor-pointer items-center justify-between border-b px-4 py-2 transition-colors hover:bg-slate-50"
           onClick={toggleExpand}
         >
-          <div className="grid flex-1 grid-cols-1 gap-6 md:grid-cols-4">
+          <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-4">
             {/* Notice Period */}
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-500">
                 Notice Period
               </p>
 
-              <h3 className="mt-1 text-lg font-semibold text-slate-800">
+              <h3 className="text-base font-semibold text-slate-800">
                 {request.FromDate} - {request.ToDate}
               </h3>
             </div>
@@ -187,7 +187,7 @@ export default function SeparationStatusTimeline({
                 Progress
               </p>
 
-              <div className="mt-3 flex items-center gap-3">
+              <div className="mt-2 flex items-center gap-2">
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
                   <div
                     className={`h-full transition-all duration-500
@@ -224,7 +224,7 @@ export default function SeparationStatusTimeline({
           {/* Expand / Collapse */}
           <button
             type="button"
-            className="ml-5 rounded-full p-2 transition hover:bg-slate-100"
+            className="ml-3 rounded-full p-1 transition hover:bg-slate-100"
           >
             {expanded ? (
               <ChevronUp className="h-5 w-5" />
@@ -242,15 +242,15 @@ export default function SeparationStatusTimeline({
             }`}
         >
           <div className="overflow-hidden">
-            <div className="p-6">
+            <div className="p-3">
               <div className="overflow-x-auto">
                 <div className="flex min-w-max items-center">                  {/* Request Submitted */}
                   <div className="flex w-36 flex-col items-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500 text-white shadow">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500 text-white shadow">
                       <Check className="h-5 w-5" />
                     </div>
 
-                    <p className="mt-3 text-center text-sm font-semibold">
+                    <p className="mt-2 text-center text-xs font-semibold">
                       Request Submitted
                     </p>
 
@@ -294,7 +294,7 @@ export default function SeparationStatusTimeline({
                         >
                           {/* Circle */}
                           <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-full border-2 shadow ${style.circle}`}
+                            className={`flex h-9 w-9 items-center justify-center rounded-full border-2 shadow ${style.circle}`}
                           >
                             {status ===
                               "completed" ? (
@@ -313,7 +313,7 @@ export default function SeparationStatusTimeline({
                           </div>
 
                           {/* Stage Name */}
-                          <p className="mt-3 text-center text-sm font-semibold leading-5">
+                          <p className="mt-2 text-center text-xs font-semibold leading-4">
                             {stage.StageName}
                           </p>
 
