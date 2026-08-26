@@ -7,31 +7,31 @@ import {
 } from "@/components/ui/card";
 import AssetNavbar from "../components/AssetNavbar";
 import { useAssetManagement } from "../hooks/useAssetManagement";
-
+ 
 export default function AssignedAssets() {
   const { historySection } = useAssetManagement();
-
+ 
   const records = historySection?.records ?? [];
   const headers = records[0]?.fields ?? [];
-
+ 
   return (
     <div className="space-y-5">
       <AssetNavbar />
-
+ 
       <Card>
         <CardHeader>
           <CardTitle>Assigned Assets</CardTitle>
-
+ 
           <CardDescription>
             Assets that have been approved and allocated to you.
           </CardDescription>
         </CardHeader>
-
+ 
         <CardContent>
           {records.length === 0 ? (
             <div className="py-10 text-center">
               <h3 className="font-medium">No assigned assets found</h3>
-
+ 
               <p className="mt-1 text-sm text-muted-foreground">
                 Approved and allocated assets will appear here.
               </p>
@@ -51,7 +51,7 @@ export default function AssignedAssets() {
                     ))}
                   </tr>
                 </thead>
-
+ 
                 <tbody>
                   {records.map((record, rowIndex) => (
                     <tr

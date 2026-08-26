@@ -9,8 +9,9 @@ import type {
   PendingAssetResponse,
 } from "../types/assetTypes";
 
-
-function throwIfApiError<T extends { StatusCode?: number; Message?: string }>(response: T): T {
+function throwIfApiError<T extends { StatusCode?: number; Message?: string }>(
+  response: T,
+): T {
   if (response.StatusCode && response.StatusCode >= 400) {
     throw { status: response.StatusCode, data: response };
   }
@@ -19,7 +20,6 @@ function throwIfApiError<T extends { StatusCode?: number; Message?: string }>(re
 
 export const assetApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    
     createAssetRequest: builder.mutation<
       CreateAssetRequestResponse,
       { assetId: number; remarks: string }
@@ -33,7 +33,6 @@ export const assetApi = baseApi.injectEndpoints({
       invalidatesTags: ["AssetRequests"],
     }),
 
-    
     getAssetHistory: builder.query<AssetHistoryResponse, void>({
       query: () => ({
         url: "/asset/history",
@@ -43,7 +42,6 @@ export const assetApi = baseApi.injectEndpoints({
       providesTags: ["AssetRequests"],
     }),
 
-    
     getPendingAssetRequests: builder.query<PendingAssetResponse, void>({
       query: () => ({
         url: "/asset/pendingrequests",
@@ -53,8 +51,7 @@ export const assetApi = baseApi.injectEndpoints({
       providesTags: ["AssetRequests"],
     }),
 
-    
-    getMyAssetRequestStatus: builder.query<AssetRequestStatusResponse,void>({
+    getMyAssetRequestStatus: builder.query<AssetRequestStatusResponse, void>({
       query: () => ({
         url: "/asset/return",
         method: "GET",
@@ -63,10 +60,14 @@ export const assetApi = baseApi.injectEndpoints({
       providesTags: ["AssetRequests"],
     }),
 
-   
     approveAssetStage: builder.mutation<
       ApiMessageResponse,
-      { requestId: number; stageOrder: number; actionStatusId: number; remarks: string }
+      {
+        requestId: number;
+        stageOrder: number;
+        actionStatusId: number;
+        remarks: string;
+      }
     >({
       query: (body) => ({
         url: "/asset/approvestage",
@@ -77,7 +78,6 @@ export const assetApi = baseApi.injectEndpoints({
       invalidatesTags: ["AssetRequests"],
     }),
 
-    
     allocateAsset: builder.mutation<
       ApiMessageResponse,
       {
@@ -98,8 +98,10 @@ export const assetApi = baseApi.injectEndpoints({
       invalidatesTags: ["AssetRequests"],
     }),
 
-    
-    createAssetType: builder.mutation<ApiMessageResponse, { assetName: string }>({
+    createAssetType: builder.mutation<
+      ApiMessageResponse,
+      { assetName: string }
+    >({
       query: (body) => ({
         url: "/asset/type",
         method: "POST",
@@ -109,7 +111,6 @@ export const assetApi = baseApi.injectEndpoints({
       invalidatesTags: ["AssetTypes"],
     }),
 
-    
     updateAssetType: builder.mutation<
       ApiMessageResponse,
       { assetName: string; newAssetName: string }
@@ -123,7 +124,6 @@ export const assetApi = baseApi.injectEndpoints({
       invalidatesTags: ["AssetTypes"],
     }),
 
-    
     updateAssetTypeStatus: builder.mutation<
       ApiMessageResponse,
       { assetName: string; isActive: 0 | 1 }
@@ -137,39 +137,63 @@ export const assetApi = baseApi.injectEndpoints({
       invalidatesTags: ["AssetTypes"],
     }),
 
-    
     getAssetTypes: builder.query<AssetTypeItem[], void>({
-  query: () => ({
-    url: "/asset/types",
-    method: "GET",
-    cache: "no-store" as RequestCache,
-  }),
+      query: () => ({
+        url: "/asset/types",
+        method: "GET",
+        cache: "no-store" as RequestCache,
+      }),
 
-  transformResponse: (response: AssetTypesResponse) => {
-    const section = response.sections.find(
-      (section) => section.title === "Asset Types"
-    );
+      transformResponse: (response: AssetTypesResponse) => {
+        const section = response.sections.find(
+          (section) => section.title?.trim().toLowerCase() === "asset types",
+        );
 
-    if (!section) return [];
+        if (!section) {
+          console.warn("Asset Types section not found:", response.sections);
 
-    return section.records.map((record) => {
-      const assetId = record.fields.find(
-        (field) => field.label === "AssetID"
-      )?.value;
+          return [];
+        }
 
-      const assetName = record.fields.find(
-        (field) => field.label === "AssetName"
-      )?.value;
+        return section.records
+          .map((record) => {
+            const getFieldValue = (labels: string[]) => {
+              const field = record.fields.find((field) => {
+                const normalizedLabel = field.label?.trim().toLowerCase();
 
-      return {
-        AssetID: Number(assetId),
-        AssetName: String(assetName),
-      };
-    });
-  },
+                return labels.includes(normalizedLabel);
+              });
 
-  providesTags: ["AssetTypes"],
-}),
+              return field?.value;
+            };
+
+            const assetId = getFieldValue(["assetid", "asset id", "asset_id"]);
+
+            const assetName = getFieldValue([
+              "assetname",
+              "asset name",
+              "asset_name",
+              "assettype",
+              "asset type",
+              "asset_type",
+              "name",
+            ]);
+
+            return {
+              AssetID: Number(assetId),
+              AssetName: assetName?.toString().trim() || "",
+            };
+          })
+          .filter(
+            (asset) =>
+              Number.isFinite(asset.AssetID) &&
+              asset.AssetID > 0 &&
+              asset.AssetName !== "",
+          );
+      },
+
+      providesTags: ["AssetTypes"],
+    }),
   }),
 });
 

@@ -1,15 +1,15 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
+ 
 interface AssetState {
   assetId: number | null;
   reason: string;
 }
-
+ 
 const initialState: AssetState = {
   assetId: null,
   reason: "",
 };
-
+ 
 const assetSlice = createSlice({
   name: "asset",
   initialState,
@@ -26,7 +26,8 @@ const assetSlice = createSlice({
     },
   },
 });
-
+ 
 export const { setAssetId, setAssetReason, clearRequestForm } = assetSlice.actions;
-
+ 
 export default assetSlice.reducer;
+ 
