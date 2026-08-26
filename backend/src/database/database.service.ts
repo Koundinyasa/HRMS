@@ -23,6 +23,7 @@ export class DatabaseService {
           trustServerCertificate: this.configService.get<boolean>(
             'database.trustServerCertificate',
           ),
+          useUTC:false
         },
       });
     }
