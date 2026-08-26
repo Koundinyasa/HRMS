@@ -36,6 +36,7 @@
     "joi": "^18.2.3",
     "mssql": "^12.5.5",
     "multer": "^2.2.0",
+    "nest-winston": "^1.10.2",
     "nodemailer": "^9.0.0",
     "openai": "^6.45.0",
     "pdfkit": "^0.19.1",
@@ -43,6 +44,7 @@
     "rxjs": "^7.8.1",
     "svg-captcha": "^1.4.0",
     "uuid": "^14.0.1",
+    "winston": "^3.19.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
