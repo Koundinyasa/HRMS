@@ -5,7 +5,7 @@ import {
   Vote,
   PartyPopper,
 } from "lucide-react";
-
+ 
 export default function AnnouncementCard() {
   const announcements = [
     {
@@ -51,35 +51,36 @@ export default function AnnouncementCard() {
       color: "#6B7280",
     },
   ];
-
+ 
   return (
     <div
       className="
-        rounded-2xl
-        p-5
-        shadow-sm
-        border
-        h-full
-      "
+  rounded-2xl
+  p-3
+  sm:p-4
+  lg:p-5
+  shadow-sm
+  border
+  h-auto
+"
       style={{
         backgroundColor: "var(--card-bg)",
         borderColor: "var(--primary-border)",
       }}
     >
       {/* Header */}
-
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h3
-          className="text-lg font-medium"
+          className="text-base sm:text-lg font-medium"
           style={{
             color: "var(--primary-color)",
           }}
         >
           Announcements
         </h3>
-
+ 
         <button
-          className="text-sm font-medium"
+          className="text-xs sm:text-sm font-medium shrink-0"
           style={{
             color: "var(--primary-color)",
           }}
@@ -87,30 +88,28 @@ export default function AnnouncementCard() {
           View All
         </button>
       </div>
-
+ 
       {/* Divider */}
-
       <div
-        className="h-[2px] mt-3 mb-4"
+        className="h-[2px] mt-3 mb-2 sm:mb-4"
         style={{
           backgroundColor: "var(--primary-border)",
         }}
       />
-
+ 
       {/* Announcement List */}
-
       <div>
         {announcements.map((item, index) => {
           const Icon = item.icon;
-
+ 
           return (
             <div
               key={index}
               className="
                 flex
                 items-start
-                gap-4
-                py-4
+                gap-3 sm:gap-4
+                py-2.5 sm:py-4
                 border-b
                 last:border-b-0
               "
@@ -119,11 +118,10 @@ export default function AnnouncementCard() {
               }}
             >
               {/* Icon */}
-
               <div
                 className="
-                  w-10
-                  h-10
+                  w-8 h-8
+                  sm:w-10 sm:h-10
                   rounded-full
                   flex
                   items-center
@@ -139,15 +137,14 @@ export default function AnnouncementCard() {
                   color={item.color}
                 />
               </div>
-
+ 
               {/* Content */}
-
-              <div>
-                <p className="text-sm text-slate-700">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-slate-700 break-words">
                   {item.title}
                 </p>
-
-                <p className="text-xs text-slate-400 mt-1">
+ 
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
                   {item.time}
                 </p>
               </div>

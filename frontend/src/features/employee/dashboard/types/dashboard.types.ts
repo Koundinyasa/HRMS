@@ -80,5 +80,7 @@ export interface NavbarProps {
 
 export interface SidebarProps {
   isSidebarOpen: boolean;
+  setIsSidebarOpen: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
 }
-

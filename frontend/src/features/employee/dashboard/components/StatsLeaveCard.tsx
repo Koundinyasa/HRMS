@@ -4,26 +4,26 @@ import {
   CircleCheck,
   ArrowDownLeft,
 } from "lucide-react";
-
+ 
 import { useDashboard } from "../hooks/useDashboard";
-
+ 
 export default function StatsLeaveCard() {
-
+ 
   const { profileData } = useDashboard();
-
+ 
   const attendance =
     profileData?.data.attendanceSummary;
-
+ 
   return (
     <div className="flex flex-col gap-4">
       {/* Top Stats */}
-
-      <div className="grid grid-cols-4 gap-4">
-
+ 
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+ 
         {/* Average Hours */}
-
+ 
         <div
-          className="rounded-2xl p-4 border shadow-sm"
+          className="rounded-2xl p-3 sm:p-4 border shadow-sm min-w-0"
           style={{
             backgroundColor: "var(--card-bg)",
             borderColor: "var(--primary-border)",
@@ -40,20 +40,20 @@ export default function StatsLeaveCard() {
               color="var(--primary-color)"
             />
           </div>
-
-          <p className="text-sm text-slate-500 mt-3">
+ 
+          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
             Average hours
           </p>
-
-          <h3 className="text-3xl font-semibold mt-1 text-slate-800">
+ 
+          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
             {attendance?.AverageHours ?? "--"}
           </h3>
         </div>
-
+ 
         {/* Average Check In */}
-
+ 
         <div
-          className="rounded-2xl p-4 border shadow-sm"
+          className="rounded-2xl p-3 sm:p-4 border shadow-sm min-w-0"
           style={{
             backgroundColor: "var(--card-bg)",
             borderColor: "var(--primary-border)",
@@ -70,20 +70,20 @@ export default function StatsLeaveCard() {
               color="#22C55E"
             />
           </div>
-
-          <p className="text-sm text-slate-500 mt-3">
+ 
+          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
             Average check-in
           </p>
-
-          <h3 className="text-3xl font-semibold mt-1 text-slate-800">
+ 
+          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
             {attendance?.["AverageCheck-In"] ?? "--"}
           </h3>
         </div>
-
+ 
         {/* On Time Arrival */}
-
+ 
         <div
-          className="rounded-2xl p-4 border shadow-sm"
+          className="rounded-2xl p-3 sm:p-4 border shadow-sm min-w-0"
           style={{
             backgroundColor: "var(--card-bg)",
             borderColor: "var(--primary-border)",
@@ -100,13 +100,13 @@ export default function StatsLeaveCard() {
               color="#10B981"
             />
           </div>
-
-          <p className="text-sm text-slate-500 mt-3">
+ 
+          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
             On-time arrival
           </p>
-
+ 
           <h3
-            className="text-3xl font-semibold mt-1"
+  className="text-2xl sm:text-3xl font-semibold mt-1"
             style={{
               color: "#22C55E",
             }}
@@ -114,11 +114,11 @@ export default function StatsLeaveCard() {
             {attendance?.["On-TimeArrival"] ?? "--"}
           </h3>
         </div>
-
+ 
         {/* Average Check Out */}
-
+ 
         <div
-          className="rounded-2xl p-4 border shadow-sm"
+          className="rounded-2xl p-3 sm:p-4 border shadow-sm min-w-0"
           style={{
             backgroundColor: "var(--card-bg)",
             borderColor: "var(--primary-border)",
@@ -135,47 +135,48 @@ export default function StatsLeaveCard() {
               color="#F97316"
             />
           </div>
-
-          <p className="text-sm text-slate-500 mt-3">
+ 
+          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
             Average check-out
           </p>
-
-          <h3 className="text-3xl font-semibold mt-1 text-slate-800">
+ 
+          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
             {attendance?.["AverageCheck-Out"] ?? "--"}
           </h3>
         </div>
       </div>
-
+ 
       {/* My Leaves */}
-
+ 
             {/* My Leaves */}
-
+ 
       <div
-        className="rounded-2xl border shadow-sm p-6"
+        className="rounded-2xl border shadow-sm p-4 sm:p-6"
         style={{
           backgroundColor: "var(--card-bg)",
           borderColor: "var(--primary-border)",
         }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h3
-            className="text-2xl font-medium"
+            className="text-xl sm:text-2xl font-medium"
             style={{
               color: "var(--primary-color)",
             }}
           >
             My Leaves
           </h3>
-
+ 
           <button
             className="
-              px-3
-              py-1
-              rounded-lg
-              text-sm
-              font-medium
-              text-white
-            "
+  px-2 sm:px-3
+  py-1
+  rounded-lg
+  text-xs sm:text-sm
+  font-medium
+  text-white
+  whitespace-nowrap
+"
             style={{
               background: "var(--primary-gradient)",
             }}
@@ -183,28 +184,29 @@ export default function StatsLeaveCard() {
             Apply Leave +
           </button>
         </div>
-
+ 
         {/* Divider */}
-
+ 
         <div
           className="h-[2px] mt-4"
           style={{
             backgroundColor: "var(--primary-border)",
           }}
         />
-
+ 
         {/* Restricted Holiday */}
-
+ 
         <div
           className="
-            mt-8
-            rounded-xl
-            px-5
-            py-4
-            flex
-            items-center
-            justify-between
-          "
+  mt-5 sm:mt-8
+  rounded-xl
+  px-3 sm:px-5
+  py-3 sm:py-4
+  flex
+  items-center
+  justify-between
+  gap-3
+"
           style={{
             background:
               "linear-gradient(90deg,var(--primary-light),var(--card-bg))",
@@ -212,29 +214,30 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-red-300" />
-
-            <span className="text-xl text-slate-700">
+ 
+            <span className="text-sm sm:text-xl text-slate-700">
               Restricted Holiday
             </span>
           </div>
-
-          <span className="text-2xl font-medium text-slate-800">
+ 
+          <span className="text-xl sm:text-2xl font-medium text-slate-800">
             2
           </span>
         </div>
-
+ 
         {/* Upcoming Holiday */}
-
+ 
         <div
           className="
-            mt-4
-            rounded-xl
-            px-5
-            py-4
-            flex
-            items-center
-            justify-between
-          "
+  mt-5 sm:mt-8
+  rounded-xl
+  px-3 sm:px-5
+  py-3 sm:py-4
+  flex
+  items-center
+  justify-between
+  gap-3
+"
           style={{
             background:
               "linear-gradient(90deg,var(--primary-light),var(--card-bg))",
@@ -242,13 +245,13 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-emerald-400" />
-
-            <span className="text-xl text-slate-700">
+ 
+            <span className="text-sm sm:text-xl text-slate-700">
               Upcoming Holiday
             </span>
           </div>
-
-          <span className="text-2xl font-medium text-slate-800">
+ 
+          <span className="text-xl sm:text-2xl font-medium text-slate-800">
             1
           </span>
         </div>

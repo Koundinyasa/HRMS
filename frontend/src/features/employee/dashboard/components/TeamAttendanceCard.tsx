@@ -1,12 +1,12 @@
 import { ChevronsUpDown } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
-
+ 
 export default function TeamAttendanceCard() {
   const { profileData } = useDashboard();
-
+ 
   const employeeNames =
     profileData?.data?.upcomingEvents ?? [];
-
+ 
   const staticData = [
     {
       role: "UI Designer",
@@ -45,7 +45,7 @@ export default function TeamAttendanceCard() {
       textColor: "#B45309",
     },
   ];
-
+ 
   const teamData = staticData.map(
     (item, index) => ({
       initials:
@@ -55,31 +55,34 @@ export default function TeamAttendanceCard() {
           .join("")
           .substring(0, 2)
           .toUpperCase() ?? "--",
-
+ 
       name:
         employeeNames[index]?.FullName ??
         "No Employee",
-
+ 
       ...item,
     })
   );
-
+ 
   return (
     <div
       className="
-        rounded-2xl
-        p-6
-        shadow-sm
-        border
-      "
+  rounded-2xl
+  p-4 sm:p-5 lg:p-6
+  shadow-sm
+  border
+  w-full
+  min-w-0
+  overflow-hidden
+"
       style={{
         backgroundColor: "var(--card-bg)",
         borderColor: "var(--primary-border)",
       }}
     >
       {/* Header */}
-
-      <div className="flex items-center justify-between">
+ 
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3
           className="text-xl font-semibold"
           style={{
@@ -88,102 +91,111 @@ export default function TeamAttendanceCard() {
         >
           Team
         </h3>
-
-        <div className="flex items-center gap-5 text-sm">
+ 
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-green-500" />
             <span>In Office</span>
           </div>
-
+ 
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500" />
             <span>Work From Home</span>
           </div>
-
+ 
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500" />
             <span>Absent</span>
           </div>
         </div>
       </div>
-
+ 
       {/* Divider */}
-
+ 
       <div
         className="h-[2px] mt-4 mb-4"
         style={{
           backgroundColor: "var(--primary-border)",
         }}
       />
-
-      {/* Table Header */}
-
-      <div
-        className="grid grid-cols-[2.4fr_1fr_1fr_1fr_1fr]"
-        style={{
-          color: "var(--primary-color)",
-        }}
-      >
-        <div>Members</div>
-
-        <div className="flex items-center gap-1">
-          Today
-          <ChevronsUpDown
-            size={14}
-            color="var(--primary-color)"
-          />
-        </div>
-
-        <div className="flex items-center gap-1">
-          25/9
-          <ChevronsUpDown
-            size={14}
-            color="var(--primary-color)"
-          />
-        </div>
-
-        <div className="flex items-center gap-1">
-          24/9
-          <ChevronsUpDown
-            size={14}
-            color="var(--primary-color)"
-          />
-        </div>
-
-        <div className="flex items-center gap-1">
-          23/9
-          <ChevronsUpDown
-            size={14}
-            color="var(--primary-color)"
-          />
-        </div>
-      </div>
-
-      {/* Rows */}
-
-      {teamData.map((member, index) => (
-        <div
-          key={index}
-          className="
+ 
+      {/* Table */}
+ 
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[600px]">
+ 
+          {/* Table Header */}
+ 
+          <div
+            className="grid grid-cols-[2.4fr_1fr_1fr_1fr_1fr]"
+            style={{
+              color: "var(--primary-color)",
+            }}
+          >
+            <div>Members</div>
+ 
+            <div className="flex items-center gap-1">
+              Today
+              <ChevronsUpDown
+                size={14}
+                color="var(--primary-color)"
+              />
+            </div>
+ 
+            <div className="flex items-center gap-1">
+              25/9
+              <ChevronsUpDown
+                size={14}
+                color="var(--primary-color)"
+              />
+            </div>
+ 
+            <div className="flex items-center gap-1">
+              24/9
+              <ChevronsUpDown
+                size={14}
+                color="var(--primary-color)"
+              />
+            </div>
+ 
+            <div className="flex items-center gap-1">
+              23/9
+              <ChevronsUpDown
+                size={14}
+                color="var(--primary-color)"
+              />
+            </div>
+          </div>
+ 
+          {/* Rows */}
+ 
+          {teamData.map((member, index) => (
+            <div
+              key={index}
+              className="
   grid
   grid-cols-[2.4fr_1fr_1fr_1fr_1fr]
   items-center
-  py-5
+  py-4 sm:py-5
   border-t
 "
-          style={{
-            borderColor: "var(--primary-border)",
-          }}
-        >
-          {/* Member */}
-
-          <div className="flex items-center gap-4 pl-2">
-            <div
-              className="
-    w-12
-    h-12
-    min-w-[48px]
-    min-h-[48px]
+              style={{
+                borderColor: "var(--primary-border)",
+              }}
+            >
+              {/* Member */}
+ 
+              <div className="flex items-center gap-3 sm:gap-4 pl-2">
+                <div
+                  className="
+    w-10
+    h-10
+    sm:w-12
+    sm:h-12
+    min-w-[40px]
+    sm:min-w-[48px]
+    min-h-[40px]
+    sm:min-h-[48px]
     shrink-0
     rounded-full
     flex
@@ -191,75 +203,79 @@ export default function TeamAttendanceCard() {
     justify-center
     font-semibold
   "
-              style={{
-                backgroundColor: member.color,
-                color: member.textColor,
-              }}
-            >
-              {member.initials}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <h4
-                className="
+                  style={{
+                    backgroundColor: member.color,
+                    color: member.textColor,
+                  }}
+                >
+                  {member.initials}
+                </div>
+ 
+                <div className="min-w-0 flex-1">
+                  <h4
+                    className="
     font-medium
+    text-sm sm:text-base
     text-slate-800
-    leading-6
+    leading-5 sm:leading-6
     break-words
   "
-              >
-                {member.name}
-              </h4>
-
-              <p className="text-sm text-slate-500 mt-0.5">
-                {member.role}
-              </p>
+                  >
+                    {member.name}
+                  </h4>
+ 
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {member.role}
+                  </p>
+                </div>
+              </div>
+ 
+              {/* Today */}
+ 
+              <div>
+                {member.today === "office" ? (
+                  <span className="w-3 h-3 rounded-full bg-green-500 block" />
+                ) : member.today === "wfh" ? (
+                  <span className="w-3 h-3 rounded-full bg-blue-500 block" />
+                ) : (
+                  <span className="text-sm text-slate-700">
+                    {member.today}
+                  </span>
+                )}
+              </div>
+ 
+              {/* 25/9 */}
+ 
+              <div>
+                {member.day25}
+              </div>
+ 
+              {/* 24/9 */}
+ 
+              <div>
+                {member.day24 === "on leave" ? (
+                  <span className="text-orange-500 text-sm">
+                    On Leave
+                  </span>
+                ) : member.day24 === "wfh" ? (
+                  <span className="w-3 h-3 rounded-full bg-blue-500 block" />
+                ) : (
+                  <span className="text-sm text-slate-700">
+                    {member.day24}
+                  </span>
+                )}
+              </div>
+ 
+              {/* 23/9 */}
+ 
+              <div>
+                {member.day23}
+              </div>
             </div>
-          </div>
-
-          {/* Today */}
-
-          <div>
-            {member.today === "office" ? (
-              <span className="w-3 h-3 rounded-full bg-green-500 block" />
-            ) : member.today === "wfh" ? (
-              <span className="w-3 h-3 rounded-full bg-blue-500 block" />
-            ) : (
-              <span className="text-sm text-slate-700">
-                {member.today}
-              </span>
-            )}
-          </div>
-
-          {/* 25/9 */}
-
-          <div>
-            {member.day25}
-          </div>
-
-          {/* 24/9 */}
-
-          <div>
-            {member.day24 === "on leave" ? (
-              <span className="text-orange-500 text-sm">
-                On Leave
-              </span>
-            ) : member.day24 === "wfh" ? (
-              <span className="w-3 h-3 rounded-full bg-blue-500 block" />
-            ) : (
-              <span className="text-sm text-slate-700">
-                {member.day24}
-              </span>
-            )}
-          </div>
-
-          {/* 23/9 */}
-
-          <div>
-            {member.day23}
-          </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
+ 
   );
 }

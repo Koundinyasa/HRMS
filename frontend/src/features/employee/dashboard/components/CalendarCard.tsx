@@ -3,20 +3,20 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-
+ 
 import { useDashboard } from "../hooks/useDashboard";
-
+ 
 export default function CalendarCard() {
   const { holidayData } = useDashboard();
-
+ 
   const [currentDate, setCurrentDate] =
     useState(new Date());
-
+ 
   const [
     currentHolidayIndex,
     setCurrentHolidayIndex,
   ] = useState(0);
-
+ 
   const monthNames = [
     "January",
     "February",
@@ -31,7 +31,7 @@ export default function CalendarCard() {
     "November",
     "December",
   ];
-
+ 
   const weekDays = [
     "Sun",
     "Mon",
@@ -41,75 +41,78 @@ export default function CalendarCard() {
     "Fri",
     "Sat",
   ];
-
-
-
+ 
+  const getHolidayDate = (dateString: string) => {
+    const [datePart] = dateString.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+ 
+    return {
+      year,
+      month: month - 1,
+      day,
+    };
+  };
+ 
+ 
+ 
   const year =
     currentDate.getFullYear();
-
+ 
   const month =
     currentDate.getMonth();
-
+ 
   const holidays =
-    holidayData?.data?.filter(
-      (holiday) => {
-        const holidayDate =
-          new Date(
-            holiday.HolidayDate
-          );
-
-        return (
-          holidayDate.getMonth() ===
-          month &&
-          holidayDate.getFullYear() ===
-          year
-        );
-      }
-    ) || [];
-
-  const holidayDays =
-    holidays.map((holiday) =>
-      new Date(
-        holiday.HolidayDate
-      ).getDate()
-    );
-
-  const holidayMap =
-    holidays.reduce(
-      (
-        acc: Record<number, string>,
-        holiday
-      ) => {
-        acc[
-          new Date(
-            holiday.HolidayDate
-          ).getDate()
-        ] = holiday.HolidayName;
-
-        return acc;
-      },
-      {}
-    );
-
+    holidayData?.data?.filter((holiday) => {
+      const {
+        year: holidayYear,
+        month: holidayMonth,
+      } = getHolidayDate(holiday.HolidayDate);
+ 
+      return (
+        holidayMonth === month &&
+        holidayYear === year
+      );
+    }) || [];
+ 
+  const holidayDays = holidays.map(
+    (holiday) =>
+      getHolidayDate(holiday.HolidayDate).day
+  );
+ 
+  const holidayMap = holidays.reduce(
+    (
+      acc: Record<number, string>,
+      holiday
+    ) => {
+      const { day } =
+        getHolidayDate(holiday.HolidayDate);
+ 
+      acc[day] = holiday.HolidayName;
+ 
+      return acc;
+    },
+    {}
+  );
+ 
   const firstDay =
     new Date(
       year,
       month,
       1
     ).getDay();
-
+ 
   const totalDays =
     new Date(
       year,
       month + 1,
       0
     ).getDate();
-
+ 
   const days: (
     | number
     | null
   )[] = [];
-
+ 
   for (
     let i = 0;
     i < firstDay;
@@ -117,7 +120,7 @@ export default function CalendarCard() {
   ) {
     days.push(null);
   }
-
+ 
   for (
     let i = 1;
     i <= totalDays;
@@ -125,7 +128,7 @@ export default function CalendarCard() {
   ) {
     days.push(i);
   }
-
+ 
   const previousMonth = () => {
     setCurrentDate(
       new Date(
@@ -135,7 +138,7 @@ export default function CalendarCard() {
       )
     );
   };
-
+ 
   const nextMonth = () => {
     setCurrentDate(
       new Date(
@@ -145,37 +148,67 @@ export default function CalendarCard() {
       )
     );
   };
-
+ 
+  const today = new Date();
+ 
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+ 
   const upcomingHolidays =
     holidayData?.data
-      ?.filter(
-        (holiday) =>
+      ?.filter((holiday) => {
+        const {
+          year: holidayYear,
+          month: holidayMonth,
+          day: holidayDay,
+        } = getHolidayDate(holiday.HolidayDate);
+ 
+        const holidayDate = new Date(
+          holidayYear,
+          holidayMonth,
+          holidayDay
+        );
+ 
+        return holidayDate >= todayDate;
+      })
+      .sort((a, b) => {
+        const dateA = getHolidayDate(
+          a.HolidayDate
+        );
+ 
+        const dateB = getHolidayDate(
+          b.HolidayDate
+        );
+ 
+        return (
           new Date(
-            holiday.HolidayDate
-          ) > new Date()
-      )
-      .sort(
-        (a, b) =>
-          new Date(
-            a.HolidayDate
+            dateA.year,
+            dateA.month,
+            dateA.day
           ).getTime() -
           new Date(
-            b.HolidayDate
+            dateB.year,
+            dateB.month,
+            dateB.day
           ).getTime()
-      ) || [];
-
+        );
+      }) || [];
+ 
   const upcomingHoliday =
     upcomingHolidays[
     currentHolidayIndex
     ];
-
+ 
   useEffect(() => {
     if (
       upcomingHolidays.length <=
       1
     )
       return;
-
+ 
     const interval =
       setInterval(() => {
         setCurrentHolidayIndex(
@@ -184,19 +217,19 @@ export default function CalendarCard() {
             upcomingHolidays.length
         );
       }, 3000);
-
+ 
     return () =>
       clearInterval(interval);
   }, [upcomingHolidays]);
-
+ 
   return (
     <div
       className="
         rounded-2xl
         border
         shadow-sm
-        p-5
-        h-full
+        p-3 sm:p-4 lg:p-5
+        h-auto
       "
       style={{
         backgroundColor:
@@ -206,10 +239,10 @@ export default function CalendarCard() {
       }}
     >
       {/* Header */}
-
+ 
       <div className="flex items-center justify-between">
         <h3
-          className="font-semibold text-lg"
+          className="font-semibold text-base sm:text-lg"
           style={{
             color:
               "var(--primary-color)",
@@ -218,7 +251,7 @@ export default function CalendarCard() {
           {monthNames[month]}{" "}
           {year}
         </h3>
-
+ 
         <div className="flex gap-2">
           <button
             onClick={
@@ -230,7 +263,7 @@ export default function CalendarCard() {
               color="var(--primary-color)"
             />
           </button>
-
+ 
           <button
             onClick={
               nextMonth
@@ -243,9 +276,9 @@ export default function CalendarCard() {
           </button>
         </div>
       </div>
-
+ 
       {/* Divider */}
-
+ 
       <div
         className="h-[2px] mt-3 mb-4"
         style={{
@@ -253,20 +286,20 @@ export default function CalendarCard() {
             "var(--primary-border)",
         }}
       />
-
+ 
       {/* Week Days */}
-
-      <div className="grid grid-cols-7 text-center text-xs mb-2 text-slate-600">
+ 
+      <div className="grid grid-cols-7 text-center text-[10px] sm:text-xs mb-2 text-slate-600">
         {weekDays.map((day) => (
           <div key={day}>
             {day}
           </div>
         ))}
       </div>
-
+ 
       {/* Calendar */}
-
-      <div className="grid grid-cols-7 gap-y-2">
+ 
+      <div className="grid grid-cols-7 gap-y-1 sm:gap-y-2">
         {days.map(
           (
             day,
@@ -281,19 +314,19 @@ export default function CalendarCard() {
                 />
               );
             }
-
+ 
             let bg = "";
             let text = "text-slate-700";
-
+ 
             // Find actual weekday in the calendar grid
             const weekDay = index % 7;
-
+ 
             // Sunday (0) or Saturday (6)
             if (weekDay === 0 || weekDay === 6) {
               bg = "bg-red-100";
               text = "text-red-500";
             }
-
+ 
             // Holiday overrides week off
             if (holidayDays.includes(day)) {
               bg = "";
@@ -311,13 +344,12 @@ export default function CalendarCard() {
                     ] || ""
                   }
                   className={`
-                    w-8
-                    h-8
+                    w-7 h-7 sm:w-8 sm:h-8
                     rounded-full
                     flex
                     items-center
                     justify-center
-                    text-sm
+                    text-xs sm:text-sm
                     font-medium
                     ${bg}
                     ${text}
@@ -340,9 +372,9 @@ export default function CalendarCard() {
           }
         )}
       </div>
-
+ 
       {/* Legend */}
-
+ 
       <div className="flex justify-center gap-5 mt-5 text-xs">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-red-500" />
@@ -350,7 +382,7 @@ export default function CalendarCard() {
             Week Off
           </span>
         </div>
-
+ 
         <div className="flex items-center gap-2">
           <span
             className="w-2 h-2 rounded-full"
@@ -363,15 +395,15 @@ export default function CalendarCard() {
           </span>
         </div>
       </div>
-
+ 
       {/* Upcoming Holiday */}
-
+ 
       <div
         className="
-          mt-5
-          rounded-xl
-          border
-          p-4
+          mt-4 sm:mt-5
+rounded-xl
+border
+p-3 sm:p-4
         "
         style={{
           background:
@@ -389,30 +421,39 @@ export default function CalendarCard() {
         >
           Upcoming Holiday
         </p>
-
+ 
         <div className="flex items-center justify-between mt-3">
           <div>
-            <p className="font-semibold text-slate-800">
+            <p className="font-semibold text-sm sm:text-base text-slate-800">
               {upcomingHoliday?.HolidayName ??
                 "No Upcoming Holiday"}
             </p>
-
+ 
             {upcomingHoliday && (
               <p className="text-xs text-slate-500 mt-1">
-                {new Date(
-                  upcomingHoliday.HolidayDate
-                ).toLocaleDateString(
-                  "en-GB",
-                  {
+                {(() => {
+                  const {
+                    year,
+                    month,
+                    day,
+                  } = getHolidayDate(
+                    upcomingHoliday.HolidayDate
+                  );
+ 
+                  return new Date(
+                    year,
+                    month,
+                    day
+                  ).toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "long",
                     year: "numeric",
-                  }
-                )}
+                  });
+                })()}
               </p>
             )}
           </div>
-
+ 
           <div
             className="
               w-10
