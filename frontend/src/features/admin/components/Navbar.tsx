@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { Menu, Search, Info, Calendar, Bell, X, Users } from "lucide-react";
+import { Menu, Search, Calendar, Bell, X, Users } from "lucide-react";
 import NotificationPanel from "./Notificationpanel";
-import ThemePreset from "./ThemePreset";
 import UserMenu from "./UserMenu";
 import CalendarPanel from "./CalendarPanel";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import { useSidebar } from "./SidebarContext";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Navbar() {
-  // const employeeId = useAppSelector((state) => state.auth.employeeId);
+  
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
@@ -17,12 +17,12 @@ export default function Navbar() {
 
   const { toggleSidebar } = useSidebar();
   const { welcome } = useDashboard();
+  const navigate = useNavigate();
+  const { domain } = useParams();
 
   const now = new Date();
-  const monthBadge =
-    now.toLocaleString("en-US", { month: "short" }).toUpperCase() +
-    "/" +
-    now.getFullYear();
+  // const monthBadge =
+  //   now.toLocaleString("en-US", { month: "short" }).toUpperCase() + "/" + now.getFullYear();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -38,11 +38,15 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="h-16 w-full flex items-center justify-between px-4 lg:px-6 bg-white border-b border-slate-100 sticky top-0 z-30">
+    <header className="h-16 w-full flex items-center justify-between px-4 sm:px-4 lg:px-6 bg-white border-b border-slate-100 sticky top-0 z-30">
 
       {/* ── Left: Logo + company name ── */}
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="flex flex-col items-center gap-0.5 shrink-0">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <button
+          onClick={() => navigate(`/${domain}/admin/dashboard`)}
+          className="flex flex-col items-center gap-0.5 shrink-0 hover:opacity-80 transition-opacity"
+          title="Go to Dashboard"
+        >
           <div
             className="flex items-center justify-center rounded-lg shrink-0"
             style={{ width: 34, height: 34, background: "var(--theme-gradient, linear-gradient(135deg,#1D4ED8,#3B82F6))" }}
@@ -50,18 +54,18 @@ export default function Navbar() {
             <Users size={18} className="text-white" />
           </div>
           <span className="text-[11px] font-bold tracking-[0.2em] text-slate-700 hidden sm:block">
-            HRMS
+            KTS-PEOPLE
           </span>
-        </div>
+        </button>
 
         <button
           onClick={toggleSidebar}
-          className="text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-slate-400 hover:text-slate-600 transition-colors shrink-0"
         >
           <Menu size={18} />
         </button>
 
-        <span className="hidden md:block text-sm font-semibold text-slate-700 truncate max-w-[260px]">
+        <span className="text-[11px] sm:text-sm font-semibold text-slate-700 leading-tight">
           Koundinyasa Technology Services Pvt. Ltd.
         </span>
       </div>
@@ -85,22 +89,8 @@ export default function Navbar() {
         </div>
       </div>
 
+
       <div className="flex items-center gap-1.5 shrink-0">
-        <button
-          className="hidden sm:flex items-center h-8 px-3 rounded-lg transition-colors hover:opacity-90"
-          style={{ background: "var(--theme-primary, #2563EB)" }}
-        >
-          <span className="text-white text-xs font-semibold tracking-wide">
-            {monthBadge}
-          </span>
-        </button>
-
-        <button className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">
-          <Info size={17} />
-        </button>
-
-        <ThemePreset />
-
         <div className="relative" ref={calendarRef}>
           <button
             onClick={() => setCalendarOpen((p) => !p)}
@@ -122,7 +112,7 @@ export default function Navbar() {
           {notifOpen && <NotificationPanel onClose={() => setNotifOpen(false)} />}
         </div>
 
-        <div className="w-px h-6 bg-slate-200 mx-1" />
+        <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block" />
 
         <UserMenu
           fullName={welcome?.fullName}

@@ -1,36 +1,15 @@
 import { useDashboard } from "../hooks/useDashboard";
 import StatsCard from "../components/StatsCard";
-import RecentActivity from "../components/RecentActivity";
 import WelcomeCard from "../components/welcomeCard";
-import {
-  EmployeeCompositionChart,
-  AgeRangeChart,
-  DepartmentDonutChart,
-  TenureDistributionChart,
-} from "../components/Charts";
+import {EmployeeCompositionChart,AgeRangeChart,DepartmentDonutChart,TenureDistributionChart} from "../components/Charts";
 import { STAT_CARDS } from "../constants/dashboard.constants";
 import CelebrationsCard from "../components/CelebrationsCard";
-
-import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
-import { useState } from "react";
-
-const TENURE_DATA = [{ label: "0-3 mo", count: 58 }];
+import ClassificationWiseChart from "../components/ClassificationWiseChart";
+import TeamCard from "../components/TeamCard";
 
 export default function DashboardPage() {
 
-      const [chatbotOpen, setChatbotOpen] =useState(false);
-  const {
-    welcome,
-    summary,
-    departmentWiseCount,
-    genderWiseCount,
-    ageGroupWiseCount,
-    upcomingEvents,
-    team,
-    avgTenure,
-    isLoading,
-    isError,
-  } = useDashboard();
+      const {welcome,summary,departmentWiseCount,genderWiseCount,ageGroupWiseCount,upcomingEvents,team,avgTenure,TenureDatum,isLoading,isError} = useDashboard();
 
   if (isLoading) {
     return (
@@ -68,11 +47,15 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-5">
 
       {/* ── Top row: Welcome card + stat cards ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
 
-        <WelcomeCard welcomeMessage={welcome.welcomeMessage} />
+        <WelcomeCard 
+          welcomeMessage={welcome.welcomeMessage}
+          profilePhoto={welcome.profilePhoto}
+          fullName={welcome.fullName} 
+        />
 
-        <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-4 items-start">
           {STAT_CARDS.map((card) => (
             <StatsCard
               key={card.key}
@@ -83,8 +66,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {/* ── Charts row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <h3 className="text-sm font-semibold text-slate-800 mb-2">
@@ -104,7 +85,6 @@ export default function DashboardPage() {
           </div>
           <AgeRangeChart data={ageRangeData} />
         </div>
-
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <h3 className="text-sm font-semibold text-slate-800 mb-2">
             Department Distribution
@@ -136,7 +116,7 @@ export default function DashboardPage() {
                 <th className="font-medium pb-2">Paymonth</th>
                 <th className="font-medium pb-2 text-emerald-500">Earnings</th>
                 <th className="font-medium pb-2 text-red-500">Deductions</th>
-                <th className="font-medium pb-2" style={{ color: "var(--theme-primary)" }}>
+                <th className="font-medium pb-2 text-blue-600">
                   Netpay
                 </th>
               </tr>
@@ -152,7 +132,7 @@ export default function DashboardPage() {
                   <td className="py-2.5">{row.month}</td>
                   <td className="py-2.5 text-emerald-600">{row.earn}</td>
                   <td className="py-2.5 text-red-500">{row.ded}</td>
-                  <td className="py-2.5 font-medium" style={{ color: "var(--theme-primary)" }}>
+                  <td className="py-2.5 font-medium text-blue-600">
                     {row.net}
                   </td>
                 </tr>
@@ -162,78 +142,18 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-          <TenureDistributionChart data={TENURE_DATA} avgTenure={avgTenure} />
+          <TenureDistributionChart data={TenureDatum} avgTenure={avgTenure} />
         </div>
       </div>
-
       {/* ── Notifications + Team + Celebrations ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <RecentActivity />
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-          <div className="flex items-center justify-between border-b border-red-200 pb-2 mb-2">
-            <h3 className="text-sm font-semibold text-slate-800">Team</h3>
-            <button
-              className="text-xs font-medium border border-slate-200 rounded-md px-2 py-1 hover:opacity-80"
-              style={{ color: "var(--theme-primary)" }}
-            >
-              Manage Team
-            </button>
-          </div>
+        <ClassificationWiseChart />
 
-          {team.length === 0 ? (
-            <p className="text-sm text-slate-400 py-4">No team members found.</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-400 text-xs">
-                  <th className="font-medium pb-2">Lead Name</th>
-                  <th className="font-medium pb-2">Team</th>
-                  <th className="font-medium pb-2">Email</th>
-                </tr>
-              </thead>
-              <tbody className="text-slate-600">
-                {team.map((m) => (
-                  <tr key={m.email} className="border-t border-slate-50">
-                    <td className="py-2.5 flex items-center gap-2">
-                      {m.profilePhoto ? (
-                        <img
-                          src={m.profilePhoto}
-                          alt={m.leadName}
-                          className="w-6 h-6 rounded-full object-cover shrink-0"
-                        />
-                      ) : (
-                        <span className="w-6 h-6 rounded-full bg-slate-200 shrink-0" />
-                      )}
-                      <span className="truncate">{m.leadName}</span>
-                    </td>
-                    <td className="py-2.5">
-                      <span
-                        className="text-[11px] px-2 py-0.5 rounded-full font-medium text-white"
-                        style={{ background: m.badgeColor }}
-                      >
-                        {m.team}
-                      </span>
-                    </td>
-                    <td className="py-2.5 text-slate-500 truncate">{m.email}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <TeamCard team={team} />
 
         <CelebrationsCard events={upcomingEvents} />
-
-
       </div>
-
-      <ChatbotWidget
-        isOpen={chatbotOpen}
-        onToggle={() =>
-          setChatbotOpen(!chatbotOpen)
-        }
-      />
     </div>
   );
 }

@@ -42,6 +42,23 @@ export const SIDEBAR_LINKS = [
   { label: 'Organizations', icon: 'Building2', path: 'organizations' },
 ] as const;
 
+
+export const CLASSIFICATION_OPTIONS = [
+  { id: '1',       label: 'Company' },
+  { id: '2',       label: 'Branch' },
+  { id: '3',       label: 'Department' },
+  { id: '4',       label: 'Salary' },
+  { id: '5',       label: 'Designation' },
+  { id: '6',       label: 'Gender' },
+  { id: '7',       label: 'LeavePolicy'},
+  { id: '8',       label: 'Team' },
+  { id: '10',      label: 'Attendance'},
+  { id: '11',      label: 'Bank' },
+] as const;
+
+
+export type ClassificationId = (typeof CLASSIFICATION_OPTIONS)[number]['id'];
+
 // Placeholder activity feed until a notifications endpoint exists
 export const MOCK_NOTIFICATIONS: ActivityItem[] = [
   {

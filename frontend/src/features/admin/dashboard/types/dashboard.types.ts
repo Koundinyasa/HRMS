@@ -70,6 +70,12 @@ export interface DashboardSummary {
   upcomingEvents:      UpcomingEvent[];
   team:                TeamMember[];
   avgTenure:           string;
+  AgeRangeDatum:       AgeRangeDatum[];
+  DeptDatum:           DeptDatum[];
+  TenureDatum:         TenureDatum[];
+  classifications:     ClassificationMeta[];
+  StatCardConfig:       StatCardConfig[];
+  ActivityItem:         ActivityItem[];
 }
 
 // ── Stat card config ──────────────────────────────────────────
@@ -103,4 +109,53 @@ export interface TeamMember {
   team:         string;
   badgeColor:   string;
   email:        string;
+}
+
+
+
+
+// ---------- Age Range (grouped bars) ----------
+export interface AgeRangeDatum {
+  range: string;
+  men: number;
+  women: number;
+}
+
+// ---------- Department Distribution (donut) ----------
+export interface DeptDatum {
+  name: string;
+  value: number;
+  color: string;
+}
+
+// ---------- Tenure Distribution (single bar) ----------
+export interface TenureDatum {
+  label: string;
+  count: number;
+}
+
+export interface ClassificationMeta {
+  id:    number;
+  code:  string;
+  label: string;
+}
+
+export interface ClassificationCountItem {
+  label:string;
+  employeeCount:number;
+  colorHex:string;
+  colorHexLight:string;
+}
+
+
+export interface ClassificationWiseCountDto {
+  classificationId:number;
+  data:ClassificationCountItem[];
+}
+
+
+export interface StatsCardProps {
+  config: StatCardConfig;
+  value:  number;
+  change: number;
 }

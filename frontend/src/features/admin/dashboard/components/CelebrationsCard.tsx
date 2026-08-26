@@ -6,6 +6,8 @@ interface CelebrationsCardProps {
   events: UpcomingEvent[];
 }
 
+const BRAND_PURPLE = "#7C5CFC";
+
 function formatEventDate(dateStr: string, withYear = false) {
   return new Date(dateStr).toLocaleDateString("en-IN", {
     day: "numeric",
@@ -38,32 +40,34 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
   return (
     <>
       {/* Celebration Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 h-full">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-red-200 pb-2">
-          <h3 className="text-sm font-semibold text-slate-800">Celebrations</h3>
+        <div className="flex items-center justify-between border-b-2 border-red-300 pb-3 mb-3">
+          <h3 className="text-base font-semibold text-slate-800">Birthdays</h3>
           <button
             type="button"
             onClick={() => setOpenAllModal(true)}
-            className="text-xs font-medium border border-slate-200 rounded-md px-2 py-1 hover:opacity-80"
-            style={{ color: "var(--theme-primary)" }}
+            className="text-xs font-medium text-blue-600 border border-slate-200 rounded-md px-2.5 py-1 hover:bg-slate-50"
           >
             View All
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex flex-col items-center pt-6">
-          <h4 className="text-base font-medium text-slate-700 text-center">
-            {celebration?.fullName ?? "No Celebrations"}
+        <div className="flex flex-col items-center pt-2">
+          <h4 className="text-sm font-medium text-slate-700 text-center">
+            {celebration ? `${celebration.fullName} ${celebration.eventName}` : "No Celebrations"}
           </h4>
 
-          <p className="text-slate-600 text-sm mt-6">
-            {celebration
-              ? `${celebration.eventName === "Birthday" ? "🎂" : "🎉"} ${formatEventDate(
-                  celebration.eventDate
-                )} • ${celebration.eventName}`
-              : "No upcoming celebrations"}
+          <p className="text-slate-500 text-xs mt-2 flex items-center gap-1.5">
+            {celebration ? (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                {formatEventDate(celebration.eventDate)} {celebration.eventName}
+              </>
+            ) : (
+              "No upcoming celebrations"
+            )}
           </p>
 
           {/* Wish Button */}
@@ -74,28 +78,24 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
               setSelected(celebration);
               setOpenWishModal(true);
             }}
-            className="mt-6 w-full h-9 rounded-lg text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ background: "var(--theme-gradient)" }}
+            className="mt-3 px-8 py-1.5 rounded-full text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: BRAND_PURPLE }}
           >
             Wish
           </button>
 
           {/* Image */}
-          <div className="mt-6 flex justify-center">
-            <img src={birthdayImage} alt="Celebration" className="w-40 object-contain" />
+          <div className="mt-3 flex justify-center">
+            <img src={birthdayImage} alt="Celebration" className="w-28 object-contain" />
           </div>
         </div>
       </div>
-
       {/* Wish Modal */}
       {openWishModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="w-[390px] bg-white rounded-xl shadow-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100">
-              <h2
-                className="text-xl font-semibold"
-                style={{ color: "var(--theme-primary)" }}
-              >
+              <h2 className="text-xl font-semibold" style={{ color: BRAND_PURPLE }}>
                 Send Wishes
               </h2>
             </div>
@@ -119,7 +119,7 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
               <button
                 type="button"
                 className="px-6 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90"
-                style={{ background: "var(--theme-gradient)" }}
+                style={{ background: BRAND_PURPLE }}
               >
                 Send
               </button>
@@ -143,7 +143,7 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="w-[500px] max-h-[520px] bg-white rounded-xl shadow-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-semibold" style={{ color: "var(--theme-primary)" }}>
+              <h2 className="text-lg font-semibold" style={{ color: BRAND_PURPLE }}>
                 All Celebrations
               </h2>
               <button
@@ -154,7 +154,6 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
                 ✕
               </button>
             </div>
-
             <div className="max-h-[380px] overflow-y-auto">
               {events.length > 0 ? (
                 events.map((item, index) => (
@@ -177,7 +176,7 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
                         setOpenWishModal(true);
                       }}
                       className="px-4 py-2 rounded-lg text-white text-xs font-medium hover:opacity-90"
-                      style={{ background: "var(--theme-gradient)" }}
+                      style={{ background: BRAND_PURPLE }}
                     >
                       Wish
                     </button>
