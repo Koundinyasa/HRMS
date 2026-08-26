@@ -1,62 +1,62 @@
 import { useEffect, useState } from "react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
-
+ 
 import {
   Palette,
   Sun,
 } from "lucide-react";
-
+ 
 import {
   applyTheme,
   loadTheme,
   type ThemeName,
 } from "./theme";
-
+ 
 const colors: {
   key: ThemeName;
   color: string;
 }[] = [
-  {
-    key: "blue",
-    color: "#3B82F6",
-  },
-  {
-    key: "sky",
-    color: "#38BDF8",
-  },
-  {
-    key: "purple",
-    color: "#8B5CF6",
-  },
-  {
-  key: "teal",
-  color: "#4F46E5",
-},
-  {
-    key: "pink",
-    color: "#EC4899",
-  },
-  {
-  key: "cyan",
-  color: "#06B6D4",
-},
-{
-  key: "indigo",
-  color: "#6366F1",
-},
-  {
-    key: "slate",
-    color: "#64748B",
-  },
-];
-
+    {
+      key: "blue",
+      color: "#3B82F6",
+    },
+    {
+      key: "sky",
+      color: "#38BDF8",
+    },
+    {
+      key: "purple",
+      color: "#8B5CF6",
+    },
+    {
+      key: "teal",
+      color: "#4F46E5",
+    },
+    {
+      key: "pink",
+      color: "#EC4899",
+    },
+    {
+      key: "cyan",
+      color: "#06B6D4",
+    },
+    {
+      key: "indigo",
+      color: "#6366F1",
+    },
+    {
+      key: "slate",
+      color: "#64748B",
+    },
+  ];
+ 
 export default function ThemePreset() {
   const [open, setOpen] = useState(false);
   const { profileData } = useDashboard();
-
+ 
   const employeeId =
     profileData?.data?.profile.EmployeeID;
-
+ 
   useEffect(() => {
     if (employeeId) {
       loadTheme(employeeId);
@@ -65,27 +65,33 @@ export default function ThemePreset() {
   return (
     <div className="relative">
       {/* Theme Icon */}
-
+ 
       <button
         type="button"
         onClick={() =>
           setOpen(!open)
         }
         className="
-          p-2
-          rounded-full
-          hover:bg-white/10
-          transition
-        "
+  w-9
+  h-9
+  flex
+  items-center
+  justify-center
+  p-2
+  rounded-full
+  hover:bg-white/10
+  transition
+  shrink-0
+"
       >
         <Palette
           size={18}
           color="white"
         />
       </button>
-
+ 
       {/* Popup */}
-
+ 
       {open && (
         <div
           className="
@@ -103,20 +109,20 @@ export default function ThemePreset() {
           "
         >
           {/* Header */}
-
+ 
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-slate-800">
               Presets
             </h3>
-
+ 
             <Sun
               size={18}
               className="text-slate-500"
             />
           </div>
-
+ 
           {/* Theme Colors */}
-
+ 
           <div className="grid grid-cols-4 gap-3">
             {colors.map((item) => (
               <button

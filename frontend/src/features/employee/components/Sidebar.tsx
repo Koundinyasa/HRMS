@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { useDashboard } from "../dashboard/hooks/useDashboard";
-
 import type { MenuItem } from "../dashboard/types/dashboard.types";
 
 const menuIcons: Record<string, React.ReactNode> = {
@@ -29,18 +28,18 @@ const menuIcons: Record<string, React.ReactNode> = {
 
 export default function Sidebar({
   isSidebarOpen,
+  setIsSidebarOpen,
 }: SidebarProps) {
   const navigate = useNavigate();
   const { domain } = useParams();
 
   const { menuData } = useDashboard();
 
-  const [expandedMenu, setExpandedMenu] =
-    useState<number | null>(null);
+  const [expandedMenu, setExpandedMenu] = useState<number | null>(null);
 
-  const menuItems =
-    menuData?.data?.[0]?.children || [];
+  const menuItems = menuData?.data?.[0]?.children || [];
 
+  // Handle child menu navigation
   const handleNavigation = (child: MenuItem) => {
     if (!child.routeUrl) return;
 
@@ -49,7 +48,6 @@ export default function Sidebar({
       `/${domain}/employee`
     );
 
-    // Profile menu routes
     switch (child.menuName) {
       case "Personal Information":
         route = `/${domain}/employee/profile/personal`;
@@ -75,113 +73,171 @@ export default function Sidebar({
         route = `/${domain}/employee/profile/documents`;
         break;
 
-
-
       default:
         break;
     }
 
-    console.log("Menu:", child.menuName);
-    console.log("Route URL:", child.routeUrl);
-    console.log("Final Route:", route);
-
     navigate(route);
+    setIsSidebarOpen(false);
+    setExpandedMenu(null);
+  };
+
+
+  const handleMenuClick = (item: MenuItem) => {
+    if (item.menuName === "Dashboard") {
+      navigate(`/${domain}/employee/dashboard`);
+      setIsSidebarOpen(false);
+      setExpandedMenu(null);
+      return;
+    }
+
+    if (!isSidebarOpen) {
+      setIsSidebarOpen(true);
+      if (item.children && item.children.length > 0) {
+        setExpandedMenu(item.menuId);
+      }
+
+      return;
+    }
+    if (item.children && item.children.length > 0) {
+      setExpandedMenu(
+        expandedMenu === item.menuId ? null : item.menuId
+      );
+    }
   };
 
   return (
-    <aside
-      className={`
-        ${isSidebarOpen ? "w-72" : "w-20"}
-        h-[calc(100vh-64px)]
-        overflow-y-auto
-        transition-all
-        duration-300
-      `}
-      style={{
-        backgroundColor: "var(--primary-color)",
-      }}
-    >
-      <nav className="py-4">
-        {menuItems.map((item: MenuItem) => (
-          <div key={item.menuId}>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                if (item.menuName === "Dashboard") {
-                  navigate(`/${domain}/employee/dashboard`);
-                  return;
-                }
+    <>
+      {/* Mobile backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => {
+            setIsSidebarOpen(false);
+            setExpandedMenu(null);
+          }}
+        />
+      )}
 
-                setExpandedMenu(
-                  expandedMenu === item.menuId
-                    ? null
-                    : item.menuId
-                );
-              }}
-              className="
-    w-full
-    h-auto
-    flex
-    items-center
-    justify-between
-    px-4
-    py-3
-    text-white
-    hover:bg-white/10
-    hover:text-white
-    rounded-none
-    transition
-  "
-            >
-              <div className="flex items-center gap-3 flex-1">
-                {menuIcons[item.menuName]}
+      <aside
+        className={`
+          z-50 overflow-y-auto transition-all duration-300 ease-in-out
 
-                {isSidebarOpen && (
-                  <span className="whitespace-nowrap">
-                    {item.menuName}
+          /* Desktop */
+          lg:relative
+          lg:h-[calc(100vh-64px)]
+          lg:translate-x-0
+
+          ${isSidebarOpen ? "lg:w-72" : "lg:w-20"}
+
+          /* Mobile */
+          max-lg:fixed
+          max-lg:left-0
+          max-lg:top-16
+          max-lg:h-[calc(100vh-64px)]
+          max-lg:w-[280px]
+          max-lg:max-w-[80vw]
+          max-lg:shadow-2xl
+
+          ${
+            isSidebarOpen
+              ? "max-lg:translate-x-0"
+              : "max-lg:-translate-x-full"
+          }
+        `}
+        style={{
+          backgroundColor: "var(--primary-color)",
+        }}
+      >
+        <nav className="py-4">
+          {menuItems.map((item: MenuItem) => (
+            <div key={item.menuId}>
+              {/* Parent menu */}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => handleMenuClick(item)}
+                className="
+                  w-full
+                  h-auto
+                  flex
+                  items-center
+                  justify-between
+                  px-4
+                  py-3
+                  text-white
+                  hover:bg-white/10
+                  hover:text-white
+                  rounded-none
+                "
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {/* Icon */}
+                  <span className="shrink-0">
+                    {menuIcons[item.menuName] || (
+                      <UserRound size={20} />
+                    )}
                   </span>
-                )}
-              </div>
 
+                  {/* Label */}
+                  {isSidebarOpen && (
+                    <span className="whitespace-nowrap truncate">
+                      {item.menuName}
+                    </span>
+                  )}
+                </div>
+
+                {/* Expand / Collapse icon */}
+                {isSidebarOpen &&
+                  item.children &&
+                  item.children.length > 0 &&
+                  (expandedMenu === item.menuId ? (
+                    <ChevronDown
+                      size={16}
+                      className="shrink-0"
+                    />
+                  ) : (
+                    <ChevronRight
+                      size={16}
+                      className="shrink-0"
+                    />
+                  ))}
+              </Button>
+
+              {/* Submenu */}
               {isSidebarOpen &&
+                expandedMenu === item.menuId &&
                 item.children &&
-                item.children.length > 0 &&
-                (expandedMenu === item.menuId ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                ))}
-            </Button>
-
-            {isSidebarOpen &&
-              expandedMenu === item.menuId &&
-              item.children?.map((child: MenuItem) => (
-                <Button
-                  key={child.menuId}
-                  type="button"
-                  variant="ghost"
-                  onClick={() => handleNavigation(child)}
-                  className="
-    w-full
-    h-auto
-    justify-start
-    pl-14
-    pr-4
-    py-2
-    text-white/90
-    hover:bg-white/10
-    hover:text-white
-    rounded-none
-    transition
-  "
-                >
-                  {child.menuName}
-                </Button>
-              ))}
-          </div>
-        ))}
-      </nav>
-    </aside >
+                item.children.length > 0 && (
+                  <div>
+                    {item.children.map((child: MenuItem) => (
+                      <Button
+                        key={child.menuId}
+                        type="button"
+                        variant="ghost"
+                        onClick={() => handleNavigation(child)}
+                        className="
+                          w-full
+                          h-auto
+                          justify-start
+                          pl-14
+                          pr-4
+                          py-2
+                          text-white/90
+                          hover:bg-white/10
+                          hover:text-white
+                          rounded-none
+                        "
+                      >
+                        {child.menuName}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }

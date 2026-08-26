@@ -52,26 +52,39 @@ export default function ProfileMenu() {
         className="
     flex
     items-center
-    gap-3
+    gap-1
+    sm:gap-2
     rounded-full
-    px-3
-    py-6
+    px-1
+    sm:px-2
+    lg:px-3
+    py-1
+    sm:py-2
+    lg:py-3
     bg-white
     hover:shadow-md
     transition
+    shrink-0
+    max-w-[44px]
+    sm:max-w-[180px]
+    lg:max-w-none
   "
       >
         <div
           className="
-            w-9
-            h-9
-            rounded-full
-            text-white
-            flex
-            items-center
-            justify-center
-            font-semibold
-          "
+    w-8
+    h-8
+    sm:w-9
+    sm:h-9
+    shrink-0
+    rounded-full
+    text-white
+    flex
+    items-center
+    justify-center
+    font-semibold
+    text-xs
+  "
           style={{
             backgroundColor: "var(--primary-color)",
           }}
@@ -79,12 +92,12 @@ export default function ProfileMenu() {
           {profile?.ShortName}
         </div>
  
-        <div className="text-left">
-          <p className="text-xs font-medium">
+        <div className="hidden sm:block min-w-0 text-left">
+          <p className="text-xs font-medium truncate max-w-[130px] lg:max-w-[220px]">
             {profile?.Email}
           </p>
  
-          <p className="text-[10px] text-slate-500">
+          <p className="text-[10px] text-slate-500 truncate max-w-[130px] lg:max-w-[220px]">
             Last logged in on {lastLogin}
           </p>
         </div>
@@ -99,12 +112,14 @@ export default function ProfileMenu() {
             absolute
             right-0
             top-14
-            w-80
+            w-[calc(100vw-1rem)]
+             sm:w-80
+            max-w-[320px]
             rounded-xl
             bg-white
             border
             shadow-xl
-            z-50
+            z-[100]
           "
           >
             {/* User */}
