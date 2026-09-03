@@ -31,6 +31,14 @@ import ResignationPage from "@/features/employee/separation/pages/ResignationPag
 import StatusPage from "@/features/employee/separation/pages/StatusPage";
 import WithdrawPage from "@/features/employee/separation/pages/WithdrawPage";
 
+//HelpDesk Module
+import RaiseTicket from "@/features/employee/helpdesk/pages/RaiseTicket";
+import TicketStatus from "@/features/employee/helpdesk/pages/TicketStatus";
+import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
+
+
+// Attendance Module — NEW
+import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
 
 export default function EmployeeRoutes() {
   return (
@@ -71,6 +79,14 @@ export default function EmployeeRoutes() {
         <Route path="separation/resignation" element={<ResignationPage />} />
         <Route path="separation/status" element={<StatusPage />} /> 
         <Route path="separation/withdraw" element={<WithdrawPage />} />
+
+        {/* Help Desk */}
+        <Route path="helpdesk/ticket" element={<RaiseTicket />} />
+        <Route path="helpdesk/status" element={<TicketStatus />} />
+        <Route path="helpdesk/kb" element={<KnowledgeBase />} />
+
+        {/* Attendance Management — NEW */}
+        <Route path="attendance/face-registration" element={<FaceRegistrationPage />} />
       </Route>
     </Routes>
   );
