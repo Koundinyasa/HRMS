@@ -1,5 +1,5 @@
 import { baseApi } from '@/app/baseApi';
-import type { LoginRequest, LoginResponse, CaptchaResponse,LogoutResponse } from '../types/auth.types';
+import type { LoginRequest, LoginResponse, CaptchaResponse,LogoutResponse,FirstLoginResetPasswordRequest } from '../types/auth.types';
 import type { DomainRequest } from '@/features/domain-verification/types/domain.types';
 
 export const authApi = baseApi.injectEndpoints({
@@ -57,7 +57,13 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-
+    firstLoginResetPassword: builder.mutation<void,FirstLoginResetPasswordRequest>({
+    query: (body) => ({
+      url: '/auth/reset-password',
+      method: 'POST',
+      body,
+    }),
+  }),
   }),
 });
 
@@ -70,4 +76,5 @@ export const {
   useResetPasswordMutation,
   useResetForgotPasswordMutation,
   useLogoutMutation,
+  useFirstLoginResetPasswordMutation
 } = authApi;

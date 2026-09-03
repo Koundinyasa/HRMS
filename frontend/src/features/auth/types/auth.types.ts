@@ -41,9 +41,7 @@ export interface AuthState {
 export interface User {
   id: number;
   name: string;
-
   role: "admin" | "hr" | "employee";
-
 }
 
 export interface ForgotPasswordRequest {
@@ -54,4 +52,10 @@ export interface ForgotPasswordRequest {
 export interface ForgotPasswordResponse {
   success: boolean;
   message: string;
+}
+
+export interface FirstLoginResetPasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }

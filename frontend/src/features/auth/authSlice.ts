@@ -4,6 +4,13 @@ import type { LoginResponse } from './types/auth.types';
 // import {roleId} from '../../routes/ProtectedRoute';
 
 
+const STORAGE_KEYS = {
+  accessToken: 'hrms_auth_accessToken',
+  employeeId:  'hrms_auth_employeeId',
+  userId:      'hrms_auth_userId',
+  roleId:      'hrms_auth_roleId',
+} as const;
+
 interface AuthState {
   accessToken: string | null;
   employeeId: string | null;
@@ -20,18 +27,23 @@ interface AuthState {
   otpRemainingSeconds?: number;
 }
 
+const persistedAccessToken = localStorage.getItem(STORAGE_KEYS.accessToken);
+const persistedEmployeeId  = localStorage.getItem(STORAGE_KEYS.employeeId);
+const persistedUserId      = localStorage.getItem(STORAGE_KEYS.userId);
+const persistedRoleId      = localStorage.getItem(STORAGE_KEYS.roleId);
+
 const initialState: AuthState = {
-  accessToken: null,
-  employeeId: null,
-  userId: null,
+  accessToken: persistedAccessToken,
+  employeeId: persistedEmployeeId,
+  userId: persistedUserId,
   isFirstLogin: false,
-  isAuthenticated: false,
+  isAuthenticated: !!persistedAccessToken,
   forgotPasswordUserId: "",
   forgotPasswordMobile: "",
   isOtpVerified: false,
   isPasswordReset: false,
   forgotPasswordEmployeeId: sessionStorage.getItem("hrms_employeeId") ?? "",
-  roleId:null,
+  roleId:persistedRoleId,
   otpRemainingSeconds: 0,
   otpRemainingMinutes: 3,
 };
@@ -41,12 +53,26 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess(state, action: PayloadAction<LoginResponse>) {
+
+      const roleId =(action.payload.data as { roleId?:string | null }).roleId ?? null;
+
       state.accessToken = action.payload.accessToken;
       state.employeeId = action.payload.data.employeeId;
       state.userId = action.payload.data.userId;
-      state.roleId = (action.payload.data as { roleId?: string | null }).roleId ?? null;
+      state.roleId = roleId;
       state.isFirstLogin = action.payload.isFirstLogin;
       state.isAuthenticated = true;
+
+
+      localStorage.setItem(STORAGE_KEYS.accessToken, action.payload.accessToken);
+      localStorage.setItem(STORAGE_KEYS.employeeId, action.payload.data.employeeId);
+      localStorage.setItem(STORAGE_KEYS.userId, action.payload.data.userId);
+
+      if (roleId) {
+        localStorage.setItem(STORAGE_KEYS.roleId,roleId);
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.roleId);
+      }
     },
     logout(state) {
       state.accessToken = null;
@@ -54,8 +80,20 @@ const authSlice = createSlice({
       state.userId = null;
       state.isFirstLogin = false;
       state.isAuthenticated = false;
+      state.roleId = null;
+
+
+      localStorage.removeItem(STORAGE_KEYS.accessToken);
+      localStorage.removeItem(STORAGE_KEYS.employeeId);
+      localStorage.removeItem(STORAGE_KEYS.userId);
+      localStorage.removeItem(STORAGE_KEYS.roleId);
     },
 
+
+    firstLoginPasswordResetSuccess(state) {
+      state.isFirstLogin = false;
+      state.isPasswordReset = true;
+    },
     setForgotPasswordData: (state,action: PayloadAction<{
         userId: string;
         mobileNumber: string;
@@ -92,6 +130,7 @@ const authSlice = createSlice({
 
 export const {
   loginSuccess,
+  firstLoginPasswordResetSuccess,
   logout,
   setForgotPasswordData,
   setOtpVerified,
