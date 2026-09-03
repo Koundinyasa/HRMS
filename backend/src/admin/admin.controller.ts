@@ -6,7 +6,5 @@ import { Controller, Get } from '@nestjs/common';
 export class AdminController {
     //GET dashbaord summary
     @Get()
-    getDashboard(){
-        
-    }
+    getDashboard(){}
 }
