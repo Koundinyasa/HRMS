@@ -65,6 +65,21 @@ export class AgeGroupCountDto {
   male!:       number;
 }
 
+
+export class ClassificationMetaDto {
+  id!:    number;
+  code!:  string;
+  label!: string;
+}
+ 
+// ── Result Set 10 : Tenure Distribution buckets ───────────────
+export class TenureBucketDto {
+  label!: string;
+  count!: number;
+}
+
+
+
 // ── Root Response DTO ─────────────────────────────────────────
 export class DashboardSummaryDto {
   welcome!:             WelcomeDto;
@@ -76,6 +91,8 @@ export class DashboardSummaryDto {
   upcomingEvents!:      UpcomingEventDto[];
   team!:                TeamMemberDto[];
   avgTenure!:           string;
+  classifications!:     ClassificationMetaDto[];
+  TenureDatum!:         TenureBucketDto[];
 }
 
 

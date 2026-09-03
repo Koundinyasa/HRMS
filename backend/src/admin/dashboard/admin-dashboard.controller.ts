@@ -1,6 +1,7 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Param, ParseIntPipe } from '@nestjs/common';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { DashboardSummaryDto } from './dto/dashboard.summary.dto';
+import { ClassificationWiseCountDto } from './dto/Classification.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../common/guards/permission.guard';
 import { Permission } from '../../common/decorators/permission.decorator';
@@ -32,6 +33,15 @@ export class AdminDashboardController {
     @CurrentUser() user: { employeeId: string },
   ): Promise<DashboardSummaryDto> {
     return this.adminDashboardService.getDashboard(user.employeeId);
+  }
+
+
+  @Get('classification/:classificationId')
+  @Permission(ADMIN_DASHBOARD_MENU_ID,'CanView')
+  async getClassificationWiseCount(
+    @Param('classificationId',ParseIntPipe) classificationId:number,  
+  ): Promise<ClassificationWiseCountDto>{
+    return (this.adminDashboardService as any).getClassificationWiseCount(classificationId);
   }
 
   @Get('ping')
