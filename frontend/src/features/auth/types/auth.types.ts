@@ -28,6 +28,7 @@ export interface AuthState {
   userId: string | null;
   isFirstLogin: boolean;
   isAuthenticated: boolean;
+  
 }
 
 export interface LogoutResponse {

@@ -89,7 +89,7 @@ export default function CelebrationsCard() {
 
   return (
     <div
-      className="rounded-2xl border shadow-sm h-full flex flex-col p-5"
+     className="rounded-2xl border shadow-sm h-full flex flex-col p-4 sm:p-5 min-w-0 overflow-hidden"
       style={{
         backgroundColor:
           "var(--card-bg)",
@@ -99,7 +99,7 @@ export default function CelebrationsCard() {
     >
       {/* Header */}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-3 min-w-0">
 
         <div>
 
@@ -124,7 +124,7 @@ export default function CelebrationsCard() {
           onClick={() =>
             setOpenAllCelebrations(true)
           }
-          className="font-medium"
+          className="font-medium text-xs sm:text-sm px-2 sm:px-3 shrink-0"
           style={{
             color:
               "var(--primary-color)",
@@ -175,7 +175,7 @@ export default function CelebrationsCard() {
               : anniversaryImage
           }
           alt={celebration?.EventName}
-          className=" w-40 h-40 object-contain mt-2 transition-all duration-500"
+          className="w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 max-w-full object-contain mt-2 transition-all duration-500"
         />
 
         {/* Event Badge */}
@@ -208,14 +208,14 @@ export default function CelebrationsCard() {
 
         {/* Employee Name */}
 
-        <h2 className=" text-xl font-semibold mt-5 text-slate-800">
+        <h2 className="text-lg sm:text-xl font-semibold mt-4 sm:mt-5 text-slate-800 break-words max-w-full px-2">
           {celebration?.FullName ??
             "No Upcoming Celebrations"}
         </h2>
 
         {/* Greeting */}
 
-        <p className=" text-sm text-slate-500 mt-3 px-6 leading-6">
+        <p className="text-xs sm:text-sm text-slate-500 mt-3 px-2 sm:px-6 leading-5 sm:leading-6 max-w-full">
           {celebration
             ? greeting
             : "No upcoming birthdays or work anniversaries."}
@@ -282,8 +282,8 @@ export default function CelebrationsCard() {
 
       {openWishModal &&
         selectedEvent && (
-          <div className=" fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className=" w-[430px] rounded-2xl bg-white shadow-2xl overflow-hidden">
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="w-full max-w-[430px] max-h-[90vh] rounded-2xl bg-white shadow-2xl overflow-y-auto">
               {/* Header */}
 
               <div
@@ -297,7 +297,7 @@ export default function CelebrationsCard() {
                     "var(--primary-border)",
                 }}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
 
                   <div
                     className="
@@ -333,7 +333,7 @@ export default function CelebrationsCard() {
                   <div>
 
                     <h2
-                      className="text-xl font-semibold"
+                      className="text-base sm:text-xl font-semibold break-words"
                       style={{
                         color:
                           "var(--primary-color)",
@@ -364,13 +364,14 @@ export default function CelebrationsCard() {
                     defaultWish
                   }
                   className="
-                    w-full
-                    rounded-xl
-                    border
-                    p-4
-                    resize-none
-                    outline-none
-                  "
+  w-full
+  min-w-0
+  rounded-xl
+  border
+  p-3 sm:p-4
+  resize-none
+  outline-none
+"
                   style={{
                     borderColor:
                       "var(--primary-border)",
@@ -401,12 +402,14 @@ export default function CelebrationsCard() {
 
               <div
                 className="
-                  flex
-                  justify-end
-                  gap-3
-                  p-5
-                  border-t
-                "
+  flex
+  flex-col-reverse
+  sm:flex-row
+  sm:justify-end
+  gap-2 sm:gap-3
+  p-4 sm:p-5
+  border-t
+"
                 style={{
                   borderColor:
                     "var(--primary-border)",
@@ -418,6 +421,7 @@ export default function CelebrationsCard() {
                   onClick={() =>
                     setOpenWishModal(false)
                   }
+                  className="w-full sm:w-auto"
                 >
                   Close
                 </Button>
@@ -439,7 +443,7 @@ export default function CelebrationsCard() {
                     background:
                       "var(--primary-gradient)",
                   }}
-                  className="text-white"
+                  className="text-white w-full sm:w-auto"
                 >
                   Send
                 </Button>
@@ -455,36 +459,41 @@ export default function CelebrationsCard() {
       {openAllCelebrations && (
         <div
           className="
-            fixed
-            inset-0
-            bg-black/40
-            flex
-            items-center
-            justify-center
-            z-50
-          "
+  fixed
+  inset-0
+  bg-black/40
+  flex
+  items-center
+  justify-center
+  z-50
+  p-3 sm:p-4
+  overflow-y-auto
+"
         >
           <div
-            className="
-              w-[650px]
-              max-h-[650px]
-              bg-white
-              rounded-2xl
-              shadow-2xl
-              overflow-hidden
-            "
+           className="
+  w-[calc(100%-2rem)]
+  sm:w-full
+  max-w-[650px]
+  max-h-[90vh]
+  bg-white
+  rounded-2xl
+  shadow-2xl
+  overflow-hidden
+"
           >
             {/* Header */}
 
             <div
               className="
-                flex
-                items-center
-                justify-between
-                px-6
-                py-4
-                border-b
-              "
+  flex
+  items-center
+  justify-between
+  gap-3
+  px-4 sm:px-6
+  py-4
+  border-b
+"
               style={{
                 borderColor:
                   "var(--primary-border)",
@@ -492,7 +501,7 @@ export default function CelebrationsCard() {
             >
               <div>
                 <h2
-                  className="text-2xl font-semibold"
+                  className="text-lg sm:text-2xl font-semibold"
                   style={{
                     color:
                       "var(--primary-color)",
@@ -508,12 +517,13 @@ export default function CelebrationsCard() {
 
               <div
                 className="
-                  px-4
-                  py-2
-                  rounded-full
-                  text-sm
-                  font-medium
-                "
+  px-3 sm:px-4
+  py-1.5 sm:py-2
+  rounded-full
+  text-xs sm:text-sm
+  font-medium
+  shrink-0
+"
                 style={{
                   backgroundColor:
                     "var(--primary-light)",
@@ -527,7 +537,7 @@ export default function CelebrationsCard() {
 
             {/* Body */}
 
-            <div className="max-h-[470px] overflow-y-auto">
+           <div className="max-h-[60vh] overflow-y-auto">
 
               {celebrations.length > 0 ? (
 
@@ -540,15 +550,18 @@ export default function CelebrationsCard() {
                     <div
                       key={index}
                       className="
-                        flex
-                        items-center
-                        justify-between
-                        px-6
-                        py-5
-                        border-b
-                        hover:bg-slate-50
-                        transition
-                      "
+  flex
+  flex-col
+  sm:flex-row
+  sm:items-center
+  sm:justify-between
+  gap-4
+  px-4 sm:px-6
+  py-4 sm:py-5
+  border-b
+  hover:bg-slate-50
+  transition
+"
                       style={{
                         borderColor:
                           "var(--primary-border)",
@@ -557,13 +570,13 @@ export default function CelebrationsCard() {
 
                       {/* Left */}
 
-                      <div className="flex items-center gap-4">
+                     
 
                         <div
                           className="
-                            w-14
-                            h-14
-                            rounded-full
+                           w-11 h-11 sm:w-14 sm:h-14
+rounded-full
+shrink-0
                             flex
                             items-center
                             justify-center
@@ -584,19 +597,20 @@ export default function CelebrationsCard() {
                             />
                           ) : (
                             <Award
-                              size={28}
+                              size={22}
+className="sm:w-7 sm:h-7"
                               color="#2563EB"
                             />
                           )}
                         </div>
 
-                        <div>
+                        <div className="min-w-0">
 
-                          <h3 className="font-semibold text-slate-800">
+                          <h3 className="font-semibold text-slate-800 break-words">
                             {item.FullName}
                           </h3>
 
-                          <div className="flex gap-2 mt-2">
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
 
                             <span
                               className="
@@ -638,37 +652,28 @@ export default function CelebrationsCard() {
                             )}
                           </p>
 
-                        </div>
+                        
 
                       </div>
 
                       {/* Right */}
 
                       <Button
-                        onClick={() => {
-                          setSelectedEvent(
-                            item
-                          );
-
-                          setOpenAllCelebrations(
-                            false
-                          );
-
-                          setOpenWishModal(
-                            true
-                          );
-                        }}
-                        style={{
-                          background:
-                            "var(--primary-gradient)",
-                        }}
-                        className="text-white"
-                      >
-                        {item.EventName ===
-                          "Birthday"
-                          ? "Wish"
-                          : "Congratulate"}
-                      </Button>
+  onClick={() => {
+    setSelectedEvent(item);
+    setOpenAllCelebrations(false);
+    setOpenWishModal(true);
+  }}
+  style={{
+    background:
+      "var(--primary-gradient)",
+  }}
+  className="w-full sm:w-auto shrink-0 text-white"
+>
+  {item.EventName === "Birthday"
+    ? "Wish"
+    : "Congratulate"}
+</Button>
 
                     </div>
 
@@ -708,11 +713,11 @@ export default function CelebrationsCard() {
 
             <div
               className="
-                flex
-                justify-end
-                p-5
-                border-t
-              "
+  flex
+  justify-end
+  p-4 sm:p-5
+  border-t
+"
               style={{
                 borderColor:
                   "var(--primary-border)",
@@ -723,6 +728,7 @@ export default function CelebrationsCard() {
                 onClick={() =>
                   setOpenAllCelebrations(false)
                 }
+                className="w-full sm:w-auto"
               >
                 Close
               </Button>

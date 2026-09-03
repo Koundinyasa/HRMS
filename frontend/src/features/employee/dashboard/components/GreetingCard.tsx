@@ -36,13 +36,15 @@ export default function GreetingCard() {
   return (
     <div
       className="
-        relative
-        overflow-hidden
-        rounded-3xl
-        px-8
-        py-6
-        min-h-[130px]
-      "
+  relative
+  w-full
+  min-w-0
+  overflow-hidden
+  rounded-3xl
+  px-4 sm:px-6 lg:px-8
+  py-5 sm:py-6
+  min-h-[130px]
+"
       style={{
         background:
           "linear-gradient(90deg,var(--primary-light),#DFF8FF)",
@@ -52,14 +54,14 @@ export default function GreetingCard() {
 
       <div
         className="
-          absolute
-          top-1/2
-          right-6
-          animate-circle1
-        "
+    absolute
+    top-1/2
+    right-[-40px] sm:right-2 lg:right-6
+    animate-circle1
+    pointer-events-none
+  "
       >
-        <div
-          className="w-48 h-48 rounded-full"
+        <div className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-full"
           style={{
             backgroundColor:
               "var(--primary-light)",
@@ -72,13 +74,14 @@ export default function GreetingCard() {
       <div
         className="
           absolute
-          top-20
-          right-32
+          top-16 sm:top-20
+          right-8 sm:right-20 lg:right-32
           animate-circle2
+          pointer-events-none
         "
       >
         <div
-          className="w-24 h-24 rounded-full opacity-70"
+          className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full opacity-70"
           style={{
             backgroundColor:
               "var(--primary-light)",
@@ -91,13 +94,13 @@ export default function GreetingCard() {
       <div
         className="
           absolute
-          bottom-8
-          right-52
+          bottom-6 sm:bottom-8
+          right-12 sm:right-28 lg:right-52
           animate-circle3
         "
       >
         <div
-          className="w-16 h-16 rounded-full opacity-90"
+          className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full opacity-90"
           style={{
             backgroundColor:
               "var(--primary-light)",
@@ -110,8 +113,9 @@ export default function GreetingCard() {
       <div
         className="
           absolute
-          top-5
-          right-6
+          top-4 sm:top-5
+          right-3 sm:right-6 lg:right-6
+          pointer-events-none 
           grid
           grid-cols-5
           gap-1
@@ -137,25 +141,31 @@ export default function GreetingCard() {
 
       <div
         className="
-          relative
-          z-10
-          flex
-          items-center
-        "
+    relative
+    z-10
+    flex
+flex-col
+lg:flex-row
+lg:items-center
+gap-4 sm:gap-5 lg:gap-10
+min-w-0
+  "
       >
 
 
         <div
           className="
-            flex
-            items-center
-            gap-5
-          "
+    flex
+items-center
+gap-3 sm:gap-5
+min-w-0
+w-full
+lg:w-auto
+  "
         >
           <div
             className="
-              w-14
-              h-14
+             w-12 h-12 sm:w-14 sm:h-14
               bg-white
               rounded-2xl
               shadow-md
@@ -172,12 +182,12 @@ export default function GreetingCard() {
                 : "🌙"}
           </div>
 
-          <div>
+         <div className="min-w-0">
             <p
               className="
-                text-sm
+                text-xs sm:text-sm
                 font-medium
-              "
+                pr-8 sm:pr-10 lg:pr-0  "
               style={{
                 color: "var(--primary-color)",
               }}
@@ -186,22 +196,24 @@ export default function GreetingCard() {
               Have a productive day.
             </p>
 
-            <h2
-              className="
-                text-[22px]
-                font-semibold
-                text-slate-900
-                mt-2
-              "
-            >
+           <h2
+  className="
+    text-lg sm:text-[22px]
+    font-semibold
+    text-slate-900
+    mt-1 sm:mt-2
+    break-words
+    leading-tight
+  "
+>
               Hi {profile?.profile.FullName}
             </h2>
 
             <p
               className="
-                text-sm
-                text-slate-500
-                mt-2
+                text-xs sm:text-sm
+text-slate-500
+mt-1 sm:mt-2
               "
             >
               {formattedDate}
@@ -212,13 +224,18 @@ export default function GreetingCard() {
         {/* Employee Details */}
 
         <div
-          className="
-            flex
-            flex-col
-            gap-4
-            ml-40
-          "
-        >
+  className="
+    flex
+    flex-col
+    gap-3 sm:gap-4
+    ml-0
+    lg:ml-10
+    xl:ml-16
+    min-w-0
+    w-full
+    lg:w-auto
+  "
+>
           {/* Employee ID */}
 
           <div
@@ -226,6 +243,7 @@ export default function GreetingCard() {
               flex
               items-center
               gap-3
+              min-w-0
             "
           >
             <div
@@ -249,11 +267,13 @@ export default function GreetingCard() {
             </div>
 
             <span
-              className="
-                text-sm
-                text-slate-700
-              "
-            >
+  className="
+    text-xs sm:text-sm
+    text-slate-700
+    break-words
+    min-w-0
+  "
+>
               Employee ID : {profile?.profile.EmployeeID}
             </span>
           </div>
@@ -265,6 +285,7 @@ export default function GreetingCard() {
               flex
               items-center
               gap-3
+              min-w-0
             "
           >
             <div
@@ -288,11 +309,13 @@ export default function GreetingCard() {
             </div>
 
             <span
-              className="
-                text-sm
-                text-slate-700
-              "
-            >
+  className="
+    text-xs sm:text-sm
+    text-slate-700
+    break-words
+    min-w-0
+  "
+>
               Designation : {profile?.profile.Designation}
             </span>
           </div>
@@ -304,6 +327,7 @@ export default function GreetingCard() {
               flex
               items-center
               gap-3
+              min-w-0
             "
           >
             <div
@@ -327,11 +351,13 @@ export default function GreetingCard() {
             </div>
 
             <span
-              className="
-                text-sm
-                text-slate-700
-              "
-            >
+  className="
+    text-xs sm:text-sm
+    text-slate-700
+    break-words
+    min-w-0
+  "
+>
               Department : {profile?.profile.Department}
             </span>
           </div>

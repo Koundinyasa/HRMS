@@ -42,6 +42,17 @@ export default function CalendarCard() {
     "Sat",
   ];
 
+  const getHolidayDate = (dateString: string) => {
+    const [datePart] = dateString.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+
+    return {
+      year,
+      month: month - 1,
+      day,
+    };
+  };
+
 
 
   const year =
@@ -51,45 +62,37 @@ export default function CalendarCard() {
     currentDate.getMonth();
 
   const holidays =
-    holidayData?.data?.filter(
-      (holiday) => {
-        const holidayDate =
-          new Date(
-            holiday.HolidayDate
-          );
+    holidayData?.data?.filter((holiday) => {
+      const {
+        year: holidayYear,
+        month: holidayMonth,
+      } = getHolidayDate(holiday.HolidayDate);
 
-        return (
-          holidayDate.getMonth() ===
-          month &&
-          holidayDate.getFullYear() ===
-          year
-        );
-      }
-    ) || [];
+      return (
+        holidayMonth === month &&
+        holidayYear === year
+      );
+    }) || [];
 
-  const holidayDays =
-    holidays.map((holiday) =>
-      new Date(
-        holiday.HolidayDate
-      ).getDate()
-    );
+  const holidayDays = holidays.map(
+    (holiday) =>
+      getHolidayDate(holiday.HolidayDate).day
+  );
 
-  const holidayMap =
-    holidays.reduce(
-      (
-        acc: Record<number, string>,
-        holiday
-      ) => {
-        acc[
-          new Date(
-            holiday.HolidayDate
-          ).getDate()
-        ] = holiday.HolidayName;
+  const holidayMap = holidays.reduce(
+    (
+      acc: Record<number, string>,
+      holiday
+    ) => {
+      const { day } =
+        getHolidayDate(holiday.HolidayDate);
 
-        return acc;
-      },
-      {}
-    );
+      acc[day] = holiday.HolidayName;
+
+      return acc;
+    },
+    {}
+  );
 
   const firstDay =
     new Date(
@@ -146,23 +149,53 @@ export default function CalendarCard() {
     );
   };
 
+  const today = new Date();
+
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
   const upcomingHolidays =
     holidayData?.data
-      ?.filter(
-        (holiday) =>
+      ?.filter((holiday) => {
+        const {
+          year: holidayYear,
+          month: holidayMonth,
+          day: holidayDay,
+        } = getHolidayDate(holiday.HolidayDate);
+
+        const holidayDate = new Date(
+          holidayYear,
+          holidayMonth,
+          holidayDay
+        );
+
+        return holidayDate >= todayDate;
+      })
+      .sort((a, b) => {
+        const dateA = getHolidayDate(
+          a.HolidayDate
+        );
+
+        const dateB = getHolidayDate(
+          b.HolidayDate
+        );
+
+        return (
           new Date(
-            holiday.HolidayDate
-          ) > new Date()
-      )
-      .sort(
-        (a, b) =>
-          new Date(
-            a.HolidayDate
+            dateA.year,
+            dateA.month,
+            dateA.day
           ).getTime() -
           new Date(
-            b.HolidayDate
+            dateB.year,
+            dateB.month,
+            dateB.day
           ).getTime()
-      ) || [];
+        );
+      }) || [];
 
   const upcomingHoliday =
     upcomingHolidays[
@@ -195,8 +228,8 @@ export default function CalendarCard() {
         rounded-2xl
         border
         shadow-sm
-        p-5
-        h-full
+        p-3 sm:p-4 lg:p-5
+        h-auto
       "
       style={{
         backgroundColor:
@@ -209,7 +242,7 @@ export default function CalendarCard() {
 
       <div className="flex items-center justify-between">
         <h3
-          className="font-semibold text-lg"
+          className="font-semibold text-base sm:text-lg"
           style={{
             color:
               "var(--primary-color)",
@@ -256,7 +289,7 @@ export default function CalendarCard() {
 
       {/* Week Days */}
 
-      <div className="grid grid-cols-7 text-center text-xs mb-2 text-slate-600">
+      <div className="grid grid-cols-7 text-center text-[10px] sm:text-xs mb-2 text-slate-600">
         {weekDays.map((day) => (
           <div key={day}>
             {day}
@@ -266,7 +299,7 @@ export default function CalendarCard() {
 
       {/* Calendar */}
 
-      <div className="grid grid-cols-7 gap-y-2">
+      <div className="grid grid-cols-7 gap-y-1 sm:gap-y-2">
         {days.map(
           (
             day,
@@ -311,13 +344,12 @@ export default function CalendarCard() {
                     ] || ""
                   }
                   className={`
-                    w-8
-                    h-8
+                    w-7 h-7 sm:w-8 sm:h-8
                     rounded-full
                     flex
                     items-center
                     justify-center
-                    text-sm
+                    text-xs sm:text-sm
                     font-medium
                     ${bg}
                     ${text}
@@ -368,10 +400,10 @@ export default function CalendarCard() {
 
       <div
         className="
-          mt-5
-          rounded-xl
-          border
-          p-4
+          mt-4 sm:mt-5
+rounded-xl
+border
+p-3 sm:p-4
         "
         style={{
           background:
@@ -392,23 +424,32 @@ export default function CalendarCard() {
 
         <div className="flex items-center justify-between mt-3">
           <div>
-            <p className="font-semibold text-slate-800">
+            <p className="font-semibold text-sm sm:text-base text-slate-800">
               {upcomingHoliday?.HolidayName ??
                 "No Upcoming Holiday"}
             </p>
 
             {upcomingHoliday && (
               <p className="text-xs text-slate-500 mt-1">
-                {new Date(
-                  upcomingHoliday.HolidayDate
-                ).toLocaleDateString(
-                  "en-GB",
-                  {
+                {(() => {
+                  const {
+                    year,
+                    month,
+                    day,
+                  } = getHolidayDate(
+                    upcomingHoliday.HolidayDate
+                  );
+
+                  return new Date(
+                    year,
+                    month,
+                    day
+                  ).toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "long",
                     year: "numeric",
-                  }
-                )}
+                  });
+                })()}
               </p>
             )}
           </div>

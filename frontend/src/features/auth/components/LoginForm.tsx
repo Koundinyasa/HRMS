@@ -97,18 +97,7 @@ export default function LoginForm() {
         >
           Welcome Back
         </p>
-        {/* <h1
-          className="mb-1.5"
-          style={{
-            ...urbanist,
-            fontWeight: 400,
-            fontSize: "clamp(15px, 1.5vw, 20px)",
-            lineHeight: 1.15,
-            color: "#131313",
-          }}
-        >
-          Sign in to your workspace
-        </h1> */}
+        
         <p
           style={{
             ...urbanist,

@@ -56,25 +56,6 @@ export default function ForgotPasswordForm() {
         />
       </div>
 
-      {/* <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Mobile No{" "}
-          <span className="text-red-500">*</span>
-        </label>
-
-        <input
-          type="text"
-          value={mobileNumber}
-          onChange={(e) =>
-            setMobileNumber(
-              e.target.value
-            )
-          }
-          placeholder="+91 98458xxxxx"
-          className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB] outline-none"
-        />
-      </div> */}
-
       {error && (
         <p className="text-red-500 text-sm">
           {error}

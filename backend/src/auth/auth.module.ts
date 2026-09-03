@@ -1,28 +1,25 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-
+ 
+ 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-
+import { CaptchaService } from './captcha/captcha.service';
+ 
 import { DatabaseModule } from '../database/database.module';
 import { MailModule } from '../mail/mail.module';
-
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { PermissionGuard } from './permission.guard';
-
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { PermissionGuard } from '../common/guards/permission.guard';
+import { ChatbotModule } from '../chatbot/chatbot.module';
+ 
 @Module({
-  imports: [
-    DatabaseModule,
-    MailModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'HRMS_SECRET_KEY',
-      signOptions: {
-        expiresIn: '5m',
-      },
-    }),
-  ],
+  // forwardRef here + the matching forwardRef in ChatbotModule is what lets
+  // these two modules depend on each other (AuthService needs DraftService
+  // from ChatbotModule; ChatbotModule already needs AuthModule) without
+  // NestJS treating it as an unresolvable circular dependency.
+  imports: [DatabaseModule, MailModule, forwardRef(() => ChatbotModule)],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard,PermissionGuard,],
-  exports: [JwtAuthGuard, JwtModule, AuthService],
+  providers: [AuthService, JwtAuthGuard,CaptchaService,PermissionGuard,],
+  exports: [AuthService],
 })
 export class AuthModule {}

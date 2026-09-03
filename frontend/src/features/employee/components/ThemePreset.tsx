@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDashboard } from "../dashboard/hooks/useDashboard";
 
 import {
   Palette,
@@ -7,6 +8,7 @@ import {
 
 import {
   applyTheme,
+  loadTheme,
   type ThemeName,
 } from "./theme";
 
@@ -16,42 +18,50 @@ const colors: {
 }[] = [
     {
       key: "blue",
-      color: "#2563EB",
+      color: "#3B82F6",
     },
     {
       key: "sky",
-      color: "#0EA5E9",
+      color: "#38BDF8",
     },
     {
       key: "purple",
-      color: "#6D28D9",
+      color: "#8B5CF6",
     },
     {
       key: "teal",
-      color: "#14B8A6",
+      color: "#4F46E5",
     },
     {
       key: "pink",
-      color: "#C026D3",
+      color: "#EC4899",
     },
     {
-      key: "orange",
-      color: "#F59E0B",
+      key: "cyan",
+      color: "#06B6D4",
     },
     {
-      key: "emerald",
-      color: "#10B981",
+      key: "indigo",
+      color: "#6366F1",
     },
     {
       key: "slate",
-      color: "#607D8B",
+      color: "#64748B",
     },
   ];
 
 export default function ThemePreset() {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
+  const { profileData } = useDashboard();
 
+  const employeeId =
+    profileData?.data?.profile.EmployeeID;
+
+  useEffect(() => {
+    if (employeeId) {
+      loadTheme(employeeId);
+    }
+  }, [employeeId]);
   return (
     <div className="relative">
       {/* Theme Icon */}
@@ -62,15 +72,24 @@ export default function ThemePreset() {
           setOpen(!open)
         }
         className="
-          p-2
+  flex
+          h-9
+          w-9
+          shrink-0
+          items-center
+          justify-center
           rounded-full
-          hover:bg-white/10
+          p-2
           transition
+          hover:bg-[#B8E0F5]/70
+          sm:h-10
+          sm:w-10
         "
       >
         <Palette
           size={18}
-          color="white"
+          strokeWidth={2}
+          color="#1E3A5F"
         />
       </button>
 
@@ -79,17 +98,8 @@ export default function ThemePreset() {
       {open && (
         <div
           className="
-            absolute
-            right-0
-            top-12
-            w-64
-            bg-white
-            rounded-2xl
-            border
-            border-slate-200
-            shadow-xl
-            p-4
-            z-50
+            absolute right-0 top-12 z-50 w-64 rounded-2xl
+            border border-slate-200 bg-white p-4 shadow-xl
           "
         >
           {/* Header */}
@@ -113,17 +123,12 @@ export default function ThemePreset() {
                 key={item.key}
                 type="button"
                 onClick={() => {
-                  applyTheme(item.key);
+                  applyTheme(item.key, employeeId);
                   setOpen(false);
                 }}
                 className="
-                  h-14
-                  rounded-lg
-                  border
-                  border-slate-200
-                  hover:scale-105
-                  transition
-                  overflow-hidden
+                  h-14 overflow-hidden rounded-lg border border-slate-200
+                  transition hover:scale-105
                 "
                 style={{
                   background: `linear-gradient(

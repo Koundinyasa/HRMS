@@ -7,9 +7,9 @@ import AnnouncementCard from "../components/AnnouncementCard";
 import BirthdayCard from "../components/BirthdayCard";
 import TeamAttendanceCard from "../components/TeamAttendanceCard";
 import TaskCard from "../components/TaskCard";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
+
 
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 
@@ -18,67 +18,61 @@ import { hidePageLoader } from "../../employeeSlice";
 export default function DashboardPage() {
 
     const dispatch = useAppDispatch();
-    const [chatbotOpen, setChatbotOpen] =
-    useState(false);
+
 
     useEffect(() => {
         dispatch(hidePageLoader());
     }, [dispatch]);
     return (
-        <div className="space-y-6">
+        <div className="w-full min-w-0 space-y-6">
             {/* Greeting */}
 
             <GreetingCard />
 
             {/* Row 1 */}
 
-            <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 xl:col-span-3">
+            <div className="grid grid-cols-12 gap-4 sm:gap-6">
+                <div className="col-span-12 xl:col-span-3 min-w-0">
                     <AttendanceCard />
                 </div>
 
-                <div className="col-span-12 xl:col-span-6">
+                <div className="col-span-12 xl:col-span-6 min-w-0">
                     <StatsLeaveCard />
                 </div>
 
-                <div className="col-span-12 xl:col-span-3">
+                <div className="col-span-12 xl:col-span-3 min-w-0">
                     <CalendarCard />
                 </div>
             </div>
 
             {/* Row 2 */}
 
-            <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 xl:col-span-3">
+            <div className="grid grid-cols-12 gap-4 sm:gap-6">
+                <div className="col-span-12 xl:col-span-3 min-w-0">
                     <QuickAccessCard />
                 </div>
 
-                <div className="col-span-12 xl:col-span-6">
+                <div className="col-span-12 xl:col-span-6 min-w-0">
                     <AnnouncementCard />
                 </div>
 
-                <div className="col-span-12 xl:col-span-3">
+                <div className="col-span-12 xl:col-span-3 min-w-0">
                     <BirthdayCard />
                 </div>
             </div>
 
             {/* Third Row */}
-            <div className="grid grid-cols-12 gap-4 mt-4">
-                <div className="col-span-7">
+            <div className="grid grid-cols-12 gap-4 sm:gap-6">
+                <div className="col-span-12 xl:col-span-7 min-w-0">
                     <TeamAttendanceCard />
                 </div>
 
-                <div className="col-span-5">
+                <div className="col-span-12 xl:col-span-5 min-w-0">
                     <TaskCard />
                 </div>
             </div>
 
-            <ChatbotWidget
-                isOpen={chatbotOpen}
-                onToggle={() =>
-                    setChatbotOpen(!chatbotOpen)
-                }
-            />
+
         </div>
     );
 }

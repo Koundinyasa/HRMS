@@ -5,6 +5,8 @@ import type {
   ChatResponse,
 } from "../types/chatbot.types";
 
+
+
 export const chatbotApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     sendMessage: builder.mutation<
@@ -23,4 +25,3 @@ export const chatbotApi = baseApi.injectEndpoints({
 export const {
   useSendMessageMutation,
 } = chatbotApi;
-

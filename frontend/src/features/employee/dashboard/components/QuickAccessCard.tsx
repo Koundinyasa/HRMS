@@ -38,12 +38,14 @@ export default function QuickAccessCard() {
   return (
     <div
       className="
-        rounded-2xl
-        p-5
-        shadow-sm
-        border
-        h-full
-      "
+  rounded-2xl
+  p-3
+  sm:p-4
+  lg:p-5
+  shadow-sm
+  border
+  h-auto
+"
       style={{
         backgroundColor: "var(--card-bg)",
         borderColor: "var(--primary-border)",
@@ -52,7 +54,7 @@ export default function QuickAccessCard() {
       {/* Header */}
 
       <h3
-        className="text-lg font-medium"
+        className="text-base sm:text-lg font-medium"
         style={{
           color: "var(--primary-color)",
         }}
@@ -63,7 +65,7 @@ export default function QuickAccessCard() {
       {/* Divider */}
 
       <div
-        className="h-[2px] mt-3 mb-5"
+        className="h-[2px] mt-3 mb-4 sm:mb-5"
         style={{
           backgroundColor: "var(--primary-border)",
         }}
@@ -71,7 +73,7 @@ export default function QuickAccessCard() {
 
       {/* Items */}
 
-      <div className="space-y-4">
+     <div className="space-y-3 sm:space-y-4">
         {quickLinks.map((item, index) => {
           const Icon = item.icon;
 
@@ -79,15 +81,16 @@ export default function QuickAccessCard() {
             <div
               key={index}
               className="
-                rounded-xl
-                p-3
-                flex
-                items-center
-                gap-4
-                hover:shadow-sm
-                transition
-                cursor-pointer
-              "
+  rounded-xl
+  p-3
+  flex
+  items-center
+  gap-3
+  sm:gap-4
+  hover:shadow-sm
+  transition
+  cursor-pointer
+"
               style={{
                 background:
                   "linear-gradient(90deg,var(--primary-light),var(--card-bg))",
@@ -97,8 +100,10 @@ export default function QuickAccessCard() {
 
               <div
                 className="
-                  w-12
-                  h-12
+                 w-10
+h-10
+sm:w-12
+sm:h-12
                   rounded-xl
                   flex
                   items-center
@@ -109,7 +114,8 @@ export default function QuickAccessCard() {
                 }}
               >
                 <Icon
-                  size={22}
+  size={20}
+  className="sm:w-[22px] sm:h-[22px]"
                   color="var(--primary-color)"
                 />
               </div>
@@ -117,11 +123,11 @@ export default function QuickAccessCard() {
               {/* Text */}
 
               <div>
-                <h4 className="font-medium text-slate-800">
+                <h4 className="text-sm sm:text-base font-medium text-slate-800">
                   {item.title}
                 </h4>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-xs sm:text-sm text-slate-500">
                   {item.subtitle}
                 </p>
               </div>

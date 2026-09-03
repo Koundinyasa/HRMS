@@ -1,3 +1,5 @@
+
+
 import { Bell } from "lucide-react";
 
 export default function NotificationCard() {
@@ -5,15 +7,23 @@ export default function NotificationCard() {
     <button
       type="button"
       className="
-        p-2
+        flex
+        h-9
+        w-9
+        shrink-0
+        items-center
+        justify-center
         rounded-full
-        hover:bg-white/10
         transition
+        hover:bg-[#B8E0F5]/70
+        sm:h-10
+        sm:w-10
       "
     >
       <Bell
         size={18}
-        color="white"
+        strokeWidth={2}
+        color="#1E3A5F"
       />
     </button>
   );
