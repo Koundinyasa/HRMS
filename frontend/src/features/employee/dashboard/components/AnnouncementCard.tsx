@@ -5,7 +5,6 @@ import {
   Vote,
   PartyPopper,
 } from "lucide-react";
-
 export default function AnnouncementCard() {
   const announcements = [
     {
@@ -51,7 +50,6 @@ export default function AnnouncementCard() {
       color: "#6B7280",
     },
   ];
-
   return (
     <div
       className="
@@ -78,7 +76,6 @@ export default function AnnouncementCard() {
         >
           Announcements
         </h3>
-
         <button
           className="text-xs sm:text-sm font-medium shrink-0"
           style={{
@@ -88,7 +85,6 @@ export default function AnnouncementCard() {
           View All
         </button>
       </div>
-
       {/* Divider */}
       <div
         className="h-[2px] mt-3 mb-2 sm:mb-4"
@@ -96,12 +92,10 @@ export default function AnnouncementCard() {
           backgroundColor: "var(--primary-border)",
         }}
       />
-
       {/* Announcement List */}
       <div>
         {announcements.map((item, index) => {
           const Icon = item.icon;
-
           return (
             <div
               key={index}
@@ -137,13 +131,11 @@ export default function AnnouncementCard() {
                   color={item.color}
                 />
               </div>
-
               {/* Content */}
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-slate-700 break-words">
                   {item.title}
                 </p>
-
                 <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
                   {item.time}
                 </p>

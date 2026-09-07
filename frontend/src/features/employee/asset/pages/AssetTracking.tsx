@@ -1,4 +1,3 @@
-
 import { Menu, UserCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AssetStatusTimeline from "../components/AssetStatusTimeline";
@@ -11,10 +10,7 @@ export default function AssetTracking() {
   return (
     <div>
       <AssetNavbar />
-
       <Card>
-        
-
         <CardContent>
           {myPendingRequests.length === 0 ? (
             <div className="py-12 text-center">

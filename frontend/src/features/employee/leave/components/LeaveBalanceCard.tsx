@@ -8,7 +8,25 @@ export default function LeaveBalanceCard({
 }: LeaveBalanceCardProps) {
   const records = balances?.records ?? [];
 
-  if (records.length === 0) return null;
+  if (records.length === 0) {
+  return (
+    <Card className="h-fit self-start rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <CardContent className="p-4">
+        <h3 className="text-xl font-bold">
+          Available Leave Balance
+        </h3>
+
+        <p className="mb-4 text-sm text-slate-500">
+          Available leaves for this year.
+        </p>
+
+        <p className="py-6 text-center text-sm text-slate-500">
+          No leave balance available.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
   return (
     <Card className="h-fit self-start rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -76,3 +94,4 @@ export default function LeaveBalanceCard({
     </Card>
   );
 }
+

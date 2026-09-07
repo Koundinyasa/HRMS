@@ -1,6 +1,6 @@
 export interface CaptchaResponse {
-  captchaId: string;  
-  image: string;        
+  captchaId: string;   
+  image: string;         
 }
 
 export interface LoginRequest {
@@ -22,23 +22,40 @@ export interface LoginResponse {
 }
 
 
-export interface AuthState {
-  accessToken: string | null;
-  employeeId: string | null;
-  userId: string | null;
-  isFirstLogin: boolean;
-  isAuthenticated: boolean;
-  
-}
-
 export interface LogoutResponse {
   success: boolean;
   message: string;
 }
 
 
+export interface AuthState {
+  accessToken: string | null;
+  employeeId: string | null;
+  userId: string | null;
+  isFirstLogin: boolean;
+  isAuthenticated: boolean;
+}
+
+
+
 export interface User {
   id: number;
   name: string;
   role: "admin" | "hr" | "employee";
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+  mobile: string;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface FirstLoginResetPasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }

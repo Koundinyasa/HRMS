@@ -21,7 +21,6 @@ export default function GreetingCard() {
       : hour < 17
         ? "Good Afternoon"
         : "Good Evening";
-
   const formattedDate =
     currentDate.toLocaleDateString(
       "en-IN",
@@ -32,7 +31,6 @@ export default function GreetingCard() {
         year: "numeric",
       }
     );
-
   return (
     <div
       className="
@@ -51,7 +49,6 @@ export default function GreetingCard() {
       }}
     >
       {/* Large Background Circle */}
-
       <div
         className="
     absolute
@@ -138,7 +135,6 @@ export default function GreetingCard() {
           />
         ))}
       </div>
-
       <div
         className="
     relative
@@ -181,7 +177,6 @@ lg:w-auto
                 ? "☀️"
                 : "🌙"}
           </div>
-
          <div className="min-w-0">
             <p
               className="
@@ -195,7 +190,6 @@ lg:w-auto
               {greeting},{" "}
               Have a productive day.
             </p>
-
            <h2
   className="
     text-lg sm:text-[22px]
@@ -208,7 +202,6 @@ lg:w-auto
 >
               Hi {profile?.profile.FullName}
             </h2>
-
             <p
               className="
                 text-xs sm:text-sm
@@ -237,7 +230,6 @@ mt-1 sm:mt-2
   "
 >
           {/* Employee ID */}
-
           <div
             className="
               flex
@@ -265,7 +257,6 @@ mt-1 sm:mt-2
                 color="var(--primary-color)"
               />
             </div>
-
             <span
   className="
     text-xs sm:text-sm
@@ -307,7 +298,6 @@ mt-1 sm:mt-2
                 color="var(--primary-color)"
               />
             </div>
-
             <span
   className="
     text-xs sm:text-sm
@@ -349,7 +339,6 @@ mt-1 sm:mt-2
                 color="var(--primary-color)"
               />
             </div>
-
             <span
   className="
     text-xs sm:text-sm
@@ -378,7 +367,6 @@ mt-1 sm:mt-2
           animate-bubble1
         "
       />
-
       <div
         className="
           absolute
@@ -391,7 +379,6 @@ mt-1 sm:mt-2
           animate-bubble2
         "
       />
-
       <div
         className="
           absolute
@@ -404,7 +391,6 @@ mt-1 sm:mt-2
           animate-bubble3
         "
       />
-
       <div
         className="
           absolute
@@ -417,7 +403,6 @@ mt-1 sm:mt-2
           animate-bubble1
         "
       />
-
       <div
         className="
           absolute

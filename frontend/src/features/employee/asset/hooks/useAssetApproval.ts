@@ -5,21 +5,18 @@ import {
   useApproveAssetStageMutation,
   useGetPendingAssetRequestsQuery,
 } from "../api/assetApi";
-
 function getBackendMessage(err: unknown): string | undefined {
   if (err && typeof err === "object" && "data" in err) {
     return (err as { data?: { Message?: string } }).data?.Message;
   }
   return undefined;
 }
-
 export const useAssetApproval = () => {
   const {
   data: pendingResponse,
   isLoading,
   isError,
 } = useGetPendingAssetRequestsQuery();
-
 const pendingSection =
   pendingResponse?.sections.find(
     (section) => section.title === "Pending Asset Requests"
@@ -55,7 +52,6 @@ const requests = pendingSection?.records ?? [];
       toast.error("Please provide a reason for rejection.");
       return;
     }
-
     setIsRejecting(true);
     try {
       await approveAssetStage({
@@ -72,7 +68,6 @@ const requests = pendingSection?.records ?? [];
       setIsRejecting(false);
     }
   };
-
   return {
     requests,
     isLoading,

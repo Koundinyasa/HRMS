@@ -17,8 +17,6 @@ export default function FaceRegistrationPage() {
  
   const handleEnrollClose = () => {
     setShowEnrollModal(false);
-    // Registration just changed (or the attempt finished) — refetch so
-    // this page reflects the real current state instead of stale data.
     refetch();
   };
  
@@ -60,12 +58,6 @@ export default function FaceRegistrationPage() {
             <p className="text-xs text-slate-400 mb-5">
               {data.totalActiveTemplates} of 5 angles registered
             </p>
- 
-            {/* Angle grid — only meaningful once AngleLabel is actually
-                populated on real rows (see ANGLE_LABEL_COLUMN_READY in
-                attendance.service.ts). Rows enrolled before that column
-                existed show every angle as "unknown", which is honest —
-                we genuinely can't say which specific angle they were. */}
             <div className="grid grid-cols-5 gap-2 mb-5">
               {Object.entries(ANGLE_LABELS).map(([key, label]) => {
                 const isRegistered = data.registeredAngles.includes(key);

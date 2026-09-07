@@ -45,7 +45,6 @@ export default function TeamAttendanceCard() {
       textColor: "#B45309",
     },
   ];
-
   const teamData = staticData.map(
     (item, index) => ({
       initials:
@@ -81,7 +80,6 @@ export default function TeamAttendanceCard() {
       }}
     >
       {/* Header */}
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3
           className="text-xl font-semibold"
@@ -91,18 +89,15 @@ export default function TeamAttendanceCard() {
         >
           Team
         </h3>
-
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-green-500" />
             <span>In Office</span>
           </div>
-
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500" />
             <span>Work From Home</span>
           </div>
-
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500" />
             <span>Absent</span>
@@ -133,7 +128,6 @@ export default function TeamAttendanceCard() {
             }}
           >
             <div>Members</div>
-
             <div className="flex items-center gap-1">
               Today
               <ChevronsUpDown
@@ -141,7 +135,6 @@ export default function TeamAttendanceCard() {
                 color="var(--primary-color)"
               />
             </div>
-
             <div className="flex items-center gap-1">
               25/9
               <ChevronsUpDown
@@ -149,7 +142,6 @@ export default function TeamAttendanceCard() {
                 color="var(--primary-color)"
               />
             </div>
-
             <div className="flex items-center gap-1">
               24/9
               <ChevronsUpDown
@@ -157,7 +149,6 @@ export default function TeamAttendanceCard() {
                 color="var(--primary-color)"
               />
             </div>
-
             <div className="flex items-center gap-1">
               23/9
               <ChevronsUpDown
@@ -184,7 +175,6 @@ export default function TeamAttendanceCard() {
               }}
             >
               {/* Member */}
-
               <div className="flex items-center gap-3 sm:gap-4 pl-2">
                 <div
                   className="
@@ -210,7 +200,6 @@ export default function TeamAttendanceCard() {
                 >
                   {member.initials}
                 </div>
-
                 <div className="min-w-0 flex-1">
                   <h4
                     className="
@@ -223,7 +212,6 @@ export default function TeamAttendanceCard() {
                   >
                     {member.name}
                   </h4>
-
                   <p className="text-sm text-slate-500 mt-0.5">
                     {member.role}
                   </p>
@@ -276,6 +264,5 @@ export default function TeamAttendanceCard() {
         </div>
       </div>
     </div>
-
   );
 }

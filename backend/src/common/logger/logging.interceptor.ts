@@ -10,30 +10,26 @@ import { tap } from 'rxjs/operators';
 import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Request, Response } from 'express';
- 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
-  ) {
-    
-  }
- 
+  ) {}
+
   intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<any> {
- 
-const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
- 
+
     const start = Date.now();
- 
+
     return next.handle().pipe(
       tap(() => {
         const duration = Date.now() - start;
- 
+
         this.logger.info('HTTP Request Completed', {
           method: request.method,
           url: request.originalUrl,

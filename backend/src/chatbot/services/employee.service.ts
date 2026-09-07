@@ -38,7 +38,6 @@ export class EmployeeService {
     });
     return `Here's how to find your profile:`;
   }
-
   getPrivateDocGuide(employeeId: string, role: string): string {
     const baseSteps = [
       'Open the Employees menu.',
@@ -58,7 +57,6 @@ export class EmployeeService {
       ? `Here's how to access employee private details:`
       : `Here's how to open your private documents:`;
   }
-
   getIntents(): IntentDefinition[] {
     return [
       {
@@ -234,7 +232,6 @@ export class EmployeeService {
           return `Here's how to open your Form16:`;
         },
       },
-
       {
         name: 'familyDetails',
  
@@ -416,7 +413,6 @@ export class EmployeeService {
           return `Here's how to view your certificates:`;
         },
       },
-
       {
         name: 'privateDocs',
         test: (ctx) =>

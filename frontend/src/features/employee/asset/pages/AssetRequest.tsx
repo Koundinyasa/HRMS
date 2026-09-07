@@ -9,16 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-
-
 import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-
 } from "@/components/ui/select";
 
 import {
@@ -31,7 +27,6 @@ import { useAssetManagement } from "../hooks/useAssetManagement";
 
 export default function AssetRequest() {
   const {
-
     assetTypes,
     assetId,
     reason,
@@ -70,9 +65,6 @@ export default function AssetRequest() {
 
           <CardContent className="space-y-7 px-5 pb-6 sm:space-y-8 sm:px-8 sm:pb-8">
             {/* Employee ID & Asset Type */}
-
-
-
             <div className="space-y-2">
               <Label htmlFor="asset-type"
                 className="flex items-center gap-1.5 text-sm font-medium text-slate-900"

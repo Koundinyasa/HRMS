@@ -119,7 +119,6 @@ export default function LeaveHistoryTable() {
             No leave history available.
           </p>
         </div>
-
         <WithdrawLeaveDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
@@ -134,7 +133,6 @@ export default function LeaveHistoryTable() {
       </>
     );
   }
-
   return (
     <>
       {/* ==================================================
@@ -207,7 +205,6 @@ export default function LeaveHistoryTable() {
                             className="w-36 px-5 py-4"
                           >
                             <div className="flex justify-center">
-
                               <span
                                 className={`inline-flex min-w-[90px] justify-center rounded-full px-3 py-1 text-xs font-semibold ${getStatusClass(
                                   String(
@@ -217,7 +214,6 @@ export default function LeaveHistoryTable() {
                               >
                                 {field.value}
                               </span>
-
                             </div>
                           </td>
                         );
@@ -254,7 +250,6 @@ export default function LeaveHistoryTable() {
                           Number(
                             field.value
                           );
-
                         return (
                           <td
                             key={field.label}
@@ -267,7 +262,6 @@ export default function LeaveHistoryTable() {
                                   setSelectedRecord(
                                     record
                                   );
-
                                   setDialogOpen(
                                     true
                                   );
@@ -412,4 +406,5 @@ export default function LeaveHistoryTable() {
     </>
   );
 }
+
 

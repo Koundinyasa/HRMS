@@ -188,9 +188,45 @@ function SelectScrollDownButton({
   )
 }
 
+function StyledSelect({
+  value,
+  onValueChange,
+  options,
+  className,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  options: string[];
+  className?: string;
+}) {
+  return (
+    <Select
+      value={value}
+      onValueChange={(value) => {
+        if (value !== null) {
+          onValueChange(value);
+        }
+      }}
+    >
+      <SelectTrigger className={className}>
+        <SelectValue />
+      </SelectTrigger>
+
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option} value={option}>
+            {option}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export {
   Select,
   SelectContent,
+  StyledSelect,
   SelectGroup,
   SelectItem,
   SelectLabel,

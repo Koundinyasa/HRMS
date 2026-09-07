@@ -305,3 +305,4 @@ export interface LeaveHistoryTableProps {
 export interface LeaveBalanceCardProps {
   balances: LeaveBalanceSection | null;
 }
+

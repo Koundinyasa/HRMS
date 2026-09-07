@@ -5,7 +5,6 @@ import {
   BarChart3,
   CalendarDays,
 } from "lucide-react";
-
 export default function QuickAccessCard() {
   const quickLinks = [
     {
@@ -34,7 +33,6 @@ export default function QuickAccessCard() {
       icon: CalendarDays,
     },
   ];
-
   return (
     <div
       className="
@@ -52,7 +50,6 @@ export default function QuickAccessCard() {
       }}
     >
       {/* Header */}
-
       <h3
         className="text-base sm:text-lg font-medium"
         style={{
@@ -97,7 +94,6 @@ export default function QuickAccessCard() {
               }}
             >
               {/* Icon */}
-
               <div
                 className="
                  w-10
@@ -126,7 +122,6 @@ sm:h-12
                 <h4 className="text-sm sm:text-base font-medium text-slate-800">
                   {item.title}
                 </h4>
-
                 <p className="text-xs sm:text-sm text-slate-500">
                   {item.subtitle}
                 </p>

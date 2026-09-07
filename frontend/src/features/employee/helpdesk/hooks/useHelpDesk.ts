@@ -14,7 +14,6 @@ import {
   setSubject,
   setDescription,
 } from "../helpDeskSlice";
-
 import {
   useGetDepartmentsQuery,
   useGetCategoriesQuery,
@@ -25,7 +24,6 @@ import {
   useReopenTicketMutation,
   useGetKnowledgeBaseQuery,
 } from "../api/helpDeskApi";
-
 import {
   validateHelpDeskTicket,
 } from "../validations/helpDeskValidation";
@@ -73,12 +71,10 @@ export const useHelpDesk = () => {
       skip: !helpDeskState.categoryId,
     }
   );
-
   const selectedCategory = categories.find(
   (category) =>
     category.ID === helpDeskState.categoryId
 );
-
 const isAssetNumberRequired =
   ["hardware support", "software support"].includes(
     selectedCategory?.CategoryName
@@ -122,14 +118,12 @@ const isAssetNumberRequired =
       isLoading: isSubmitting,
     },
   ] = useCreateTicketMutation();
-
   const [
     replyTicket,
     {
       isLoading: isReplying,
     },
   ] = useReplyTicketMutation();
-
   const [
     reopenTicket,
     {
@@ -147,7 +141,6 @@ const isAssetNumberRequired =
     helpDeskState,
     isAssetNumberRequired
   );
-
     if (!validation.valid) {
       toast.error(
         validation.error
@@ -208,7 +201,6 @@ const isAssetNumberRequired =
             message?: string;
           };
         };
-
       toast.error(
         errorResponse.data?.Message ??
         errorResponse.data?.message ??
@@ -228,7 +220,6 @@ const isAssetNumberRequired =
       toast.error("Please enter your reply.");
       return false;
     }
-
     try {
       await replyTicket({
         ticketId,
@@ -252,7 +243,6 @@ const isAssetNumberRequired =
             message?: string;
           };
         };
-
       toast.error(
         errorResponse.data?.Message ??
         errorResponse.data?.message ??
@@ -299,7 +289,6 @@ const isAssetNumberRequired =
             message?: string;
           };
         };
-
       toast.error(
         errorResponse.data?.Message ??
         errorResponse.data?.message ??
@@ -368,37 +357,30 @@ const isAssetNumberRequired =
       dispatch(
         setDepartmentId(id)
       ),
-
     setCategory: (id: number | null) =>
       dispatch(
         setCategoryId(id)
       ),
-
     setSubCategory: (id: number | null) =>
       dispatch(
         setSubCategoryId(id)
       ),
-
     setAssetNumber: (value: string) =>
       dispatch(
         setAssetNumber(value)
       ),
-
     setLocation: (value: string) =>
       dispatch(
         setLocation(value)
       ),
-
     setContactNo: (value: string) =>
       dispatch(
         setContactNo(value)
       ),
-
     setSubject: (value: string) =>
       dispatch(
         setSubject(value)
       ),
-
     setDescription: (value: string) =>
       dispatch(
         setDescription(value)

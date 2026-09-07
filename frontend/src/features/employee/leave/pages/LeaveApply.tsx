@@ -524,22 +524,28 @@ export default function LeaveApply() {
 
                             {leaveTypeOpen && (
                               <div className="absolute z-50 mt-2 max-h-[112px] w-full overflow-y-auto rounded-xl border border-slate-300 bg-white p-1 shadow-lg">
-                                {leaveTypes.map((leave) => (
-                                  <button
-                                    type="button"
-                                    key={leave.ID}
-                                    onClick={() => {
-                                      field.onChange(String(leave.ID));
-                                      setLeaveTypeOpen(false);
-                                    }}
-                                    className={`block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-900 transition-colors ${String(leave.ID) === field.value
-                                      ? "bg-purple-50 font-semibold"
-                                      : "hover:bg-slate-100"
-                                      }`}
-                                  >
-                                    {leave.Name}
-                                  </button>
-                                ))}
+                                {leaveTypes.length > 0 ? (
+                                  leaveTypes.map((leave) => (
+                                    <button
+                                      type="button"
+                                      key={leave.ID}
+                                      onClick={() => {
+                                        field.onChange(String(leave.ID));
+                                        setLeaveTypeOpen(false);
+                                      }}
+                                      className={`block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-900 ${String(leave.ID) === field.value
+                                        ? "bg-purple-50 font-semibold"
+                                        : "hover:bg-slate-100"
+                                        }`}
+                                    >
+                                      {leave.Name}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="px-3 py-2 text-sm text-slate-500">
+                                    No leave types available
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -840,3 +846,6 @@ focus:ring-[#7A5BED]
     </div >
   );
 }
+
+
+

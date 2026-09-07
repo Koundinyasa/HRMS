@@ -34,14 +34,12 @@ export default function LeaveStatus() {
         ] = date
           .split("-")
           .map(Number);
-
         return new Date(
           year,
           month - 1,
           day
         ).getTime();
       };
-
       // First compare AppliedDate
       const appliedDateDiff =
         parseAppliedDate(b.AppliedDate) -
@@ -243,3 +241,5 @@ export default function LeaveStatus() {
     </div>
   );
 }
+
+

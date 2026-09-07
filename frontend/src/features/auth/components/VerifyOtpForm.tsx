@@ -11,10 +11,10 @@ export default function VerifyOtpForm() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const authState = useAppSelector((state) => {
-    console.log("Full Redux state:", state);
-    return state.auth;
-  });
+  // const authState = useAppSelector((state) => {
+  //   console.log("Full Redux state:", state);
+  //   return state.auth;
+  // });
 
   const { handleVerifyOtp } = useVerifyOtp();
   const navigate = useNavigate();

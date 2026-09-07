@@ -13,7 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         return {
           secret: config.get<string>('jwt.secret'),
           signOptions: {
-            expiresIn: '24h', // Default
+            expiresIn:  '24h', // Default
           },
         };
       },

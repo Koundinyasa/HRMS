@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
-
 import {
   Palette,
   Sun,
 } from "lucide-react";
-
 import {
   applyTheme,
   loadTheme,
   type ThemeName,
 } from "./theme";
-
 const colors: {
   key: ThemeName;
   color: string;
@@ -65,7 +62,6 @@ export default function ThemePreset() {
   return (
     <div className="relative">
       {/* Theme Icon */}
-
       <button
         type="button"
         onClick={() =>
@@ -108,7 +104,6 @@ export default function ThemePreset() {
             <h3 className="text-xl font-semibold text-slate-800">
               Presets
             </h3>
-
             <Sun
               size={18}
               className="text-slate-500"

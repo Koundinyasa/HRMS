@@ -52,7 +52,6 @@ export class HrmsDbService {
       email: profileRow.Email ?? '',
       role: profileRow.DefaultRole ?? '',
     };
-
     const holidays = holidayRows.map((h: any) => ({
       date: h.HolidayDate ? new Date(h.HolidayDate).toISOString().slice(0, 10) : '',
       name: h.HolidayName,
@@ -93,7 +92,6 @@ export class HrmsDbService {
       return [];
     }
   }
-
   // ─── HRMSDEV: real department list from Mst_Department ────────────────────────
   async getDepartments() {
     const pool = await this.getPool();
@@ -107,7 +105,6 @@ export class HrmsDbService {
       return [];
     }
   }
-
   // ─── HRMSDEV: real designation list from Mst_Designation ──────────────────────
   async getDesignations() {
     const pool = await this.getPool();
@@ -121,7 +118,6 @@ export class HrmsDbService {
       return [];
     }
   }
-
   // ─── HRMSDEV: company info for the logged-in user's company ────────────────────
   async getCompanyInfo(companyId: number) {
     const pool = await this.getPool();
@@ -146,7 +142,6 @@ export class HrmsDbService {
       return null;
     }
   }
-
   // ─── HRMSDEV: office branches for the logged-in user's company ─────────────────
   // Regular employees should only see their OWN branch, not every branch in
   // the company — resolved directly via Employee.BranchID, independent of
@@ -177,7 +172,6 @@ export class HrmsDbService {
       return null;
     }
   }
-
   async getBranches(companyId: number) {
     const pool = await this.getPool();
     try {
@@ -200,7 +194,6 @@ export class HrmsDbService {
       return [];
     }
   }
-
   // ─── HRMSDEV: active employee directory for the logged-in user's company ───────
   async getEmployeeDirectory(companyId: number) {
     const pool = await this.getPool();
@@ -245,7 +238,6 @@ export class HrmsDbService {
       return [];
     }
   }
-
   // Team membership = employees reporting to that team's current lead.
   // There is no direct Employee->Team column today; this is the agreed
   // workaround via ReportingManagerID until the DB team adds a real link.
@@ -283,7 +275,6 @@ export class HrmsDbService {
     const result = await pool.request()
       .input('UserId', sql.VarChar, userId)
       .execute('usp_GetUserById');
-
     const row = result.recordset[0];
     if (!row) return null;
     return {
@@ -294,14 +285,12 @@ export class HrmsDbService {
       name: row.name as string,
     };
   }
-
   async findUserByEmailAndPassword(email: string, password: string) {
     const pool = await this.getPool();
     const result = await pool.request()
       .input('Email', sql.NVarChar, email.toLowerCase())
       .input('Password', sql.NVarChar, password)
       .execute('usp_LoginUser');
-
     const row = result.recordset[0];
     if (!row) return null;
     return {
@@ -365,7 +354,6 @@ export class HrmsDbService {
     const result = await pool.request()
       .input('EmployeeId', sql.VarChar, employeeId ?? null)
       .execute('usp_GetLeaveRequests');
-
     return result.recordset.map((row) => ({
       ...row,
       leaveDate: row.leave_date,
@@ -377,7 +365,6 @@ export class HrmsDbService {
       cancelledAt: row.cancelled_at,
     }));
   }
-
   async getLeaveRequestByCode(code: string) {
     const pool = await this.getPool();
     const result = await pool.request()
@@ -394,13 +381,11 @@ export class HrmsDbService {
       const s = d.toISOString().slice(0, 10);
       return s <= '1900-01-02' ? '' : s;
     };
-
     const rawStart = toDateStr(row.start_date);
     const rawLeave = toDateStr(row.leave_date);
     const rawEnd = toDateStr(row.end_date);
     const startDate = rawStart || rawLeave;
     const endDate = rawEnd || startDate;
-
     return {
       id: row.id as number,
       requestCode: row.request_code as string,
@@ -415,7 +400,6 @@ export class HrmsDbService {
       status: row.status as string,
     };
   }
-
   async approveLeaveRequest(code: string, approverId: string) {
     const pool = await this.getPool();
     await pool.request()
@@ -444,7 +428,6 @@ export class HrmsDbService {
         .input('ActionId', sql.Int, actionId)
         .input('Reason', sql.NVarChar, reason ?? null)
         .execute('USP_LeaveWithdrawCancel');
-
       // Same issue as applyLeave in leave.service.ts: USP_LeaveWithdrawCancel
       // fires notification EXEC calls (each returning their own result set)
       // BEFORE its real final SELECT {StatusCode, Message}. The real answer
@@ -465,7 +448,6 @@ export class HrmsDbService {
     const cancelledDates = specificDates && specificDates.length > 0
       ? JSON.stringify(specificDates.map(d => new Date(d).toISOString().slice(0, 10)).sort())
       : null;
-
     const result = await pool.request()
       .input('RequestCode', sql.NVarChar, code)
       .input('CancelledDates', sql.NVarChar(sql.MAX), cancelledDates)
@@ -481,13 +463,11 @@ export class HrmsDbService {
       const s = d.toISOString().slice(0, 10);
       return s <= '1900-01-02' ? '' : s;
     };
-
     const rawStart = toDateStr(row.start_date);
     const rawLeave = toDateStr(row.leave_date);
     const rawEnd = toDateStr(row.end_date);
     const startDate = rawStart || rawLeave;
     const endDate = rawEnd || startDate;
-
     return {
       id: row.id as number,
       requestCode: row.request_code as string,
@@ -502,7 +482,6 @@ export class HrmsDbService {
       status: row.status as string,
     };
   }
-
   // ─── HRMSDEV: real leave balance via USP_EmployeeLeaveBalance ─────────────────
   async getLeaveBalance(employeeId: string) {
     const pool = await this.getPool();
@@ -515,12 +494,10 @@ export class HrmsDbService {
       console.error('getLeaveBalance failed for', employeeId, '-', (err as Error).message);
       return { initialised: false, rows: [] as any[] };
     }
-
     const rows = result.recordset ?? [];
     if (!rows.length || rows[0].StatusCode !== undefined) {
       return { initialised: false, rows: [] as any[] };
     }
-
     return {
       initialised: true,
       rows: rows.map((r: any) => ({
@@ -539,12 +516,10 @@ export class HrmsDbService {
     const pool = await this.getPool();
     let holidays: Array<{ date: string; name: string }> = [];
     let announcements: Array<{ date: string; title: string }> = [];
-
     try {
       const r = await pool.request().execute('usp_GetHolidays');
       holidays = r.recordset as Array<{ date: string; name: string }>;
     } catch { /* table may not exist */ }
-
     try {
       const r = await pool.request().execute('usp_GetAnnouncements');
       announcements = r.recordset as Array<{ date: string; title: string }>;
@@ -558,7 +533,6 @@ export class HrmsDbService {
     const result = await pool.request().execute('usp_GetCompanyLogo');
     return result.recordset[0]?.logo_url ?? null;
   }
-
   async ping() {
     const pool = await this.getPool();
     const result = await pool.request().execute('usp_Ping');

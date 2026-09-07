@@ -1,7 +1,6 @@
 // ======================================================
 // DEPARTMENT
 // ======================================================
-
 export interface Department {
   ID: number;
   DepartmentName: string;
@@ -269,7 +268,6 @@ export interface ReopenTicketRequest {
 // exact response body for Reply/Reopen.
 // Therefore, don't assume a response structure here.
 //
-
 export interface TicketActionResponse {
   StatusCode?: number;
   Message?: string;
@@ -286,5 +284,4 @@ export interface KnowledgeBaseItem {
   Question: string;
   Answer: string;
 }
-
 export type KnowledgeBaseResponse = KnowledgeBaseItem[];

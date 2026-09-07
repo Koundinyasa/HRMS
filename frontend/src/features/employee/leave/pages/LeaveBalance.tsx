@@ -47,7 +47,6 @@ export default function LeaveBalance() {
   ) => {
     return fields.find((field) => field.label === label)?.value ?? 0;
   };
-
   // Total Opening Balance
   const totalOpening = records.reduce((sum, record) => {
     return (
@@ -57,7 +56,6 @@ export default function LeaveBalance() {
       )
     );
   }, 0);
-
   // Total Accrued
   const totalAccrued = records.reduce((sum, record) => {
     return (
@@ -67,7 +65,6 @@ export default function LeaveBalance() {
       )
     );
   }, 0);
-
   // Total Availed
   const totalAvailed = records.reduce((sum, record) => {
     return (
@@ -77,7 +74,6 @@ export default function LeaveBalance() {
       )
     );
   }, 0);
-
   // Total Closing Balance
   const totalClosing = records.reduce((sum, record) => {
     return (
@@ -103,46 +99,39 @@ export default function LeaveBalance() {
             <p className="text-sm text-slate-500">
               Total Opening
             </p>
-
             <h2 className="mt-2 text-3xl font-bold">
               {totalOpening}
             </h2>
           </CardContent>
         </Card>
-
         {/* Total Accrued */}
         <Card className="shadow-sm">
           <CardContent className="p-5">
             <p className="text-sm text-slate-500">
               Total Accrued
             </p>
-
             <h2 className="mt-2 text-3xl font-bold text-green-600">
               {totalAccrued}
             </h2>
           </CardContent>
         </Card>
-
         {/* Total Availed */}
         <Card className="shadow-sm">
           <CardContent className="p-5">
             <p className="text-sm text-slate-500">
               Total Availed
             </p>
-
             <h2 className="mt-2 text-3xl font-bold text-red-500">
               {totalAvailed}
             </h2>
           </CardContent>
         </Card>
-
         {/* Total Closing */}
         <Card className="shadow-sm">
           <CardContent className="p-5">
             <p className="text-sm text-slate-500">
               Total Closing
             </p>
-
             <h2
               className="mt-2 text-3xl font-bold"
               style={{
@@ -166,7 +155,6 @@ export default function LeaveBalance() {
           <CardTitle className="text-xl">
             Leave Balance
           </CardTitle>
-
           <p className="text-sm text-slate-500">
             Overview of your available leave balances.
           </p>
@@ -318,3 +306,5 @@ export default function LeaveBalance() {
     </div>
   );
 }
+
+

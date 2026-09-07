@@ -17,8 +17,5 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   if (roleIdNumber === null || Number.isNaN(roleIdNumber) || !allowedRoles.includes(roleIdNumber)) {
     return <Navigate to="/unauthorized" replace />;
   }
-
-
-  
   return <Outlet />;
 }

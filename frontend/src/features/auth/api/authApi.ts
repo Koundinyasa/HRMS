@@ -1,5 +1,6 @@
 import { baseApi } from '@/app/baseApi';
-import type { LoginRequest, LoginResponse, CaptchaResponse, LogoutResponse } from '../types/auth.types';
+import type { LoginRequest, LoginResponse, CaptchaResponse,LogoutResponse,FirstLoginResetPasswordRequest } from '../types/auth.types';
+import type { DomainRequest } from '@/features/domain-verification/types/domain.types';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -7,7 +8,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => '/auth/captcha',
     }),
 
-    login: builder.mutation<LoginResponse, LoginRequest>({
+    login: builder.mutation<LoginResponse, LoginRequest, DomainRequest>({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
@@ -15,8 +16,15 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    logout: builder.mutation<LogoutResponse, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+    }),
 
-    forgotPassword: builder.mutation<{ success: boolean; employeeId: string }, { userId: string }>({
+
+    forgotPassword: builder.mutation<{ success: boolean; employeeId: string, remainingSeconds: number, remainingMinutes: number, }, { userId: string }>({
       query: (body) => ({
         url: '/auth/forgot-password',
         method: 'POST',
@@ -49,14 +57,13 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    logout: builder.mutation<LogoutResponse, void>({
-      query: () => ({
-        url: '/auth/logout',
-        method: 'POST',
-      }),
+    firstLoginResetPassword: builder.mutation<void,FirstLoginResetPasswordRequest>({
+    query: (body) => ({
+      url: '/auth/reset-password',
+      method: 'POST',
+      body,
     }),
-
-
+  }),
   }),
 });
 
@@ -69,4 +76,5 @@ export const {
   useResetPasswordMutation,
   useResetForgotPasswordMutation,
   useLogoutMutation,
+  useFirstLoginResetPasswordMutation
 } = authApi;

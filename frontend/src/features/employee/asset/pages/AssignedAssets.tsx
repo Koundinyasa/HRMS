@@ -21,17 +21,14 @@ export default function AssignedAssets() {
       <Card>
         <CardHeader>
           <CardTitle>Assigned Assets</CardTitle>
-
           <CardDescription>
             Assets that have been approved and allocated to you.
           </CardDescription>
         </CardHeader>
-
         <CardContent>
           {records.length === 0 ? (
             <div className="py-10 text-center">
               <h3 className="font-medium">No assigned assets found</h3>
-
               <p className="mt-1 text-sm text-muted-foreground">
                 Approved and allocated assets will appear here.
               </p>
@@ -51,7 +48,6 @@ export default function AssignedAssets() {
                     ))}
                   </tr>
                 </thead>
-
                 <tbody>
                   {records.map((record, rowIndex) => (
                     <tr

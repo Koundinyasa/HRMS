@@ -6,6 +6,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { showPageLoader } from "../../employee/employeeSlice";
 
+const U: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
+
+const inputCls =
+  "w-full h-[44px] rounded-lg border border-slate-200 bg-slate-50 text-slate-700 placeholder:text-slate-400 outline-none pl-9 pr-4 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition-all";
+
 export default function ForgotPasswordForm() {
   const [userId, setUserId] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
@@ -39,9 +44,10 @@ export default function ForgotPasswordForm() {
 };
 
   return (
-    <div className="space-y-5">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="flex flex-col gap-4">
+      {/* Email ID */}
+      <div className="flex flex-col gap-1.5">
+        <label style={{ ...U, fontWeight: 500, fontSize: "clamp(11px,0.85vw,13px)", color: "#1E293B" }}>
           Email ID <span className="text-red-500">*</span>
         </label>
 
@@ -56,18 +62,14 @@ export default function ForgotPasswordForm() {
         />
       </div>
 
-      {error && (
-        <p className="text-red-500 text-sm">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-red-500 text-xs">{error}</p>}
 
-      <Button
+      <button
         onClick={handleSubmit}
         className="w-full h-[50px] bg-blue-600 hover:bg-blue-700 rounded-xl"
       >
         Send OTP
-      </Button>
+      </button>
 
       <div className="mt-auto pt-30 text-center text-sm text-gray-500">
         Powered by

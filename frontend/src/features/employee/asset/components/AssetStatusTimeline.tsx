@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import {
   Check,
@@ -19,7 +18,6 @@ type StageStatus =
   | "current"
   | "pending"
   | "rejected";
-
 const getStageStatus = (
   state: string
 ): StageStatus => {
@@ -38,7 +36,6 @@ const getStageStatus = (
       return "pending";
   }
 };
-
 const getStageClasses = (
   status: StageStatus
 ) => {
@@ -50,7 +47,6 @@ const getStageClasses = (
         line: "bg-emerald-500",
         text: "text-emerald-600",
       };
-
     case "current":
       return {
         circle:
@@ -58,7 +54,6 @@ const getStageClasses = (
         line: "bg-slate-300",
         text: "text-amber-600",
       };
-
     case "rejected":
       return {
         circle:
@@ -66,7 +61,6 @@ const getStageClasses = (
         line: "bg-red-500",
         text: "text-red-600",
       };
-
     default:
       return {
         circle:
@@ -76,7 +70,6 @@ const getStageClasses = (
       };
   }
 };
-
 export default function AssetStatusTimeline({
   requests,
 }: Props) {
@@ -109,20 +102,17 @@ export default function AssetStatusTimeline({
       startIndex,
       startIndex + itemsPerPage
     );
-
   useEffect(() => {
     if (sortedRequests.length) {
       setCurrentPage(1);
       setExpandedId(sortedRequests[0].Id);
     }
   }, [sortedRequests]);
-
   const toggleExpand = (id: number) => {
     setExpandedId((prev) =>
       prev === id ? null : id
     );
   };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setExpandedId(null);
@@ -140,14 +130,12 @@ export default function AssetStatusTimeline({
             (stage) =>
               stage.StageState === "COMPLETED"
           ).length;
-
         const currentStage =
           request.Stages.find(
             (stage) =>
               stage.StageState ===
               "CURRENT"
           );
-
         const rejectedStage =
           request.Stages.find(
             (stage) =>
@@ -164,7 +152,6 @@ export default function AssetStatusTimeline({
             request.TotalLevels) *
           100
         );
-
         return (
           <div
             key={request.Id}
@@ -187,27 +174,22 @@ export default function AssetStatusTimeline({
                   <p className="text-xs text-slate-500 uppercase">
                     Asset
                   </p>
-
                   <h3 className="mt-1 text-lg font-semibold text-slate-800">
                     {request.AssetName}
                   </h3>
                 </div>
-
                 <div>
                   <p className="text-xs text-slate-500 uppercase">
                     Requested On
                   </p>
-
                   <p className="mt-1 font-medium">
                     {request.RequestDate}
                   </p>
                 </div>
-
                 <div>
                   <p className="text-xs text-slate-500 uppercase">
                     Status
                   </p>
-
                   <span
                     className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${request.OverallStatus?.toUpperCase() === "APPROVED"
                       ? "bg-emerald-100 text-emerald-700"
@@ -221,12 +203,10 @@ export default function AssetStatusTimeline({
                     {request.OverallStatus}
                   </span>
                 </div>
-
                 <div>
                   <p className="text-xs text-slate-500 uppercase">
                     Progress
                   </p>
-
                   <div className="mt-2 flex items-center gap-3">
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
                       <div
@@ -244,7 +224,6 @@ export default function AssetStatusTimeline({
                         }}
                       />
                     </div>
-
                     <span className="text-sm font-semibold">
                       {rejectedStage
                         ? "Stopped"
@@ -253,7 +232,6 @@ export default function AssetStatusTimeline({
                   </div>
                 </div>
               </div>
-
               <button
                 type="button"
                 className="shrink-0 rounded-full p-2 hover:bg-slate-100"
@@ -265,7 +243,6 @@ export default function AssetStatusTimeline({
                 )}
               </button>
             </div>
-
             <div
               className={`grid transition-all duration-300 ${isExpanded
                 ? "grid-rows-[1fr]"
@@ -304,7 +281,6 @@ export default function AssetStatusTimeline({
                             className="flex items-center"
                           >
                             {/* Connector */}
-
                             <div
                               className={`h-1 w-12 shrink-0 sm:w-20 ${status === "completed" || status === "current"
                                 ? "bg-emerald-500"
@@ -341,13 +317,11 @@ export default function AssetStatusTimeline({
                                     {stage.StageState}
                                   </p>
                                 )}
-
                                 {status === "completed" && (
                                   <>
                                     <p className="text-[11px] text-slate-500">
                                       Approved By
                                     </p>
-
                                     <p className="text-xs font-medium text-slate-700">
                                       {stage.ApproverId}
                                     </p>
@@ -393,7 +367,6 @@ export default function AssetStatusTimeline({
             { length: totalPages },
             (_, index) => {
               const page = index + 1;
-
               return (
                 <button
                   key={page}

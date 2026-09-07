@@ -1,0 +1,25 @@
+import {
+  IsArray,
+  IsInt,
+  ValidateNested,
+  ArrayMinSize
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+class ReconcileLeaveEmployeeDto {
+  @IsInt()
+  employeeId!: number;
+
+  date!: string;
+}
+
+export class ReconcileLeaveUpdateDto {
+  @IsInt()
+  leaveTypeId!: number;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => ReconcileLeaveEmployeeDto)
+  employees!: ReconcileLeaveEmployeeDto[];
+}

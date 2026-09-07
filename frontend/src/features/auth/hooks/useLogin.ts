@@ -1,4 +1,3 @@
-
 import { useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -55,7 +54,7 @@ export const useLogin = () => {
       toast.success("Login successful.");
  
       if (response.isFirstLogin) {
-        navigate(`/${domain}/auth/reset-password`);
+        navigate(`/${domain}/first-login-reset-password`);
         return;
       }
  

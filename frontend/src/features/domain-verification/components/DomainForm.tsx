@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { useDomainVerification } from "../hooks/useDomainVerification";
 import { domainSchema } from "../validation/domainSchema";
-
+ 
 export default function DomainForm() {
     const [domain, setDomain] = useState("");
     const [error, setError] = useState("");
@@ -27,7 +27,7 @@ export default function DomainForm() {
         if (!validateDomain(domain)) {
             return;
         }
-
+ 
         setError("");
         setSuccess("");
 
@@ -39,14 +39,13 @@ export default function DomainForm() {
             setError("Invalid domain name");
         }
     };
-
+ 
     return (
         <div className="flex flex-col gap-0">
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Domain*
                 </label>
-
                 <div className="flex items-start gap-3">
                     <div
                         className={`flex flex-1 items-center h-[48px] bg-[#EEF5FB] border rounded-lg px-3 gap-2 transition-colors ${
@@ -68,7 +67,6 @@ export default function DomainForm() {
                                 clipRule="evenodd"
                             />
                         </svg>
-
                         <input
                             type="text"
                             spellCheck={false}
@@ -83,7 +81,6 @@ export default function DomainForm() {
                                     setSuccess("");
                                     return;
                                 }
-
                                 validateDomain(value);
                             }}
                             onKeyDown={(e) =>
@@ -93,7 +90,6 @@ export default function DomainForm() {
                             className="w-full bg-transparent outline-none border-none text-gray-700 text-sm placeholder:text-gray-400"
                         />
                     </div>
-
                     <Button
                         onClick={handleSubmit}
                         className="h-[44px] w-[100px] text-sm rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8]"
@@ -101,13 +97,12 @@ export default function DomainForm() {
                         Proceed →
                     </Button>
                 </div>
-
+ 
                 {error && (
                     <p className="text-red-500 text-xs mt-1.5">
                         {error}
                     </p>
                 )}
-
                 {success && (
                     <p className="text-green-500 text-xs mt-1.5">
                         {success}
@@ -117,3 +112,4 @@ export default function DomainForm() {
         </div>
     );
 }
+ 

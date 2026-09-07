@@ -16,7 +16,6 @@ export default function CalendarCard() {
     currentHolidayIndex,
     setCurrentHolidayIndex,
   ] = useState(0);
-
   const monthNames = [
     "January",
     "February",
@@ -31,7 +30,6 @@ export default function CalendarCard() {
     "November",
     "December",
   ];
-
   const weekDays = [
     "Sun",
     "Mon",
@@ -67,18 +65,15 @@ export default function CalendarCard() {
         year: holidayYear,
         month: holidayMonth,
       } = getHolidayDate(holiday.HolidayDate);
-
       return (
         holidayMonth === month &&
         holidayYear === year
       );
     }) || [];
-
   const holidayDays = holidays.map(
     (holiday) =>
       getHolidayDate(holiday.HolidayDate).day
   );
-
   const holidayMap = holidays.reduce(
     (
       acc: Record<number, string>,
@@ -93,26 +88,22 @@ export default function CalendarCard() {
     },
     {}
   );
-
   const firstDay =
     new Date(
       year,
       month,
       1
     ).getDay();
-
   const totalDays =
     new Date(
       year,
       month + 1,
       0
     ).getDate();
-
   const days: (
     | number
     | null
   )[] = [];
-
   for (
     let i = 0;
     i < firstDay;
@@ -120,7 +111,6 @@ export default function CalendarCard() {
   ) {
     days.push(null);
   }
-
   for (
     let i = 1;
     i <= totalDays;
@@ -128,7 +118,6 @@ export default function CalendarCard() {
   ) {
     days.push(i);
   }
-
   const previousMonth = () => {
     setCurrentDate(
       new Date(
@@ -138,7 +127,6 @@ export default function CalendarCard() {
       )
     );
   };
-
   const nextMonth = () => {
     setCurrentDate(
       new Date(
@@ -156,7 +144,6 @@ export default function CalendarCard() {
     today.getMonth(),
     today.getDate()
   );
-
   const upcomingHolidays =
     holidayData?.data
       ?.filter((holiday) => {
@@ -165,13 +152,11 @@ export default function CalendarCard() {
           month: holidayMonth,
           day: holidayDay,
         } = getHolidayDate(holiday.HolidayDate);
-
         const holidayDate = new Date(
           holidayYear,
           holidayMonth,
           holidayDay
         );
-
         return holidayDate >= todayDate;
       })
       .sort((a, b) => {
@@ -196,19 +181,16 @@ export default function CalendarCard() {
           ).getTime()
         );
       }) || [];
-
   const upcomingHoliday =
     upcomingHolidays[
     currentHolidayIndex
     ];
-
   useEffect(() => {
     if (
       upcomingHolidays.length <=
       1
     )
       return;
-
     const interval =
       setInterval(() => {
         setCurrentHolidayIndex(
@@ -239,7 +221,6 @@ export default function CalendarCard() {
       }}
     >
       {/* Header */}
-
       <div className="flex items-center justify-between">
         <h3
           className="font-semibold text-base sm:text-lg"
@@ -251,7 +232,6 @@ export default function CalendarCard() {
           {monthNames[month]}{" "}
           {year}
         </h3>
-
         <div className="flex gap-2">
           <button
             onClick={
@@ -263,7 +243,6 @@ export default function CalendarCard() {
               color="var(--primary-color)"
             />
           </button>
-
           <button
             onClick={
               nextMonth
@@ -326,7 +305,6 @@ export default function CalendarCard() {
               bg = "bg-red-100";
               text = "text-red-500";
             }
-
             // Holiday overrides week off
             if (holidayDays.includes(day)) {
               bg = "";
@@ -382,7 +360,6 @@ export default function CalendarCard() {
             Week Off
           </span>
         </div>
-
         <div className="flex items-center gap-2">
           <span
             className="w-2 h-2 rounded-full"
@@ -421,14 +398,12 @@ p-3 sm:p-4
         >
           Upcoming Holiday
         </p>
-
         <div className="flex items-center justify-between mt-3">
           <div>
             <p className="font-semibold text-sm sm:text-base text-slate-800">
               {upcomingHoliday?.HolidayName ??
                 "No Upcoming Holiday"}
             </p>
-
             {upcomingHoliday && (
               <p className="text-xs text-slate-500 mt-1">
                 {(() => {
@@ -439,7 +414,6 @@ p-3 sm:p-4
                   } = getHolidayDate(
                     upcomingHoliday.HolidayDate
                   );
-
                   return new Date(
                     year,
                     month,
@@ -453,7 +427,6 @@ p-3 sm:p-4
               </p>
             )}
           </div>
-
           <div
             className="
               w-10

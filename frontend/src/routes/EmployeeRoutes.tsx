@@ -1,5 +1,5 @@
 
-import { Route, Navigate, useParams } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 
 import Layout from "@/features/employee/components/Layout";
 
@@ -56,8 +56,8 @@ function ApplyLeaveForEmployeeRedirect() {
 
 export default function EmployeeRoutes() {
   return (
-    <>
-      <Route path="/:domain/employee" element={<Layout />}>
+    <Routes>
+      <Route path="/" element={<Layout />}>
 
         {/* Dashboard */}
         <Route path="dashboard" element={<EmployeeDashboard />} />
@@ -194,6 +194,6 @@ export default function EmployeeRoutes() {
         <Route path="attendance/face-registration" element={<FaceRegistrationPage />} />
       </Route>
 
-    </>
+    </Routes>
   );
 }

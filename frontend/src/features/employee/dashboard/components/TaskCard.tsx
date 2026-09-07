@@ -2,7 +2,6 @@ import {
   Circle,
   Diamond,
 } from "lucide-react";
-
 export default function TaskCard() {
   const tasks = [
     {
@@ -26,7 +25,6 @@ export default function TaskCard() {
       status: "completed",
     },
   ];
-
   const getStatusColor = (
     status: string
   ) => {
@@ -44,7 +42,6 @@ export default function TaskCard() {
         return "#22C55E";
     }
   };
-
   return (
     <div
       className="
@@ -62,7 +59,6 @@ export default function TaskCard() {
       }}
     >
       {/* Header */}
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3
           className="text-xl font-semibold"
@@ -124,7 +120,6 @@ export default function TaskCard() {
           }}
         >
           {/* Left */}
-
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <div
               className="
@@ -149,12 +144,10 @@ export default function TaskCard() {
                 color="var(--primary-color)"
               />
             </div>
-
             <div className="min-w-0">
               <h4 className="font-medium text-sm sm:text-base text-slate-800 break-words">
                 {task.title}
               </h4>
-
               <p className="text-sm text-slate-400 mt-1">
                 {task.time}
               </p>
@@ -173,7 +166,6 @@ export default function TaskCard() {
                 task.status
               )}
             />
-
             <button
               className="text-xs sm:text-sm font-medium whitespace-nowrap"
               style={{

@@ -62,12 +62,12 @@ const authSlice = createSlice({
       state.roleId = roleId;
       state.isFirstLogin = action.payload.isFirstLogin;
       state.isAuthenticated = true;
- 
- 
+
+
       localStorage.setItem(STORAGE_KEYS.accessToken, action.payload.accessToken);
       localStorage.setItem(STORAGE_KEYS.employeeId, action.payload.data.employeeId);
       localStorage.setItem(STORAGE_KEYS.userId, action.payload.data.userId);
- 
+
       if (roleId) {
         localStorage.setItem(STORAGE_KEYS.roleId,roleId);
       } else {
@@ -81,19 +81,21 @@ const authSlice = createSlice({
       state.isFirstLogin = false;
       state.isAuthenticated = false;
       state.roleId = null;
- 
- 
+
+
       localStorage.removeItem(STORAGE_KEYS.accessToken);
       localStorage.removeItem(STORAGE_KEYS.employeeId);
       localStorage.removeItem(STORAGE_KEYS.userId);
       localStorage.removeItem(STORAGE_KEYS.roleId);
     },
- 
- 
+
+
     firstLoginPasswordResetSuccess(state) {
       state.isFirstLogin = false;
       state.isPasswordReset = true;
     },
+
+
     setForgotPasswordData: (state,action: PayloadAction<{
         userId: string;
         mobileNumber: string;
@@ -112,12 +114,10 @@ const authSlice = createSlice({
     ) => {
       state.isOtpVerified = action.payload;
     },
- 
     setOtpExpiry: (state, action: PayloadAction<{ remainingSeconds: number; remainingMinutes: number }>) => {
       state.otpRemainingSeconds = action.payload.remainingSeconds;
       state.otpRemainingMinutes = action.payload.remainingMinutes;
     },
- 
     setPasswordReset: (
       state,
       action: PayloadAction<boolean>
@@ -137,7 +137,7 @@ export const {
   setPasswordReset,
   setOtpExpiry,
 } = authSlice.actions;
- 
+
 export default authSlice.reducer;
- 
- 
+
+

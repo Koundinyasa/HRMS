@@ -166,7 +166,6 @@ export default function StatsLeaveCard() {
           >
             My Leaves
           </h3>
-
           <button
             className="
   px-2 sm:px-3
@@ -214,12 +213,10 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-red-300" />
-
             <span className="text-sm sm:text-xl text-slate-700">
               Restricted Holiday
             </span>
           </div>
-
           <span className="text-xl sm:text-2xl font-medium text-slate-800">
             2
           </span>
@@ -245,12 +242,10 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-emerald-400" />
-
             <span className="text-sm sm:text-xl text-slate-700">
               Upcoming Holiday
             </span>
           </div>
-
           <span className="text-xl sm:text-2xl font-medium text-slate-800">
             1
           </span>

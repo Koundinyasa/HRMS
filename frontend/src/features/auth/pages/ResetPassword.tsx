@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { hidePageLoader } from "../../employee/employeeSlice";
 
-function ResetPassword() {
+export default function ResetPassword() {
 
   const dispatch = useAppDispatch();
 
@@ -180,5 +180,3 @@ function ResetPassword() {
     </div>
   );
 }
-
-export default ResetPassword;

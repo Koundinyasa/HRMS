@@ -5,7 +5,6 @@ import { ParserService } from './parser.service';
 import { LeaveApiService } from './leave-api.service';
 import { IntentCtx, IntentDefinition, LeaveTypeOption } from '../types';
 import { formatLeaveRange, formatDayCount } from '../utils/date.util';
-
 @Injectable()
 export class LeaveService {
   constructor(
@@ -14,7 +13,6 @@ export class LeaveService {
     private readonly parserService: ParserService,
     private readonly leaveApiService: LeaveApiService,
   ) {}
-
   private notify(
     employeeId: string,
     tone: 'info' | 'warning' | 'danger',
@@ -26,7 +24,6 @@ export class LeaveService {
     if (suggestions.length)
       this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
   }
-
   async handleLeaveFlow(ctx: IntentCtx): Promise<string | null> {
     if (ctx.role === 'admin' || ctx.role === 'hr') return null;
     const draft = this.draftService.getDraft(
@@ -35,7 +32,6 @@ export class LeaveService {
     );
     if (!draft) return null;
     if (draft.step === 'ready') return null;
-
     if (
       ctx.msg.includes('discard') ||
       ctx.msg === 'cancel' ||
@@ -63,7 +59,6 @@ export class LeaveService {
       );
       return `Start date set to ${iso}. Now pick your end date (same as start for a single day).`;
     }
-
     if (draft.step === 'awaiting_end') {
       if (!iso)
         return `Please pick your leave end date below (or type it as YYYY-MM-DD).`;
@@ -84,14 +79,12 @@ export class LeaveService {
       );
       return `End date set to ${iso} (${formatDayCount(draft.duration)}). Now choose your leave type below.`;
     }
-
     if (draft.step === 'awaiting_type') {
       const code = this.parserService.extractLeaveTypeCode(
         ctx.message,
         ctx.leaveTypes,
       );
       if (!code) return `Please choose a leave type from the buttons below.`;
-
       const picked = ctx.leaveTypes.find(
         (t) => (t.code ?? '').toUpperCase() === code,
       );
@@ -113,7 +106,6 @@ export class LeaveService {
         );
         return `Leave type set to ${code}. Is this a full day or a half day?`;
       }
-
       draft.step = 'awaiting_reason';
       this.draftService.setDraft(
         this.draftService.leaveDrafts,
@@ -122,7 +114,6 @@ export class LeaveService {
       );
       return `Leave type set to ${code}. Finally, add a reason (or tap Skip).`;
     }
-
     if (draft.step === 'awaiting_dayChoice') {
       const m = ctx.msg;
       const choseHalf = m.includes('half');
@@ -151,7 +142,6 @@ export class LeaveService {
       );
       return `Half day — which session?`;
     }
-
     if (draft.step === 'awaiting_session') {
       const raw = ctx.message.toLowerCase();
       let session = '';
@@ -168,7 +158,6 @@ export class LeaveService {
       )
         session = 'SecondHalf';
       if (!session) return `Please tap "First Half" or "Second Half".`;
-
       draft.session = session;
       draft.step = 'awaiting_reason';
       this.draftService.setDraft(
@@ -178,7 +167,6 @@ export class LeaveService {
       );
       return `${this.parserService.sessionLabel(session)} half day. Finally, add a reason (or tap Skip).`;
     }
-
     if (draft.step === 'awaiting_reason') {
       const reason =
         ctx.msg === 'skip' || ctx.msg.includes('no reason')
@@ -211,7 +199,6 @@ export class LeaveService {
       balance: balByTypeId.has(t.id) ? balByTypeId.get(t.id)! : null,
     }));
   }
-
   // The /balance endpoint returns the same nested
   // {sections:[{records:[{fields:[{label,value}]}]}]} shape as /history,
   // not a flat array of rows — confirmed against the real controller/service.
@@ -239,7 +226,6 @@ export class LeaveService {
         closing: Number(get('Closing Balance') ?? 0),
       };
     });
-
     this.draftService.pendingListPreview.set(ctx.employeeId, {
       title: `Leave balance (${year})`,
       rows: rows.map((r) => {
@@ -251,13 +237,11 @@ export class LeaveService {
         };
       }),
     });
-
     this.draftService.pendingSuggestedActions.set(ctx.employeeId, [
       { label: 'Apply Leave', send: 'apply leave' },
     ]);
     return `Here's your leave balance for ${year}.`;
   }
-
   // /leave-status actually returns a multi-stage approval workflow shape
   // ({ LeaveApplications: [{ Id, FromDate, ToDate, Stages: [...] }] }),
   // confirmed from a real response — not the {sections/records/fields} shape
@@ -322,7 +306,6 @@ export class LeaveService {
       };
     });
   }
-
   // Same idea as getLeaveStatusMapped above, but for the history endpoint —
   // which returns ACTED-ON leaves (approved/rejected/cancelled/withdrawn),
   // never pending ones. Field names differ slightly from the status
@@ -369,7 +352,6 @@ export class LeaveService {
       };
     });
   }
-
   getIntents(): IntentDefinition[] {
     const realIntents: IntentDefinition[] = [
       {
@@ -633,7 +615,6 @@ export class LeaveService {
       },
       {
         name: 'cancelPick',
-
         test: (ctx) =>
           (/^cancel\s+\d+$/.test(ctx.msg) ||
             /^withdraw\s+\d+$/.test(ctx.msg) ||
@@ -700,7 +681,6 @@ export class LeaveService {
               const storedType = normalizeLeaveType(
                 String(leave.leaveType ?? ''),
               );
-
               console.log('Cancel leave matching:', {
                 requestedType,
                 requestedNormalized,
@@ -817,7 +797,6 @@ export class LeaveService {
               action: `withdraw ${l.leaveType.toLowerCase()}`,
             })),
           });
-
           return `Tap a request below to withdraw it.`;
         },
       },
@@ -852,7 +831,6 @@ export class LeaveService {
         handle: async (ctx) => this.getLeaveBalanceSummary(ctx),
       },
     ];
-
     // Admin/HR manage their own leave through a separate employee login —
     // this account should never reach any leave-management feature at all.
     // Wrapping here (rather than gating each intent individually) means

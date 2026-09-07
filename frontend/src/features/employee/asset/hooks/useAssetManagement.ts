@@ -1,7 +1,6 @@
 import { toast } from "react-toastify";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-
 import { clearRequestForm, setAssetId, setAssetReason } from "../assetSlice";
 import {
   useCreateAssetRequestMutation,
@@ -22,12 +21,10 @@ export const useAssetManagement = () => {
     data: historyResponse,
     isLoading: isHistoryLoading,
   } = useGetAssetHistoryQuery();
-
   const historySection =
     historyResponse?.sections.find(
       (section) => section.title === "Asset Allocation History"
     ) ?? null;
-
   // /asset/request-status is employee-scoped server-side (via auth token)
   // and now includes CurrentStageOrder, enough to drive the 5-stage tracker UI.
   const {

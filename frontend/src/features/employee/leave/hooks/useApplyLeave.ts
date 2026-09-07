@@ -50,3 +50,4 @@ export const useApplyLeave = () => {
         isSubmitting: isLoading,
     };
 };
+

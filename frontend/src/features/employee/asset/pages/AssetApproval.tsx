@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +27,6 @@ function RejectModal({
   isSubmitting: boolean;
 }) {
   const [remarks, setRemarks] = useState("");
-
   return (
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4"
@@ -40,7 +38,6 @@ function RejectModal({
       >
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Reject Request</CardTitle>
-
           <Button
             variant="ghost"
             size="sm"
@@ -50,7 +47,6 @@ function RejectModal({
             <X size={16} />
           </Button>
         </CardHeader>
-
         <CardContent className="space-y-2">
           <label
             htmlFor="reject-remarks"
@@ -58,7 +54,6 @@ function RejectModal({
           >
             Reason for rejection
           </label>
-
           <textarea
             id="reject-remarks"
             rows={4}
@@ -68,7 +63,6 @@ function RejectModal({
             className="w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
           />
         </CardContent>
-
         <CardContent className="flex justify-end gap-2 pt-0">
           <Button
             variant="outline"
@@ -76,7 +70,6 @@ function RejectModal({
           >
             Cancel
           </Button>
-
           <Button
             disabled={isSubmitting}
             className="bg-red-600 text-white hover:bg-red-700"
@@ -89,7 +82,6 @@ function RejectModal({
     </div>
   );
 }
-
 export default function AssetApproval() {
   const {
     requests,
@@ -103,7 +95,6 @@ export default function AssetApproval() {
     reject,
     isRejecting,
   } = useAssetApproval();
-
   const rejectTarget =
     requests.find(
       (record) =>
@@ -118,7 +109,6 @@ export default function AssetApproval() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Asset Approvals
         </h1>
-
         <p className="mt-1 text-sm text-muted-foreground">
           Review and action pending asset requests through the approval hierarchy.
         </p>
@@ -132,32 +122,27 @@ export default function AssetApproval() {
             Approve moves a request to its next stage; reject stops it and records a reason.
           </CardDescription>
         </CardHeader>
-
         <CardContent>
           {isLoading && (
             <p className="py-10 text-center text-sm text-muted-foreground">
               Loading requests...
             </p>
           )}
-
           {isError && (
             <p className="py-10 text-center text-sm text-red-600">
               Unable to load asset requests. Please try again.
             </p>
           )}
-
           {!isLoading && !isError && requests.length === 0 && (
             <div className="py-10 text-center">
               <h3 className="font-medium">
                 No pending requests
               </h3>
-
               <p className="mt-1 text-sm text-muted-foreground">
                 All submitted requests have been fully processed.
               </p>
             </div>
           )}
-
           {!isLoading && !isError && requests.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -223,7 +208,6 @@ export default function AssetApproval() {
                     >
                       <td className="px-3 py-3">
                         {employeeName}
-
                         <span className="block text-xs text-muted-foreground">
                           {employeeCode}
                         </span>
@@ -239,7 +223,6 @@ export default function AssetApproval() {
                       >
                         {remarks}
                       </td>
-
                       <td className="px-3 py-3">
                         <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                           {requestStatus}
@@ -263,7 +246,6 @@ export default function AssetApproval() {
                             <Check size={14} />
                             Approve
                           </Button>
-
                           <Button
                             size="sm"
                             className="gap-1.5 bg-red-600 text-white hover:bg-red-700"
@@ -285,7 +267,6 @@ export default function AssetApproval() {
           )}
         </CardContent>
       </Card>
-
       {rejectTargetId !== null && rejectTarget && (
         <RejectModal
           onCancel={closeReject}

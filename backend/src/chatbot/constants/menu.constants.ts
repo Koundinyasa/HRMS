@@ -1,5 +1,4 @@
 import { Menu } from '../types';
-
 export const MENUS: Record<string, Menu> = {
   main: {
     title: 'Main Menu — what would you like to do?',

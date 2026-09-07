@@ -8,11 +8,7 @@ import BirthdayCard from "../components/BirthdayCard";
 import TeamAttendanceCard from "../components/TeamAttendanceCard";
 import TaskCard from "../components/TaskCard";
 import { useEffect } from "react";
-
-
-
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-
 import { hidePageLoader } from "../../employeeSlice";
 
 export default function DashboardPage() {
@@ -60,13 +56,11 @@ export default function DashboardPage() {
                     <BirthdayCard />
                 </div>
             </div>
-
             {/* Third Row */}
             <div className="grid grid-cols-12 gap-4 sm:gap-6">
                 <div className="col-span-12 xl:col-span-7 min-w-0">
                     <TeamAttendanceCard />
                 </div>
-
                 <div className="col-span-12 xl:col-span-5 min-w-0">
                     <TaskCard />
                 </div>

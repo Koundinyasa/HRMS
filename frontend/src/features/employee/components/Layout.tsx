@@ -26,7 +26,6 @@ export default function Layout() {
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
-
         <main
           className="
     flex-1
@@ -51,7 +50,6 @@ export default function Layout() {
           setChatbotOpen((prev) => !prev)
         }
       />
-
     </div>
   );
 }

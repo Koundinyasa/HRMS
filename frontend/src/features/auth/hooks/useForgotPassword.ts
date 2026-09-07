@@ -10,7 +10,10 @@ export const useForgotPassword = () => {
         try {
             const result = await forgotPassword({ userId }).unwrap();
 
+
             dispatch(setForgotPasswordData({ userId, mobileNumber,employeeId: result.employeeId }));
+            dispatch(setForgotPasswordData({ userId, mobileNumber, employeeId: result.employeeId }));
+            dispatch(setOtpExpiry({ remainingSeconds: result.remainingSeconds, remainingMinutes: result.remainingMinutes }));
             toast.success("OTP sent successfully");
 
             return true; // ✅ signal success to component

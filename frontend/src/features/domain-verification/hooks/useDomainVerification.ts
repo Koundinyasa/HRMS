@@ -1,21 +1,21 @@
 import { useNavigate } from "react-router-dom";
-
+ 
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
-
+ 
 import { setDomain } from "../domainSlice";
-
+ 
 import { useVerifyDomainMutation } from "../api/domainApi";
 import { showPageLoader } from "../../employee/employeeSlice";
 import { toast } from "react-toastify";
 
 export const useDomainVerification = () => {
   const navigate = useNavigate();
-
+ 
   const dispatch = useAppDispatch();
-
+ 
   const [verifyDomainApi] =
     useVerifyDomainMutation();
-
+ 
   const verifyDomain = async (
     domain: string
   ) => {
@@ -50,7 +50,7 @@ export const useDomainVerification = () => {
       return false;
     }
   };
-
+ 
   return {
     verifyDomain,
   };

@@ -98,31 +98,8 @@ interface EmployeeLocationInfo {
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
  
-  // FLAG — currently punches outside every geofence are still accepted
-  // (GeoFenceID just ends up NULL). Confirmed with the team: this becomes
-  // mandatory later. When that happens, flip this to true — punch() below
-  // already has the branch point that checks it, nothing else needs to
-  // change.
   private readonly GEOFENCE_REQUIRED = false;
- 
-  // Confirmed with the TL: BiometricDevices.ID 4 ("ESS", DeviceType 2 =
-  // FaceRecognition, serial BIO-HYD-002) is a real, dedicated row created
-  // specifically to represent employee self-service webcam punches — not
-  // a physical kiosk. Safe to use as DeviceID on every face-recognition
-  // punch, unlike guessing an ID from the wrong lookup table (see prior
-  // discussion — BiometricDeviceType and BiometricDevices are different
-  // tables, easy to conflate since both happened to use ID 2 for
-  // something FaceRecognition-related).
   private readonly ESS_DEVICE_ID = 4;
- 
-  // FLAG — set to true only once the TL has confirmed BOTH the
-  // EmployeeFaceVectors.AngleLabel column AND the updated
-  // USP_EnrollEmployeeFaceVector (with the new @AngleLabel parameter)
-  // are actually live. Calling the proc with an @AngleLabel input before
-  // that column/parameter exists will make EVERY enrollment fail
-  // outright — SQL Server rejects a call with a parameter the proc
-  // doesn't recognize. Defaults to false so enrollment keeps working
-  // exactly as it does today until this is deliberately flipped.
   private readonly ANGLE_LABEL_COLUMN_READY =true;
  
   constructor(
@@ -142,9 +119,6 @@ export class AttendanceService {
       this.logger.error(`checkFaceRegistered failed for ${employeeId} - ${(err as Error).message}`);
     }
  
-    // Resolved independently of the registration check above — even if
-    // this fails for some reason, we still want to return whatever
-    // registration status we found rather than failing the whole response.
     const punchedIn = await this.isCurrentlyPunchedIn(employeeId);
  
     return { registered, punchedIn };
@@ -197,14 +171,7 @@ export class AttendanceService {
         `);
  
       const rows = result.recordset ?? [];
-      // Only counts labels that actually match a known angle name — rows
-      // enrolled before AngleLabel existed have it as NULL, and correctly
-      // don't count toward any specific angle (we genuinely don't know).
-      //
-      // FIX — deliberately NOT using [...new Set(...)] here: spreading a
-      // Set can fail to infer as string[] (falls back to unknown[])
-      // depending on the project's TS target/lib settings. A plain loop
-      // sidesteps that whole class of config-dependent issue.
+
       const registeredAngles: string[] = [];
       for (const row of rows) {
         const label = row.AngleLabel as string | null;
@@ -349,16 +316,7 @@ export class AttendanceService {
     };
   }
  
-  // Moved from the old stored procedure into NestJS, since
-  // USP_RecordFaceVerificationPunch just accepts whatever @PunchType it's
-  // given now, rather than figuring it out itself.
-  // RawPunches.PunchType is a real INT column referencing a lookup table
-  // (confirmed with the TL: IN = 60, OUT = 61) — NOT free text. The
-  // stored procedure's @PunchType parameter is NVARCHAR(10), but SQL
-  // Server can only auto-convert a NUMERIC-looking string ('60') into
-  // that INT column, not a word ('IN'). So internally we still work with
-  // 'IN'/'OUT' for readability, and only convert to the numeric code at
-  // the exact point of calling the database.
+
   private static readonly PUNCH_TYPE_CODE: Record<'IN' | 'OUT', string> = {
     IN: '60',
     OUT: '61',

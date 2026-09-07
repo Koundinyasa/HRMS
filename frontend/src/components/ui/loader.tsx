@@ -4,7 +4,7 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 
 export default function Loader() {
   const isLoading = useAppSelector(
-    (state) => state.employee.isPageLoading
+    (state) => state.employee?.isPageLoading
   );
 
   if (!isLoading) return null;
