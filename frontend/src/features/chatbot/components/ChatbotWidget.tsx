@@ -30,6 +30,8 @@ import type {
 import TeamPreviewModal from "./TeamPreviewModal";
 import ListPreviewModal from "./ListPreviewModal";
 
+import { useResetConversationMutation } from "../api/chatbotApi";
+
 interface ChatbotWidgetProps {
     isOpen: boolean;
     onToggle: () => void;
@@ -374,6 +376,8 @@ export default function ChatbotWidget({
         sendChat,
     } = useChatbot();
 
+    const [resetChatbot] = useResetConversationMutation();
+
     const employee =
         profileData?.data?.profile;
 
@@ -447,6 +451,8 @@ export default function ChatbotWidget({
 
     const menuShownRef =
         useRef(false);
+    
+    const conversationVersionRef = useRef(0);
 
     const handleMessagesScroll = () => {
         const el = messagesContainerRef.current
@@ -555,6 +561,7 @@ export default function ChatbotWidget({
 
         if (!trimmed) return;
 
+        const requestVersion = conversationVersionRef.current;
         const isFirstEverMessage = messages.length === 0;
 
         // Add user message unless silent
@@ -583,6 +590,12 @@ export default function ChatbotWidget({
 
         try {
             const response = await sendChat(trimmed);
+
+            // Ignore responses belonging to the previous conversation
+            // after the user has pressed Reset.
+            if (requestVersion !== conversationVersionRef.current) {
+                return;
+            }
 
             if (response.widget?.type === 'teamPreview') {
                 setTeamPreview({
@@ -625,6 +638,10 @@ export default function ChatbotWidget({
                 return updated;
             });
         } catch (error) {
+            if (requestVersion !== conversationVersionRef.current) {
+                return;
+            }
+
             console.error(error);
 
             const errorMessage: ChatMessage = {
@@ -647,7 +664,9 @@ export default function ChatbotWidget({
                 return updated;
             });
         } finally {
-            setLoading(false);
+            if (requestVersion === conversationVersionRef.current) {
+                setLoading(false);
+            }
         }
     };
 
@@ -708,12 +727,30 @@ export default function ChatbotWidget({
         await sendText('menu:main', { silent: true })
     }
 
-    const resetConversation = () => {
-        setShowResetConfirm(false)
-        localStorage.removeItem(getWidgetStorageKey(employeeId))
-        setMessages([])
-        menuShownRef.current = false
-    }
+    const resetConversation = async () => {
+        setShowResetConfirm(false);
+        // Invalidate all requests from the previous conversation.
+        conversationVersionRef.current += 1;
+        // Clear chatbot state stored on the backend.
+        try {
+            await resetChatbot().unwrap();
+        } catch (error) {
+            console.error("Failed to reset chatbot conversation:", error);
+        }
+        // Clear frontend conversation state.
+        localStorage.removeItem(getWidgetStorageKey(employeeId));
+
+        setMessages([]);
+        setInputValue("");
+        setTeamPreview(null);
+        setListPreview(null);
+        setHasUnread(false);
+        setNewMessageCount(0);
+        setLoading(false);
+
+        menuShownRef.current = true;
+        await sendText('menu:main', { silent: true });
+    };
 
     const closeTeamPreview = () => {
         const wasReadOnly = teamPreview?.readOnly
@@ -1162,6 +1199,7 @@ interface ChatWidgetRendererProps {
 function ChatWidgetRenderer({ widget, disabled, onSubmit, onOpenListPreview, onOpenTeamPreview }: ChatWidgetRendererProps) {
     const [dateValue, setDateValue] = useState('')
     const [copiedField, setCopiedField] = useState<number | null>(null)
+    const [downloaded, setDownloaded] = useState(false)
 
     const copyValue = (value: string, index: number) => {
         navigator.clipboard.writeText(value).then(() => {
@@ -1202,35 +1240,7 @@ function ChatWidgetRenderer({ widget, disabled, onSubmit, onOpenListPreview, onO
         )
     }
 
-    if (widget.type === 'leaveTypes') {
-        const options = widget.options ?? []
-        return (
-            <div className="flex flex-col gap-2 mt-2.5 w-full">
-                {options.map((opt, i) => (
-                    <button
-                        key={i}
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => onSubmit(`type:${opt.code}`)}
-                        className="flex justify-between items-center gap-2.5 px-[15px] py-3.5 border border-[#eceef5] bg-white rounded-2xl cursor-pointer shadow-[0_2px_8px_rgba(43,30,120,0.04)] transition-all duration-150 text-left hover:border-[var(--primary-color)] hover:bg-[var(--primary-light)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <span className="font-semibold text-[#1f2430] text-[13px]">{opt.name} ({opt.code})</span>
-                        <span
-                            className={
-                                opt.balance === null || opt.balance <= 0
-                                    ? 'text-[11.5px] font-bold text-[#9aa0b0] bg-[#f0f1f5] px-2.5 py-1 rounded-full whitespace-nowrap'
-                                    : 'text-[11.5px] font-bold text-[#0f9d68] bg-[#e6f8f0] px-2.5 py-1 rounded-full whitespace-nowrap'
-                            }
-                        >
-                            {opt.balance === null ? 'no balance' : `${opt.balance} left`}
-                        </span>
-                    </button>
-                ))}
-            </div>
-        )
-    }
-
-    if (widget.type === 'dataCard') {
+        if (widget.type === 'dataCard') {
         const fields = widget.cardFields ?? []
         const initials = (widget.cardTitle ?? '')
             .split(' ')
@@ -1283,23 +1293,73 @@ function ChatWidgetRenderer({ widget, disabled, onSubmit, onOpenListPreview, onO
         )
     }
 
+    if (widget.type === 'leaveTypes') {
+        const options = widget.options ?? []
+        return (
+            <div className="flex flex-col gap-2 mt-2.5 w-full">
+                {options.map((opt, i) => (
+                    <button
+                        key={i}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onSubmit(`type:${opt.code}`)}
+                        className="flex justify-between items-center gap-2.5 px-[15px] py-3.5 border border-[#eceef5] bg-white rounded-2xl cursor-pointer shadow-[0_2px_8px_rgba(43,30,120,0.04)] transition-all duration-150 text-left hover:border-[var(--primary-color)] hover:bg-[var(--primary-light)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span className="font-semibold text-[#1f2430] text-[13px]">{opt.name} ({opt.code})</span>
+                        <span
+                            className={
+                                opt.balance === null || opt.balance <= 0
+                                    ? 'text-[11.5px] font-bold text-[#9aa0b0] bg-[#f0f1f5] px-2.5 py-1 rounded-full whitespace-nowrap'
+                                    : 'text-[11.5px] font-bold text-[#0f9d68] bg-[#e6f8f0] px-2.5 py-1 rounded-full whitespace-nowrap'
+                            }
+                        >
+                            {opt.balance === null ? 'no balance' : `${opt.balance} left`}
+                        </span>
+                    </button>
+                ))}
+            </div>
+        )
+    }
+
     if (widget.type === 'download' && widget.url) {
         const liveColor = getComputedStyle(document.documentElement)
             .getPropertyValue('--primary-color')
             .trim()
             .replace('#', '')
+
         const separator = widget.url.includes('?') ? '&' : '?'
-        const colorParam = liveColor ? `${separator}color=${encodeURIComponent(liveColor)}` : ''
-        const fullUrl = `${import.meta.env.VITE_API_URL ?? ''}${widget.url}${colorParam}`
+
+        const colorParam = liveColor
+            ? `${separator}color=${encodeURIComponent(liveColor)}`
+            : ''
+
+        const fullUrl =
+            `${import.meta.env.VITE_API_URL ?? ''}${widget.url}${colorParam}`
+
         return (
             <div className="flex mt-2.5">
                 <a
                     href={fullUrl}
                     download={widget.filename}
+                    aria-disabled={downloaded}
+                    onClick={(e) => {
+                        if (downloaded) {
+                            e.preventDefault()
+                            return
+                        }
+
+                        setDownloaded(true)
+                    }}
                     style={GRADIENT_STYLE}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none cursor-pointer shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-transform hover:-translate-y-0.5 no-underline`}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
+                        downloaded
+                            ? 'opacity-45 cursor-not-allowed'
+                            : 'cursor-pointer hover:-translate-y-0.5'
+                    }`}
                 >
-                    Download {widget.filename}
+                    {downloaded
+                        ? `Downloaded ${widget.filename}`
+                        : `Download ${widget.filename}`}
                 </a>
             </div>
         )

@@ -5,9 +5,9 @@ import type {
   ChatResponse,
 } from "../types/chatbot.types";
 
-
-
 export const chatbotApi = baseApi.injectEndpoints({
+  overrideExisting: true,
+
   endpoints: (builder) => ({
     sendMessage: builder.mutation<
       ChatResponse,
@@ -19,9 +19,20 @@ export const chatbotApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+
+    resetConversation: builder.mutation<
+      { success: boolean },
+      void
+    >({
+      query: () => ({
+        url: "/chatbot/reset",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
 export const {
   useSendMessageMutation,
+  useResetConversationMutation,
 } = chatbotApi;
