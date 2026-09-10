@@ -451,7 +451,7 @@ export default function ChatbotWidget({
 
     const menuShownRef =
         useRef(false);
-    
+
     const conversationVersionRef = useRef(0);
 
     const handleMessagesScroll = () => {
@@ -671,7 +671,7 @@ export default function ChatbotWidget({
     };
 
 
-    
+
     const sendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
         const toSend = inputValue
@@ -769,7 +769,15 @@ export default function ChatbotWidget({
 
     return (
         <div className="hrms-cb-widget contents">
-            <style>{`.hrms-cb-widget button:focus-visible { outline: none; box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color); }`}</style>
+            <style>{`
+                .hrms-cb-widget button:focus-visible { outline: none; box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary-color); }
+                @keyframes cbFloatA { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-16px, 14px); } }
+                @keyframes cbFloatB { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(14px, -16px); } }
+                @keyframes cbFloatC { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-12px, -12px); } }
+                @media (prefers-reduced-motion: reduce) {
+                    .cb-wallpaper-bubble { animation: none !important; }
+                }
+            `}</style>
             {/* Toggle Button */}
             <button
                 onClick={onToggle}
@@ -802,14 +810,14 @@ export default function ChatbotWidget({
             {isOpen && (
                 <div className={`fixed bottom-[105px] right-[30px] bg-white rounded-[24px] shadow-[0_24px_70px_rgba(43,30,120,0.22)] flex flex-col overflow-hidden z-[999] animate-[cbSlideUp_0.3s_ease] transition-[width,height] duration-200 max-[600px]:w-[calc(100%-24px)] max-[600px]:h-[72vh] max-[600px]:bottom-[90px] max-[600px]:right-3 ${isExpanded ? 'w-[600px] h-[85vh]' : 'w-[400px] h-[620px]'}`}>
 
-                    {/* Wallpaper — soft monochrome circles in the portal's own --primary-light color, so it always matches whichever preset is active instead of a fixed palette. Negative z-index so it paints behind the header, messages, and input without needing z-index on every sibling. Fixed to the panel (not the scrolling messages list), so it stays put while messages scroll over it. */}
+                    {/* Wallpaper — soft monochrome circles in the portal's own --primary-light color, so it always matches whichever preset is active instead of a fixed palette. Negative z-index so it paints behind the header, messages, and input without needing z-index on every sibling. Fixed to the panel (not the scrolling messages list), so it stays put while messages scroll over it. Each bubble drifts slowly on its own cbFloatA/B/C cycle with a staggered negative delay so they don't move in lockstep. */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-                        <div className="absolute w-[220px] h-[220px] rounded-full -top-[70px] -right-[60px]" style={{ background: 'var(--primary-light)' }} />
-                        <div className="absolute w-[130px] h-[130px] rounded-full top-[120px] -left-[50px]" style={{ background: 'var(--primary-light)', opacity: 0.7 }} />
-                        <div className="absolute w-[160px] h-[160px] rounded-full top-[260px] right-[10px]" style={{ background: 'var(--primary-light)', opacity: 0.6 }} />
-                        <div className="absolute w-[110px] h-[110px] rounded-full top-[300px] left-[30px]" style={{ background: 'var(--primary-color)', opacity: 0.06 }} />
-                        <div className="absolute w-[240px] h-[240px] rounded-full -bottom-[90px] -left-[70px]" style={{ background: 'var(--primary-light)', opacity: 0.85 }} />
-                        <div className="absolute w-[150px] h-[150px] rounded-full -bottom-[40px] right-[20px]" style={{ background: 'var(--primary-color)', opacity: 0.05 }} />
+                        <div className="cb-wallpaper-bubble absolute w-[220px] h-[220px] rounded-full -top-[70px] -right-[60px] animate-[cbFloatA_16s_ease-in-out_infinite]" style={{ background: 'var(--primary-light)' }} />
+                        <div className="cb-wallpaper-bubble absolute w-[130px] h-[130px] rounded-full top-[120px] -left-[50px] animate-[cbFloatB_13s_ease-in-out_infinite]" style={{ background: 'var(--primary-light)', opacity: 0.7, animationDelay: '-4s' }} />
+                        <div className="cb-wallpaper-bubble absolute w-[160px] h-[160px] rounded-full top-[260px] right-[10px] animate-[cbFloatC_18s_ease-in-out_infinite]" style={{ background: 'var(--primary-light)', opacity: 0.6, animationDelay: '-8s' }} />
+                        <div className="cb-wallpaper-bubble absolute w-[110px] h-[110px] rounded-full top-[300px] left-[30px] animate-[cbFloatA_20s_ease-in-out_infinite]" style={{ background: 'var(--primary-color)', opacity: 0.06, animationDelay: '-11s' }} />
+                        <div className="cb-wallpaper-bubble absolute w-[240px] h-[240px] rounded-full -bottom-[90px] -left-[70px] animate-[cbFloatB_15s_ease-in-out_infinite]" style={{ background: 'var(--primary-light)', opacity: 0.85, animationDelay: '-6s' }} />
+                        <div className="cb-wallpaper-bubble absolute w-[150px] h-[150px] rounded-full -bottom-[40px] right-[20px] animate-[cbFloatC_17s_ease-in-out_infinite]" style={{ background: 'var(--primary-color)', opacity: 0.05, animationDelay: '-2s' }} />
                     </div>
 
                     {/* Header — curves into the chat body via a rounded ::after-style overlay div */}
