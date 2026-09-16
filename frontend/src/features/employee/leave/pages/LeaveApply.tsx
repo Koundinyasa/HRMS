@@ -1,16 +1,10 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, Tags, CalendarDays, PenLine, } from "lucide-react";
+import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import {
   Select,
@@ -27,7 +21,6 @@ import { Label } from "@/components/ui/label";
 import DateField from "../components/DateField";
 
 import LeaveBalanceCard from "../components/LeaveBalanceCard";
-
 
 import { useLeave } from "../hooks/useLeave";
 import { useApplyLeave } from "../hooks/useApplyLeave";
@@ -52,9 +45,7 @@ const APPLY_FOR_EMPLOYEE_ALLOWED = ["294663"];
 function SelectEmployeeFirst() {
   return (
     <div className="flex h-40 items-center justify-center rounded-lg border border-dashed">
-      <p className="text-sm text-slate-500">
-        Select an employee to view this.
-      </p>
+      <p className="text-sm text-slate-500">Select an employee to view this.</p>
     </div>
   );
 }
@@ -74,7 +65,7 @@ const DEFAULT_VALUES: LeaveApplyForm = {
   sessionFrom: "",
   sessionTo: "",
 
-  attachment: null
+  attachment: null,
 };
 
 export default function LeaveApply() {
@@ -83,7 +74,7 @@ export default function LeaveApply() {
 
   const forceApplyForEmployee = Boolean(
     (location.state as { forceApplyForEmployee?: boolean } | null)
-      ?.forceApplyForEmployee
+      ?.forceApplyForEmployee,
   );
   const {
     leaveTypes,
@@ -95,15 +86,9 @@ export default function LeaveApply() {
     refetchLeaveStatus,
   } = useLeave();
 
-  const {
-    applyLeave,
-    isSubmitting,
-  } = useApplyLeave();
+  const { applyLeave, isSubmitting } = useApplyLeave();
 
-  const {
-    hrApplyLeave,
-    isSubmittingForEmployee,
-  } = useHrApplyLeave();
+  const { hrApplyLeave, isSubmittingForEmployee } = useHrApplyLeave();
 
   const { data: profile } = useGetProfileInfoQuery();
 
@@ -112,15 +97,13 @@ export default function LeaveApply() {
     ?.fields?.find((field) => field.label === "Employee ID")?.value;
 
   const canApplyForEmployee = APPLY_FOR_EMPLOYEE_ALLOWED.includes(
-    String(myEmployeeId ?? "")
+    String(myEmployeeId ?? ""),
   );
 
-  const {
-    data: reportingEmployees = [],
-    isLoading: employeesLoading,
-  } = useGetReportingEmployeesQuery(undefined, {
-    skip: !canApplyForEmployee,
-  });
+  const { data: reportingEmployees = [], isLoading: employeesLoading } =
+    useGetReportingEmployeesQuery(undefined, {
+      skip: !canApplyForEmployee,
+    });
 
   const [applyForEmployee, setApplyForEmployee] = useState(false);
 
@@ -174,7 +157,6 @@ export default function LeaveApply() {
     setValue,
     formState: { errors },
   } = useForm<LeaveApplyForm>({
-
     resolver: zodResolver(leaveApplySchema),
     defaultValues: DEFAULT_VALUES,
     // Surfaces the weekend error as soon as a date is chosen.
@@ -185,10 +167,7 @@ export default function LeaveApply() {
   const leaveType = watch("leaveType");
   const toDate = watch("toDate");
 
-  const isSingleDay =
-    fromDate &&
-    toDate &&
-    fromDate === toDate;
+  const isSingleDay = fromDate && toDate && fromDate === toDate;
 
   useEffect(() => {
     if (!isSingleDay) {
@@ -201,27 +180,23 @@ export default function LeaveApply() {
   const totalDays =
     fromDate && toDate
       ? Math.floor(
-        (new Date(toDate).getTime() -
-          new Date(fromDate).getTime()) /
-        (1000 * 60 * 60 * 24)
-      ) + 1
+          (new Date(toDate).getTime() - new Date(fromDate).getTime()) /
+            (1000 * 60 * 60 * 24),
+        ) + 1
       : 0;
 
   // From Date opens a week back; To Date can never precede From Date.
   const minFromDate = minFromDateIso();
   const minToDate = fromDate || minFromDate;
 
-  const onSubmit = async (
-    data: LeaveApplyForm
-  ) => {
+  const onSubmit = async (data: LeaveApplyForm) => {
     console.log("onSubmit called");
     console.log(data);
 
     console.log("Calling Apply API...");
 
     const isHalfDay =
-      data.sessionFrom === "First Half" ||
-      data.sessionFrom === "Second Half";
+      data.sessionFrom === "First Half" || data.sessionFrom === "Second Half";
 
     console.log("Before API");
     console.log({
@@ -243,11 +218,10 @@ export default function LeaveApply() {
 
     const response = applyForEmployeeId
       ? await hrApplyLeave({
-        ...payload,
-        employeeId: applyForEmployeeId,
-      })
+          ...payload,
+          employeeId: applyForEmployeeId,
+        })
       : await applyLeave(payload);
-
 
     if (response) {
       if (applyForEmployeeId) {
@@ -265,7 +239,7 @@ export default function LeaveApply() {
   };
 
   const selectedEmployee = reportingEmployees.find(
-    (employee) => employee.EmployeeID === applyForEmployeeId
+    (employee) => employee.EmployeeID === applyForEmployeeId,
   );
 
   const {
@@ -280,46 +254,43 @@ export default function LeaveApply() {
   // already render, so both data sources share one set of components.
   const employeeBalanceSection = employeeDetails
     ? {
-      title: "Leave Balance",
-      records: employeeDetails.employeeLeaveBalance.map((row) => ({
-        fields: [
-          { label: "Leave Type", value: row.LeaveName },
-          { label: "Opening Balance", value: row.OpeningBalance },
-          { label: "Accrued", value: row.Accrued },
-          { label: "Availed", value: row.Availed },
-          { label: "Adjusted", value: row.Adjusted },
-          { label: "Encashed", value: row.Encashed },
-          { label: "Closing Balance", value: row.ClosingBalance },
-        ],
-      })),
-    }
+        title: "Leave Balance",
+        records: employeeDetails.employeeLeaveBalance.map((row) => ({
+          fields: [
+            { label: "Leave Type", value: row.LeaveName },
+            { label: "Opening Balance", value: row.OpeningBalance },
+            { label: "Accrued", value: row.Accrued },
+            { label: "Availed", value: row.Availed },
+            { label: "Adjusted", value: row.Adjusted },
+            { label: "Encashed", value: row.Encashed },
+            { label: "Closing Balance", value: row.ClosingBalance },
+          ],
+        })),
+      }
     : null;
 
   const employeeHistorySection = employeeDetails
     ? {
-      title: "Leave History",
-      records: employeeDetails.employeeLeaveHistory.map((row) => ({
-        fields: [
-          { label: "Leave Type", value: row.LeaveTypeName },
-          { label: "From Date", value: row.FromDate },
-          { label: "To Date", value: row.ToDate },
-          { label: "Days", value: row.NoOfDays },
-          { label: "Applied Date", value: row.AppliedDate },
-          { label: "Reason", value: row.Reason },
-          { label: "Status", value: row.Status },
-          { label: "Approved By", value: row.ActionBy },
-        ],
-      })),
-    }
+        title: "Leave History",
+        records: employeeDetails.employeeLeaveHistory.map((row) => ({
+          fields: [
+            { label: "Leave Type", value: row.LeaveTypeName },
+            { label: "From Date", value: row.FromDate },
+            { label: "To Date", value: row.ToDate },
+            { label: "Days", value: row.NoOfDays },
+            { label: "Applied Date", value: row.AppliedDate },
+            { label: "Reason", value: row.Reason },
+            { label: "Status", value: row.Status },
+            { label: "Approved By", value: row.ActionBy },
+          ],
+        })),
+      }
     : null;
-
 
   return (
     <div className="w-full px-4 sm:px-6">
       <div className="grid w-full gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-
         <div className="space-y-6">
-
           {applyForEmployee ? (
             <>
               <Card className="overflow-visible rounded-2xl border border-slate-200 shadow-sm">
@@ -343,19 +314,16 @@ export default function LeaveApply() {
                     loading={employeeDetailsLoading}
                   />
 
-                  <LeaveBalanceCard
-                    balances={employeeBalanceSection}
-                  />
+                  <LeaveBalanceCard balances={employeeBalanceSection} />
                 </>
               )}
             </>
           ) : (
             <LeaveBalanceCard balances={leaveBalance} />
           )}
-
         </div>
 
-        <Card className="w-full rounded-2xl border border-indigo-100 shadow-sm">
+        <Card className="w-full overflow-visible rounded-2xl border border-indigo-100 shadow-sm">
           <div>
             <CardHeader className="border-b border-slate-100 pb-3">
               <div className="flex flex-wrap items-start justify-between gap-4">
@@ -366,7 +334,6 @@ export default function LeaveApply() {
                 {/* <p className="mt-1 text-sm text-slate-500">
                   Submit your leave request for approval.
                 </p> */}
-
               </div>
             </CardHeader>
           </div>
@@ -374,7 +341,6 @@ export default function LeaveApply() {
           {canApplyForEmployee && !forceApplyForEmployee && (
             <label className="hidden cursor-pointer items-center gap-2 whitespace-nowrap text-base font-medium text-slate-700">
               Apply for employee
-
               <input
                 type="checkbox"
                 checked={applyForEmployee}
@@ -392,7 +358,6 @@ export default function LeaveApply() {
             </label>
           )}
 
-
           <div>
             {applyForEmployee && (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -401,10 +366,11 @@ export default function LeaveApply() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`rounded-lg px-6 py-2 text-sm font-medium transition ${activeTab === tab.id
-                      ? "bg-[#7A5BED]/10 text-[#7A5BED]"
-                      : "text-slate-600 hover:bg-slate-50"
-                      }`}
+                    className={`rounded-lg px-6 py-2 text-sm font-medium transition ${
+                      activeTab === tab.id
+                        ? "bg-[#7A5BED]/10 text-[#7A5BED]"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
                   >
                     {tab.label}
                   </button>
@@ -414,7 +380,6 @@ export default function LeaveApply() {
             {canApplyForEmployee && !forceApplyForEmployee && (
               <label className="hidden cursor-pointer items-center gap-2 whitespace-nowrap text-base font-medium text-slate-700">
                 Apply for employee
-
                 <input
                   type="checkbox"
                   checked={applyForEmployee}
@@ -431,30 +396,23 @@ export default function LeaveApply() {
                 />
               </label>
             )}
-
           </div>
 
-
-
-
-
-          <CardContent className="space-y-4 p-4">
-
+          <CardContent className="relative space-y-4 overflow-visible p-4">
             {/* Both tabs belong to the picked employee, so they stay empty
                 until one is chosen rather than falling back to own data. */}
-            {activeTab === "summary" && (
-              selectedEmployee ? (
+            {activeTab === "summary" &&
+              (selectedEmployee ? (
                 <LeaveSummaryTable
                   balances={employeeBalanceSection}
                   loading={employeeDetailsLoading}
                 />
               ) : (
                 <SelectEmployeeFirst />
-              )
-            )}
+              ))}
 
-            {activeTab === "history" && (
-              selectedEmployee ? (
+            {activeTab === "history" &&
+              (selectedEmployee ? (
                 <LeaveHistoryTable
                   section={employeeHistorySection}
                   loading={employeeDetailsLoading}
@@ -462,35 +420,25 @@ export default function LeaveApply() {
                 />
               ) : (
                 <SelectEmployeeFirst />
-              )
-            )}
+              ))}
 
             {activeTab === "apply" && (
-
               <form
-                onSubmit={handleSubmit(
-                  onSubmit,
-                  (errors) => {
-                    console.log("Validation Errors:", errors);
-                  }
-                )}
+                onSubmit={handleSubmit(onSubmit, (errors) => {
+                  console.log("Validation Errors:", errors);
+                })}
                 className="space-y-6"
               >
-
-
-
                 {/* Dates */}
 
-                {/* <div className="grid grid-cols-1 gap-6 md:grid-cols-3"> */}
+                {/* ✅ STYLING CHANGE — grid-cols-2 → grid-cols-3 so Leave Type, From Date, To Date sit on ONE row on md+ screens (was: md:grid-cols-2, which pushed To Date to a second row) */}
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   {/* Leave Type */}
 
-                  {/* <div className="space-y-2"> */}
+                  {/* ✅ STYLING CHANGE — removed "md:col-span-2" so Leave Type takes 1 of 3 columns instead of the full row (was: className="space-y-2 md:col-span-2") */}
 
-                  <div className="space-y-2 md:col-span-2">
-
+                  <div className="space-y-2">
                     <Label
                       htmlFor="leaveType"
                       className="flex items-center gap-1"
@@ -504,7 +452,7 @@ export default function LeaveApply() {
                       name="leaveType"
                       render={({ field }) => {
                         const selectedName = leaveTypes.find(
-                          (leave) => String(leave.ID) === field.value
+                          (leave) => String(leave.ID) === field.value,
                         )?.Name;
 
                         return (
@@ -515,7 +463,9 @@ export default function LeaveApply() {
                               onClick={() => setLeaveTypeOpen((prev) => !prev)}
                               className="flex h-[47px] w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 text-sm"
                             >
-                              <span className={selectedName ? "" : "text-slate-400"}>
+                              <span
+                                className={selectedName ? "" : "text-slate-400"}
+                              >
                                 {selectedName ?? "Select Leave Type"}
                               </span>
 
@@ -533,10 +483,11 @@ export default function LeaveApply() {
                                         field.onChange(String(leave.ID));
                                         setLeaveTypeOpen(false);
                                       }}
-                                      className={`block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-900 ${String(leave.ID) === field.value
-                                        ? "bg-purple-50 font-semibold"
-                                        : "hover:bg-slate-100"
-                                        }`}
+                                      className={`block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-900 ${
+                                        String(leave.ID) === field.value
+                                          ? "bg-purple-50 font-semibold"
+                                          : "hover:bg-slate-100"
+                                      }`}
                                     >
                                       {leave.Name}
                                     </button>
@@ -549,9 +500,8 @@ export default function LeaveApply() {
                               </div>
                             )}
                           </div>
-                        )
-                      }
-                      }
+                        );
+                      }}
                     />
 
                     {errors.leaveType && (
@@ -559,13 +509,11 @@ export default function LeaveApply() {
                         {errors.leaveType.message}
                       </p>
                     )}
-
                   </div>
-
 
                   {/* From Date */}
 
-                  <div className="space-y-2">
+                  <div className="relative space-y-2">
                     <Label
                       htmlFor="fromDate"
                       className="flex items-center gap-1"
@@ -599,11 +547,8 @@ export default function LeaveApply() {
 
                   {/* To Date */}
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="toDate"
-                      className="flex items-center gap-1"
-                    >
+                  <div className="relative space-y-2">
+                    <Label htmlFor="toDate" className="flex items-center gap-1">
                       <CalendarDays className="h-3.5 w-3.5" />
                       To Date
                     </Label>
@@ -632,16 +577,13 @@ export default function LeaveApply() {
                       </p>
                     )}
                   </div>
-
                 </div>
 
                 {/* Half Day */}
 
                 {isSingleDay && (
                   <div className="space-y-3 rounded-xl bg-blue-50 p-4">
-                    <Label className="font-medium">
-                      Half Day
-                    </Label>
+                    <Label className="font-medium">Half Day</Label>
 
                     {/* Controller will go here */}
                     <Controller
@@ -650,9 +592,6 @@ export default function LeaveApply() {
                       render={({ field }) => (
                         // radio buttons
                         <div className="flex gap-6">
-
-
-
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
                               type="radio"
@@ -684,7 +623,6 @@ export default function LeaveApply() {
                             />
                             Second Half
                           </label>
-
                         </div>
                       )}
                     />
@@ -694,11 +632,7 @@ export default function LeaveApply() {
                 {/* Reason */}
 
                 <div className="space-y-2">
-
-                  <Label
-                    htmlFor="reason"
-                    className="flex items-center gap-1"
-                  >
+                  <Label htmlFor="reason" className="flex items-center gap-1">
                     <PenLine className="h-3.5 w-3.5" />
 
                     <span>Reason</span>
@@ -718,9 +652,7 @@ export default function LeaveApply() {
                         value={field.value}
                         disabled={isSubmitting}
                         placeholder="Enter the reason for your leave..."
-                        onChange={(e) =>
-                          field.onChange(e.target.value)
-                        }
+                        onChange={(e) => field.onChange(e.target.value)}
                         className="
 w-full
 resize-none
@@ -745,15 +677,11 @@ focus:ring-[#7A5BED]
                       {errors.reason.message}
                     </p>
                   )}
-
                 </div>
 
                 {leaveType === "2" && totalDays > 1 && (
                   <div className="space-y-2">
-
-                    <Label htmlFor="attachment">
-                      Medical Certificate
-                    </Label>
+                    <Label htmlFor="attachment">Medical Certificate</Label>
 
                     <Controller
                       control={control}
@@ -764,9 +692,7 @@ focus:ring-[#7A5BED]
                           type="file"
                           accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
                           onChange={(e) =>
-                            field.onChange(
-                              e.target.files?.[0] ?? null
-                            )
+                            field.onChange(e.target.files?.[0] ?? null)
                           }
                           className="
             block
@@ -792,23 +718,17 @@ focus:ring-[#7A5BED]
                         {errors.attachment.message}
                       </p>
                     )}
-
                   </div>
                 )}
-
-
 
                 {/* Buttons */}
 
                 <div className="flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-4">
-
                   <Button
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
-                    onClick={() =>
-                      reset(DEFAULT_VALUES)
-                    }
+                    onClick={() => reset(DEFAULT_VALUES)}
                     className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
                   >
                     Reset
@@ -832,20 +752,12 @@ focus:ring-[#7A5BED]
                       ? "Submitting..."
                       : "Submit"}
                   </Button>
-
                 </div>
-
               </form>
             )}
-
           </CardContent>
-
         </Card>
-
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }
-
-
-

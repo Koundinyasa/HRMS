@@ -1,23 +1,15 @@
 import { useEffect, useState } from "react";
 
-import {
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import CancelLeaveDialog from "./CancelLeaveDialog";
 import LeaveApprovalTimeline from "./LeaveApprovalTimeline";
 
-import type {
-  LeaveApplication,
-} from "../types/leave.types";
+import type { LeaveApplication } from "../types/leave.types";
 
 interface Props {
   leave: LeaveApplication;
@@ -28,69 +20,55 @@ export default function LeaveStatusCard({
   leave,
   defaultExpanded = false,
 }: Props) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
 
-  const [expanded, setExpanded] =
-    useState(defaultExpanded);
-
-  const [cancelOpen, setCancelOpen] =
-    useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   useEffect(() => {
     setExpanded(defaultExpanded);
   }, [defaultExpanded]);
 
-  const completedStages =
-    leave.Stages.filter((stage) =>
-      ["COMPLETED", "APPROVED"].includes(
-        stage.StageState.toUpperCase()
-      )
-    ).length;
+  const completedStages = leave.Stages.filter((stage) =>
+    ["COMPLETED", "APPROVED"].includes(stage.StageState.toUpperCase()),
+  ).length;
 
-  const progress = Math.round(
-    (completedStages /
-      leave.TotalLevels) *
-    100
-  );
+  const progress = Math.round((completedStages / leave.TotalLevels) * 100);
 
-  const overallStatus =
-    leave.OverallStatus.toUpperCase();
+  const overallStatus = leave.OverallStatus.toUpperCase();
 
-  const formatDate = (
-    value: string
-  ) => {
-    const date = new Date(value);
+  const formatDate = (value: string) => {
+    const [year, month, day] = value.split("-");
 
-    if (isNaN(date.getTime()))
+    if (!year || !month || !day) {
       return value;
+    }
 
-    return date.toLocaleDateString(
-      "en-GB"
-    );
+    return `${day}-${month}-${year}`;
   };
 
+  // ✅ CHANGED: Display AppliedDate exactly as received from backend
+  const formatAppliedDate = (value: string) => {
+    return value;
+  };
   const badgeClass =
     overallStatus === "APPROVED"
       ? "bg-emerald-100 text-emerald-700"
       : overallStatus === "REJECTED"
-        ? "bg-red-100 text-red-700"
-        : overallStatus === "WITHDRAWN"
-          ? "bg-slate-100 text-slate-700"
-          : "bg-amber-100 text-amber-700";
+      ? "bg-red-100 text-red-700"
+      : overallStatus === "WITHDRAWN"
+      ? "bg-slate-100 text-slate-700"
+      : "bg-amber-100 text-amber-700";
   return (
     <>
       <Card className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <CardContent className="p-0">
-
           {/* Summary */}
 
           <div
             className="flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-slate-50"
-            onClick={() =>
-              setExpanded((prev) => !prev)
-            }
+            onClick={() => setExpanded((prev) => !prev)}
           >
             <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-4">
-
               {/* Leave */}
 
               <div>
@@ -103,8 +81,7 @@ export default function LeaveStatusCard({
                 </h3>
 
                 <p className="text-xs text-slate-500">
-                  {formatDate(leave.FromDate)} →{" "}
-                  {formatDate(leave.ToDate)}
+                  {formatDate(leave.FromDate)} → {formatDate(leave.ToDate)}
                 </p>
               </div>
 
@@ -116,7 +93,7 @@ export default function LeaveStatusCard({
                 </p>
 
                 <p className="mt-1 font-medium text-slate-700">
-                  {formatDate(leave.AppliedDate)}
+                    {formatAppliedDate(leave.AppliedDate)}
                 </p>
               </div>
 
@@ -142,63 +119,55 @@ export default function LeaveStatusCard({
                 </p>
 
                 <div className="mt-2 flex items-center gap-3">
-
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
-
                     <div
-                      className={`h-full transition-all duration-500 ${overallStatus === "APPROVED"
-                        ? "bg-emerald-500"
-                        : overallStatus === "REJECTED"
+                      className={`h-full transition-all duration-500 ${
+                        overallStatus === "APPROVED"
+                          ? "bg-emerald-500"
+                          : overallStatus === "REJECTED"
                           ? "bg-red-500"
                           : "bg-amber-500"
-                        }`}
+                      }`}
                       style={{
-                        width: `${overallStatus === "APPROVED"
-                          ? 100
-                          : progress
-                          }%`,
+                        width: `${
+                          overallStatus === "APPROVED" ? 100 : progress
+                        }%`,
                       }}
                     />
-
                   </div>
 
                   <span className="text-sm font-semibold">
                     {overallStatus === "APPROVED"
                       ? "100%"
                       : overallStatus === "REJECTED"
-                        ? "Stopped"
-                        : `${progress}%`}
+                      ? "Stopped"
+                      : `${progress}%`}
                   </span>
-
                 </div>
               </div>
-
             </div>
 
             <div className="ml-3 flex items-center gap-2">
-
               {(overallStatus === "SUBMITTED" ||
                 overallStatus === "APPROVED") && (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCancelOpen(true);
-                    }}
-                  >
-                    Cancel Leave
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCancelOpen(true);
+                  }}
+                >
+                  Cancel Leave
+                </Button>
+              )}
 
               {expanded ? (
                 <ChevronUp className="h-5 w-5 text-slate-600" />
               ) : (
                 <ChevronDown className="h-5 w-5 text-slate-600" />
               )}
-
             </div>
-
           </div>
 
           {/* Timeline */}
@@ -208,7 +177,6 @@ export default function LeaveStatusCard({
               <LeaveApprovalTimeline leave={leave} />
             </div>
           )}
-
         </CardContent>
       </Card>
 
@@ -220,4 +188,3 @@ export default function LeaveStatusCard({
     </>
   );
 }
-
