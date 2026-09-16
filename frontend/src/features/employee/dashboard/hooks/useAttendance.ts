@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePunchAttendanceMutation } from "../api/attendanceApi";
- 
+
 const CAPTURE_DURATION_MS = 2400;
 const CAPTURE_INTERVAL_MS = 120; // ~20 frames — frequent enough to reliably
                                   // catch a blink, which typically lasts 200-400ms
@@ -8,10 +8,13 @@ const LOCATION_TIMEOUT_MS = 10000; // raised further — enableHighAccuracy belo
                                     // the browser try harder for a precise fix, which
                                     // takes noticeably longer than the cheap Wi-Fi
                                     // estimate we were using before.
- 
+
 // Resolves to coordinates on success, or null on denial / timeout / any
-// error / unsupported browser. Never rejects — location is an enrichment,
-// not a requirement, so nothing here should ever block a punch.
+// error / unsupported browser. This function itself never throws — it
+// always resolves, one way or the other. UPDATED: location used to be
+// pure enrichment (never blocked a punch); it's now mandatory, but that
+// blocking decision is made by the CALLER (openCamera, below), not here
+// — this function's job stays simple: try, and report what happened.
 function getCurrentLocation(): Promise<{ latitude: number; longitude: number } | null> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
@@ -36,19 +39,26 @@ function getCurrentLocation(): Promise<{ latitude: number; longitude: number } |
     );
   });
 }
- 
+
 export function useAttendance() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isCapturingRef = useRef(false);
- 
+
+  // NEW — caches the location fetched in openCamera() below, so
+  // captureAndSubmit() doesn't need to ask the browser for it a second
+  // time. Also means there's a single moment (camera open) where location
+  // is resolved, rather than two separate asks that could theoretically
+  // disagree.
+  const locationRef = useRef<{ latitude: number; longitude: number } | null>(null);
+
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<"IN" | "OUT" | null>(null);
- 
-  // NEW — the rest of a successful punch response (mode/device/coords/time)
+
+  // The rest of a successful punch response (mode/device/coords/time)
   // beyond just the action, for the post-punch details slide in
   // FacePunchModal. Kept separate from lastAction so consumers that only
   // care about the action don't need to change.
@@ -59,38 +69,58 @@ export function useAttendance() {
     latitude?: number;
     longitude?: number;
   } | null>(null);
- 
-  // NEW — liveness capture state, drives the "please blink" prompt + progress bar
+
+  // Liveness capture state, drives the "please blink" prompt + progress bar
   const [isCapturingSequence, setIsCapturingSequence] = useState(false);
   const [captureProgress, setCaptureProgress] = useState(0);
- 
-  // NEW — surfaces whether geolocation actually succeeded for THIS punch,
-  // instead of happening silently. 'idle' before any attempt this
-  // session, 'captured'/'unavailable' once captureAndSubmit has run.
-  const [locationStatus, setLocationStatus] = useState<"idle" | "captured" | "unavailable">("idle");
- 
+
+  // NEW — 'checking' added: location is now mandatory (the backend
+  // rejects any punch without coordinates), so this needs a distinct
+  // in-progress state shown WHILE openCamera is waiting on the GPS fix,
+  // before the camera itself even opens.
+  const [locationStatus, setLocationStatus] = useState<"idle" | "checking" | "captured" | "unavailable">("idle");
+
   const [punchAttendance, { isLoading: isSubmitting }] = usePunchAttendanceMutation();
- 
+
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
- 
-    // FIX — stopping the tracks alone isn't always enough. As long as the
+
+    // Stopping the tracks alone isn't always enough. As long as the
     // <video> element still has this (now-dead) stream assigned to
     // srcObject, some browsers keep the camera's recording light on.
     // Explicitly clearing it here is what actually releases the device.
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
- 
+
     setIsCameraOpen(false);
     setIsCapturingSequence(false);
     setCaptureProgress(0);
   }, []);
- 
+
+  // FIX — location is now checked HERE, before the camera even opens,
+  // instead of only being discovered as a failure at final submit time
+  // (after the employee already went through the whole capture flow).
+  // If location isn't available, the camera never opens at all — same
+  // spirit as the existing camera-permission failure below, just checked
+  // first since it's now the harder requirement of the two.
   const openCamera = useCallback(async () => {
     setResultMessage(null);
     setCameraError(null);
+    setLocationStatus("checking");
+
+    const location = await getCurrentLocation();
+    if (!location) {
+      setLocationStatus("unavailable");
+      setCameraError(
+        "Location is required to punch in or out. Please enable location access in your browser and try again."
+      );
+      return;
+    }
+    locationRef.current = location;
+    setLocationStatus("captured");
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
@@ -103,95 +133,92 @@ export function useAttendance() {
       );
     }
   }, []);
- 
+
   useEffect(() => {
     if (isCameraOpen && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
     }
   }, [isCameraOpen]);
- 
+
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
- 
+
   useEffect(() => {
     if (!resultMessage) return;
     const timer = setTimeout(() => setResultMessage(null), 5000);
     return () => clearTimeout(timer);
   }, [resultMessage]);
- 
+
   const grabFrame = useCallback((): Promise<Blob | null> => {
     return new Promise((resolve) => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       if (!video || !canvas) return resolve(null);
- 
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) return resolve(null);
- 
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.85);
     });
   }, []);
- 
-  // Replaces the old single-shot captureAndSubmit. Captures a short burst
-  // of frames over CAPTURE_DURATION_MS, then sends the whole sequence to
-  // the backend at once for blink-based liveness checking + face matching.
+
+  // Captures a short burst of frames over CAPTURE_DURATION_MS, then sends
+  // the whole sequence to the backend at once for blink-based liveness
+  // checking + face matching.
   const captureAndSubmit = useCallback(async () => {
     if (isCapturingRef.current) return;
     isCapturingRef.current = true;
     setIsCapturingSequence(true);
     setCaptureProgress(0);
     setResultMessage(null);
-    setLocationStatus("idle");
- 
-    // Fired in parallel with the frame capture below, not awaited yet —
-    // the browser's permission prompt (first time) or the GPS fix itself
-    // overlaps with the ~2.4s capture window instead of adding extra delay.
-    const locationPromise = getCurrentLocation();
- 
+
     const frames: Blob[] = [];
     const frameCount = Math.floor(CAPTURE_DURATION_MS / CAPTURE_INTERVAL_MS);
- 
+
     for (let i = 0; i < frameCount; i++) {
       const frame = await grabFrame();
       if (frame) frames.push(frame);
       setCaptureProgress(Math.round(((i + 1) / frameCount) * 100));
       await new Promise((r) => setTimeout(r, CAPTURE_INTERVAL_MS));
     }
- 
+
     setIsCapturingSequence(false);
- 
+
     if (frames.length === 0) {
       setResultMessage("Couldn't capture the camera feed. Please try again.");
       isCapturingRef.current = false;
       stopCamera();
       return;
     }
- 
+
     const formData = new FormData();
     frames.forEach((frame, i) => {
       formData.append("frames", frame, `frame_${i}.jpg`);
     });
- 
-    // By now this has almost certainly already resolved, since it started
-    // before the capture loop above. If the employee denied location, or
-    // it timed out, this is just null — the fields are simply omitted and
-    // the backend treats it exactly like it does today (GeoFenceID stays
-    // NULL, punch still succeeds).
-    const location = await locationPromise;
-    if (location) {
-      formData.append("latitude", String(location.latitude));
-      formData.append("longitude", String(location.longitude));
-      setLocationStatus("captured");
-    } else {
-      setLocationStatus("unavailable");
+
+    // FIX — location is no longer re-fetched here. openCamera() already
+    // required and cached it before the camera could even open, so by
+    // the time this runs it's guaranteed to be present. The defensive
+    // null check stays only for the theoretical case of permission being
+    // revoked mid-flow between opening the camera and submitting — if
+    // that happens, we fail here rather than silently submitting without
+    // coordinates and letting the backend reject it after the fact.
+    const location = locationRef.current;
+    if (!location) {
+      setResultMessage("Location access was lost. Please try again.");
+      isCapturingRef.current = false;
+      stopCamera();
+      return;
     }
- 
+    formData.append("latitude", String(location.latitude));
+    formData.append("longitude", String(location.longitude));
+
     try {
       const response = await punchAttendance(formData).unwrap();
       setResultMessage(response.message);
@@ -215,7 +242,7 @@ export function useAttendance() {
       isCapturingRef.current = false;
     }
   }, [grabFrame, punchAttendance, stopCamera]);
- 
+
   return {
     videoRef,
     canvasRef,
@@ -233,4 +260,3 @@ export function useAttendance() {
     cancelCamera: stopCamera,
   };
 }
- 

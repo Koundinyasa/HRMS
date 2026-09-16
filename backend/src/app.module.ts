@@ -11,7 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { EmployeeModule } from './employee/employee.module';
 import { AdminModule } from './admin/admin.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
-import { LogsModule } from './logs/logs.module';
+// import { LogsModule } from './logs/logs.module';
 import { LoggerModule } from './common/logger/logger.module';
 
 
@@ -34,7 +34,7 @@ import { LoggerModule } from './common/logger/logger.module';
     AdminModule,
     ChatbotModule,
     LoggerModule,
-    LogsModule,
+    // LogsModule,
   ],
   controllers: [AppController],
 })

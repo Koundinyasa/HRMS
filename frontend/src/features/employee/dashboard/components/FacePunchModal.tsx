@@ -5,13 +5,13 @@ import {
   useLazyGetFaceStatusQuery,
   useLazyGetRecentPunchesQuery,
 } from "../api/attendanceApi";
- 
+
 interface FacePunchModalProps {
   onClose: () => void;
   onPunchSuccess: (action: "IN" | "OUT") => void;
   onNeedsEnrollment: () => void;
 }
- 
+
 // Fixed height for both faces of the flip card. A 3D flip can't animate
 // height per-face the way the old dot-slider did (that caused a real bug
 // earlier — the container was sized to whichever slide was tallest,
@@ -23,7 +23,7 @@ interface FacePunchModalProps {
 // around that (header + button row + camera box + footer) so it fits
 // with real breathing room, not scrolling.
 const CARD_HEIGHT = 640;
- 
+
 export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollment }: FacePunchModalProps) {
   const {
     videoRef,
@@ -41,34 +41,32 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
     captureAndSubmit,
     cancelCamera,
   } = useAttendance();
- 
+
   const [triggerFaceStatus, { data: faceStatus, isLoading: isCheckingStatus }] = useLazyGetFaceStatusQuery();
- 
-  // NEW — replaces activeSlide (0|1) from the old dot-slider. Both faces
-  // stay mounted at all times (same property the old slider relied on) —
-  // flipping to the back never interrupts an in-progress camera capture
-  // on the front.
+
+  // Both faces stay mounted at all times — flipping to the back never
+  // interrupts an in-progress camera capture on the front.
   const [flipped, setFlipped] = useState(false);
- 
+
   const [triggerRecentPunches, { data: recentData, isLoading: isLoadingRecent }] = useLazyGetRecentPunchesQuery();
- 
+
   useEffect(() => {
     triggerFaceStatus();
   }, [triggerFaceStatus]);
- 
+
   useEffect(() => {
     if (!lastAction) return;
     onPunchSuccess(lastAction);
   }, [lastAction, onPunchSuccess]);
- 
+
   const handleClose = () => {
     if (isCameraOpen) cancelCamera();
     onClose();
   };
- 
+
   const busy = isCapturingSequence || isSubmitting;
   const punchSucceeded = Boolean(lastAction);
- 
+
   const toggleFlip = () => {
     const goingToBack = !flipped;
     setFlipped(goingToBack);
@@ -76,14 +74,14 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
       triggerRecentPunches();
     }
   };
- 
+
   // The camera placeholder area is ALSO a flip trigger, but only while
   // nothing is actually happening (camera off, not mid-capture) — so an
   // accidental tap can never interrupt a live capture or hide the "please
   // blink" prompt partway through. The header icon button below is always
   // available regardless of state, as the one guaranteed-safe control.
   const backgroundTapEnabled = !isCameraOpen && !busy;
- 
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4">
       {isCheckingStatus ? (
@@ -147,7 +145,7 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                   </button>
                 </div>
               </div>
- 
+
               <div className="p-5 flex-1 overflow-y-auto">
                 {punchSucceeded ? (
                   <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/25 p-4">
@@ -192,11 +190,11 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                       <button
                         type="button"
                         onClick={openCamera}
-                        disabled={isCameraOpen || busy}
+                        disabled={isCameraOpen || busy || locationStatus === "checking"}
                         className="flex-1 h-9 rounded-lg text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <Camera size={14} />
-                        Open Lens Connection
+                        {locationStatus === "checking" ? "Checking location..." : "Open Lens Connection"}
                       </button>
                       <button
                         type="button"
@@ -208,7 +206,7 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                         Kill Lens Feed
                       </button>
                     </div>
- 
+
                     <div
                       onClick={backgroundTapEnabled ? toggleFlip : undefined}
                       className={`relative w-full aspect-square rounded-xl overflow-hidden bg-black border border-[#1f2a3d] flex items-center justify-center ${
@@ -244,22 +242,34 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                       )}
                     </div>
                     <canvas ref={canvasRef} className="hidden" />
- 
-                    {/* NEW — honest feedback on whether geolocation actually
-                        worked for this attempt. Stays hidden while idle
-                        (before any submit) so it doesn't imply a status
-                        before there's a real one to report. */}
+
+                    {/* FIX — "Location unavailable — punch still recorded"
+                        was a leftover from when location was pure
+                        enrichment. It's mandatory now (see openCamera in
+                        useAttendance.ts), so that copy was actively
+                        false — the punch does NOT get recorded without
+                        it. 'checking' is new: shown while openCamera is
+                        waiting on the GPS fix, before the camera has
+                        opened at all. */}
                     {locationStatus !== "idle" && (
                       <div
                         className={`mt-3 flex items-center justify-center gap-1.5 text-[11px] ${
-                          locationStatus === "captured" ? "text-emerald-400/80" : "text-amber-400/80"
+                          locationStatus === "captured"
+                            ? "text-emerald-400/80"
+                            : locationStatus === "checking"
+                              ? "text-slate-400"
+                              : "text-rose-400/80"
                         }`}
                       >
                         <MapPin size={12} />
-                        {locationStatus === "captured" ? "Location captured" : "Location unavailable — punch still recorded"}
+                        {locationStatus === "captured"
+                          ? "Location captured"
+                          : locationStatus === "checking"
+                            ? "Checking location..."
+                            : "Location unavailable — required to punch in or out"}
                       </div>
                     )}
- 
+
                     {cameraError && <p className="mt-3 text-sm text-rose-400 text-center">{cameraError}</p>}
                     {resultMessage && (
                       <p className="mt-3 text-sm text-center text-rose-400">
@@ -269,7 +279,7 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                   </>
                 )}
               </div>
- 
+
               {!punchSucceeded && (
                 <div className="p-5 pt-0">
                   <button
@@ -283,7 +293,7 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                 </div>
               )}
             </div>
- 
+
             {/* BACK FACE — recent punches history */}
             <div
               style={{
@@ -310,7 +320,7 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                   </button>
                 </div>
               </div>
- 
+
               <div className="flex-1 overflow-y-auto">
                 {isLoadingRecent ? (
                   <p className="text-slate-400 text-xs text-center py-10">Loading...</p>
@@ -349,7 +359,7 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                   ))
                 )}
               </div>
- 
+
               <div className="p-5 pt-3">
                 <button
                   type="button"
@@ -367,4 +377,3 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
     </div>
   );
 }
- 

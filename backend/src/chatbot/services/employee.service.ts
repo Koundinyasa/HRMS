@@ -2,20 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { IntentDefinition } from '../types';
 import { fuzzyContains } from '../utils/fuzzy.util';
 import { DraftService } from './draft.service';
-
+ 
 @Injectable()
 export class EmployeeService {
   constructor(private readonly draftService: DraftService) {}
-
+ 
   private notify(
     employeeId: string,
     tone: 'info' | 'warning' | 'danger',
-    suggestions: { label: string; send: string }[] = [{ label: 'Main Menu', send: 'menu:main' }],
+    suggestions: { label: string; send: string }[] = [
+      { label: 'Main Menu', send: 'menu:main' },
+    ],
   ) {
     this.draftService.pendingNotice.set(employeeId, { tone });
-    if (suggestions.length) this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
+    if (suggestions.length)
+      this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
   }
-
+ 
   getEmployeeCard(employee: Record<string, any>): string {
     return [
       `Name: ${employee.name}`,
@@ -24,8 +27,11 @@ export class EmployeeService {
       `Department: ${employee.department}`,
     ].join('\n');
   }
-
-  getOwnProfileGuide(employeeId: string, employee: Record<string, any>): string {
+ 
+  getOwnProfileGuide(
+    employeeId: string,
+    employee: Record<string, any>,
+  ): string {
     this.draftService.pendingSteps.set(employeeId, {
       title: 'Your profile in the portal',
       items: [
@@ -38,6 +44,7 @@ export class EmployeeService {
     });
     return `Here's how to find your profile:`;
   }
+ 
   getPrivateDocGuide(employeeId: string, role: string): string {
     const baseSteps = [
       'Open the Employees menu.',
@@ -47,7 +54,9 @@ export class EmployeeService {
     ];
     const isPrivileged = role === 'admin' || role === 'hr';
     this.draftService.pendingSteps.set(employeeId, {
-      title: isPrivileged ? 'Employee private details access' : 'Your private documents',
+      title: isPrivileged
+        ? 'Employee private details access'
+        : 'Your private documents',
       items: baseSteps,
       note: isPrivileged
         ? 'You can review all employee public details from the directory, then open the secure document area for private files.'
@@ -57,22 +66,27 @@ export class EmployeeService {
       ? `Here's how to access employee private details:`
       : `Here's how to open your private documents:`;
   }
+ 
   getIntents(): IntentDefinition[] {
     return [
       {
         name: 'employeeListShort',
         test: (ctx) =>
-          (ctx.msg.includes('only') || ctx.msg.includes('just') ||
-           ctx.msg.includes('names only') || ctx.msg.includes('ids only')) &&
+          (ctx.msg.includes('only') ||
+            ctx.msg.includes('just') ||
+            ctx.msg.includes('names only') ||
+            ctx.msg.includes('ids only')) &&
           fuzzyContains(ctx.msg, 'employee') &&
-          (ctx.msg.includes('name') || ctx.msg.includes('names') ||
-           ctx.msg.includes('id')   || ctx.msg.includes('ids')),
+          (ctx.msg.includes('name') ||
+            ctx.msg.includes('names') ||
+            ctx.msg.includes('id') ||
+            ctx.msg.includes('ids')),
         handle: async (ctx) => {
           if (ctx.msg.includes('name') || ctx.msg.includes('names')) {
             if (ctx.role === 'admin' || ctx.role === 'hr') {
               this.draftService.pendingListPreview.set(ctx.employeeId, {
                 title: 'Employee Names',
-                rows: ctx.directory.map(e => ({ primary: e.name })),
+                rows: ctx.directory.map((e) => ({ primary: e.name })),
               });
               return `Here are all employee names (${ctx.directory.length}):`;
             }
@@ -82,7 +96,7 @@ export class EmployeeService {
           if (ctx.role === 'admin' || ctx.role === 'hr') {
             this.draftService.pendingListPreview.set(ctx.employeeId, {
               title: 'Employee IDs',
-              rows: ctx.directory.map(e => ({ primary: e.id })),
+              rows: ctx.directory.map((e) => ({ primary: e.id })),
             });
             return `Here are all employee IDs (${ctx.directory.length}):`;
           }
@@ -90,21 +104,33 @@ export class EmployeeService {
           return `Access denied: you don't have permission to list all employee IDs.`;
         },
       },
-
+ 
       {
         name: 'myDetails',
         test: (ctx) =>
-          (ctx.msg.includes('my details') || ctx.msg.includes('my profile') ||
-          ctx.msg.includes('my basic info') || ctx.msg.includes('basic info') ||
-          ctx.msg.includes('show my info') || ctx.msg.includes('show my details') ||
-          ctx.msg.includes('show my profile') || ctx.msg.includes('about me') ||
-          ctx.msg.includes('what is my id') || ctx.msg.includes('whats my id') ||
-          ctx.msg.includes('my id') || ctx.msg.includes('employee id') ||
-          ctx.msg.includes('my role') || ctx.msg.includes('what is my role') ||
-          ctx.msg.includes('whats my role') || ctx.msg.includes('my designation') ||
-          ctx.msg.includes('my department') || ctx.msg.includes('which department') ||
-          ctx.msg === 'details' || ctx.msg === 'profile' ||
-          ctx.msg === 'role' || ctx.msg === 'id' || ctx.msg === 'designation') &&
+          (ctx.msg.includes('my details') ||
+            ctx.msg.includes('my profile') ||
+            ctx.msg.includes('my basic info') ||
+            ctx.msg.includes('basic info') ||
+            ctx.msg.includes('show my info') ||
+            ctx.msg.includes('show my details') ||
+            ctx.msg.includes('show my profile') ||
+            ctx.msg.includes('about me') ||
+            ctx.msg.includes('what is my id') ||
+            ctx.msg.includes('whats my id') ||
+            ctx.msg.includes('my id') ||
+            ctx.msg.includes('employee id') ||
+            ctx.msg.includes('my role') ||
+            ctx.msg.includes('what is my role') ||
+            ctx.msg.includes('whats my role') ||
+            ctx.msg.includes('my designation') ||
+            ctx.msg.includes('my department') ||
+            ctx.msg.includes('which department') ||
+            ctx.msg === 'details' ||
+            ctx.msg === 'profile' ||
+            ctx.msg === 'role' ||
+            ctx.msg === 'id' ||
+            ctx.msg === 'designation') &&
           // Don't swallow bulk/company-wide requests — "employee id" is a
           // substring of "employee ids", so without this guard a query meant
           // for the full directory gets misrouted to this personal-details reply.
@@ -114,7 +140,13 @@ export class EmployeeService {
         handle: async (ctx) => {
           if (!ctx.selfEmployee) return 'Employee data not found.';
           const e = ctx.selfEmployee;
-          if ((ctx.msg.includes('role') || ctx.msg.includes('designation')) && !ctx.msg.includes('detail') && !ctx.msg.includes('profile')) {
+          console.log('MY DETAILS - selfEmployee:', JSON.stringify(e, null, 2));
+ 
+          if (
+            (ctx.msg.includes('role') || ctx.msg.includes('designation')) &&
+            !ctx.msg.includes('detail') &&
+            !ctx.msg.includes('profile')
+          ) {
             this.draftService.pendingDataCard.set(ctx.employeeId, {
               title: e.name,
               subtitle: e.designation,
@@ -122,7 +154,11 @@ export class EmployeeService {
             });
             return `Here's your designation:`;
           }
-          if (ctx.msg.includes('employee id') || ctx.msg === 'id' || (ctx.msg.includes('my id') && !ctx.msg.includes('detail'))) {
+          if (
+            ctx.msg.includes('employee id') ||
+            ctx.msg === 'id' ||
+            (ctx.msg.includes('my id') && !ctx.msg.includes('detail'))
+          ) {
             this.draftService.pendingDataCard.set(ctx.employeeId, {
               title: e.name,
               subtitle: e.designation,
@@ -130,7 +166,11 @@ export class EmployeeService {
             });
             return `Here's your employee ID:`;
           }
-          if (ctx.msg.includes('department') && !ctx.msg.includes('detail') && !ctx.msg.includes('profile')) {
+          if (
+            ctx.msg.includes('department') &&
+            !ctx.msg.includes('detail') &&
+            !ctx.msg.includes('profile')
+          ) {
             this.draftService.pendingDataCard.set(ctx.employeeId, {
               title: e.name,
               subtitle: e.designation,
@@ -150,12 +190,15 @@ export class EmployeeService {
           return `Here's your profile:`;
         },
       },
-
+ 
       {
         name: 'salaryHistory',
         test: (ctx) =>
-          ctx.msg.includes('my salary history') || ctx.msg.includes('salary history') ||
-          ctx.msg.includes('past salary') || ctx.msg.includes('previous salary') || ctx.msg.includes('pay history'),
+          ctx.msg.includes('my salary history') ||
+          ctx.msg.includes('salary history') ||
+          ctx.msg.includes('past salary') ||
+          ctx.msg.includes('previous salary') ||
+          ctx.msg.includes('pay history'),
         handle: async (ctx) => {
           if (!ctx.selfEmployee) return 'Employee data not found.';
           this.draftService.pendingSteps.set(ctx.employeeId, {
@@ -171,15 +214,18 @@ export class EmployeeService {
           return `Here's how to view your salary history:`;
         },
       },
-
+ 
       {
         name: 'mySalary',
         test: (ctx) =>
-          (ctx.msg.includes('my salary') || ctx.msg.includes('my pay') ||
-          fuzzyContains(ctx.msg, 'earn') || fuzzyContains(ctx.msg, 'compensation')) &&
+          (ctx.msg.includes('my salary') ||
+            ctx.msg.includes('my pay') ||
+            fuzzyContains(ctx.msg, 'earn') ||
+            fuzzyContains(ctx.msg, 'compensation')) &&
           !ctx.msg.includes('payslip'),
         handle: async (ctx) => {
-          if (!ctx.selfEmployee) return 'Salary details are available in the portal. Contact HR for access.';
+          if (!ctx.selfEmployee)
+            return 'Salary details are available in the portal. Contact HR for access.';
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to view your salary details',
             items: [
@@ -192,14 +238,16 @@ export class EmployeeService {
           return `Here's how to view your salary details:`;
         },
       },
-
+ 
       {
         name: 'myPayslip',
         test: (ctx) =>
-          ctx.msg.includes('my payslip') || ctx.msg.includes('my salary slip') ||
+          ctx.msg.includes('my payslip') ||
+          ctx.msg.includes('my salary slip') ||
           ctx.msg === 'payslip',
         handle: async (ctx) => {
-          if (!ctx.selfEmployee) return 'Payslip not available. Contact Finance team.';
+          if (!ctx.selfEmployee)
+            return 'Payslip not available. Contact Finance team.';
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your payslip',
             items: [
@@ -212,14 +260,19 @@ export class EmployeeService {
           return `Here's how to open your payslip:`;
         },
       },
-
+ 
       {
         name: 'myForm16',
         test: (ctx) =>
-          ctx.msg.includes('my form16') || ctx.msg.includes('my tax') || ctx.msg.includes('my document') ||
-          ctx.msg.includes('form16') || fuzzyContains(ctx.msg, 'payslip') || ctx.msg.includes('salary slip'),
+          ctx.msg.includes('my form16') ||
+          ctx.msg.includes('my tax') ||
+          ctx.msg.includes('my document') ||
+          ctx.msg.includes('form16') ||
+          fuzzyContains(ctx.msg, 'payslip') ||
+          ctx.msg.includes('salary slip'),
         handle: async (ctx) => {
-          if (!ctx.selfEmployee) return 'Form16 not available. Contact Finance team.';
+          if (!ctx.selfEmployee)
+            return 'Form16 not available. Contact Finance team.';
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your Form16',
             items: [
@@ -232,6 +285,7 @@ export class EmployeeService {
           return `Here's how to open your Form16:`;
         },
       },
+ 
       {
         name: 'familyDetails',
  
@@ -357,11 +411,12 @@ export class EmployeeService {
           return `Here's how to open your Uploaded Documents:`;
         },
       },
-
+ 
       {
         name: 'listEmployeeNames',
         test: (ctx) =>
-          ctx.msg.includes('list') && fuzzyContains(ctx.msg, 'employee') &&
+          ctx.msg.includes('list') &&
+          fuzzyContains(ctx.msg, 'employee') &&
           (ctx.msg.includes('name') || ctx.msg.includes('names')),
         handle: async (ctx) => {
           if (ctx.role !== 'admin' && ctx.role !== 'hr') {
@@ -370,16 +425,17 @@ export class EmployeeService {
           }
           this.draftService.pendingListPreview.set(ctx.employeeId, {
             title: 'Employee Names',
-            rows: ctx.directory.map(e => ({ primary: e.name })),
+            rows: ctx.directory.map((e) => ({ primary: e.name })),
           });
           return `Here are all employee names (${ctx.directory.length}):`;
         },
       },
-
+ 
       {
         name: 'listEmployeeIds',
         test: (ctx) =>
-          ctx.msg.includes('list') && fuzzyContains(ctx.msg, 'employee') &&
+          ctx.msg.includes('list') &&
+          fuzzyContains(ctx.msg, 'employee') &&
           (ctx.msg.includes('id') || ctx.msg.includes('ids')),
         handle: async (ctx) => {
           if (ctx.role !== 'admin' && ctx.role !== 'hr') {
@@ -388,17 +444,20 @@ export class EmployeeService {
           }
           this.draftService.pendingListPreview.set(ctx.employeeId, {
             title: 'Employee IDs',
-            rows: ctx.directory.map(e => ({ primary: e.id })),
+            rows: ctx.directory.map((e) => ({ primary: e.id })),
           });
           return `Here are all employee IDs (${ctx.directory.length}):`;
         },
       },
-
+ 
       {
         name: 'myCertificates',
         test: (ctx) =>
-          ctx.msg.includes('my certificate') || ctx.msg.includes('my certificates') ||
-          ctx.msg.includes('my qualification') || ctx.msg.includes('my credential') || ctx.msg.includes('my skill'),
+          ctx.msg.includes('my certificate') ||
+          ctx.msg.includes('my certificates') ||
+          ctx.msg.includes('my qualification') ||
+          ctx.msg.includes('my credential') ||
+          ctx.msg.includes('my skill'),
         handle: async (ctx) => {
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to view your certificates',
@@ -413,31 +472,37 @@ export class EmployeeService {
           return `Here's how to view your certificates:`;
         },
       },
+ 
       {
         name: 'privateDocs',
         test: (ctx) =>
           !ctx.msg.includes('my') &&
-          (ctx.msg.includes('form16') || fuzzyContains(ctx.msg, 'payslip') ||
-           ctx.msg.includes('salary slip') || ctx.msg.includes('appraisal') ||
-           ctx.msg.includes('private detail') || ctx.msg.includes('private details')),
+          (ctx.msg.includes('form16') ||
+            fuzzyContains(ctx.msg, 'payslip') ||
+            ctx.msg.includes('salary slip') ||
+            ctx.msg.includes('appraisal') ||
+            ctx.msg.includes('private detail') ||
+            ctx.msg.includes('private details')),
         handle: async (ctx) => {
           const guideIntro = this.getPrivateDocGuide(ctx.employeeId, ctx.role);
           if (ctx.role === 'admin' || ctx.role === 'hr') return guideIntro;
           return `Access denied: private employee documents are only visible for your own profile. ${guideIntro}`;
         },
       },
-
+ 
       {
         name: 'allEmployees',
         test: (ctx) =>
-          ctx.msg.includes('all employee') || ctx.msg.includes('all employees') ||
-          ctx.msg.includes('show me all') || ctx.msg.includes('all the employee'),
+          ctx.msg.includes('all employee') ||
+          ctx.msg.includes('all employees') ||
+          ctx.msg.includes('show me all') ||
+          ctx.msg.includes('all the employee'),
         handle: async (ctx) => {
           if (ctx.msg.includes('id') || ctx.msg.includes('ids')) {
             if (ctx.role === 'admin' || ctx.role === 'hr') {
               this.draftService.pendingListPreview.set(ctx.employeeId, {
                 title: 'Employee IDs',
-                rows: ctx.directory.map(e => ({ primary: e.id })),
+                rows: ctx.directory.map((e) => ({ primary: e.id })),
               });
               return `Here are all employee IDs (${ctx.directory.length}):`;
             }
@@ -447,21 +512,25 @@ export class EmployeeService {
           if (ctx.role === 'admin' || ctx.role === 'hr') {
             this.draftService.pendingListPreview.set(ctx.employeeId, {
               title: `All Employees (${ctx.directory.length} active)`,
-              rows: ctx.directory.map(e => ({
+              rows: ctx.directory.map((e) => ({
                 primary: e.code ? `${e.name} (${e.code})` : e.name,
                 secondary: e.id,
               })),
             });
             return `Here's the employee directory (${ctx.directory.length} active):`;
           }
-          this.notify(ctx.employeeId, 'danger', [{ label: 'My Details', send: 'my details' }]);
+          this.notify(ctx.employeeId, 'danger', [
+            { label: 'My Details', send: 'my details' },
+          ]);
           return `Access denied: you don't have permission to view all employee details.`;
         },
       },
-
+ 
       {
         name: 'salaryNotMine',
-        test: (ctx) => (fuzzyContains(ctx.msg, 'salary') || ctx.msg.includes('pay')) && !ctx.msg.includes('my'),
+        test: (ctx) =>
+          (fuzzyContains(ctx.msg, 'salary') || ctx.msg.includes('pay')) &&
+          !ctx.msg.includes('my'),
         handle: async (ctx) => {
           if (ctx.role === 'admin' || ctx.role === 'hr') {
             this.draftService.pendingSteps.set(ctx.employeeId, {
@@ -476,15 +545,19 @@ export class EmployeeService {
             });
             return `Here's how to view employee salary details:`;
           }
-          this.notify(ctx.employeeId, 'danger', [{ label: 'My Salary', send: 'my salary' }]);
+          this.notify(ctx.employeeId, 'danger', [
+            { label: 'My Salary', send: 'my salary' },
+          ]);
           return `Access denied: salary information for other employees is confidential.`;
         },
       },
-
+ 
       {
         name: 'employeeDetail',
         test: (ctx) =>
-          fuzzyContains(ctx.msg, 'employee') && fuzzyContains(ctx.msg, 'detail') && !ctx.msg.includes('my'),
+          fuzzyContains(ctx.msg, 'employee') &&
+          fuzzyContains(ctx.msg, 'detail') &&
+          !ctx.msg.includes('my'),
         handle: async (ctx) => {
           if (ctx.role === 'admin' || ctx.role === 'hr') {
             this.draftService.pendingSteps.set(ctx.employeeId, {
@@ -499,7 +572,9 @@ export class EmployeeService {
             });
             return `Here's how to navigate employee details:`;
           }
-          this.notify(ctx.employeeId, 'info', [{ label: 'My Details', send: 'my details' }]);
+          this.notify(ctx.employeeId, 'info', [
+            { label: 'My Details', send: 'my details' },
+          ]);
           return `You can only access your own details.`;
         },
       },
