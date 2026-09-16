@@ -1,5 +1,5 @@
 import { NavLink, useParams } from "react-router-dom";
-import { Plus, Clock, PieChart, History, XCircle } from "lucide-react";
+import { Plus, Clock, PieChart, History, XCircle,CalendarDays} from "lucide-react";
 
 import { useDashboard } from "../../dashboard/hooks/useDashboard";
 
@@ -10,7 +10,7 @@ const TAB_ICONS: Record<string, React.ReactNode> = {
   "Leave Status": <Clock className="h-[1.155rem] w-[1.155rem]" />,
   "Leave Balance": <PieChart className="h-[1.155rem] w-[1.155rem]" />,
   "Leave History": <History className="h-[1.155rem] w-[1.155rem]" />,
-  "Leave Cancellation": <XCircle className="h-[1.155rem] w-[1.155rem]" />,
+  "Holiday List": <CalendarDays className="h-[1.155rem] w-[1.155rem]" />,
 };
 
 const TAB_WIDTHS: Record<string, string> = {
@@ -18,6 +18,7 @@ const TAB_WIDTHS: Record<string, string> = {
   "Leave Status": "w-[13.2825rem]",
   "Leave Balance": "w-[13.2825rem]",
   "Leave History": "w-[12.618375rem]",
+  "Holiday List": "w-[10rem]",
 };
 
 
@@ -61,12 +62,26 @@ export default function LeaveNavbar() {
       <div className="flex w-full min-w-0 justify-between">
 
         {tabs.map((tab: MenuItem) => {
-          // Get route dynamically from API
-          const route =
-            tab.routeUrl?.replace(
-              "/Employee",
-              `/${domain}/employee`
-            ) ?? "";
+          // // Get route dynamically from API
+          // const route =
+          //   tab.routeUrl?.replace(
+          //     "/Employee",
+          //     `/${domain}/employee`
+          //   ) ?? "";
+
+          let route = "";
+
+          
+          if (tab.menuName === "Holiday List") {
+            route = `/${domain}/employee/leave/holidaylist`;
+          } else {
+            // Existing dynamic route logic for other tabs
+            route =
+              tab.routeUrl?.replace(
+                "/Employee",
+                `/${domain}/employee`
+              ) ?? "";
+          }
 
           return (
             <NavLink

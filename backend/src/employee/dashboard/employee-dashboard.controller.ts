@@ -36,4 +36,12 @@ export class DashboardController {
     test() {
     return 'Dashboard works';
 }
+
+@Get('approval-summary')
+@UseGuards(JwtAuthGuard)
+async getApprovalSummary(@Req() req: any) {
+  return this.dashboardService.getApprovalSummary(
+    req.user.employeeId,
+  );
+}
 }

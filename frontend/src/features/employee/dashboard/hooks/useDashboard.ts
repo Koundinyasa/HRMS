@@ -2,14 +2,13 @@ import { useEffect } from "react";
 
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 
-import {
-  setEmployeeProfile,
-} from "../../employeeSlice";
+import {setEmployeeProfile,} from "../../employeeSlice";
 
 import {
   useGetProfileQuery,
   useGetHolidayListQuery,
   useGetMenusQuery,
+  useGetApprovalSummaryQuery,
 } from "../api/dashboardApi";
 
 export const useDashboard = () => {
@@ -39,6 +38,14 @@ export const useDashboard = () => {
     isLoading: menuLoading,
     isError: menuError,
   } = useGetMenusQuery();
+
+  const {
+    data: approvalSummary,
+    isLoading: approvalSummaryLoading,
+    isError: approvalSummaryError,
+    error: approvalSummaryApiError,
+    refetch: refetchApprovalSummary,
+  } = useGetApprovalSummaryQuery();
 
   useEffect(() => {
     if (profileData?.data) {
@@ -79,5 +86,11 @@ export const useDashboard = () => {
 
     error,
     refetch,
+
+    approvalSummary,
+    approvalSummaryLoading,
+    approvalSummaryError,
+    approvalSummaryApiError,
+    refetchApprovalSummary,
   };
 };
