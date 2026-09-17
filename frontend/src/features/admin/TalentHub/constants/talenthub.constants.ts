@@ -18,6 +18,4 @@ export const TALENT_HUB_SUB_NAV:SubNavItem[] = [
         ]
     },
     {label:'TimeOffice',path:'timeoffice'}
-
-
 ]

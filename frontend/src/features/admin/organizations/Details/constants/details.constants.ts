@@ -1,0 +1,143 @@
+import type {
+  OrganizationCompany,
+  ComplianceRow,
+  SalaryParticularRow,
+} from "../types/details.types";
+
+export const MOCK_COMPANY: OrganizationCompany = {
+  id: "1",
+  name: "Koundinyasa Technology Services Pvt. Ltd.",
+  stats: {
+    totalEmployees: 197,
+    confirmationPending: 0,
+    joinedEmployees: 1,
+    leftEmployees: 0,
+    maleCount: 141,
+    femaleCount: 56,
+    averageService: "3 months 4 days",
+  },
+};
+
+export const MOCK_COMPLIANCE_ROW: ComplianceRow = {
+  companyName: "Koundinyasa Technology Services Pvt. Ltd.",
+  employeeCount: 198,
+  pfAck: 0,
+  pfAmount: 0,
+  esiAck: 0,
+  esiAmount: 0,
+  ptAck: 0,
+  ptAmount: 0,
+  lwfAck: 0,
+  lwfAmount: 0,
+  tds: 0,
+};
+
+export const MOCK_SALARY_ROWS: SalaryParticularRow[] = [
+  {
+    particular: "Total Employees",
+    currentMonth: 197,
+    previousMonth: 196,
+    difference: 1,
+    pctIncDec: 0.51,
+    pyYtd: 0,
+  },
+  {
+    particular: "Joined Employees",
+    currentMonth: 1,
+    previousMonth: 15,
+    difference: -14,
+    pctIncDec: -1400,
+    pyYtd: 0,
+  },
+  {
+    particular: "Left Employees",
+    currentMonth: 0,
+    previousMonth: 0,
+    difference: 0,
+    pctIncDec: 0,
+    pyYtd: 0,
+  },
+  {
+    particular: "Total Earnings",
+    currentMonth: 2915986,
+    previousMonth: 2912664,
+    difference: 3322,
+    pctIncDec: 0.11,
+    pyYtd: 18116.3,
+  },
+  {
+    particular: "Total Deduction",
+    currentMonth: 345141,
+    previousMonth: 344719,
+    difference: 422,
+    pctIncDec: 0.12,
+    pyYtd: 1455.38,
+  },
+  {
+    particular: "Net Salary",
+    currentMonth: 2570845,
+    previousMonth: 2567945,
+    difference: 2900,
+    pctIncDec: 0.11,
+    pyYtd: 16660.92,
+  },
+  {
+    particular: "PF",
+    currentMonth: 127888,
+    previousMonth: 127742,
+    difference: 146,
+    pctIncDec: 0.11,
+    pyYtd: 1228.5,
+  },
+  {
+    particular: "ESI",
+    currentMonth: 1222,
+    previousMonth: 1222,
+    difference: 0,
+    pctIncDec: 0,
+    pyYtd: 126.88,
+  },
+  {
+    particular: "PT",
+    currentMonth: 600,
+    previousMonth: 600,
+    difference: 0,
+    pctIncDec: 0,
+    pyYtd: 100,
+  },
+  {
+    particular: "TDS",
+    currentMonth: 0,
+    previousMonth: 0,
+    difference: 0,
+    pctIncDec: 0,
+    pyYtd: 0,
+  },
+  {
+    particular: "LWF",
+    currentMonth: 0,
+    previousMonth: 0,
+    difference: 0,
+    pctIncDec: 0,
+    pyYtd: 0,
+  },
+  {
+    particular: "Other Statutory Deductions",
+    currentMonth: 0,
+    previousMonth: 0,
+    difference: 0,
+    pctIncDec: 0,
+    pyYtd: 0,
+  },
+];
+
+export const MONTH_OPTIONS = [
+  "Sep/2026",
+  "Aug/2026",
+  "Jul/2026",
+  "Jun/2026",
+  "May/2026",
+  "Apr/2026",
+  "Mar/2026",
+  "Feb/2026",
+];

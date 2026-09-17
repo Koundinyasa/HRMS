@@ -1,3 +1,5 @@
+import type { EmployeeFilterType } from "../../Enrollment/EmployeeDetails/api/employeedetailsApi";
+
 export interface WelcomeInfo {
   fullName:            string;
   shortName:           string;
@@ -79,13 +81,23 @@ export interface DashboardSummary {
 }
 
 // ── Stat card config ──────────────────────────────────────────
+// export interface StatCardConfig {
+//   key:       keyof KpiSummary;
+//   label:     string;
+//   icon:      string;
+//   iconBg:    string;
+//   format?:   'number' | 'currency';
+// }
+
 export interface StatCardConfig {
-  key:       keyof KpiSummary;
-  label:     string;
-  icon:      string;
-  iconBg:    string;
-  format?:   'number' | 'currency';
+  key: string;
+  label: string;
+  icon: string;
+  iconBg: string;
+  format?: "currency" | "number";
+  filterType?: EmployeeFilterType;
 }
+
 
 export interface ActivityItem {
   id:           string;
@@ -154,8 +166,15 @@ export interface ClassificationWiseCountDto {
 }
 
 
+// export interface StatsCardProps {
+//   config: StatCardConfig;
+//   value:  number;
+//   change: number;
+// }
+
 export interface StatsCardProps {
   config: StatCardConfig;
-  value:  number;
+  value: number | null;
   change: number;
+  onClick?: () => void;
 }

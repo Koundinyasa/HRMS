@@ -32,7 +32,7 @@ export default function TabBar({ basePath, tabs }: TabBarProps) {
             to={`${basePath}/${tab.path}`}
             className={({ isActive }) =>
               `flex items-center gap-1.5 px-4 py-1.5 rounded-full border bg-white text-sm font-medium whitespace-nowrap transition-colors ${
-                isActive ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:bg-white/60"
+                isActive ? "bg-indigo-600 text-black shadow-sm" : "text-slate-600 hover:bg-white/60"
               }`
             }
           >
