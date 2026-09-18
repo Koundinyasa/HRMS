@@ -17,7 +17,9 @@ import { TeamService } from './services/team.service';
 
 import { IntentCtx, IntentDefinition, ChatResult, ActionButton } from './types';
 import {
-  PII_PATTERNS, PAYROLL_KEYWORDS, PERSONAL_INFO_KEYWORDS,
+  PII_PATTERNS,
+  PAYROLL_KEYWORDS,
+  PERSONAL_INFO_KEYWORDS,
   LEAVE_ACTION_TRIGGERS,
 } from './constants/keyword.constants';
 import { DEFAULT_TEST_USER } from './constants/chatbot.constants';
@@ -39,8 +41,13 @@ export class ChatbotService {
     private readonly draftService: DraftService = new DraftService(),
     private readonly parserService: ParserService = new ParserService(),
     private readonly menuService: MenuService = new MenuService(),
-    private readonly companyService: CompanyService = new CompanyService(menuService, draftService),
-    private readonly employeeService: EmployeeService = new EmployeeService(draftService),
+    private readonly companyService: CompanyService = new CompanyService(
+      menuService,
+      draftService,
+    ),
+    private readonly employeeService: EmployeeService = new EmployeeService(
+      draftService,
+    ),
     private readonly aiService: AiService = new AiService(configService),
     // JwtService here has no real secret configured — fine, since this
     // default path is only ever used by the spec files' direct
@@ -48,24 +55,44 @@ export class ChatbotService {
     // actually exercise a leave-balance/history call that would need to
     // mint a real token. NestJS's own DI always supplies the properly
     // configured, globally-shared JwtService in the running app.
-    private readonly leaveApiService: LeaveApiService = new LeaveApiService(new HttpService(), new JwtService()),
-    private readonly leaveService: LeaveService = new LeaveService(hrmsDbService, draftService, parserService, leaveApiService),
-    private readonly responseService: ResponseService = new ResponseService(menuService, draftService, leaveService),
-    private readonly teamService: TeamService = new TeamService(hrmsDbService, draftService),
+    private readonly leaveApiService: LeaveApiService = new LeaveApiService(
+      new HttpService(),
+      new JwtService(),
+    ),
+    private readonly leaveService: LeaveService = new LeaveService(
+      hrmsDbService,
+      draftService,
+      parserService,
+      leaveApiService,
+    ),
+    private readonly responseService: ResponseService = new ResponseService(
+      menuService,
+      draftService,
+      leaveService,
+    ),
+    private readonly teamService: TeamService = new TeamService(
+      hrmsDbService,
+      draftService,
+    ),
   ) {}
 
   // ── Core intents that don't belong to any single domain service ──────────
   private readonly coreIntents: IntentDefinition[] = [
     {
       name: 'today',
-      test: (ctx) => /today'?s? date|current date|what date is it|date today|what day is it|current time|what time is it|time now/i.test(ctx.msg),
+      test: (ctx) =>
+        /today'?s? date|current date|what date is it|date today|what day is it|current time|what time is it|time now/i.test(
+          ctx.msg,
+        ),
       handle: async (_ctx) => getTodayInfo(),
     },
     {
       name: 'identity',
       test: (ctx) =>
-        ctx.msg.includes('who are you') || ctx.msg.includes('what can you do') ||
-        ctx.msg.includes('help me')     || ctx.msg.includes('general questions'),
+        ctx.msg.includes('who are you') ||
+        ctx.msg.includes('what can you do') ||
+        ctx.msg.includes('help me') ||
+        ctx.msg.includes('general questions'),
       handle: async (ctx) => {
         this.draftService.pendingSteps.set(ctx.employeeId, {
           title: 'What I can help with',
@@ -83,7 +110,9 @@ export class ChatbotService {
       name: 'greeting',
       test: (ctx) =>
         /\b(hi|hey|hello|hii|heyy)\b/.test(ctx.msg) ||
-        ctx.msg.includes('good morning') || ctx.msg.includes('good afternoon') || ctx.msg.includes('good evening'),
+        ctx.msg.includes('good morning') ||
+        ctx.msg.includes('good afternoon') ||
+        ctx.msg.includes('good evening'),
       handle: async (ctx) => {
         this.draftService.pendingSteps.set(ctx.employeeId, {
           title: 'What I can help with',
@@ -100,8 +129,11 @@ export class ChatbotService {
     {
       name: 'thankYou',
       test: (ctx) =>
-        ctx.msg.includes('thank') || ctx.msg.includes('thanks') || ctx.msg.includes('appreciate'),
-      handle: async (ctx) => `You're welcome, ${ctx.name}. If you need anything else, just ask!`,
+        ctx.msg.includes('thank') ||
+        ctx.msg.includes('thanks') ||
+        ctx.msg.includes('appreciate'),
+      handle: async (ctx) =>
+        `You're welcome, ${ctx.name}. If you need anything else, just ask!`,
     },
   ];
 
@@ -145,7 +177,10 @@ export class ChatbotService {
   // matching somehow missed something, a message that smells like PII,
   // payroll, personal info, or an in-progress leave action still never
   // reaches the AI.
-  hasHardLocalBlock(message: string, user: Record<string, any>): { blocked: boolean; reason: string } {
+  hasHardLocalBlock(
+    message: string,
+    user: Record<string, any>,
+  ): { blocked: boolean; reason: string } {
     const employeeId: string = user?.employeeId ?? '';
     const rawMsg = message.toLowerCase();
     const msg = normalizeMessage(message);
@@ -156,28 +191,36 @@ export class ChatbotService {
 
     if (
       this.draftService.hasDraft(this.draftService.leaveDrafts, employeeId) ||
-      this.draftService.hasDraft(this.draftService.partialCancelDrafts, employeeId) ||
-      this.draftService.hasDraft(this.draftService.cancelChoiceDrafts, employeeId) ||
+      this.draftService.hasDraft(
+        this.draftService.partialCancelDrafts,
+        employeeId,
+      ) ||
+      this.draftService.hasDraft(
+        this.draftService.cancelChoiceDrafts,
+        employeeId,
+      ) ||
       this.draftService.hasDraft(this.draftService.teamDrafts, employeeId)
     ) {
       return { blocked: true, reason: 'pending_draft' };
     }
 
-    if (LEAVE_ACTION_TRIGGERS.some(k => msg.includes(k))) {
+    if (LEAVE_ACTION_TRIGGERS.some((k) => msg.includes(k))) {
       return { blocked: true, reason: 'leave_action' };
     }
 
-    if (PII_PATTERNS.some(k => rawMsg.includes(k))) {
+    if (PII_PATTERNS.some((k) => rawMsg.includes(k))) {
       return { blocked: true, reason: 'pii' };
     }
 
-    if (PAYROLL_KEYWORDS.some(k => rawMsg.includes(k))) {
+    if (PAYROLL_KEYWORDS.some((k) => rawMsg.includes(k))) {
       return { blocked: true, reason: 'payroll' };
     }
 
     if (
       msg.includes('my') &&
-      (PERSONAL_INFO_KEYWORDS.some(k => msg.includes(k)) || msg === 'details' || msg === 'profile')
+      (PERSONAL_INFO_KEYWORDS.some((k) => msg.includes(k)) ||
+        msg === 'details' ||
+        msg === 'profile')
     ) {
       return { blocked: true, reason: 'personal_info' };
     }
@@ -185,7 +228,10 @@ export class ChatbotService {
     return { blocked: false, reason: '' };
   }
 
-  async chat(message: string, userPayload?: Record<string, any>): Promise<ChatResult> {
+  async chat(
+    message: string,
+    userPayload?: Record<string, any>,
+  ): Promise<ChatResult> {
     if (!message?.trim()) throw new BadRequestException('message is required');
 
     const user = userPayload ?? DEFAULT_TEST_USER;
@@ -195,7 +241,12 @@ export class ChatbotService {
       botResponse: string,
       confidence: 'LOCAL' | 'AI' | 'FALLBACK',
     ): Promise<ChatResult> => {
-      const extras = await this.responseService.buildResponseExtras(user.employeeId as string, user.role as string);
+      // AFTER:
+      const extras = await this.responseService.buildResponseExtras(
+        user.employeeId as string,
+        user.role as string,
+        user,
+      );
       return {
         success: true,
         userMessage: message,
@@ -251,7 +302,10 @@ export class ChatbotService {
     const selfEmployee = info?.self ?? null;
 
     const employees: Record<string, any>[] = selfEmployee ? [selfEmployee] : [];
-    const companyData = { holidays: info?.holidays ?? [], announcements: [] as { date: string; title: string }[] };
+    const companyData = {
+      holidays: info?.holidays ?? [],
+      announcements: [] as { date: string; title: string }[],
+    };
 
     const leaveTypesRaw = await this.leaveApiService.getLeaveTypes();
     const leaveTypes = (leaveTypesRaw ?? []).map((t: any) => ({
@@ -265,18 +319,24 @@ export class ChatbotService {
     const designations = await this.hrmsDbService.getDesignations();
 
     const companyId = (selfEmployee?.companyId as number) ?? null;
-    const companyInfo = companyId ? await this.hrmsDbService.getCompanyInfo(companyId) : null;
-    const branches    = companyId ? await this.hrmsDbService.getBranches(companyId) : [];
-    const ownOffice    = await this.hrmsDbService.getEmployeeOffice(employeeId);
-    const directory   = companyId ? await this.hrmsDbService.getEmployeeDirectory(companyId) : [];
+    const companyInfo = companyId
+      ? await this.hrmsDbService.getCompanyInfo(companyId)
+      : null;
+    const branches = companyId
+      ? await this.hrmsDbService.getBranches(companyId)
+      : [];
+    const ownOffice = await this.hrmsDbService.getEmployeeOffice(employeeId);
+    const directory = companyId
+      ? await this.hrmsDbService.getEmployeeDirectory(companyId)
+      : [];
 
     const ctx: IntentCtx = {
       message,
       msg: normalizeText(message),
       user,
-      role:        user.role as string,
+      role: user.role as string,
       employeeId,
-      name:        user.name as string,
+      name: user.name as string,
       employees,
       companyData,
       selfEmployee,
@@ -293,7 +353,8 @@ export class ChatbotService {
     if (flowReply !== null) return { matched: true, text: flowReply };
 
     for (const intent of this.intents) {
-      if (intent.test(ctx)) return { matched: true, text: await intent.handle(ctx) };
+      if (intent.test(ctx))
+        return { matched: true, text: await intent.handle(ctx) };
     }
 
     return {

@@ -14,9 +14,11 @@ export class ResponseService {
     private readonly leaveService: LeaveService,
   ) {}
 
+  // AFTER:
   async buildResponseExtras(
     employeeId: string,
     role: string,
+    user: Record<string, any>,
   ): Promise<{ actions: ActionButton[]; widget: ResponseWidget | null }> {
     const menuKey = this.menuService.pendingMenu.get(employeeId);
     if (menuKey) {
@@ -25,26 +27,32 @@ export class ResponseService {
       if (menu) {
         const isPrivileged = role === 'admin' || role === 'hr';
         const actions = menu.buttons
-          .filter(b => !b.hrOnly || isPrivileged)
-          .map(b => ({ label: b.label, send: b.send }));
+          .filter((b) => !b.hrOnly || isPrivileged)
+          .map((b) => ({ label: b.label, send: b.send }));
         return { actions, widget: null };
       }
     }
     const listPreview = this.draftService.pendingListPreview.get(employeeId);
     if (listPreview) {
       this.draftService.pendingListPreview.delete(employeeId);
-      const suggested = this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
+      const suggested =
+        this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
       this.draftService.pendingSuggestedActions.delete(employeeId);
       return {
         actions: suggested,
-        widget: { type: 'listPreview', listTitle: listPreview.title, listRows: listPreview.rows },
+        widget: {
+          type: 'listPreview',
+          listTitle: listPreview.title,
+          listRows: listPreview.rows,
+        },
       };
     }
 
     const dataCard = this.draftService.pendingDataCard.get(employeeId);
     if (dataCard) {
       this.draftService.pendingDataCard.delete(employeeId);
-      const suggested = this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
+      const suggested =
+        this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
       this.draftService.pendingSuggestedActions.delete(employeeId);
       return {
         actions: suggested,
@@ -60,7 +68,8 @@ export class ResponseService {
     const notice = this.draftService.pendingNotice.get(employeeId);
     if (notice) {
       this.draftService.pendingNotice.delete(employeeId);
-      const suggested = this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
+      const suggested =
+        this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
       this.draftService.pendingSuggestedActions.delete(employeeId);
       return {
         actions: suggested,
@@ -71,11 +80,17 @@ export class ResponseService {
     const steps = this.draftService.pendingSteps.get(employeeId);
     if (steps) {
       this.draftService.pendingSteps.delete(employeeId);
-      const suggested = this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
+      const suggested =
+        this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
       this.draftService.pendingSuggestedActions.delete(employeeId);
       return {
         actions: suggested,
-        widget: { type: 'steps', stepsTitle: steps.title, stepsList: steps.items, stepsNote: steps.note },
+        widget: {
+          type: 'steps',
+          stepsTitle: steps.title,
+          stepsList: steps.items,
+          stepsNote: steps.note,
+        },
       };
     }
 
@@ -89,11 +104,17 @@ export class ResponseService {
       };
     }
 
-    const teamDraft = this.draftService.getDraft(this.draftService.teamDrafts, employeeId);
+    const teamDraft = this.draftService.getDraft(
+      this.draftService.teamDrafts,
+      employeeId,
+    );
     if (teamDraft) {
       if (teamDraft.step === 'awaiting_team') {
         return {
-          actions: teamDraft.teams.map(t => ({ label: t.name, send: `team:${t.id}` })),
+          actions: teamDraft.teams.map((t) => ({
+            label: t.name,
+            send: `team:${t.id}`,
+          })),
           widget: null,
         };
       }
@@ -142,9 +163,13 @@ export class ResponseService {
       }
     }
 
-    const draft = this.draftService.getDraft(this.draftService.leaveDrafts, employeeId);
+    const draft = this.draftService.getDraft(
+      this.draftService.leaveDrafts,
+      employeeId,
+    );
     if (!draft) {
-      const suggested = this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
+      const suggested =
+        this.draftService.pendingSuggestedActions.get(employeeId) ?? [];
       this.draftService.pendingSuggestedActions.delete(employeeId);
       return { actions: suggested, widget: null };
     }
@@ -153,11 +178,17 @@ export class ResponseService {
       return { actions: [], widget: { type: 'date', step: 'start' } };
     }
     if (draft.step === 'awaiting_end') {
-      return { actions: [], widget: { type: 'date', step: 'end', minDate: draft.startDate } };
+      return {
+        actions: [],
+        widget: { type: 'date', step: 'end', minDate: draft.startDate },
+      };
     }
     if (draft.step === 'awaiting_type') {
-      const options = await this.leaveService.buildLeaveTypeOptions(employeeId);
-      return { actions: [], widget: { type: 'leaveTypes', step: 'type', options } };
+      const options = await this.leaveService.buildLeaveTypeOptions(user);
+      return {
+        actions: [],
+        widget: { type: 'leaveTypes', step: 'type', options },
+      };
     }
     if (draft.step === 'awaiting_dayChoice') {
       return {
@@ -171,7 +202,7 @@ export class ResponseService {
     if (draft.step === 'awaiting_session') {
       return {
         actions: [
-          { label: 'First Half',  send: 'session:FirstHalf' },
+          { label: 'First Half', send: 'session:FirstHalf' },
           { label: 'Second Half', send: 'session:SecondHalf' },
         ],
         widget: null,
@@ -185,7 +216,9 @@ export class ResponseService {
       const dayText = draft.isHalfDay
         ? `Half day (${draft.session === 'FirstHalf' ? 'First half' : draft.session === 'SecondHalf' ? 'Second half' : draft.session})`
         : 'Full day';
-      const durationText = draft.isHalfDay ? '0.5 day' : formatDayCount(draft.duration);
+      const durationText = draft.isHalfDay
+        ? '0.5 day'
+        : formatDayCount(draft.duration);
       return {
         actions: [
           { label: 'Confirm Leave', send: 'confirm leave' },

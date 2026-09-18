@@ -149,4 +149,68 @@ export class DashboardService {
 
   }
 
+   async getApprovalSummary(employeeId: string) {
+  try {
+    const pool = await this.dbService.connect();
+ 
+    const result = await pool
+      .request()
+      .input('EmployeeID', employeeId)
+      .execute('USP_GetUserInfo');
+ 
+    const allRows = result.recordsets.flat();
+ 
+    const pendingApprovals =
+      allRows.find(
+        (row) =>
+          row.PendingApprovals !== undefined &&
+          typeof row.PendingApprovals === 'number',
+      )?.PendingApprovals ?? 0;
+ 
+    const myRequestsDetails =
+      result.recordsets
+        .find((recordset) =>
+          recordset.some(
+            (row) => typeof row.MyRequests === 'string',
+          ),
+        )
+        ?.map((row) => ({
+          RequestType: row.MyRequests,
+          RequestCount: Number(row.RequestCount ?? 0),
+        })) ?? [];
+ 
+    const myApprovalsDetails =
+      result.recordsets
+        .find((recordset) =>
+          recordset.some(
+            (row) => typeof row.MyApprovals === 'string',
+          ),
+        )
+        ?.map((row) => ({
+          RequestType: row.MyApprovals,
+          RequestCount: Number(row.RequestCount ?? 0),
+        })) ?? [];
+ 
+    const myRequests = myRequestsDetails.reduce(
+      (total, item) => total + item.RequestCount,
+      0,
+    );
+ 
+    const pendingApprovalTotal = myApprovalsDetails.reduce(
+      (total, item) => total + item.RequestCount,
+      0,
+    );
+ 
+    return {
+      PendingApprovals: pendingApprovalTotal,
+      MyRequests: myRequests,
+      MyRequestsDetails: myRequestsDetails,
+      MyApprovalsDetails: myApprovalsDetails,
+    };
+  } catch (error) {
+    console.error('Error fetching approval summary:', error);
+    throw error;
+  }
+}
+
 }

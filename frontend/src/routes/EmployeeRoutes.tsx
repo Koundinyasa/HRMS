@@ -1,233 +1,13 @@
-
-// import { Routes, Route, Navigate, useParams } from "react-router-dom";
-
-// import Layout from "@/features/employee/components/Layout";
-
-// import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage";
-
-// import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
-// import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
-
-// // Profile Module
-// import PersonalInformationPage from "@/features/employee/profile/pages/PersonalInformationPage";
-// import FamilyDetailsPage from "@/features/employee/profile/pages/FamilyDetailsPage";
-// import EducationDetailsPage from "@/features/employee/profile/pages/EducationDetailsPage";
-// import ExperienceDetailsPage from "@/features/employee/profile/pages/ExperienceDetailsPage";
-// import BankInformationPage from "@/features/employee/profile/pages/BankInformationPage";
-// import UploadedDocumentsPage from "@/features/employee/profile/pages/UploadedDocumentsPage";
-
-// // Leave Module
-// import LeaveApply from "@/features/employee/leave/pages/LeaveApply";
-// import LeaveBalance from "@/features/employee/leave/pages/LeaveBalance";
-// import LeaveHistory from "@/features/employee/leave/pages/LeaveHistory";
-// import LeaveCancellation from "@/features/employee/leave/pages/LeaveCancellation";
-// import LeaveStatus from "@/features/employee/leave/pages/LeaveStatus";
-
-// // Asset Module
-// import AssetRequest from "@/features/employee/asset/pages/AssetRequest";
-// import AssetTracking from "@/features/employee/asset/pages/AssetTracking";
-// import AssignedAssets from "@/features/employee/asset/pages/AssignedAssets";
-// import AssetApproval from "@/features/employee/asset/pages/AssetApproval";
-
-// // Separation Module
-// import ResignationPage from "@/features/employee/separation/pages/ResignationPage";
-// import StatusPage from "@/features/employee/separation/pages/StatusPage";
-// import WithdrawPage from "@/features/employee/separation/pages/WithdrawPage";
-
-// //HelpDesk Module
-// import RaiseTicket from "@/features/employee/helpdesk/pages/RaiseTicket";
-// import TicketStatus from "@/features/employee/helpdesk/pages/TicketStatus";
-// import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
-
-// // Attendance Module — NEW
-// import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
-
-
-// //Review/LeaveCalender
-// import LeaveCalendar from "@/features/employee/review/leaveCalendar/pages/LeaveCalendar";
-// import LeaveCalendarHistory from "@/features/employee/review/leaveCalendar/components/LeaveCalendarHistory";
-
-// function ApplyLeaveForEmployeeRedirect() {
-//   const { domain } = useParams();
-
-//   return (
-//     <Navigate
-//       to={`/${domain}/employee/leave/apply`}
-//       state={{ forceApplyForEmployee: true }}
-//       replace
-//     />
-//   );
-// }
-
-// export default function EmployeeRoutes() {
-//   return (
-//     <Routes>
-//       <Route path="/" element={<Layout />}>
-
-//         {/* Dashboard */}
-//         <Route path="dashboard" element={<EmployeeDashboard />} />
-
-//         {/* My Profile */}
-//         <Route path="profile" element={<ProfileLayout />}>
-//           <Route
-//             index
-//             element={
-//               <Navigate
-//                 to="personal"
-//                 replace
-//               />
-//             }
-//           />
-
-//           <Route
-//             path="personal"
-//             element={<PersonalInformationPage />}
-//           />
-
-//           <Route
-//             path="family"
-//             element={<FamilyDetailsPage />}
-//           />
-
-//           <Route
-//             path="education"
-//             element={<EducationDetailsPage />}
-//           />
-
-//           <Route
-//             path="experience"
-//             element={<ExperienceDetailsPage />}
-//           />
-
-//           <Route
-//             path="bank"
-//             element={<BankInformationPage />}
-//           />
-
-//           <Route
-//             path="documents"
-//             element={<UploadedDocumentsPage />}
-//           />
-//         </Route>
-
-//         {/* Leave Management */}
-//         <Route
-//           path="leave"
-//           element={<LeaveLayout />}
-//         >
-//           <Route
-//             index
-//             element={<Navigate to="apply" replace />}
-//           />
-
-//           <Route
-//             path="apply"
-//             element={<LeaveApply />}
-//           />
-
-//           <Route
-//             path="status"
-//             element={<LeaveStatus />}
-//           />
-
-//           <Route
-//             path="balance"
-//             element={<LeaveBalance />}
-//           />
-
-//           <Route
-//             path="history"
-//             element={<LeaveHistory />}
-//           />
-
-//           <Route
-//             path="cancel"
-//             element={<LeaveCancellation />}
-//           />
-//         </Route>
-
-//         {/* Asset Management */}
-//         <Route
-//           path="assets/request"
-//           element={<AssetRequest />}
-//         />
-
-//         <Route
-//           path="assets/return"
-//           element={<AssetTracking />}
-//         />
-
-//         <Route
-//           path="assets/assigned"
-//           element={<AssignedAssets />}
-//         />
-
-//         <Route
-//           path="assets/approval"
-//           element={<AssetApproval />}
-//         />
-
-//         {/* Separation Management */}
-//         <Route
-//           path="separation/resignation"
-//           element={<ResignationPage />}
-//         />
-
-//         <Route
-//           path="separation/status"
-//           element={<StatusPage />}
-//         />
-
-//         <Route
-//           path="separation/withdraw"
-//           element={<WithdrawPage />}
-//         />
-
-//         {/* Help Desk */}
-//         <Route path="helpdesk/ticket" element={<RaiseTicket />} />
-//         <Route path="helpdesk/status" element={<TicketStatus />} />
-//         <Route path="helpdesk/kb" element={<KnowledgeBase />}
-//         />
-
-//         {/* Review */}
-//         <Route
-//           path="applyleaveemployee"
-//           element={<ApplyLeaveForEmployeeRedirect />}
-//         />
-
-//         {/* Attendance Management — NEW */}
-//         <Route path="attendance/face-registration" element={<FaceRegistrationPage />} />
-//       </Route>
-//     </Routes>
-//   );
-// }
-
-
-
-import {
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
- 
-/* ============================================================
-   EMPLOYEE LAYOUT
-============================================================ */
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
  
 import Layout from "@/features/employee/components/Layout";
  
-/* ============================================================
-   DASHBOARD
-============================================================ */
- 
 import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage";
  
-/* ============================================================
-   PROFILE
-============================================================ */
- 
 import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
+import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
  
+// Profile Module
 import PersonalInformationPage from "@/features/employee/profile/pages/PersonalInformationPage";
 import FamilyDetailsPage from "@/features/employee/profile/pages/FamilyDetailsPage";
 import EducationDetailsPage from "@/features/employee/profile/pages/EducationDetailsPage";
@@ -235,497 +15,157 @@ import ExperienceDetailsPage from "@/features/employee/profile/pages/ExperienceD
 import BankInformationPage from "@/features/employee/profile/pages/BankInformationPage";
 import UploadedDocumentsPage from "@/features/employee/profile/pages/UploadedDocumentsPage";
  
-/* ============================================================
-   LEAVE
-============================================================ */
- 
-import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
- 
+// Leave Module
 import LeaveApply from "@/features/employee/leave/pages/LeaveApply";
 import LeaveBalance from "@/features/employee/leave/pages/LeaveBalance";
 import LeaveHistory from "@/features/employee/leave/pages/LeaveHistory";
 import LeaveCancellation from "@/features/employee/leave/pages/LeaveCancellation";
 import LeaveStatus from "@/features/employee/leave/pages/LeaveStatus";
+import HolidayListPage from "@/features/employee/leave/pages/HolidayListPage";
  
-/* ============================================================
-   LEAVE CALENDAR
-============================================================ */
- 
-import LeaveCalendar from "@/features/employee/review/leaveCalendar/pages/LeaveCalendar";
- 
-import LeaveCalendarHistory from "@/features/employee/review/leaveCalendar/components/LeaveCalendarHistory";
- 
-/* ============================================================
-   ASSETS
-============================================================ */
- 
+// Asset Module
 import AssetRequest from "@/features/employee/asset/pages/AssetRequest";
 import AssetTracking from "@/features/employee/asset/pages/AssetTracking";
 import AssignedAssets from "@/features/employee/asset/pages/AssignedAssets";
 import AssetApproval from "@/features/employee/asset/pages/AssetApproval";
  
-/* ============================================================
-   SEPARATION
-============================================================ */
- 
+// Separation Module
 import ResignationPage from "@/features/employee/separation/pages/ResignationPage";
 import StatusPage from "@/features/employee/separation/pages/StatusPage";
 import WithdrawPage from "@/features/employee/separation/pages/WithdrawPage";
  
-/* ============================================================
-   HELP DESK
-============================================================ */
- 
+//HelpDesk Module
 import RaiseTicket from "@/features/employee/helpdesk/pages/RaiseTicket";
 import TicketStatus from "@/features/employee/helpdesk/pages/TicketStatus";
 import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
  
-/* ============================================================
-   REVIEW → TIME OFFICE
-============================================================ */
+// // Review Module
+// import PunchPage from "@/features/employee/review/timeOffice/attendance/pages/PunchPage";
+// import MissedPunchPage from "@/features/employee/review/timeOffice/attendance/pages/MissedPunchPage";
+// import AttendanceOverview from "@/features/employee/review/timeOffice/attendance/pages/AttendanceOverview";
+// import TAInsightsPage from "@/features/employee/review/timeOffice/attendance/pages/TAInsightsPage";
  
-/*
-  IMPORTANT:
-  There is NO Regularization.tsx inside:
+// //Leave Calender
+// import LeaveCalendar from "@/features/employee/review/leaveCalendar/pages/LeaveCalendar";
+// import LeaveCalendarHistory from "@/features/employee/review/leaveCalendar/components/LeaveCalendarHistory";
  
-  features/employee/review/timeOffice/pages/
+// Attendance Module — NEW
+import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
  
-  Existing pages are:
-  - PunchPage.tsx
-  - MissedPunchPage.tsx
-  - AttendanceOverview.tsx
-  - TAInsightsPage.tsx
-*/
+function ApplyLeaveForEmployeeRedirect() {
+  const { domain } = useParams();
  
-// import PunchPage from "@/features/employee/review/timeOffice/pages/PunchPage";
-// import MissedPunchPage from "@/features/employee/review/timeOffice/pages/MissedPunchPage";
-// import AttendanceOverview from "@/features/employee/review/timeOffice/pages/AttendanceOverview";
-// import TAInsightsPage from "@/features/employee/review/timeOffice/pages/TAInsightsPage";
- 
-/* ============================================================
-   EMPLOYEE ROUTES
-============================================================ */
+  return (
+    <Navigate
+      to={`/${domain}/employee/leave/apply`}
+      state={{ forceApplyForEmployee: true }}
+      replace
+    />
+  );
+}
  
 export default function EmployeeRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<Layout />}>
+        {/* Dashboard */}
+        <Route path="dashboard" element={<EmployeeDashboard />} />
  
-      {/* ======================================================
-          EMPLOYEE LAYOUT
-      ====================================================== */}
+        {/* My Profile */}
+        <Route path="profile" element={<ProfileLayout />}>
+          <Route index element={<Navigate to="personal" replace />} />
  
-      <Route element={<Layout />}>
+          <Route path="personal" element={<PersonalInformationPage />} />
  
-        {/* ====================================================
-            DASHBOARD
-        ==================================================== */}
+          <Route path="family" element={<FamilyDetailsPage />} />
  
-        <Route
-          path="dashboard"
-          element={
-            <EmployeeDashboard />
-          }
-        />
+          <Route path="education" element={<EducationDetailsPage />} />
  
-        {/* ====================================================
-            PROFILE
-        ==================================================== */}
+          <Route path="experience" element={<ExperienceDetailsPage />} />
  
-        <Route
-          path="profile"
-          element={
-            <ProfileLayout />
-          }
-        >
+          <Route path="bank" element={<BankInformationPage />} />
  
-          {/* Default Profile */}
- 
-          <Route
-            index
-            element={
-              <Navigate
-                to="personal"
-                replace
-              />
-            }
-          />
- 
-          {/* Personal Information */}
- 
-          <Route
-            path="personal"
-            element={
-              <PersonalInformationPage />
-            }
-          />
- 
-          {/* Family Details */}
- 
-          <Route
-            path="family"
-            element={
-              <FamilyDetailsPage />
-            }
-          />
- 
-          {/* Education Details */}
- 
-          <Route
-            path="education"
-            element={
-              <EducationDetailsPage />
-            }
-          />
- 
-          {/* Experience Details */}
- 
-          <Route
-            path="experience"
-            element={
-              <ExperienceDetailsPage />
-            }
-          />
- 
-          {/* Bank Information */}
- 
-          <Route
-            path="bank"
-            element={
-              <BankInformationPage />
-            }
-          />
- 
-          {/* Uploaded Documents */}
- 
-          <Route
-            path="documents"
-            element={
-              <UploadedDocumentsPage />
-            }
-          />
- 
+          <Route path="documents" element={<UploadedDocumentsPage />} />
         </Route>
  
-        {/* ====================================================
-            LEAVE
-        ==================================================== */}
+        {/* Leave Management */}
+        <Route path="leave" element={<LeaveLayout />}>
+          <Route index element={<Navigate to="apply" replace />} />
  
-        <Route
-          path="leave"
-          element={
-            <LeaveLayout />
-          }
-        >
+          <Route path="apply" element={<LeaveApply />} />
  
-          {/* Default Leave */}
+          <Route path="status" element={<LeaveStatus />} />
  
-          <Route
-            index
-            element={
-              <Navigate
-                to="apply"
-                replace
-              />
-            }
-          />
+          <Route path="balance" element={<LeaveBalance />} />
  
-          {/* Apply Leave */}
+          <Route path="history" element={<LeaveHistory />} />
  
-          <Route
-            path="apply"
-            element={
-              <LeaveApply />
-            }
-          />
+          <Route path="cancel" element={<LeaveCancellation />} />
  
-          {/* Leave Balance */}
- 
-          <Route
-            path="balance"
-            element={
-              <LeaveBalance />
-            }
-          />
- 
-          {/* Leave History */}
- 
-          <Route
-            path="history"
-            element={
-              <LeaveHistory />
-            }
-          />
- 
-          {/* Leave Cancellation */}
- 
-          <Route
-            path="cancellation"
-            element={
-              <LeaveCancellation />
-            }
-          />
- 
-          {/* Leave Status */}
- 
-          <Route
-            path="status"
-            element={
-              <LeaveStatus />
-            }
-          />
- 
+          <Route path="holidaylist" element={<HolidayListPage />} />
         </Route>
  
-        {/* ====================================================
-            LEAVE CALENDAR
-        ==================================================== */}
+        {/* Asset Management */}
+        <Route path="assets/request" element={<AssetRequest />} />
  
-        <Route
-          path="leave-calendar"
-          element={
-            <LeaveCalendar />
-          }
-        />
+        <Route path="assets/return" element={<AssetTracking />} />
  
-        <Route
-          path="leave-calendar/history"
-          element={
-            <LeaveCalendarHistory />
-          }
-        />
+        <Route path="assets/assigned" element={<AssignedAssets />} />
  
-        {/* ====================================================
-            ASSETS
-        ==================================================== */}
+        <Route path="assets/approval" element={<AssetApproval />} />
  
-        <Route
-          path="assets/request"
-          element={
-            <AssetRequest />
-          }
-        />
+        {/* Separation Management */}
+        <Route path="separation/resignation" element={<ResignationPage />} />
  
-        <Route
-          path="assets/tracking"
-          element={
-            <AssetTracking />
-          }
-        />
+        <Route path="separation/status" element={<StatusPage />} />
  
-        <Route
-          path="assets/assigned"
-          element={
-            <AssignedAssets />
-          }
-        />
+        <Route path="separation/withdraw" element={<WithdrawPage />} />
  
-        <Route
-          path="assets/approval"
-          element={
-            <AssetApproval />
-          }
-        />
+        {/* Help Desk */}
+        <Route path="helpdesk/ticket" element={<RaiseTicket />} />
+        <Route path="helpdesk/status" element={<TicketStatus />} />
+        <Route path="helpdesk/kb" element={<KnowledgeBase />} />
  
-        {/* ====================================================
-            SEPARATION
-        ==================================================== */}
- 
-        <Route
-          path="separation/resignation"
-          element={
-            <ResignationPage />
-          }
-        />
- 
-        <Route
-          path="separation/status"
-          element={
-            <StatusPage />
-          }
-        />
- 
-        <Route
-          path="separation/withdraw"
-          element={
-            <WithdrawPage />
-          }
-        />
- 
-        {/* ====================================================
-            HELP DESK
-        ==================================================== */}
- 
-        <Route
-          path="helpdesk/raise-ticket"
-          element={
-            <RaiseTicket />
-          }
-        />
- 
-        <Route
-          path="helpdesk/ticket-status"
-          element={
-            <TicketStatus />
-          }
-        />
- 
-        <Route
-          path="helpdesk/knowledge-base"
-          element={
-            <KnowledgeBase />
-          }
-        />
- 
-        {/* ====================================================
-            TIME OFFICE
-        ==================================================== */}
- 
-        {/*
-          Regularization was previously used as a parent route,
-          but Regularization.tsx does not exist.
- 
-          Therefore each existing Time Office page has its own
-          route.
-        */}
- 
-        {/* Regularization / Punch */}
+        {/* Leave Calendar */}
+        {/* <Route path="Leavecalender" element={<LeaveCalendar />} /> */}
  
         {/* <Route
-          path="time-office/regularization"
-          element={
-            <PunchPage />
-          }
-        /> */}
- 
-        {/* Missed Punch */}
- 
-        {/* <Route
-          path="time-office/regularization/missed-punch"
-          element={
-            <MissedPunchPage />
-          }
-        /> */}
- 
-        {/* Attendance */}
- 
-        {/* <Route
-          path="time-office/regularization/attendance"
-          element={
-            <AttendanceOverview />
-          }
-        /> */}
- 
-        {/* TA Insights */}
- 
-        {/* <Route
-          path="time-office/regularization/ta-insights"
-          element={
-            <TAInsightsPage />
-          }
-        /> */}
- 
-        {/* ====================================================
-            REVIEW
-        ==================================================== */}
- 
-        {/* Review → Apply Leave */}
- 
-        <Route
-          path="review/apply-leave"
-          element={
-            <LeaveApply />
-          }
-        />
- 
-        {/* Review → Leave Calendar */}
- 
-        <Route
-          path="review/leave-calendar"
-          element={
-            <LeaveCalendar />
-          }
-        />
- 
-        {/* Review → Leave Calendar History */}
- 
-        <Route
           path="review/leave-calendar/history"
-          element={
-            <LeaveCalendarHistory />
-          }
-        />
- 
-        {/* ====================================================
-            REVIEW → TIME OFFICE
-        ==================================================== */}
- 
-        {/* Review → Time Office → Punch / Regularization */}
- 
-        {/* <Route
-          path="review/time-office/regularization"
-          element={
-            <PunchPage />
-          }
+          element={<LeaveCalendarHistory />}
         /> */}
  
-        {/* Review → Time Office → Missed Punch */}
+        {/* Review Module */}
  
-        {/* <Route
-          path="review/time-office/regularization/missed-punch"
-          element={
-            <MissedPunchPage />
-          }
-        /> */}
- 
-        {/* Review → Time Office → Attendance */}
- 
-        {/* <Route
-          path="review/time-office/regularization/attendance"
-          element={
-            <AttendanceOverview />
-          }
-        /> */}
- 
-        {/* Review → Time Office → TA Insights */}
- 
-        {/* <Route
-          path="review/time-office/regularization/ta-insights"
-          element={
-            <TAInsightsPage />
-          }
-        /> */}
- 
-        {/* ====================================================
-            DEFAULT EMPLOYEE ROUTE
-        ==================================================== */}
- 
+        {/* Apply Leave for Employee */}
         <Route
-          index
-          element={
-            <Navigate
-              to="dashboard"
-              replace
-            />
-          }
+          path="Applyleaveemployee"
+          element={<ApplyLeaveForEmployeeRedirect />}
         />
  
+        {/* Time Office → Regularization → Punch */}
+        {/* <Route path="Regularization/Punch" element={<PunchPage />} /> */}
+ 
+        {/* Time Office → Regularization → Missed Punch */}
+        {/* <Route
+          path="Regularization/MissedPunch"
+          element={<MissedPunchPage />}
+        /> */}
+ 
+        {/* Time Office → Regularization → Attendance */}
+        {/* <Route
+          path="Regularization/Attendance"
+          element={<AttendanceOverview />}
+        /> */}
+ 
+        {/* Time Office → Regularization → TA Insights */}
+        {/* <Route path="Regularization/TAInsights" element={<TAInsightsPage />} /> */}
+ 
+        {/* Attendance Management — NEW */}
+        <Route
+          path="attendance/face-registration"
+          element={<FaceRegistrationPage />}
+        />
       </Route>
- 
-      {/* ======================================================
-          FALLBACK
-      ====================================================== */}
- 
-      <Route
-        path="*"
-        element={
-          <Navigate
-            to="dashboard"
-            replace
-          />
-        }
-      />
- 
     </Routes>
   );
 }
- 

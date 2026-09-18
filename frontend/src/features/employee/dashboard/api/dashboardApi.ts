@@ -1,6 +1,6 @@
 import { baseApi } from "@/app/baseApi";
 
-import type { ProfileResponse, HolidayResponse, MenuResponse } from "../types/dashboard.types";
+import type { ProfileResponse, HolidayResponse, MenuResponse,ApprovalSummaryResponse, } from "../types/dashboard.types";
 
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -27,8 +27,14 @@ export const dashboardApi = baseApi.injectEndpoints({
       }),
     }),
 
+    getApprovalSummary: builder.query<ApprovalSummaryResponse, void>({
+      query: () => ({
+        url: "/employee/dashboard/approval-summary",
+        method: "GET",
+      }),
+    }),
     
   }),
 });
 
-export const { useGetProfileQuery, useGetHolidayListQuery, useGetMenusQuery, } = dashboardApi;
+export const { useGetProfileQuery, useGetHolidayListQuery, useGetMenusQuery,useGetApprovalSummaryQuery, } = dashboardApi;
