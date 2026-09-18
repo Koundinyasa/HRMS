@@ -5,6 +5,7 @@ import { AdminCenterRoutes } from "@/features/admin/admincenter/routes/AdminCent
 import {EnrollmentRoutes} from "@/features/admin/Enrollment/routes/EnrollmentRoutes";
 import { TalentHubRoutes } from "@/features/admin/TalentHub/routes/TalentHubRoutes";
 import { InsightsRoutes } from "@/features/admin/Insights/routes/InsightRoutes";
+import { OrganizationsRoutes } from "@/features/admin/organizations/routes/organizationsRoutes"
 
 export default function AdminRoutes() {
   return (
@@ -16,6 +17,7 @@ export default function AdminRoutes() {
         {EnrollmentRoutes}
         {TalentHubRoutes}
         {InsightsRoutes}
+        {OrganizationsRoutes}
       </Route>
     </Routes>
   );

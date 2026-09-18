@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 // import { LogsModule } from './logs/logs.module';
 import { LoggerModule } from './common/logger/logger.module';
+import { ReviewModule } from './review/review.module';
 
 
 
@@ -35,6 +36,7 @@ import { LoggerModule } from './common/logger/logger.module';
     ChatbotModule,
     LoggerModule,
     // LogsModule,
+    ReviewModule,
   ],
   controllers: [AppController],
 })

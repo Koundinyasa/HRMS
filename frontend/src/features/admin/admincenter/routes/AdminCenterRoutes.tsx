@@ -59,9 +59,9 @@ import WallOfFame from "../ess/pages/WallOfFame/WallOffFame";
 
 
 //workflows
-import WorkflowsPage from "../workflows/Pages/WorkflowsPage";
-import EmployeeGroup from "../workflows/components/EmployeeGroup";
-import ModuleSettings from "../workflows/components/ModuleSettings";
+import WorkflowsPage from "../workflows/WorkflowsPage";
+import EmployeeGroup from "../workflows/EmployeeGroup";
+import ModuleSettings from "../workflows/ModuleSettings";
 
 
 export const AdminCenterRoutes = (

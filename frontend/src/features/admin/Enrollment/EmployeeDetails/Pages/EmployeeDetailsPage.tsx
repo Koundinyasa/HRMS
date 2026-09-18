@@ -1,797 +1,231 @@
-import React, { useState } from "react";
-import { Save, ChevronLeft, ChevronDown } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { User, Briefcase, ShieldCheck, MapPin, FileText, LogOut, Workflow } from "lucide-react";
+import { useGetEmployeeDetailQuery } from "../api/employeedetailsApi"; // adjust relative path
 
-import GeneralTab from "../components/EmployeeForm/GeneralTab";
-import ClassificationTab from "../components/EmployeeForm/ClassificationTab";
-import StatutoryTab from "../components/EmployeeForm/StatutoryTab";
-
-import AddressTab from "../components/EmployeeForm/AddressTab";
-import HRCategoryTab, {
-  HR_ACTIONS_SLOT_ID,
-  HR_EXPORT_SLOT_ID,
-} from "../components/EmployeeForm/HRCategoryTab";
-
-import DocumentsTab from "../components/EmployeeForm/DocumentsTab";
-import SeparationTab from "../components/EmployeeForm/SeparationTab";
-import WorkFlowDetailsTab from "../components/EmployeeForm/WorkFlowDetailsTab";
-
-import DiscardChangesModal from "../components/EmployeeForm/DiscardChangesModal";
-
-import type { GeneralForm } from "../components/EmployeeForm/GeneralTab";
-
-import type { ClassificationForm } from "../components/EmployeeForm/ClassificationTab";
-
-import type {
-  StatutoryForm,
-  StatutoryCheckboxes,
-} from "../components/EmployeeForm/StatutoryTab";
-
-import type { NewClassificationData } from "../components/EmployeeForm/AddClassificationModal";
-
-import type { EmployeeSummary } from "../components/EmployeeForm/EmployeeSummaryCard";
-
-/* ============================================================
-   DETAIL TABS
-============================================================ */
-
-const DETAIL_TABS = [
-  "General",
-  "Classification",
-  "Statutory",
-  "Address",
-  "HR Category",
-  "Documents",
-  "Separation",
-  "WorkFlow Details",
+const TABS = [
+  { key: "general", label: "General", icon: User },
+  { key: "classification", label: "Classification", icon: Briefcase },
+  { key: "statutory", label: "Statutory", icon: ShieldCheck },
+  { key: "address", label: "Address", icon: MapPin },
+  { key: "documents", label: "Documents", icon: FileText },
+  { key: "separation", label: "Separation", icon: LogOut },
+  { key: "workflow", label: "Workflow", icon: Workflow },
 ] as const;
 
-type DetailTab = (typeof DETAIL_TABS)[number];
+type TabKey = (typeof TABS)[number]["key"];
 
-/* ============================================================
-   DEMO EMPLOYEE DATA
-============================================================ */
-
-interface EmployeeData {
-  empId: string;
-  title: string;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  fullName: string;
-  gender: string;
-  fatherName: string;
-  maritalStatus: string;
-  spouseName: string;
-  dateOfJoining: string;
-  dateOfSalary: string;
-  probationPeriod: string;
-  confirmationDate: string;
-  reportingAuthority: string;
-  designation: string;
-  email: string;
-  mobile: string;
-  branch: string;
+function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
+  if (value === null || value === undefined || value === "") return null;
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] font-medium uppercase tracking-wide text-[#94A3B8]">{label}</div>
+      <div className="mt-[3px] text-[13px] text-[#26364F] truncate">{value}</div>
+    </div>
+  );
 }
 
-/*
- * This is the employee shown in your first screenshot.
- */
-const DEMO_EMPLOYEE: Record<string, EmployeeData> = {
-  "294640": {
-    empId: "294640",
-
-    title: "Mr.",
-
-    firstName: "BHAGYARAJA",
-
-    middleName: "",
-
-    lastName: "AVURAPALLI",
-
-    fullName: "BHAGYARAJA AVURAPALLI",
-
-    gender: "Male",
-
-    fatherName: "AVURAPALLI CHANTI",
-
-    maritalStatus: "Married",
-
-    spouseName: "AVURAPALLI NAGINI",
-
-    dateOfJoining: "31-03-2026",
-
-    dateOfSalary: "31-03-2026",
-
-    probationPeriod: "",
-
-    confirmationDate: "",
-
-    reportingAuthority: "Daniel Raju Ravi (324912)",
-
-    designation: "Senior Software Engineer",
-
-    email: "bhagyaraja.a@koundinyasatech.com",
-
-    mobile: "9401594135",
-
-    branch: "Koundinyasa Technology Services Pvt. Ltd.",
-  },
-};
-
-/* ============================================================
-   PAGE
-============================================================ */
+function Boolean_({ label, value }: { label: string; value: 0 | 1 | undefined }) {
+  if (value === undefined) return null;
+  return (
+    <div className="flex items-center gap-[8px]">
+      <span className={["h-[8px] w-[8px] rounded-full", value === 1 ? "bg-[#2E7D32]" : "bg-[#CBD5E1]"].join(" ")} />
+      <span className="text-[12px] text-[#405168]">{label}</span>
+    </div>
+  );
+}
 
 export default function EmployeeDetailsPage() {
   const { empId } = useParams<{ empId: string }>();
-
-  const navigate = useNavigate();
-
-  /*
-   * If URL contains /294640, this employee is loaded.
-   * If no empId is available, 294640 is used.
-   */
-  const currentEmpId = empId || "294640";
-
-  /* ==========================================================
-     EMPLOYEE
-  ========================================================== */
-
-  const employee: EmployeeData =
-    DEMO_EMPLOYEE[currentEmpId] || DEMO_EMPLOYEE["294640"];
-
-  /* ==========================================================
-     ACTIVE TAB
-  ========================================================== */
-
-  const [activeTab, setActiveTab] =
-    useState<DetailTab>("General");
-
-  /* ==========================================================
-     GENERAL FORM
-  ========================================================== */
-
-  const [generalForm, setGeneralForm] =
-    useState<GeneralForm>({
-      empId: employee.empId,
-
-      title: employee.title,
-
-      firstName: employee.firstName,
-
-      middleName: employee.middleName,
-
-      lastName: employee.lastName,
-
-      fullName: employee.fullName,
-
-      gender: employee.gender,
-
-      fatherName: employee.fatherName,
-
-      maritalStatus: employee.maritalStatus,
-
-      spouseName: employee.spouseName,
-
-      dateOfJoining: employee.dateOfJoining,
-
-      dateOfSalary: employee.dateOfSalary,
-
-      probationPeriod: employee.probationPeriod,
-
-      confirmationDate: employee.confirmationDate,
-
-      reportingAuthority: employee.reportingAuthority,
-    });
-
-  /* ==========================================================
-     GENERAL ERRORS
-  ========================================================== */
-
-  const [generalErrors, setGeneralErrors] =
-    useState<Record<string, string>>({});
-
-  const setGeneral = (
-    key: keyof GeneralForm,
-    value: string
-  ) => {
-    setGeneralForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-
-    setGeneralErrors((prev) => ({
-      ...prev,
-      [key]: "",
-    }));
-  };
-
-  /* ==========================================================
-     CLASSIFICATION FORM
-  ========================================================== */
-
-  const [classificationForm, setClassificationForm] =
-    useState<ClassificationForm>({
-      /*
-       * IMPORTANT:
-       * DateField uses DD-MM-YYYY.
-       */
-      effectiveFrom: "03-06-2026",
-
-      branch:
-        "Koundinyasa Technology Services Pvt. Ltd.",
-
-      salaryStructure:
-        "CTC Salary Structure",
-
-      leavePolicy:
-        "Employee Leave Policy",
-
-      attendanceStructure:
-        "Daily",
-
-      costCenter: "",
-
-      tnaPolicy:
-        "General Policy",
-
-      designation:
-        employee.designation,
-
-      bank:
-        "IDBI Bank",
-
-      accountNo:
-        "0002104000755757",
-
-      ifscCode:
-        "IBKL0000002",
-
-      department: "",
-
-      team: "",
-    });
-
-  /* ==========================================================
-     CLASSIFICATION ERRORS
-  ========================================================== */
-
-  const [
-    classificationErrors,
-    setClassificationErrors,
-  ] = useState<Record<string, string>>({});
-
-  const setClassification = (
-    key: keyof ClassificationForm,
-    value: string
-  ) => {
-    setClassificationForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-
-    setClassificationErrors((prev) => ({
-      ...prev,
-      [key]: "",
-    }));
-  };
-
-  /* ==========================================================
-     STATUTORY FORM
-  ========================================================== */
-
-  const [statutoryForm, setStatutoryForm] =
-    useState<StatutoryForm>({
-      aadharNo: "",
-
-      tdsApplicable: false,
-
-      financialYear: "2026-2027",
-
-      pan: "",
-
-      pfNumber: "",
-
-      departmentFileNo: "",
-
-      uan: "",
-
-      effectiveFrom: "Mar/2026",
-
-      checkboxes: {
-        pfApplicable: false,
-
-        pfVoluntary: false,
-
-        zeroPension: false,
-
-        restrictEmployeePfContribution: false,
-
-        restrictEmployerPfContribution: false,
-
-        zeroPt: false,
-
-        esiApplicable: false,
-
-        internationalWorker: false,
-
-        lwfApplicable: false,
-      },
-    });
-
-  /* ==========================================================
-     STATUTORY ERRORS
-  ========================================================== */
-
-  const [statutoryErrors, setStatutoryErrors] =
-    useState<Record<string, string>>({});
-
-  const setStatutory = <
-    K extends keyof StatutoryForm
-  >(
-    key: K,
-    value: StatutoryForm[K]
-  ) => {
-    setStatutoryForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-
-    setStatutoryErrors((prev) => ({
-      ...prev,
-      [key as string]: "",
-    }));
-  };
-
-  /* ==========================================================
-     STATUTORY CHECKBOX
-  ========================================================== */
-
-  const setStatutoryCheckbox = (
-    key: keyof StatutoryCheckboxes,
-    value: boolean
-  ) => {
-    setStatutoryForm((prev) => ({
-      ...prev,
-
-      checkboxes: {
-        ...prev.checkboxes,
-
-        [key]: value,
-      },
-    }));
-  };
-
-  /* ==========================================================
-     EMPLOYEE SUMMARY
-  ========================================================== */
-
-  const employeeSummary: EmployeeSummary = {
-    empId: employee.empId,
-
-    fullName: employee.fullName,
-
-    designation:
-      classificationForm.designation ||
-      employee.designation,
-
-    branch: employee.branch,
-
-    dateOfJoining:
-      generalForm.dateOfJoining,
-
-    mobile: employee.mobile,
-
-    email: employee.email,
-  };
-
-  /* ==========================================================
-     ADD CLASSIFICATION
-  ========================================================== */
-
-  const handleAddClassification = (
-    data: NewClassificationData
-  ) => {
-    console.log(
-      "New Classification:",
-      data
-    );
-
-    /*
-     * Do not blindly spread data into ClassificationForm.
-     * Add API mapping here later.
-     */
-  };
-
-  /* ==========================================================
-     VERIFY E-TRACES
-  ========================================================== */
-
-  const handleVerifyETraces = () => {
-    console.log(
-      "Verify E-Traces clicked",
-      statutoryForm
-    );
-
-    alert("Verify-Traces clicked");
-  };
-
-  /* ==========================================================
-     BACK
-  ========================================================== */
-
-  const handleBack = () => {
-    navigate(
-      "/KOUNDINYASATECH/admin/enrollment"
-    );
-  };
-
-  /* ==========================================================
-     SAVE
-  ========================================================== */
-
-  const handleSave = () => {
-    const completeData = {
-      employee: employeeSummary,
-
-      general: generalForm,
-
-      classification:
-        classificationForm,
-
-      statutory:
-        statutoryForm,
-    };
-
-    console.log(
-      "SAVE EMPLOYEE",
-      completeData
-    );
-
-    alert(
-      "Employee details saved successfully"
-    );
-  };
-
-  /* ==========================================================
-     DISCARD
-  ========================================================== */
-
-  const [
-    showDiscardModal,
-    setShowDiscardModal,
-  ] = useState(false);
-
-  const handleDiscard = () => {
-    setShowDiscardModal(true);
-  };
-
-  const confirmDiscard = () => {
-    setShowDiscardModal(false);
-
-    setGeneralForm({
-      empId: employee.empId,
-
-      title: employee.title,
-
-      firstName: employee.firstName,
-
-      middleName: employee.middleName,
-
-      lastName: employee.lastName,
-
-      fullName: employee.fullName,
-
-      gender: employee.gender,
-
-      fatherName: employee.fatherName,
-
-      maritalStatus: employee.maritalStatus,
-
-      spouseName: employee.spouseName,
-
-      dateOfJoining: employee.dateOfJoining,
-
-      dateOfSalary: employee.dateOfSalary,
-
-      probationPeriod: employee.probationPeriod,
-
-      confirmationDate: employee.confirmationDate,
-
-      reportingAuthority:
-        employee.reportingAuthority,
-    });
-
-    setGeneralErrors({});
-  };
-
-  /* ==========================================================
-     ADD DOCUMENT
-  ========================================================== */
-
-  const handleAddDocumentClick = () => {
-    window.dispatchEvent(
-      new Event("open-add-document")
-    );
-  };
-
-  /* ==========================================================
-     RENDER
-  ========================================================== */
+  const [activeTab, setActiveTab] = useState<TabKey>("general");
+
+  const { data, isLoading, isError } = useGetEmployeeDetailQuery(empId!, { skip: !empId });
+
+  if (isLoading) {
+    return <div className="flex min-h-[400px] items-center justify-center text-[12px] text-[#8291A4]">Loading employee details...</div>;
+  }
+
+  if (isError || !data?.success || !data.data) {
+    return <div className="flex min-h-[400px] items-center justify-center text-[12px] text-[#F04438]">Could not load employee details.</div>;
+  }
+
+  const { general, classification, statutory, address, documents, separation, workflowDetails } = data.data;
+  const g = general[0];
+  const c = classification[0];
+  const s = statutory[0];
+  const a = address[0];
+  const sep = separation[0];
 
   return (
-    <div className="min-h-[calc(100vh-48px)] bg-white font-sans text-gray-800 text-[13px]">
-
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
-
-      <div className="px-4 pt-2.5 bg-white border-b border-gray-200">
-
-        {/* COMPANY + BACK */}
-
-        <div className="flex items-center justify-between">
-
-          <span className="text-[14px] font-semibold text-gray-800">
-            {employee.branch}
-          </span>
-
-          <button
-            type="button"
-            onClick={handleBack}
-            className="inline-flex items-center gap-1 h-[30px] px-2 text-[12.5px] text-[#5B6672] hover:text-[#2196F3]"
-          >
-            <ChevronLeft size={14} />
-
-            Back
-          </button>
-
-        </div>
-
-        {/* TABS + ACTIONS */}
-
-        <div className="flex items-end justify-between gap-4 mt-1">
-
-          {/* TABS */}
-
-          <div className="flex items-center gap-1 overflow-x-auto">
-
-            {DETAIL_TABS.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() =>
-                  setActiveTab(tab)
-                }
-                className={`relative px-3 pb-2.5 pt-1 text-[13px] font-medium whitespace-nowrap transition-colors ${
-                  activeTab === tab
-                    ? "text-[#2196F3]"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {tab}
-
-                {activeTab === tab && (
-                  <span className="absolute inset-x-1 bottom-0 h-[2px] rounded-t bg-[#2196F3]" />
-                )}
-              </button>
-            ))}
-
-          </div>
-
-          {/* ACTIONS */}
-
-          <div className="flex items-center gap-2 pb-2 shrink-0">
-
-            {/* EMPLOYEE SEARCH */}
-
-            <div className="relative">
-
-              <select
-                className="appearance-none h-[30px] w-[150px] pl-2.5 pr-7 text-[12px] text-[#7B8794] bg-white border border-[#E3E7EC] rounded-[6px] focus:outline-none focus:border-[#2196F3]"
-                value={employee.empId}
-                onChange={(e) => {
-                  const selectedId =
-                    e.target.value;
-
-                  if (selectedId) {
-                    navigate(
-                      `/KOUNDINYASATECH/admin/enrollment/employee-details/${selectedId}`
-                    );
-                  }
-                }}
-              >
-
-                <option value="294640">
-                  294640 - BHAGYARAJA
-                </option>
-
-              </select>
-
-              <ChevronDown
-                size={13}
-                className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[#8A95A1]"
-              />
-
+    <div className="min-h-full w-full bg-[#F4F7FB] text-[#26364F]">
+      <div className="rounded-[7px] border border-[#E5EAF0] bg-white p-[16px] shadow-[0_1px_3px_rgba(25,45,70,0.07)]">
+        <div className="flex items-center gap-[14px]">
+          {g?.ProfilePhoto ? (
+            <img src={g.ProfilePhoto} alt={g.FullName} className="h-[54px] w-[54px] rounded-full object-cover" />
+          ) : (
+            <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-[#E5F0FB] text-[#2D8CF0] text-[16px] font-semibold">
+              {g?.FullName?.charAt(0) ?? "?"}
             </div>
-
-            {/* HR ACTION SLOT */}
-
-            <div
-              id={HR_ACTIONS_SLOT_ID}
-              className="flex items-center"
-            />
-
-            {/* DOCUMENT ADD */}
-
-            {activeTab === "Documents" && (
-              <button
-                type="button"
-                onClick={
-                  handleAddDocumentClick
-                }
-                className="h-[30px] px-3.5 text-[12.5px] font-medium rounded-[6px] inline-flex items-center gap-1.5 bg-[#2196F3] text-white hover:bg-[#1E88E5]"
-              >
-                Add
-              </button>
-            )}
-
-            {/* SAVE */}
-
-            <button
-              type="button"
-              onClick={handleSave}
-              className="h-[30px] px-3.5 text-[12.5px] font-medium text-white bg-[#2196F3] rounded-[6px] hover:bg-[#1E88E5] inline-flex items-center gap-1.5"
-            >
-              <Save size={13} />
-
-              Save
-            </button>
-
-            {/* DISCARD */}
-
-            <button
-              type="button"
-              onClick={handleDiscard}
-              className="h-[30px] px-3 text-[12px] font-medium text-[#B08900] bg-[#FFF7DE] border border-[#F0D77B] rounded-[6px]"
-            >
-              Discard
-            </button>
-
-            {/* HR EXPORT */}
-
-            <div
-              id={HR_EXPORT_SLOT_ID}
-              className="flex items-center"
-            />
-
+          )}
+          <div className="min-w-0">
+            <div className="text-[16px] font-semibold text-[#263B55] truncate">{g?.FullName ?? "—"}</div>
+            {c?.DesignationName && <div className="text-[12px] text-[#718198] mt-[2px]">{c.DesignationName}</div>}
+            <div className="flex flex-wrap items-center gap-[10px] mt-[6px] text-[11px] text-[#8291A4]">
+              {g?.EmployeeID && <span>ID: {g.EmployeeID}</span>}
+              {g?.Email && <span>{g.Email}</span>}
+              {c?.Department && <span>{c.Department}</span>}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ======================================================
-          CONTENT
-      ====================================================== */}
-
-      <div className="p-5">
-
-        {/* ====================================================
-            GENERAL
-        ==================================================== */}
-
-        {activeTab === "General" && (
-          <GeneralTab
-            form={generalForm}
-            set={setGeneral}
-            errors={generalErrors}
-          />
-        )}
-
-        {/* ====================================================
-            CLASSIFICATION
-        ==================================================== */}
-
-        {activeTab === "Classification" && (
-          <ClassificationTab
-            employee={employeeSummary}
-            form={classificationForm}
-            set={setClassification}
-            errors={classificationErrors}
-            onAddClassification={
-              handleAddClassification
-            }
-          />
-        )}
-
-        {/* ====================================================
-            STATUTORY
-        ==================================================== */}
-
-        {activeTab === "Statutory" && (
-          <StatutoryTab
-            employee={employeeSummary}
-            form={statutoryForm}
-            set={setStatutory}
-            setCheckbox={
-              setStatutoryCheckbox
-            }
-            errors={statutoryErrors}
-            onVerifyETraces={
-              handleVerifyETraces
-            }
-          />
-        )}
-
-        {/* ====================================================
-            ADDRESS
-        ==================================================== */}
-
-        {activeTab === "Address" && (
-          <AddressTab
-            form={generalForm as any}
-            set={setGeneral as any}
-          />
-        )}
-
-        {/* ====================================================
-            HR CATEGORY
-        ==================================================== */}
-
-        {activeTab === "HR Category" && (
-          <HRCategoryTab
-            form={generalForm as any}
-            set={setGeneral as any}
-          />
-        )}
-
-        {/* ====================================================
-            DOCUMENTS
-        ==================================================== */}
-
-        {activeTab === "Documents" && (
-          <DocumentsTab
-            form={generalForm as any}
-            set={setGeneral as any}
-          />
-        )}
-
-        {/* ====================================================
-            SEPARATION
-        ==================================================== */}
-
-        {activeTab === "Separation" && (
-          <SeparationTab
-            form={generalForm as any}
-            set={setGeneral as any}
-          />
-        )}
-
-        {/* ====================================================
-            WORKFLOW DETAILS
-        ==================================================== */}
-
-        {activeTab === "WorkFlow Details" && (
-          <WorkFlowDetailsTab
-            form={generalForm as any}
-            set={setGeneral as any}
-          />
-        )}
-
+      <div className="mt-[10px] flex flex-wrap gap-[4px] rounded-[7px] border border-[#E5EAF0] bg-white p-[4px] shadow-[0_1px_3px_rgba(25,45,70,0.07)]">
+        {TABS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveTab(key)}
+            className={[
+              "flex items-center gap-[6px] rounded-[5px] px-[12px] py-[7px] text-[12px] font-medium transition-colors",
+              activeTab === key ? "bg-[#EDF5FE] text-[#2D8CF0]" : "text-[#68798E] hover:bg-[#F4F7FA]",
+            ].join(" ")}
+          >
+            <Icon size={13} strokeWidth={2} />
+            {label}
+          </button>
+        ))}
       </div>
 
-      {/* ======================================================
-          DISCARD MODAL
-      ====================================================== */}
+      <div className="mt-[10px] rounded-[7px] border border-[#E5EAF0] bg-white p-[18px] shadow-[0_1px_3px_rgba(25,45,70,0.07)]">
+        {activeTab === "general" && g && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
+            <Field label="First Name" value={g.FirstName} />
+            <Field label="Last Name" value={g.LastName} />
+            <Field label="Date of Birth" value={g.DateofBirth} />
+            <Field label="Date of Joining" value={g.DateofJoining} />
+            <Field label="Email" value={g.Email} />
+            <Field label="Gender" value={g.Gender} />
+            <Field label="Marital Status" value={g.MaritalStatus} />
+            <Field label="Father Name" value={g.FatherName} />
+            <Field label="Spouse Name" value={g.SpouseName} />
+            <Field label="Reporting Authority" value={g.ReportingAuthorityName} />
+          </div>
+        )}
 
-      <DiscardChangesModal
-        open={showDiscardModal}
-        onConfirm={confirmDiscard}
-        onCancel={() =>
-          setShowDiscardModal(false)
-        }
-      />
+        {activeTab === "classification" && c && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
+            <Field label="Branch" value={c.BranchName} />
+            <Field label="Department" value={c.Department} />
+            <Field label="Designation" value={c.DesignationName} />
+            <Field label="Leave Policy" value={c.LeavePolicy} />
+            <Field label="Bank Name" value={c.BankName} />
+            <Field label="Account Number" value={c.AccountNumber} />
+            <Field label="IFSC" value={c.IFSC} />
+          </div>
+        )}
 
+        {activeTab === "statutory" && s && (
+          <div className="space-y-[20px]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
+              <Field label="Aadhaar Number" value={s.AadhaarNumber} />
+              <Field label="PAN Number" value={s.PANNumber} />
+              <Field label="PF Number" value={s.PFNumber} />
+              <Field label="UAN Number" value={s.UANNumber} />
+              <Field label="ESI Number" value={s.ESINumber} />
+              <Field label="Financial Year" value={s.FinancialYear} />
+              <Field label="Effective From" value={s.EffectiveFrom} />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-[12px] pt-[14px] border-t border-[#EEF2F6]">
+              <Boolean_ label="PF Applicable" value={s.PFApplicable} />
+              <Boolean_ label="Voluntary PF" value={s.PFVoluntary} />
+              <Boolean_ label="Zero Pension" value={s.ZeroPension} />
+              <Boolean_ label="Restrict Employee PF" value={s.RestrictEmployeePF} />
+              <Boolean_ label="Zero PT" value={s.ZeroPT} />
+              <Boolean_ label="ESI Applicable" value={s.ESIApplicable} />
+              <Boolean_ label="International Worker" value={s.InternationalWorker} />
+              <Boolean_ label="LWF Applicable" value={s.LWFApplicable} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "address" && a && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
+            <Field label="Address Type" value={a.AddressType} />
+            <Field label="Residential Name/No" value={a.ResidentialNameNo} />
+            <Field label="Street" value={a.Street} />
+            <Field label="Locality" value={a.Locality} />
+            <Field label="City" value={a.City} />
+            <Field label="State" value={a.State} />
+            <Field label="Pin Code" value={a.PinCode} />
+            <Field label="Mobile No" value={a.MobileNo} />
+            <Field label="Alt Mobile No" value={a.AltMobileNo} />
+            <Field label="Official Email" value={a.OfficialEmailId} />
+            <Field label="Alternate Email" value={a.AlternateEmailId} />
+            <Field label="Emergency No" value={a.EmergencyNo} />
+          </div>
+        )}
+
+        {activeTab === "documents" && (
+          documents.length === 0 ? (
+            <div className="py-[40px] text-center text-[12px] text-[#8291A4]">No documents uploaded.</div>
+          ) : (
+            <div className="space-y-[8px]">
+              {documents.map((doc) => (
+                <div key={doc.ID} className="flex items-center justify-between rounded-[6px] border border-[#E5EAF0] px-[14px] py-[10px]">
+                  <div className="min-w-0">
+                    <div className="text-[12.5px] font-medium text-[#263B55] truncate">{doc.DocumentName ?? doc.FileName}</div>
+                    <div className="text-[10.5px] text-[#8291A4] mt-[2px]">
+                      {doc.DocumentType && <span>{doc.DocumentType} · </span>}
+                      {doc.Date && <span>{doc.Date}</span>}
+                    </div>
+                  </div>
+                  {doc.FilePath && (
+                    <a href={doc.FilePath} target="_blank" rel="noreferrer" className="shrink-0 text-[11px] font-medium text-[#2D8CF0] hover:underline">
+                      View
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {activeTab === "separation" && (
+          sep && (sep.ResignationDate || sep.DateofLeaving || sep.Reason || sep.Remarks) ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
+              <Field label="Resignation Date" value={sep.ResignationDate} />
+              <Field label="Date of Leaving" value={sep.DateofLeaving} />
+              <Field label="Reason" value={sep.Reason} />
+              <Field label="Remarks" value={sep.Remarks} />
+            </div>
+          ) : (
+            <div className="py-[40px] text-center text-[12px] text-[#8291A4]">No separation record — employee is active.</div>
+          )
+        )}
+
+        {activeTab === "workflow" && (
+          workflowDetails.length === 0 ? (
+            <div className="py-[40px] text-center text-[12px] text-[#8291A4]">No workflow details available.</div>
+          ) : (
+            <div className="space-y-[8px]">
+              {workflowDetails.map((w, i) => (
+                <div key={`${w.Name}-${w.SlNo}-${i}`} className="flex items-center justify-between rounded-[6px] border border-[#E5EAF0] px-[14px] py-[10px]">
+                  <div className="min-w-0">
+                    <div className="text-[12.5px] font-medium text-[#263B55]">{w.WorkflowName}</div>
+                    <div className="text-[10.5px] text-[#8291A4] mt-[2px]">
+                      {w.Approver && <span>Approver: {w.Approver}</span>}
+                      {w.GroupName && <span> · {w.GroupName}</span>}
+                    </div>
+                  </div>
+                  <span className="shrink-0 rounded-[4px] bg-[#E5F0FB] px-[8px] py-[3px] text-[10px] font-semibold text-[#1565C0]">
+                    Level {w.Level}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }
