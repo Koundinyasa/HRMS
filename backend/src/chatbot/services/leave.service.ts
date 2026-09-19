@@ -5,7 +5,7 @@ import { ParserService } from './parser.service';
 import { LeaveApiService } from './leave-api.service';
 import { IntentCtx, IntentDefinition, LeaveTypeOption } from '../types';
 import { formatLeaveRange, formatDayCount } from '../utils/date.util';
-
+ 
 @Injectable()
 export class LeaveService {
   constructor(
@@ -14,7 +14,7 @@ export class LeaveService {
     private readonly parserService: ParserService,
     private readonly leaveApiService: LeaveApiService,
   ) {}
-
+ 
   private notify(
     employeeId: string,
     tone: 'info' | 'warning' | 'danger',
@@ -26,7 +26,31 @@ export class LeaveService {
     if (suggestions.length)
       this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
   }
-
+ 
+  private holidayName(ctx: IntentCtx, iso: string): string | null {
+    const stateCode = ctx.ownOffice?.stateCode ?? null;
+    const holiday = ctx.companyData.holidays.find(
+      (item) =>
+        item.date.slice(0, 10) === iso &&
+        (!item.stateCode || item.stateCode === 'ALL' || item.stateCode === stateCode),
+    );
+    return holiday?.name ?? null;
+  }
+ 
+  private holidaysInRange(ctx: IntentCtx, startDate: string, endDate: string): string[] {
+    const holidays: string[] = [];
+    const current = new Date(`${startDate}T00:00:00Z`);
+    const end = new Date(`${endDate}T00:00:00Z`);
+ 
+    while (current <= end) {
+      const iso = current.toISOString().slice(0, 10);
+      if (this.holidayName(ctx, iso)) holidays.push(iso);
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+ 
+    return holidays;
+  }
+ 
   async handleLeaveFlow(ctx: IntentCtx): Promise<string | null> {
     if (ctx.role === 'admin' || ctx.role === 'hr') return null;
     const draft = this.draftService.getDraft(
@@ -35,7 +59,7 @@ export class LeaveService {
     );
     if (!draft) return null;
     if (draft.step === 'ready') return null;
-
+ 
     if (
       ctx.msg.includes('discard') ||
       ctx.msg === 'cancel' ||
@@ -47,12 +71,16 @@ export class LeaveService {
       );
       return `No problem — I've cancelled that. Nothing was submitted. Say "Apply leave" to start again.`;
     }
-
+ 
     const iso = this.parserService.extractIsoDate(ctx.message);
-
+ 
     if (draft.step === 'awaiting_start') {
       if (!iso)
         return `Please pick your leave start date below (or type it as YYYY-MM-DD).`;
+      const holiday = this.holidayName(ctx, iso);
+      if (holiday) {
+        return `${iso} is a company holiday (${holiday}). Please choose a working day.`;
+      }
       draft.startDate = iso;
       draft.leaveDate = iso;
       draft.step = 'awaiting_end';
@@ -63,12 +91,16 @@ export class LeaveService {
       );
       return `Start date set to ${iso}. Now pick your end date (same as start for a single day).`;
     }
-
+ 
     if (draft.step === 'awaiting_end') {
       if (!iso)
         return `Please pick your leave end date below (or type it as YYYY-MM-DD).`;
       if (iso < draft.startDate) {
         return `The end date can't be before the start date (${draft.startDate}). Please pick a later date.`;
+      }
+      const holidays = this.holidaysInRange(ctx, draft.startDate, iso);
+      if (holidays.length) {
+        return `Your leave range includes a company holiday (${holidays.join(', ')}). Please choose dates without holidays.`;
       }
       draft.endDate = iso;
       draft.duration =
@@ -84,14 +116,14 @@ export class LeaveService {
       );
       return `End date set to ${iso} (${formatDayCount(draft.duration)}). Now choose your leave type below.`;
     }
-
+ 
     if (draft.step === 'awaiting_type') {
       const code = this.parserService.extractLeaveTypeCode(
         ctx.message,
         ctx.leaveTypes,
       );
       if (!code) return `Please choose a leave type from the buttons below.`;
-
+ 
       const picked = ctx.leaveTypes.find(
         (t) => (t.code ?? '').toUpperCase() === code,
       );
@@ -101,9 +133,9 @@ export class LeaveService {
       if (isSickLeave && !isSingleDay) {
         return `Sick Leave for more than one day needs a supporting document, which I can't attach here. Please apply multi-day Sick Leave from the Leave Requests page in the portal.\n\nFor a single-day Sick Leave, pick a single date and choose Sick Leave again — or pick a different leave type from the buttons above.`;
       }
-
+ 
       draft.leaveType = code;
-
+ 
       if (isSingleDay) {
         draft.step = 'awaiting_dayChoice';
         this.draftService.setDraft(
@@ -113,7 +145,7 @@ export class LeaveService {
         );
         return `Leave type set to ${code}. Is this a full day or a half day?`;
       }
-
+ 
       draft.step = 'awaiting_reason';
       this.draftService.setDraft(
         this.draftService.leaveDrafts,
@@ -122,7 +154,7 @@ export class LeaveService {
       );
       return `Leave type set to ${code}. Finally, add a reason (or tap Skip).`;
     }
-
+ 
     if (draft.step === 'awaiting_dayChoice') {
       const m = ctx.msg;
       const choseHalf = m.includes('half');
@@ -151,7 +183,7 @@ export class LeaveService {
       );
       return `Half day — which session?`;
     }
-
+ 
     if (draft.step === 'awaiting_session') {
       const raw = ctx.message.toLowerCase();
       let session = '';
@@ -168,7 +200,7 @@ export class LeaveService {
       )
         session = 'SecondHalf';
       if (!session) return `Please tap "First Half" or "Second Half".`;
-
+ 
       draft.session = session;
       draft.step = 'awaiting_reason';
       this.draftService.setDraft(
@@ -178,7 +210,7 @@ export class LeaveService {
       );
       return `${this.parserService.sessionLabel(session)} half day. Finally, add a reason (or tap Skip).`;
     }
-
+ 
     if (draft.step === 'awaiting_reason') {
       const reason =
         ctx.msg === 'skip' || ctx.msg.includes('no reason')
@@ -193,10 +225,10 @@ export class LeaveService {
       );
       return `Got it — here's your leave request:`;
     }
-
+ 
     return null;
   }
-
+ 
   // AFTER — replace with this:
   async buildLeaveTypeOptions(
     user: Record<string, any>,
@@ -205,11 +237,11 @@ export class LeaveService {
     const types: { id: number; code: string; name: string }[] = (
       typesRaw ?? []
     ).map((t: any) => ({ id: t.ID, code: t.Code, name: t.Name }));
-
+ 
     const balRaw: any = await this.leaveApiService.getLeaveBalance(user);
     const records =
       balRaw?.sections?.[0]?.records ?? (Array.isArray(balRaw) ? balRaw : []);
-
+ 
     const normalize = (v: string) =>
       String(v ?? '')
         .trim()
@@ -226,7 +258,7 @@ export class LeaveService {
           Number(get('Closing Balance') ?? 0),
         );
     }
-
+ 
     return (
       types
         .map((t) => ({
@@ -247,7 +279,7 @@ export class LeaveService {
         )
     );
   }
-
+ 
   // The /balance endpoint returns the same nested
   // {sections:[{records:[{fields:[{label,value}]}]}]} shape as /history,
   // not a flat array of rows — confirmed against the real controller/service.
@@ -258,11 +290,11 @@ export class LeaveService {
     const records =
       raw?.sections?.[0]?.records ?? (Array.isArray(raw) ? raw : []);
     const year = new Date().getFullYear();
-
+ 
     if (!records.length) {
       return `Your leave balance for ${year} hasn't been set up yet. Please contact HR.`;
     }
-
+ 
     const rows = records.map((rec: any) => {
       const fields = rec.fields ?? [];
       const get = (label: string) =>
@@ -275,7 +307,7 @@ export class LeaveService {
         closing: Number(get('Closing Balance') ?? 0),
       };
     });
-
+ 
     this.draftService.pendingListPreview.set(ctx.employeeId, {
       title: `Leave balance (${year})`,
       rows: rows.map((r) => {
@@ -287,13 +319,13 @@ export class LeaveService {
         };
       }),
     });
-
+ 
     this.draftService.pendingSuggestedActions.set(ctx.employeeId, [
       { label: 'Apply Leave', send: 'apply leave' },
     ]);
     return `Here's your leave balance for ${year}.`;
   }
-
+ 
   // /leave-status actually returns a multi-stage approval workflow shape
   // ({ LeaveApplications: [{ Id, FromDate, ToDate, Stages: [...] }] }),
   // confirmed from a real response — not the {sections/records/fields} shape
@@ -358,7 +390,7 @@ export class LeaveService {
       };
     });
   }
-
+ 
   // Same idea as getLeaveStatusMapped above, but for the history endpoint —
   // which returns ACTED-ON leaves (approved/rejected/cancelled/withdrawn),
   // never pending ones. Field names differ slightly from the status
@@ -405,7 +437,7 @@ export class LeaveService {
       };
     });
   }
-
+ 
   getIntents(): IntentDefinition[] {
     const realIntents: IntentDefinition[] = [
       {
@@ -669,7 +701,7 @@ export class LeaveService {
       },
       {
         name: 'cancelPick',
-
+ 
         test: (ctx) =>
           (/^cancel\s+\d+$/.test(ctx.msg) ||
             /^withdraw\s+\d+$/.test(ctx.msg) ||
@@ -679,20 +711,20 @@ export class LeaveService {
           ctx.msg !== 'cancel my leave' &&
           ctx.msg !== 'withdraw leave' &&
           ctx.msg !== 'withdraw my leave',
-
+ 
         handle: async (ctx) => {
           const list = this.draftService.cancelList.get(ctx.employeeId);
-
+ 
           if (!list?.length) {
             return `Say "cancel leave" to see your pending leave requests.`;
           }
-
+ 
           const message = ctx.msg.trim();
-
+ 
           const numberMatch = message.match(/^(?:cancel|withdraw)\s+(\d+)$/i);
-
+ 
           let item;
-
+ 
           if (numberMatch) {
             const n = Number(numberMatch[1]);
             item = list[n - 1];
@@ -701,67 +733,67 @@ export class LeaveService {
               .replace(/^(cancel|withdraw)\s+/i, '')
               .trim()
               .toLowerCase();
-
+ 
             const normalizeLeaveType = (value: string) => {
               const v = value.trim().toLowerCase().replace(/\s+/g, ' ');
-
+ 
               const aliases: Record<string, string> = {
                 cl: 'casual',
                 'casual leave': 'casual',
                 casual: 'casual',
-
+ 
                 sl: 'sick',
                 'sick leave': 'sick',
                 sick: 'sick',
-
+ 
                 el: 'earned',
                 'earned leave': 'earned',
                 earned: 'earned',
-
+ 
                 lop: 'lop',
                 'loss of pay': 'lop',
                 'loss of pay leave': 'lop',
-
+ 
                 wfh: 'wfh',
                 'work from home': 'wfh',
                 'work from home leave': 'wfh',
               };
-
+ 
               return aliases[v] ?? v.replace(/\s+leave$/, '');
             };
-
+ 
             const requestedNormalized = normalizeLeaveType(requestedType);
-
+ 
             item = list.find((leave) => {
               const storedType = normalizeLeaveType(
                 String(leave.leaveType ?? ''),
               );
-
+ 
               console.log('Cancel leave matching:', {
                 requestedType,
                 requestedNormalized,
                 storedType,
                 leave,
               });
-
+ 
               return storedType === requestedNormalized;
             });
           }
-
+ 
           if (!item) {
             return `I couldn't find that leave request. Say "cancel leave" to see your pending leaves again.`;
           }
-
+ 
           const actionId: 13 | 38 =
             item.status.toLowerCase() === 'approved' ? 38 : 13;
-
+ 
           this.draftService.cancelTarget.set(ctx.employeeId, {
             leaveId: item.leaveId,
             actionId,
           });
-
+ 
           const verb = actionId === 38 ? 'withdraw' : 'cancel';
-
+ 
           return `Are you sure you want to ${verb} this leave request?`;
         },
       },
@@ -808,22 +840,22 @@ export class LeaveService {
       },
       {
         name: 'withdrawApprovedOnly',
-
+ 
         test: (ctx) =>
           ctx.msg.includes('withdraw leave') ||
           ctx.msg.includes('withdraw my leave'),
-
+ 
         handle: async (ctx) => {
           const leaves = await this.getLeaveHistoryMapped(ctx.user);
-
+ 
           const eligible = leaves.filter(
             (l) => (l.status ?? '').toLowerCase() === 'approved',
           );
-
+ 
           if (!eligible.length) {
             return `You have no approved leave requests to withdraw.`;
           }
-
+ 
           this.draftService.cancelList.set(
             ctx.employeeId,
             eligible.map((l) => ({
@@ -832,20 +864,20 @@ export class LeaveService {
               leaveType: l.leaveType,
             })),
           );
-
+ 
           this.draftService.pendingListPreview.set(ctx.employeeId, {
             title: 'Approved leave requests',
-
+ 
             rows: eligible.map((l) => ({
               primary: l.leaveType,
-
+ 
               meta:
                 l.fromDate === l.toDate
                   ? l.fromDate
                   : `${l.fromDate} to ${l.toDate}`,
-
+ 
               status: l.status,
-
+ 
               // Changed from:
               // withdraw ${i + 1}
               //
@@ -853,7 +885,7 @@ export class LeaveService {
               action: `withdraw ${l.leaveType.toLowerCase()}`,
             })),
           });
-
+ 
           return `Tap a request below to withdraw it.`;
         },
       },
@@ -888,7 +920,7 @@ export class LeaveService {
         handle: async (ctx) => this.getLeaveBalanceSummary(ctx),
       },
     ];
-
+ 
     // Admin/HR manage their own leave through a separate employee login —
     // this account should never reach any leave-management feature at all.
     // Wrapping here (rather than gating each intent individually) means

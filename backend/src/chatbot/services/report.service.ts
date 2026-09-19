@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as ExcelJS from 'exceljs';
+import XlsxPopulate from 'xlsx-populate';
 import * as fs from 'fs';
 import * as path from 'path';
 import PDFDocument from 'pdfkit';
@@ -31,7 +31,7 @@ const LOGO_PATH = path.join(
   'images',
   'koundinyasa-logo.png',
 );
-const COMPANY_NAME = 'Koundinyasa Technology Services Pvt. Ltd.';
+const COMPANY_NAME = 'Koundinyasa TechnAology Services Pvt. Ltd.';
  
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
@@ -330,51 +330,550 @@ export class ReportService {
     const borderArgb = 'FF' + tint(brand, 0.75).replace('#', '').toUpperCase();
     const altRowArgb = 'FF' + tint(brand, 0.96).replace('#', '').toUpperCase();
  
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet(teamName.substring(0, 31));
+    const workbook = await XlsxPopulate.fromBlankAsync();
+    const sheet = workbook.sheet(0);
+    sheet.name(teamName.substring(0, 31));
  
-    sheet.columns = [
-      { header: 'Employee ID', key: 'employeeId', width: 18 },
-      { header: 'Name', key: 'name', width: 28 },
-      { header: 'Designation', key: 'designation', width: 26 },
-    ];
+    const headers = ['Employee ID', 'Name', 'Designation'];
+    const widths = [18, 28, 26];
  
-    const headerRow = sheet.getRow(1);
-    headerRow.font = { bold: true, color: { argb: brandArgb } };
-    headerRow.eachCell((cell) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: headerBgArgb },
-      };
-      cell.border = {
-        top: { style: 'thin', color: { argb: borderArgb } },
-        bottom: { style: 'thin', color: { argb: borderArgb } },
-        left: { style: 'thin', color: { argb: borderArgb } },
-        right: { style: 'thin', color: { argb: borderArgb } },
-      };
+    headers.forEach((header, index) => {
+      const cell = sheet.cell(1, index + 1);
+      cell.value(header);
+      cell.style({
+        bold: true,
+        fontColor: brand.replace('#', ''),
+        fill: headerBgArgb.slice(2),
+        horizontalAlignment: 'center',
+        verticalAlignment: 'center',
+        border: {
+          top: { style: 'thin', color: borderArgb.slice(2) },
+          bottom: { style: 'thin', color: borderArgb.slice(2) },
+          left: { style: 'thin', color: borderArgb.slice(2) },
+          right: { style: 'thin', color: borderArgb.slice(2) },
+        },
+      });
+      sheet.column(index + 1).width(widths[index]);
     });
  
-    members.forEach((m, i) => {
-      const row = sheet.addRow(m);
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: 'thin', color: { argb: borderArgb } },
-          bottom: { style: 'thin', color: { argb: borderArgb } },
-          left: { style: 'thin', color: { argb: borderArgb } },
-          right: { style: 'thin', color: { argb: borderArgb } },
-        };
-        if (i % 2 === 1) {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: altRowArgb },
-          };
+    members.forEach((member, rowIndex) => {
+      const values = [member.employeeId, member.name, member.designation];
+ 
+      values.forEach((value, columnIndex) => {
+        const cell = sheet.cell(rowIndex + 2, columnIndex + 1);
+        cell.value(value);
+        cell.style({
+          border: {
+            top: { style: 'thin', color: borderArgb.slice(2) },
+            bottom: { style: 'thin', color: borderArgb.slice(2) },
+            left: { style: 'thin', color: borderArgb.slice(2) },
+            right: { style: 'thin', color: borderArgb.slice(2) },
+          },
+        });
+ 
+        if (rowIndex % 2 === 1) {
+          cell.style({
+            fill: altRowArgb.slice(2),
+          });
         }
       });
     });
  
-    const buffer = await workbook.xlsx.writeBuffer();
+    const buffer = await workbook.outputAsync();
     return Buffer.from(buffer);
+  }
+ 
+  // ============================================================
+  // ALL EMPLOYEES - EXCEL
+  // ============================================================
+ 
+  async generateAllEmployeesExcel(
+    employees: any[],
+    themeColor?: string,
+  ): Promise<Buffer> {
+    const brand = themeColor ?? DEFAULT_COLOR;
+ 
+    const brandArgb = 'FF' + brand.replace('#', '').toUpperCase();
+ 
+    const headerBgArgb =
+      'FF' + tint(brand, 0.92).replace('#', '').toUpperCase();
+ 
+    const borderArgb = 'FF' + tint(brand, 0.75).replace('#', '').toUpperCase();
+ 
+    const altRowArgb = 'FF' + tint(brand, 0.96).replace('#', '').toUpperCase();
+ 
+    const workbook = await XlsxPopulate.fromBlankAsync();
+ 
+    const sheet = workbook.sheet(0);
+ 
+    sheet.name('All Employees');
+ 
+    /*
+     * These columns are based on the employee object returned
+     * by HrmsDbService.
+     *
+     * We use the common employee fields first and then write
+     * the remaining properties dynamically so that employee
+     * information is not silently lost.
+     */
+ 
+    if (!employees.length) {
+      sheet.cell('A1').value('No employees found.');
+      return Buffer.from(await workbook.outputAsync());
+    }
+ 
+    // Get all property names appearing in employee records.
+    const columns = [
+      {
+        key: 'EmployeeID',
+        title: 'EMPLOYEE ID',
+      },
+      {
+        key: 'FullName',
+        title: 'NAME',
+      },
+      {
+        key: 'Email',
+        title: 'EMAIL',
+      },
+      {
+        key: 'DepartmentName',
+        title: 'DEPARTMENT',
+      },
+      {
+        key: 'DesignationName',
+        title: 'DESIGNATION',
+      },
+    ];
+ 
+    // ------------------------------------------------------------
+    // HEADER
+    // ------------------------------------------------------------
+ 
+    columns.forEach((column, columnIndex) => {
+      const cell = sheet.cell(1, columnIndex + 1);
+ 
+      cell.value(column.title);
+ 
+      cell.style({
+        bold: true,
+        fontColor: brand.replace('#', ''),
+        fill: headerBgArgb.slice(2),
+        horizontalAlignment: 'center',
+        verticalAlignment: 'center',
+        border: {
+          top: {
+            style: 'thin',
+            color: borderArgb.slice(2),
+          },
+          bottom: {
+            style: 'thin',
+            color: borderArgb.slice(2),
+          },
+          left: {
+            style: 'thin',
+            color: borderArgb.slice(2),
+          },
+          right: {
+            style: 'thin',
+            color: borderArgb.slice(2),
+          },
+        },
+      });
+ 
+      sheet
+        .column(columnIndex + 1)
+        .width(Math.min(Math.max(column.title.length + 5, 18), 35));
+    });
+ 
+    // ------------------------------------------------------------
+    // EMPLOYEE DATA
+    // ------------------------------------------------------------
+ 
+    employees.forEach((employee, rowIndex) => {
+      columns.forEach((column, columnIndex) => {
+        const cell = sheet.cell(rowIndex + 2, columnIndex + 1);
+ 
+        const value = employee?.[column.key];
+ 
+        let cellValue: string | number = '';
+ 
+        if (value !== null && value !== undefined) {
+          if (typeof value === 'object') {
+            cellValue = JSON.stringify(value);
+          } else {
+            cellValue = String(value);
+          }
+        }
+ 
+        cell.value(cellValue);
+ 
+        cell.style({
+          border: {
+            top: {
+              style: 'thin',
+              color: borderArgb.slice(2),
+            },
+            bottom: {
+              style: 'thin',
+              color: borderArgb.slice(2),
+            },
+            left: {
+              style: 'thin',
+              color: borderArgb.slice(2),
+            },
+            right: {
+              style: 'thin',
+              color: borderArgb.slice(2),
+            },
+          },
+        });
+ 
+        if (rowIndex % 2 === 1) {
+          cell.style({
+            fill: altRowArgb.slice(2),
+          });
+        }
+      });
+    });
+ 
+    const buffer = await workbook.outputAsync();
+ 
+    return Buffer.from(buffer);
+  }
+ 
+  // ============================================================
+  // ALL EMPLOYEES - PDF
+  // ============================================================
+ 
+  async generateAllEmployeesPdf(
+    employees: any[],
+    themeColor?: string,
+  ): Promise<Buffer> {
+    const brand = themeColor ?? DEFAULT_COLOR;
+ 
+    const brandLight = tint(brand, 0.6);
+ 
+    const headerBg = tint(brand, 0.92);
+ 
+    const borderColor = tint(brand, 0.75);
+ 
+    const rowAltBg = tint(brand, 0.96);
+ 
+    const badgeText = shade(brand, 0.35);
+ 
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({
+        margin: 40,
+        size: 'A4',
+        layout: 'landscape',
+      });
+ 
+      const chunks: Buffer[] = [];
+ 
+      doc.on('data', (chunk) => chunks.push(chunk));
+ 
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+ 
+      doc.on('error', reject);
+ 
+      const pageWidth =
+        doc.page.width - doc.page.margins.left - doc.page.margins.right;
+ 
+      const startX = doc.page.margins.left;
+ 
+      // --------------------------------------------------------
+      // HEADER
+      // --------------------------------------------------------
+ 
+      const headerHeight = 95;
+ 
+      const gradient = doc.linearGradient(0, 0, doc.page.width, headerHeight);
+ 
+      gradient.stop(0, brand).stop(1, brandLight);
+ 
+      doc.rect(0, 0, doc.page.width, headerHeight).fill(gradient);
+ 
+      // Decorative circles
+      doc.save();
+ 
+      doc.fillOpacity(0.08);
+ 
+      doc.circle(doc.page.width - 50, -20, 90).fill('white');
+ 
+      doc.fillOpacity(0.06);
+ 
+      doc.circle(doc.page.width - 120, 60, 55).fill('white');
+ 
+      doc.restore();
+ 
+      // --------------------------------------------------------
+      // LOGO
+      // --------------------------------------------------------
+ 
+      const badgeX = startX;
+      const badgeY = 18;
+      const badgeW = 150;
+      const badgeH = 52;
+ 
+      const logoExists = fs.existsSync(LOGO_PATH);
+ 
+      const textStartX = startX + badgeW + 18;
+ 
+      if (logoExists) {
+        try {
+          doc.image(LOGO_PATH, badgeX, badgeY, {
+            fit: [badgeW, badgeH],
+            valign: 'center',
+          });
+        } catch {
+          doc
+            .fillColor('white')
+            .font('Helvetica-Bold')
+            .fontSize(16)
+            .text('KTS', badgeX, badgeY + 20, {
+              width: badgeW,
+            });
+        }
+      } else {
+        doc
+          .fillColor('white')
+          .font('Helvetica-Bold')
+          .fontSize(16)
+          .text('KTS', badgeX, badgeY + 20, {
+            width: badgeW,
+          });
+      }
+ 
+      doc
+        .fillColor('white')
+        .font('Helvetica-Bold')
+        .fontSize(19)
+        .text('HRMS', textStartX, badgeY, {
+          width: pageWidth - (textStartX - startX),
+        });
+ 
+      doc
+        .font('Helvetica')
+        .fontSize(10)
+        .fillColor('#f0eefc')
+        .text(COMPANY_NAME, textStartX, badgeY + 22, {
+          width: pageWidth - (textStartX - startX),
+        });
+ 
+      doc
+        .fontSize(9.5)
+        .fillColor('#e5e1ff')
+        .text(
+          `All Employees — Generated ${new Date().toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}`,
+          textStartX,
+          badgeY + 38,
+          {
+            width: pageWidth - (textStartX - startX),
+          },
+        );
+ 
+      // --------------------------------------------------------
+      // STATS
+      // --------------------------------------------------------
+ 
+      let y = headerHeight + 18;
+ 
+      doc
+        .fillColor(TEXT_DARK)
+        .font('Helvetica-Bold')
+        .fontSize(16)
+        .text(String(employees.length), startX, y);
+ 
+      doc
+        .fillColor(TEXT_MUTED)
+        .font('Helvetica')
+        .fontSize(8.5)
+        .text('EMPLOYEES', startX, y + 20);
+ 
+      y += 48;
+ 
+      // --------------------------------------------------------
+      // TABLE
+      // --------------------------------------------------------
+ 
+      /*
+       * PDF is intentionally limited to the most useful
+       * employee columns so the landscape A4 page remains
+       * readable.
+       */
+ 
+      const columns = [
+        {
+          key: 'EmployeeID',
+          title: 'EMPLOYEE ID',
+          width: 115,
+        },
+        {
+          key: 'FullName',
+          title: 'NAME',
+          width: 150,
+        },
+        {
+          key: 'Email',
+          title: 'EMAIL',
+          width: 180,
+        },
+        {
+          key: 'DepartmentName',
+          title: 'DEPARTMENT',
+          width: 130,
+        },
+        {
+          key: 'DesignationName',
+          title: 'DESIGNATION',
+          width: 150,
+        },
+      ];
+ 
+      const tableWidth = columns.reduce(
+        (total, column) => total + column.width,
+        0,
+      );
+ 
+      const tableX = startX;
+ 
+      const rowH = 25;
+ 
+      const pageBottom = doc.page.height - doc.page.margins.bottom - 30;
+ 
+      let pageNum = 1;
+ 
+      const drawHeaderRow = (yPos: number) => {
+        doc.rect(tableX, yPos, tableWidth, rowH).fill(headerBg);
+ 
+        let x = tableX;
+ 
+        columns.forEach((column) => {
+          doc
+            .fillColor(brand)
+            .font('Helvetica-Bold')
+            .fontSize(8)
+            .text(column.title, x + 7, yPos + 8, {
+              width: column.width - 10,
+              ellipsis: true,
+            });
+ 
+          x += column.width;
+        });
+      };
+ 
+      const drawGrid = (fromY: number, toY: number) => {
+        doc.strokeColor(borderColor).lineWidth(0.5);
+ 
+        let x = tableX;
+ 
+        doc.moveTo(x, fromY).lineTo(x, toY).stroke();
+ 
+        columns.forEach((column) => {
+          x += column.width;
+ 
+          doc.moveTo(x, fromY).lineTo(x, toY).stroke();
+        });
+ 
+        doc.rect(tableX, fromY, tableWidth, toY - fromY).stroke();
+      };
+ 
+      const writeFooter = (currentPage: number) => {
+        const footerY = doc.page.height - doc.page.margins.bottom - 12;
+ 
+        doc
+          .fontSize(8)
+          .fillColor(TEXT_MUTED)
+          .text(
+            `Page ${currentPage} · Generated by HRMS Assistant`,
+            startX,
+            footerY,
+            {
+              width: tableWidth,
+              align: 'center',
+              lineBreak: false,
+            },
+          );
+      };
+ 
+      let sectionTop = y;
+ 
+      drawHeaderRow(y);
+ 
+      y += rowH;
+ 
+      employees.forEach((employee, index) => {
+        if (y + rowH > pageBottom) {
+          drawGrid(sectionTop, y);
+ 
+          writeFooter(pageNum);
+ 
+          doc.addPage();
+ 
+          pageNum += 1;
+ 
+          y = 40;
+ 
+          sectionTop = y;
+ 
+          drawHeaderRow(y);
+ 
+          y += rowH;
+        }
+ 
+        if (index % 2 === 1) {
+          doc.rect(tableX, y, tableWidth, rowH).fill(rowAltBg);
+        }
+ 
+        let x = tableX;
+ 
+        columns.forEach((column) => {
+          const value = employee?.[column.key];
+ 
+          const text =
+            value === null || value === undefined || value === ''
+              ? 'N/A'
+              : String(value);
+ 
+          doc
+            .fillColor(TEXT_DARK)
+            .font('Helvetica')
+            .fontSize(8)
+            .text(text, x + 7, y + 8, {
+              width: column.width - 12,
+              ellipsis: true,
+            });
+ 
+          x += column.width;
+        });
+ 
+        doc
+          .strokeColor(borderColor)
+          .lineWidth(0.5)
+          .moveTo(tableX, y + rowH)
+          .lineTo(tableX + tableWidth, y + rowH)
+          .stroke();
+ 
+        y += rowH;
+      });
+ 
+      drawGrid(sectionTop, y);
+ 
+      if (!employees.length) {
+        doc
+          .fillColor(TEXT_MUTED)
+          .fontSize(10)
+          .text('No employees found.', startX, y + 14);
+      }
+ 
+      writeFooter(pageNum);
+ 
+      doc.end();
+    });
   }
 }

@@ -354,6 +354,9 @@ export default function FacePunchModal({ onClose, onPunchSuccess, onNeedsEnrollm
                         <div className="text-[11px] font-mono text-slate-400 mt-0.5">
                           {p.location ?? <span className="text-amber-400">Location pending…</span>}
                         </div>
+                        <div className="text-[10px] font-mono text-slate-500 mt-0.5">
+                          {p.mode}
+                        </div>
                       </div>
                     </div>
                   ))

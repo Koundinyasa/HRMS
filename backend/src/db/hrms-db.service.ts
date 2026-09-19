@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
 
-
 @Injectable()
 export class HrmsDbService {
   private pool?: sql.ConnectionPool;
 
-  constructor(private readonly config: ConfigService) { }
+  constructor(private readonly config: ConfigService) {}
 
   private async getPool() {
     if (this.pool?.connected) return this.pool;
@@ -29,11 +28,17 @@ export class HrmsDbService {
 
     let result: sql.IProcedureResult<any>;
     try {
-      result = await pool.request()
+      result = await pool
+        .request()
         .input('EmployeeID', sql.VarChar, employeeId)
         .execute('USP_GetUserInfo');
     } catch (err) {
-      console.error('getUserInfo failed for', employeeId, '-', (err as Error).message);
+      console.error(
+        'getUserInfo failed for',
+        employeeId,
+        '-',
+        (err as Error).message,
+      );
       return null;
     }
 
@@ -53,7 +58,9 @@ export class HrmsDbService {
       role: profileRow.DefaultRole ?? '',
     };
     const holidays = holidayRows.map((h: any) => ({
-      date: h.HolidayDate ? new Date(h.HolidayDate).toISOString().slice(0, 10) : '',
+      date: h.HolidayDate
+        ? new Date(h.HolidayDate).toISOString().slice(0, 10)
+        : '',
       name: h.HolidayName,
       stateCode: h.StateCode ?? null,
     }));
@@ -64,24 +71,40 @@ export class HrmsDbService {
   // ─── HRMSDEV: fetch user by email for login (USP_Validateuser) ────────────────
   async validateUser(email: string) {
     const pool = await this.getPool();
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input('EmailID', sql.VarChar, email)
       .execute('USP_Validateuser');
 
     return result.recordset[0] ?? null;
   }
 
-  // ─── HRMSDEV: real leave-type catalogue from Mst_LeaveType ────────────────────
-  async getLeaveTypes() {
+  // ─── HRMSDEV: shared executor for the merged company-master-data procedure ───
+  // USP_GetCompanyMasterData returns 8 result sets in a fixed order:
+  // 0. leave types, 1. departments, 2. designations, 3. company info,
+  // 4. employee's own office, 5. all branches, 6. active teams, 7. team
+  // members. All three params are optional — SQL Server naturally returns an
+  // empty result set for a piece that wasn't asked for (WHERE Col = NULL).
+  private async execCompanyMasterData(
+    companyId?: number | null,
+    employeeId?: string | null,
+    teamTechId?: number | null,
+  ) {
     const pool = await this.getPool();
+    const result = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId ?? null)
+      .input('EmployeeID', sql.VarChar(100), employeeId ?? null)
+      .input('TeamTechID', sql.Int, teamTechId ?? null)
+      .execute('USP_GetCompanyMasterData');
+    return result.recordsets as unknown as any[][];
+  }
+
+  // ─── HRMSDEV: real leave-type catalogue via USP_GetCompanyMasterData (set 0) ─
+  async getLeaveTypes() {
     try {
-      const result = await pool.request().query(
-        `SELECT ID, Name, Code, Description
-         FROM Mst_LeaveType
-         WHERE IsActive = 1
-         ORDER BY ID`,
-      );
-      return result.recordset.map((r: any) => ({
+      const sets = await this.execCompanyMasterData();
+      return (sets[0] ?? []).map((r: any) => ({
         id: Number(r.ID),
         name: r.Name,
         code: r.Code,
@@ -92,44 +115,31 @@ export class HrmsDbService {
       return [];
     }
   }
-  // ─── HRMSDEV: real department list from Mst_Department ────────────────────────
+  // ─── HRMSDEV: real department list via USP_GetCompanyMasterData (set 1) ──────
   async getDepartments() {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request().query(
-        `SELECT Name FROM Mst_Department WHERE IsActive = 1 ORDER BY Name`,
-      );
-      return result.recordset.map((r: any) => r.Name as string);
+      const sets = await this.execCompanyMasterData();
+      return (sets[1] ?? []).map((r: any) => r.Name as string);
     } catch (err) {
       console.error('getDepartments failed -', (err as Error).message);
       return [];
     }
   }
-  // ─── HRMSDEV: real designation list from Mst_Designation ──────────────────────
+  // ─── HRMSDEV: real designation list via USP_GetCompanyMasterData (set 2) ─────
   async getDesignations() {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request().query(
-        `SELECT Name FROM Mst_Designation WHERE IsActive = 1 ORDER BY Name`,
-      );
-      return result.recordset.map((r: any) => r.Name as string);
+      const sets = await this.execCompanyMasterData();
+      return (sets[2] ?? []).map((r: any) => r.Name as string);
     } catch (err) {
       console.error('getDesignations failed -', (err as Error).message);
       return [];
     }
   }
-  // ─── HRMSDEV: company info for the logged-in user's company ────────────────────
+  // ─── HRMSDEV: company info via USP_GetCompanyMasterData (set 3) ──────────────
   async getCompanyInfo(companyId: number) {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request()
-        .input('CompanyID', sql.Int, companyId)
-        .query(
-          `SELECT CompanyName, CompanyCode, ContactPerson, ContactEmail
-           FROM Mst_Company
-           WHERE CompanyID = @CompanyID AND IsActive = 1 AND Deleted = 0`,
-        );
-      const r = result.recordset[0];
+      const sets = await this.execCompanyMasterData(companyId);
+      const r = sets[3]?.[0];
       if (!r) return null;
       return {
         name: r.CompanyName as string,
@@ -142,22 +152,13 @@ export class HrmsDbService {
       return null;
     }
   }
-  // ─── HRMSDEV: office branches for the logged-in user's company ─────────────────
-  // Regular employees should only see their OWN branch, not every branch in
-  // the company — resolved directly via Employee.BranchID, independent of
-  // whatever USP_GetUserInfo does or doesn't return.
+  // ─── HRMSDEV: office branch for one employee via USP_GetCompanyMasterData ────
+  // (set 4). Regular employees should only see their OWN branch, not every
+  // branch in the company — resolved via the SP's @EmployeeID filter.
   async getEmployeeOffice(employeeId: string) {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request()
-        .input('EmployeeID', sql.VarChar, employeeId)
-        .query(
-          `SELECT cb.BranchID, cb.BranchName, cb.Address1, cb.City, cb.PhoneNo, cb.StateCode
-           FROM Employee e
-           INNER JOIN CompanyBranches cb ON e.BranchID = cb.BranchID
-           WHERE e.EmployeeID = @EmployeeID AND e.Deleted = 0 AND cb.IsActive = 1`,
-        );
-      const r = result.recordset[0];
+      const sets = await this.execCompanyMasterData(null, employeeId);
+      const r = sets[4]?.[0];
       if (!r) return null;
       return {
         branchId: r.BranchID as number,
@@ -172,18 +173,11 @@ export class HrmsDbService {
       return null;
     }
   }
+  // ─── HRMSDEV: all company branches via USP_GetCompanyMasterData (set 5) ──────
   async getBranches(companyId: number) {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request()
-        .input('CompanyID', sql.Int, companyId)
-        .query(
-          `SELECT BranchName, Address1, City, PhoneNo
-           FROM CompanyBranches
-           WHERE CompanyID = @CompanyID AND IsActive = 1
-           ORDER BY BranchName`,
-        );
-      return result.recordset.map((r: any) => ({
+      const sets = await this.execCompanyMasterData(companyId);
+      return (sets[5] ?? []).map((r: any) => ({
         branchName: r.BranchName as string,
         address: r.Address1 ?? '',
         city: r.City ?? '',
@@ -194,22 +188,22 @@ export class HrmsDbService {
       return [];
     }
   }
-  // ─── HRMSDEV: active employee directory for the logged-in user's company ───────
+  // ─── HRMSDEV: active employee directory via USP_GetEmployeeDirectory ─────────
+  // NOTE: this SP now returns { EmployeeID, FullName, Designation } — it no
+  // longer selects Code. Any caller that used to show e.code (e.g. the
+  // "Tester (T1)" style badge in the chatbot's employee list) needs to switch
+  // to e.designation, or the SP needs Code added back — check with the team.
   async getEmployeeDirectory(companyId: number) {
     const pool = await this.getPool();
     try {
-      const result = await pool.request()
+      const result = await pool
+        .request()
         .input('CompanyID', sql.Int, companyId)
-        .query(
-          `SELECT EmployeeID, FullName, Code
-           FROM Employee
-           WHERE CompanyID = @CompanyID AND Deleted = 0 AND EmploymentStatusID = 1
-           ORDER BY FullName`,
-        );
+        .execute('USP_GetEmployeeDirectory');
       return result.recordset.map((r: any) => ({
         id: r.EmployeeID as string,
         name: r.FullName as string,
-        code: r.Code ?? '',
+        designation: r.Designation ?? '',
       }));
     } catch (err) {
       console.error('getEmployeeDirectory failed -', (err as Error).message);
@@ -217,18 +211,50 @@ export class HrmsDbService {
     }
   }
 
+  // ─── HRMSDEV: batched read for the chatbot's per-message ctx build ───────────
+  // Bundles departments/designations/companyInfo/ownOffice/branches into a
+  // single USP_GetCompanyMasterData call instead of 5 separate ones. Used by
+  // chatbot.service.ts; the individual getters above remain for callers that
+  // only need one piece (e.g. the team export endpoint).
+  async getCompanyMasterData(companyId: number | null, employeeId: string) {
+    const sets = await this.execCompanyMasterData(companyId, employeeId);
+    return {
+      departments: (sets[1] ?? []).map((r: any) => r.Name as string),
+      designations: (sets[2] ?? []).map((r: any) => r.Name as string),
+      companyInfo: sets[3]?.[0]
+        ? {
+            name: sets[3][0].CompanyName as string,
+            code: sets[3][0].CompanyCode as string,
+            contactPerson: sets[3][0].ContactPerson ?? '',
+            contactEmail: sets[3][0].ContactEmail ?? '',
+          }
+        : null,
+      ownOffice: sets[4]?.[0]
+        ? {
+            branchId: sets[4][0].BranchID as number,
+            branchName: sets[4][0].BranchName as string,
+            address: sets[4][0].Address1 ?? '',
+            city: sets[4][0].City ?? '',
+            phone: sets[4][0].PhoneNo ?? '',
+            stateCode: sets[4][0].StateCode ?? '',
+          }
+        : null,
+      branches: (sets[5] ?? []).map((r: any) => ({
+        branchName: r.BranchName as string,
+        address: r.Address1 ?? '',
+        city: r.City ?? '',
+        phone: r.PhoneNo ?? '',
+      })),
+    };
+  }
+
   // ─── TEAMS ───────────────────────────────────────────────────────────────────
 
+  // ─── HRMSDEV: active teams via USP_GetCompanyMasterData (set 6) ──────────────
   async getActiveTeams() {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request().query(
-        `SELECT ID, TechName, BadgeColorHex
-         FROM Mst_TeamTechnology
-         WHERE IsActive = 1
-         ORDER BY TechName`,
-      );
-      return result.recordset.map((r: any) => ({
+      const sets = await this.execCompanyMasterData();
+      return (sets[6] ?? []).map((r: any) => ({
         id: r.ID as number,
         name: r.TechName as string,
         badgeColor: r.BadgeColorHex ?? '',
@@ -241,23 +267,11 @@ export class HrmsDbService {
   // Team membership = employees reporting to that team's current lead.
   // There is no direct Employee->Team column today; this is the agreed
   // workaround via ReportingManagerID until the DB team adds a real link.
+  // ─── HRMSDEV: team members via USP_GetCompanyMasterData (set 7) ──────────────
   async getTeamMembers(teamTechId: number) {
-    const pool = await this.getPool();
     try {
-      const result = await pool.request()
-        .input('TeamTechID', sql.Int, teamTechId)
-        .query(
-          `SELECT e.EmployeeID, e.FullName, d.Name AS Designation
-           FROM Employee e
-           LEFT JOIN Mst_Designation d ON e.DesignationID = d.ID
-           WHERE e.Deleted = 0
-             AND e.ReportingManagerID IN (
-               SELECT LeadEmployeeID FROM TeamLeadAssignment
-               WHERE TeamTechID = @TeamTechID AND IsCurrentLead = 1
-             )
-           ORDER BY e.FullName`,
-        );
-      return result.recordset.map((r: any) => ({
+      const sets = await this.execCompanyMasterData(null, null, teamTechId);
+      return (sets[7] ?? []).map((r: any) => ({
         employeeId: r.EmployeeID as string,
         name: r.FullName as string,
         designation: (r.Designation as string) ?? 'N/A',
@@ -272,7 +286,8 @@ export class HrmsDbService {
 
   async findUserById(userId: string) {
     const pool = await this.getPool();
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input('UserId', sql.VarChar, userId)
       .execute('usp_GetUserById');
     const row = result.recordset[0];
@@ -287,7 +302,8 @@ export class HrmsDbService {
   }
   async findUserByEmailAndPassword(email: string, password: string) {
     const pool = await this.getPool();
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input('Email', sql.NVarChar, email.toLowerCase())
       .input('Password', sql.NVarChar, password)
       .execute('usp_LoginUser');
@@ -306,7 +322,8 @@ export class HrmsDbService {
 
   async findEmployeeById(employeeId: string) {
     const pool = await this.getPool();
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input('EmployeeId', sql.VarChar, employeeId)
       .execute('usp_GetEmployeeById');
 
@@ -315,20 +332,18 @@ export class HrmsDbService {
 
   async getAllEmployees() {
     const pool = await this.getPool();
-    const result = await pool.request().execute('usp_GetAllEmployees');
 
-    return result.recordset.map((row) => ({
-      ...row,
-      certificates: JSON.parse(row.certificates_json || '[]'),
-      form16: {
-        year: row.form16_year,
-        baseSalary: row.form16_base_salary,
-        deductions: row.form16_deductions,
-        tax: row.form16_tax,
-        downloadUrl: row.form16_download_url,
-      },
-      joinDate: row.join_date,
-    }));
+    const result = await pool
+      .request()
+      .input('SearchText', null)
+      .input('DeptID', null)
+      .input('DesignationID', null)
+      .input('BranchID', null)
+      .input('EmploymentStatusID', null)
+      .input('CompanyID', 1)
+      .execute('dbo.USP_GetEmployeeMasterListing');
+
+    return result.recordset;
   }
 
   async getPayrollSummary() {
@@ -336,9 +351,10 @@ export class HrmsDbService {
     const result = await pool.request().execute('usp_GetPayrollSummary');
 
     const row = result.recordset[0];
-    const averageSalary = row.employeeCount > 0
-      ? Math.round(row.totalPayroll / row.employeeCount)
-      : 0;
+    const averageSalary =
+      row.employeeCount > 0
+        ? Math.round(row.totalPayroll / row.employeeCount)
+        : 0;
     return {
       totalPayroll: row.totalPayroll,
       averageSalary,
@@ -351,7 +367,8 @@ export class HrmsDbService {
 
   async getLeaveRequests(employeeId?: string | null) {
     const pool = await this.getPool();
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input('EmployeeId', sql.VarChar, employeeId ?? null)
       .execute('usp_GetLeaveRequests');
     return result.recordset.map((row) => ({
@@ -367,7 +384,8 @@ export class HrmsDbService {
   }
   async getLeaveRequestByCode(code: string) {
     const pool = await this.getPool();
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input('RequestCode', sql.NVarChar, code)
       .execute('usp_GetLeaveRequestByCode');
 
@@ -402,7 +420,8 @@ export class HrmsDbService {
   }
   async approveLeaveRequest(code: string, approverId: string) {
     const pool = await this.getPool();
-    await pool.request()
+    await pool
+      .request()
       .input('RequestCode', sql.NVarChar, code)
       .input('ApproverId', sql.VarChar, approverId)
       .execute('usp_ApproveLeaveRequest');
@@ -422,7 +441,8 @@ export class HrmsDbService {
   ): Promise<{ ok: boolean; statusCode: number; message: string }> {
     const pool = await this.getPool();
     try {
-      const result = await pool.request()
+      const result = await pool
+        .request()
         .input('EmployeeId', sql.VarChar, employeeId)
         .input('LeaveApplicationId', sql.BigInt, leaveApplicationId)
         .input('ActionId', sql.Int, actionId)
@@ -439,16 +459,34 @@ export class HrmsDbService {
       const message = String(row.Message ?? 'Unknown response from server.');
       return { ok: statusCode === 200, statusCode, message };
     } catch (err) {
-      console.error('withdrawOrCancelLeave failed for', employeeId, '-', (err as Error).message);
-      return { ok: false, statusCode: 500, message: 'Could not process the request. Please try again.' };
+      console.error(
+        'withdrawOrCancelLeave failed for',
+        employeeId,
+        '-',
+        (err as Error).message,
+      );
+      return {
+        ok: false,
+        statusCode: 500,
+        message: 'Could not process the request. Please try again.',
+      };
     }
   }
-  async cancelLeaveRequestByCode(code: string, specificDates?: string[] | null) {
+  async cancelLeaveRequestByCode(
+    code: string,
+    specificDates?: string[] | null,
+  ) {
     const pool = await this.getPool();
-    const cancelledDates = specificDates && specificDates.length > 0
-      ? JSON.stringify(specificDates.map(d => new Date(d).toISOString().slice(0, 10)).sort())
-      : null;
-    const result = await pool.request()
+    const cancelledDates =
+      specificDates && specificDates.length > 0
+        ? JSON.stringify(
+            specificDates
+              .map((d) => new Date(d).toISOString().slice(0, 10))
+              .sort(),
+          )
+        : null;
+    const result = await pool
+      .request()
       .input('RequestCode', sql.NVarChar, code)
       .input('CancelledDates', sql.NVarChar(sql.MAX), cancelledDates)
       .execute('usp_CancelLeaveRequestByCode');
@@ -487,11 +525,17 @@ export class HrmsDbService {
     const pool = await this.getPool();
     let result: sql.IProcedureResult<any>;
     try {
-      result = await pool.request()
+      result = await pool
+        .request()
         .input('EmployeeId', sql.VarChar, employeeId)
         .execute('USP_EmployeeLeaveBalance');
     } catch (err) {
-      console.error('getLeaveBalance failed for', employeeId, '-', (err as Error).message);
+      console.error(
+        'getLeaveBalance failed for',
+        employeeId,
+        '-',
+        (err as Error).message,
+      );
       return { initialised: false, rows: [] as any[] };
     }
     const rows = result.recordset ?? [];
@@ -519,11 +563,15 @@ export class HrmsDbService {
     try {
       const r = await pool.request().execute('usp_GetHolidays');
       holidays = r.recordset as Array<{ date: string; name: string }>;
-    } catch { /* table may not exist */ }
+    } catch {
+      /* table may not exist */
+    }
     try {
       const r = await pool.request().execute('usp_GetAnnouncements');
       announcements = r.recordset as Array<{ date: string; title: string }>;
-    } catch { /* table may not exist */ }
+    } catch {
+      /* table may not exist */
+    }
 
     return { holidays, announcements };
   }

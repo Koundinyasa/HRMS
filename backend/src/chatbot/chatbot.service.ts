@@ -179,9 +179,9 @@ export class ChatbotService {
   // reaches the AI.
   hasHardLocalBlock(
     message: string,
-    user: Record<string, any>,
+    user: Record<string, unknown>,
   ): { blocked: boolean; reason: string } {
-    const employeeId: string = user?.employeeId ?? '';
+    const employeeId = String(user?.employeeId ?? '');
     const rawMsg = message.toLowerCase();
     const msg = normalizeMessage(message);
 
@@ -199,7 +199,11 @@ export class ChatbotService {
         this.draftService.cancelChoiceDrafts,
         employeeId,
       ) ||
-      this.draftService.hasDraft(this.draftService.teamDrafts, employeeId)
+      this.draftService.hasDraft(this.draftService.teamDrafts, employeeId) ||
+      this.draftService.hasDraft(
+        this.draftService.employeeDirectoryDrafts,
+        employeeId,
+      )
     ) {
       return { blocked: true, reason: 'pending_draft' };
     }
@@ -212,7 +216,17 @@ export class ChatbotService {
       return { blocked: true, reason: 'pii' };
     }
 
-    if (PAYROLL_KEYWORDS.some((k) => rawMsg.includes(k))) {
+    const hasPayrollKeyword = PAYROLL_KEYWORDS.some((k) => rawMsg.includes(k));
+
+    const isPersonalPayrollQuestion =
+      /\b(my|me|mine|i|employee|staff)\b/.test(rawMsg) && hasPayrollKeyword;
+
+    const isPayrollDocumentRequest =
+      /\b(form\s*16|form16|payslip|pay\s*slip|salary\s*slip|tax\s*statement)\b/i.test(
+        rawMsg,
+      );
+
+    if (isPersonalPayrollQuestion || isPayrollDocumentRequest) {
       return { blocked: true, reason: 'payroll' };
     }
 
@@ -230,23 +244,33 @@ export class ChatbotService {
 
   async chat(
     message: string,
-    userPayload?: Record<string, any>,
+    userPayload?: Record<string, unknown>,
   ): Promise<ChatResult> {
-    if (!message?.trim()) throw new BadRequestException('message is required');
-
+    if (!message?.trim()) {
+      throw new BadRequestException('message is required');
+    }
     const user = userPayload ?? DEFAULT_TEST_USER;
-    const msg = normalizeMessage(message);
-
     const buildResult = async (
       botResponse: string,
       confidence: 'LOCAL' | 'AI' | 'FALLBACK',
     ): Promise<ChatResult> => {
-      // AFTER:
       const extras = await this.responseService.buildResponseExtras(
         user.employeeId as string,
         user.role as string,
         user,
       );
+      if (extras.widget?.type === 'date') {
+        const info = await this.hrmsDbService.getUserInfo(
+          user.employeeId as string,
+        );
+        extras.widget = {
+          ...extras.widget,
+          holidays: (info?.holidays ?? []).map((holiday: any) => ({
+            date: holiday.date,
+            name: holiday.name,
+          })),
+        };
+      }
       return {
         success: true,
         userMessage: message,
@@ -281,9 +305,12 @@ export class ChatbotService {
     // Step 3 — nothing in our own rules recognised this message at all, so
     // it's treated as a general, non-company question and handed to the AI.
     try {
-      const botResponse = await this.aiService.generateAIResponse(msg, user);
+      const botResponse = await this.aiService.generateAIResponse(
+        message.trim(),
+        user,
+      );
       return buildResult(botResponse, 'AI');
-    } catch {
+    } catch (error) {
       return buildResult(local.text, 'FALLBACK');
     }
   }
@@ -294,14 +321,14 @@ export class ChatbotService {
 
   private async generateResponse(
     message: string,
-    user: Record<string, any>,
+    user: Record<string, unknown>,
   ): Promise<{ matched: boolean; text: string }> {
     const employeeId = user.employeeId as string;
 
     const info = await this.hrmsDbService.getUserInfo(employeeId);
     const selfEmployee = info?.self ?? null;
 
-    const employees: Record<string, any>[] = selfEmployee ? [selfEmployee] : [];
+    const employees: Record<string, unknown>[] = selfEmployee ? [selfEmployee] : [];
     const companyData = {
       holidays: info?.holidays ?? [],
       announcements: [] as { date: string; title: string }[],
@@ -315,17 +342,23 @@ export class ChatbotService {
       description: t.Description,
       annualQuota: t.AnnualQuota,
     }));
-    const departments = await this.hrmsDbService.getDepartments();
-    const designations = await this.hrmsDbService.getDesignations();
 
+    // Batched: departments, designations, companyInfo, ownOffice, and
+    // branches now come from one USP_GetCompanyMasterData call instead of
+    // 5 separate ones (getDepartments/getDesignations/getCompanyInfo/
+    // getBranches/getEmployeeOffice). getEmployeeDirectory stays a separate
+    // call — it's on its own SP (USP_GetEmployeeDirectory), not part of the
+    // merged procedure.
     const companyId = (selfEmployee?.companyId as number) ?? null;
-    const companyInfo = companyId
-      ? await this.hrmsDbService.getCompanyInfo(companyId)
-      : null;
-    const branches = companyId
-      ? await this.hrmsDbService.getBranches(companyId)
-      : [];
-    const ownOffice = await this.hrmsDbService.getEmployeeOffice(employeeId);
+    const master = await this.hrmsDbService.getCompanyMasterData(
+      companyId,
+      employeeId,
+    );
+    const departments = master.departments;
+    const designations = master.designations;
+    const companyInfo = master.companyInfo;
+    const branches = master.branches;
+    const ownOffice = master.ownOffice;
     const directory = companyId
       ? await this.hrmsDbService.getEmployeeDirectory(companyId)
       : [];

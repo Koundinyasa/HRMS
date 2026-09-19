@@ -40,7 +40,7 @@ export interface IntentCtx {
     phone: string;
     stateCode: string;
   } | null;
-  directory: { id: string; name: string; code: string }[];
+  directory: { id: string; name: string; designation: string }[];
 }
  
 // Shared shape for every "if user says X, reply with Y" entry, used by every

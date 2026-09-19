@@ -5,7 +5,7 @@ import FormData from 'form-data';
 import * as sql from 'mssql';
 import { DatabaseService } from '../../database/database.service';
 
-const PYTHON_ATTENDANCE_URL = 'http://localhost:8000';
+const PYTHON_ATTENDANCE_URL = 'http://127.0.0.1:8000';
 
 export interface PunchResult {
   success: boolean;
@@ -52,7 +52,12 @@ export interface EnrollResult {
 interface FaceVerifyResult {
   verified: boolean;
   employeeName?: string;
-  matchResult?: 'Matched' | 'NoMatch' | 'LivenessFailed' | 'Error';
+  matchResult?:
+    | 'Matched'
+    | 'NoMatch'
+    | 'LivenessFailed'
+    | 'Error'
+    | 'PoorImageQuality';
   livenessCheckPassed?: boolean;
   confidenceScore?: number;
   thresholdUsed?: number;
@@ -75,9 +80,11 @@ export class AttendanceService {
   // location, not just require that SOME coordinates were captured).
   // This is separate from the mandatory-location check in punch() above,
   // which is already always-on regardless of this flag.
-  private readonly GEOFENCE_REQUIRED = false;
+  private readonly GEOFENCE_REQUIRED = true;
+  private readonly ACCURACY_CHECK_REQUIRED = true;
+  private readonly ACCURACY_THRESHOLD_METERS = 200;
   private readonly ESS_DEVICE_ID = 4;
-  private readonly ANGLE_LABEL_COLUMN_READY =true;
+  private readonly ANGLE_LABEL_COLUMN_READY = true;
 
   constructor(
     private readonly http: HttpService,
@@ -88,12 +95,17 @@ export class AttendanceService {
     let registered = false;
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
+      const result = await pool
+        .request()
         .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query('SELECT 1 AS found FROM EmployeeFaceVectors WHERE EmployeeID = @EmployeeID AND IsActive = 1 AND VectorDimension = 128');
+        .query(
+          'SELECT 1 AS found FROM EmployeeFaceVectors WHERE EmployeeID = @EmployeeID AND IsActive = 1 AND VectorDimension = 128',
+        );
       registered = (result.recordset?.length ?? 0) > 0;
     } catch (err) {
-      this.logger.error(`checkFaceRegistered failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `checkFaceRegistered failed for ${employeeId} - ${(err as Error).message}`,
+      );
     }
 
     const punchedIn = await this.isCurrentlyPunchedIn(employeeId);
@@ -101,40 +113,64 @@ export class AttendanceService {
     return { registered, punchedIn };
   }
 
+  private static readonly CAPTURE_SOURCE_LABEL: Record<number, string> = {
+    1: 'Biometric',
+    2: 'GPS',
+    3: 'Face Recognition',
+    4: 'QR',
+    5: 'Web',
+    6: 'Mobile App',
+    7: 'Manual Regularization',
+  };
+
   async getRecentPunches(employeeId: string): Promise<RecentPunchesResult> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query(`
-          SELECT TOP 10 PunchType, PunchTimestamp, PunchLocation
-          FROM RawPunches
-          WHERE EmployeeID = @EmployeeID
-          ORDER BY PunchTimestamp DESC
-        `);
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
+        SELECT TOP 10 PunchType, PunchTimestamp, PunchLocation, CaptureSource
+        FROM RawPunches
+        WHERE EmployeeID = @EmployeeID
+        ORDER BY PunchTimestamp DESC
+      `);
 
+      // FIX — used to hardcode mode: 'Face Recognition' on every row,
+      // justified by CaptureSource=2 supposedly always meaning that. That
+      // was never actually correct against Mst_AttendanceCaptureSource
+      // (the real lookup table) — it just happened to work because the
+      // writing proc and this reading code both independently hardcoded
+      // the same wrong number. Now that USP_RecordFaceVerificationPunch
+      // and USP_ManualPunchRegularization write the CORRECT values (3 and
+      // 7 respectively), this reads the real source instead of assuming.
       const punches: RecentPunch[] = (result.recordset ?? []).map((row) => ({
         action: row.PunchType === 60 ? 'IN' : 'OUT',
         time: new Date(row.PunchTimestamp).toISOString(),
-        mode: 'Face Recognition',
+        mode:
+          AttendanceService.CAPTURE_SOURCE_LABEL[row.CaptureSource] ??
+          'Unknown',
         location: row.PunchLocation ?? null,
       }));
 
       return { punches };
     } catch (err) {
-      this.logger.error(`getRecentPunches failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `getRecentPunches failed for ${employeeId} - ${(err as Error).message}`,
+      );
       return { punches: [] };
     }
   }
 
   private static readonly ALL_ANGLES = ['front', 'right', 'left', 'up', 'down'];
 
-  async getRegistrationStatus(employeeId: string): Promise<RegistrationStatusResult> {
+  async getRegistrationStatus(
+    employeeId: string,
+  ): Promise<RegistrationStatusResult> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query(`
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
           SELECT AngleLabel, EnrolledDateTime
           FROM EmployeeFaceVectors
           WHERE EmployeeID = @EmployeeID AND IsActive = 1
@@ -146,21 +182,31 @@ export class AttendanceService {
       const registeredAngles: string[] = [];
       for (const row of rows) {
         const label = row.AngleLabel as string | null;
-        if (label && AttendanceService.ALL_ANGLES.includes(label) && !registeredAngles.includes(label)) {
+        if (
+          label &&
+          AttendanceService.ALL_ANGLES.includes(label) &&
+          !registeredAngles.includes(label)
+        ) {
           registeredAngles.push(label);
         }
       }
-      const missingAngles = AttendanceService.ALL_ANGLES.filter((a) => !registeredAngles.includes(a));
+      const missingAngles = AttendanceService.ALL_ANGLES.filter(
+        (a) => !registeredAngles.includes(a),
+      );
 
       return {
         registered: rows.length > 0,
         totalActiveTemplates: rows.length,
         registeredAngles,
         missingAngles,
-        lastUpdated: rows[0]?.EnrolledDateTime ? new Date(rows[0].EnrolledDateTime).toISOString() : null,
+        lastUpdated: rows[0]?.EnrolledDateTime
+          ? new Date(rows[0].EnrolledDateTime).toISOString()
+          : null,
       };
     } catch (err) {
-      this.logger.error(`getRegistrationStatus failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `getRegistrationStatus failed for ${employeeId} - ${(err as Error).message}`,
+      );
       return {
         registered: false,
         totalActiveTemplates: 0,
@@ -186,34 +232,28 @@ export class AttendanceService {
     return isSameCalendarDay;
   }
 
-  private async employeeShiftCrossesMidnight(employeeId: string): Promise<boolean> {
+  private async employeeShiftCrossesMidnight(
+    employeeId: string,
+  ): Promise<boolean> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query(`
-          SELECT TOP 1 sm.StartTime, sm.EndTime, sm.ShiftTypeId
-          FROM EmployeeShiftAssignments sa
-          JOIN ShiftMaster sm ON sm.ID = sa.ShiftID
-          WHERE sa.EmployeeID = @EmployeeID
-            AND sa.IsActive = 1
-            AND CAST(GETDATE() AS DATE) BETWEEN sa.EffectiveFrom AND ISNULL(sa.EffectiveTo, '2099-12-31')
-          ORDER BY sa.EffectiveFrom DESC
-        `);
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
+            SELECT TOP 1 sm.IsNightShift
+            FROM EmployeeShiftAssignments sa
+            JOIN ShiftMaster sm ON sm.ID = sa.ShiftID
+            WHERE sa.EmployeeID = @EmployeeID
+              AND sa.IsActive = 1
+              AND CAST(GETDATE() AS DATE) BETWEEN sa.EffectiveFrom AND ISNULL(sa.EffectiveTo, '2099-12-31')
+            ORDER BY sa.Priority ASC
+          `);
       const row = result.recordset?.[0];
-      if (!row || !row.StartTime || !row.EndTime) return false;
-
-      const toComparable = (v: unknown): number | string =>
-        v instanceof Date ? v.getTime() : (v as number | string);
-      const startVal = toComparable(row.StartTime);
-      const endVal = toComparable(row.EndTime);
-
-      const isFixedless = row.ShiftTypeId === 2 || startVal === endVal;
-      if (isFixedless) return false;
-
-      return endVal <= startVal;
+      return row?.IsNightShift === true;
     } catch (err) {
-      this.logger.error(`employeeShiftCrossesMidnight failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `employeeShiftCrossesMidnight failed for ${employeeId} - ${(err as Error).message}`,
+      );
       return false;
     }
   }
@@ -224,12 +264,27 @@ export class AttendanceService {
     latitude?: number,
     longitude?: number,
     device?: string,
+    accuracy?: number,
   ): Promise<PunchResult> {
     if (latitude === undefined || longitude === undefined) {
       return {
         success: false,
-        message: 'Location is required to punch in or out. Please enable location access and try again.',
+        message:
+          'Location is required to punch in or out. Please enable location access and try again.',
       };
+    }
+
+    if (accuracy !== undefined && accuracy > this.ACCURACY_THRESHOLD_METERS) {
+      this.logger.warn(
+        `Low-confidence location on punch for ${employeeId} - accuracy: ${accuracy}m (threshold: ${this.ACCURACY_THRESHOLD_METERS}m), lat: ${latitude}, lon: ${longitude}`,
+      );
+      if (this.ACCURACY_CHECK_REQUIRED) {
+        return {
+          success: false,
+          message:
+            "We couldn't get a precise enough location fix. Please try again with GPS/location services enabled, ideally from a phone rather than a hotspot-connected laptop.",
+        };
+      }
     }
 
     const verify = await this.verifyFace(employeeId, frames);
@@ -237,14 +292,16 @@ export class AttendanceService {
     if (verify.serviceUnavailable) {
       return {
         success: false,
-        message: 'The attendance service is currently unavailable. Please try again in a moment, or contact IT if this continues.',
+        message:
+          'The attendance service is currently unavailable. Please try again in a moment, or contact IT if this continues.',
       };
     }
 
     if (verify.noVectorOnFile) {
       return {
         success: false,
-        message: "You haven't registered your face yet. Please register your face to use this feature.",
+        message:
+          "You haven't registered your face yet. Please register your face to use this feature.",
       };
     }
 
@@ -252,7 +309,11 @@ export class AttendanceService {
 
     const geoFenceId =
       latitude !== undefined && longitude !== undefined && locationInfo
-        ? await this.findMatchingGeoFence(locationInfo.companyId, latitude, longitude)
+        ? await this.findMatchingGeoFence(
+            locationInfo.companyId,
+            latitude,
+            longitude,
+          )
         : null;
 
     if (this.GEOFENCE_REQUIRED && geoFenceId === null) {
@@ -267,11 +328,14 @@ export class AttendanceService {
       );
       return {
         success: false,
-        message: "You're outside an approved location for attendance. Please try again from an approved site.",
+        message:
+          "You're outside an approved location for attendance. Please try again from an approved site.",
       };
     }
 
-    const punchType = verify.verified ? await this.determineNextPunchType(employeeId) : null;
+    const punchType = verify.verified
+      ? await this.determineNextPunchType(employeeId)
+      : null;
 
     const recorded = await this.recordVerificationAttempt(
       employeeId,
@@ -284,15 +348,27 @@ export class AttendanceService {
     );
 
     if (!verify.verified) {
+      // NEW — PoorImageQuality means the Python service detected the
+      // frame was too dark to reliably detect/encode a face, even after
+      // its own CLAHE low-light rescue attempt. This used to fall
+      // through to the generic "didn't match" message below, which is
+      // actively misleading — it implies an identity mismatch when the
+      // real problem is lighting, giving the employee no idea what to
+      // actually do differently.
       const message =
         verify.matchResult === 'LivenessFailed'
           ? "We couldn't confirm a live face — please look directly at the camera and blink naturally, then try again."
-          : "Face didn't match. Please try again, or contact HR if this keeps happening.";
+          : verify.matchResult === 'PoorImageQuality'
+            ? "It's too dark to verify your face clearly. Please move somewhere brighter and try again."
+            : "Face didn't match. Please try again, or contact HR if this keeps happening.";
       return { success: false, message };
     }
 
     if (!recorded.ok) {
-      return { success: false, message: 'Could not record the punch. Please try again.' };
+      return {
+        success: false,
+        message: 'Could not record the punch. Please try again.',
+      };
     }
 
     if (punchType && latitude !== undefined && longitude !== undefined) {
@@ -318,17 +394,21 @@ export class AttendanceService {
     OUT: '61',
   };
 
-  private async determineNextPunchType(employeeId: string): Promise<'IN' | 'OUT'> {
+  private async determineNextPunchType(
+    employeeId: string,
+  ): Promise<'IN' | 'OUT'> {
     const punchedIn = await this.isCurrentlyPunchedIn(employeeId);
     return punchedIn ? 'OUT' : 'IN';
   }
 
-  private async getLastPunch(employeeId: string): Promise<{ typeCode: number; timestamp: Date } | null> {
+  private async getLastPunch(
+    employeeId: string,
+  ): Promise<{ typeCode: number; timestamp: Date } | null> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query(`
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
           SELECT TOP 1 PunchType, PunchTimestamp
           FROM RawPunches
           WHERE EmployeeID = @EmployeeID
@@ -336,14 +416,22 @@ export class AttendanceService {
         `);
       const row = result.recordset?.[0];
       if (!row) return null;
-      return { typeCode: row.PunchType, timestamp: new Date(row.PunchTimestamp) };
+      return {
+        typeCode: row.PunchType,
+        timestamp: new Date(row.PunchTimestamp),
+      };
     } catch (err) {
-      this.logger.error(`getLastPunch failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `getLastPunch failed for ${employeeId} - ${(err as Error).message}`,
+      );
       return null;
     }
   }
 
-  private async verifyFace(employeeId: string, frames: Express.Multer.File[]): Promise<FaceVerifyResult> {
+  private async verifyFace(
+    employeeId: string,
+    frames: Express.Multer.File[],
+  ): Promise<FaceVerifyResult> {
     const form = new FormData();
     form.append('employeeId', employeeId);
     frames.forEach((frame, i) => {
@@ -367,13 +455,22 @@ export class AttendanceService {
         message?: string;
         response?: { status?: number; data?: unknown };
       };
+        // Permanent diagnostic logging, not a temporary debug leftover —
+      // confirmed genuinely useful in real testing (2026-09-17): a bare
+      // error.message alone can be blank/unhelpful for some connection
+      // failures, but this full shape (code, message, and whatever the
+      // Python service's own response status/body was, if any) reliably
+      // surfaces the real cause. Kept here deliberately, not slated for
+      // removal.
       this.logger.error(
         `Face-verify service call failed - code: ${error.code}, message: ${error.message}, ` +
-        `responseStatus: ${error.response?.status}, responseData: ${JSON.stringify(error.response?.data)}`,
+          `responseStatus: ${error.response?.status}, responseData: ${JSON.stringify(error.response?.data)}`,
       );
       const isServiceDown =
-        error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' ||
-        error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND';
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ETIMEDOUT' ||
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ENOTFOUND';
       return { verified: false, serviceUnavailable: isServiceDown };
     }
   }
@@ -389,18 +486,35 @@ export class AttendanceService {
   ): Promise<{ ok: boolean }> {
     try {
       const pool = await this.databaseService.connect();
-      await pool.request()
+      await pool
+        .request()
         .input('ClaimedEmployeeID', sql.VarChar(25), claimedEmployeeId)
-        .input('MatchedEmployeeID', sql.VarChar(25), verify.verified ? claimedEmployeeId : null)
+        .input(
+          'MatchedEmployeeID',
+          sql.VarChar(25),
+          verify.verified ? claimedEmployeeId : null,
+        )
         .input('FaceVectorID', sql.Int, verify.matchedFaceVectorId ?? null)
         .input('DeviceID', sql.Int, this.ESS_DEVICE_ID)
-        .input('ConfidenceScore', sql.Decimal(5, 2), verify.confidenceScore ?? 0)
+        .input(
+          'ConfidenceScore',
+          sql.Decimal(5, 2),
+          verify.confidenceScore ?? 0,
+        )
         .input('ThresholdUsed', sql.Decimal(5, 2), verify.thresholdUsed ?? 0)
         .input('ModelVersionUsed', sql.NVarChar(30), 'dlib-face-recognition-v1')
-        .input('LivenessCheckPassed', sql.Bit, verify.livenessCheckPassed ?? false)
+        .input(
+          'LivenessCheckPassed',
+          sql.Bit,
+          verify.livenessCheckPassed ?? false,
+        )
         .input('MatchResult', sql.NVarChar(20), verify.matchResult ?? 'Error')
         .input('CapturedImagePath', sql.NVarChar(500), null)
-        .input('PunchType', sql.NVarChar(10), punchType ? AttendanceService.PUNCH_TYPE_CODE[punchType] : null)
+        .input(
+          'PunchType',
+          sql.NVarChar(10),
+          punchType ? AttendanceService.PUNCH_TYPE_CODE[punchType] : null,
+        )
         .input('Latitude', sql.Decimal(9, 6), latitude ?? null)
         .input('Longitude', sql.Decimal(9, 6), longitude ?? null)
         .input('GeoFenceID', sql.Int, geoFenceId ?? null)
@@ -409,12 +523,18 @@ export class AttendanceService {
         .execute('USP_RecordFaceVerificationPunch');
       return { ok: true };
     } catch (err) {
-      this.logger.error(`recordVerificationAttempt failed for ${claimedEmployeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `recordVerificationAttempt failed for ${claimedEmployeeId} - ${(err as Error).message}`,
+      );
       return { ok: false };
     }
   }
 
-  private resolvePunchLocationInBackground(employeeId: string, latitude: number, longitude: number): void {
+  private resolvePunchLocationInBackground(
+    employeeId: string,
+    latitude: number,
+    longitude: number,
+  ): void {
     void (async () => {
       const rawPunchId = await this.getLatestRawPunchId(employeeId);
       if (!rawPunchId) return;
@@ -424,64 +544,92 @@ export class AttendanceService {
 
       await this.updatePunchLocation(rawPunchId, locationText);
     })().catch((err) => {
-      this.logger.error(`resolvePunchLocationInBackground failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `resolvePunchLocationInBackground failed for ${employeeId} - ${(err as Error).message}`,
+      );
     });
   }
 
-  private async reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
+  private async reverseGeocode(
+    latitude: number,
+    longitude: number,
+  ): Promise<string | null> {
     try {
       const response = await firstValueFrom(
         this.http.get('https://nominatim.openstreetmap.org/reverse', {
           params: { format: 'jsonv2', lat: latitude, lon: longitude },
           headers: {
-            'User-Agent': 'KTS-People360-Attendance/1.0 (internal HRMS attendance system)',
+            'User-Agent':
+              'KTS-People360-Attendance/1.0 (internal HRMS attendance system)',
           },
           timeout: 5000,
         }),
       );
       return response.data?.display_name ?? null;
     } catch (err) {
-      this.logger.error(`reverseGeocode failed for (${latitude}, ${longitude}) - ${(err as Error).message}`);
+      this.logger.error(
+        `reverseGeocode failed for (${latitude}, ${longitude}) - ${(err as Error).message}`,
+      );
       return null;
     }
   }
 
-  private async getLatestRawPunchId(employeeId: string): Promise<number | null> {
+  private async getLatestRawPunchId(
+    employeeId: string,
+  ): Promise<number | null> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
+      const result = await pool
+        .request()
         .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query('SELECT TOP 1 ID FROM RawPunches WHERE EmployeeID = @EmployeeID ORDER BY ID DESC');
+        .query(
+          'SELECT TOP 1 ID FROM RawPunches WHERE EmployeeID = @EmployeeID ORDER BY ID DESC',
+        );
       return result.recordset?.[0]?.ID ?? null;
     } catch (err) {
-      this.logger.error(`getLatestRawPunchId failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `getLatestRawPunchId failed for ${employeeId} - ${(err as Error).message}`,
+      );
       return null;
     }
   }
 
-  private async updatePunchLocation(rawPunchId: number, locationText: string): Promise<void> {
+  private async updatePunchLocation(
+    rawPunchId: number,
+    locationText: string,
+  ): Promise<void> {
     try {
       const pool = await this.databaseService.connect();
-      await pool.request()
+      await pool
+        .request()
         .input('RawPunchID', sql.BigInt, rawPunchId)
         .input('PunchLocation', sql.VarChar(sql.MAX), locationText)
         .execute('USP_UpdatePunchLocation');
     } catch (err) {
-      this.logger.error(`updatePunchLocation failed for RawPunches ID ${rawPunchId} - ${(err as Error).message}`);
+      this.logger.error(
+        `updatePunchLocation failed for RawPunches ID ${rawPunchId} - ${(err as Error).message}`,
+      );
     }
   }
 
-  private async resolveEmployeeLocation(employeeId: string): Promise<EmployeeLocationInfo | null> {
+  private async resolveEmployeeLocation(
+    employeeId: string,
+  ): Promise<EmployeeLocationInfo | null> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
+      const result = await pool
+        .request()
         .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query('SELECT CompanyID, BranchID FROM Employee WHERE EmployeeID = @EmployeeID');
+        .query(
+          'SELECT CompanyID, BranchID FROM Employee WHERE EmployeeID = @EmployeeID',
+        );
       const row = result.recordset?.[0];
       if (!row) return null;
       return { companyId: row.CompanyID, branchId: row.BranchID ?? null };
     } catch (err) {
-      this.logger.error(`resolveEmployeeLocation failed for ${employeeId} - ${(err as Error).message}`);
+      this.logger.error(
+        `resolveEmployeeLocation failed for ${employeeId} - ${(err as Error).message}`,
+      );
       return null;
     }
   }
@@ -493,8 +641,7 @@ export class AttendanceService {
   ): Promise<number | null> {
     try {
       const pool = await this.databaseService.connect();
-      const result = await pool.request()
-        .input('CompanyID', sql.Int, companyId)
+      const result = await pool.request().input('CompanyID', sql.Int, companyId)
         .query(`
           SELECT ID, Latitude, Longitude, RadiusMeters
           FROM GeoFences
@@ -520,12 +667,19 @@ export class AttendanceService {
 
       return closestId;
     } catch (err) {
-      this.logger.error(`findMatchingGeoFence failed for company ${companyId} - ${(err as Error).message}`);
+      this.logger.error(
+        `findMatchingGeoFence failed for company ${companyId} - ${(err as Error).message}`,
+      );
       return null;
     }
   }
 
-  private static haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private static haversineMeters(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371000;
     const toRad = (deg: number) => (deg * Math.PI) / 180;
     const dLat = toRad(lat2 - lat1);
@@ -537,23 +691,37 @@ export class AttendanceService {
     return R * c;
   }
 
-  async enrollFace(employeeId: string, frames: Express.Multer.File[]): Promise<EnrollResult> {
+  async enrollFace(
+    employeeId: string,
+    frames: Express.Multer.File[],
+  ): Promise<EnrollResult> {
     const computed = await this.computeFaceVectors(frames);
 
     if (computed.serviceUnavailable) {
-      return { success: false, message: 'The attendance service is currently unavailable. Please try again in a moment.' };
-    }
-    if (!computed.success || !computed.vectors || computed.vectors.length === 0) {
       return {
         success: false,
-        message: computed.message ?? "Couldn't register your face clearly. Please try again in good lighting, facing the camera directly.",
+        message:
+          'The attendance service is currently unavailable. Please try again in a moment.',
+      };
+    }
+    if (
+      !computed.success ||
+      !computed.vectors ||
+      computed.vectors.length === 0
+    ) {
+      return {
+        success: false,
+        message:
+          computed.message ??
+          "Couldn't register your face clearly. Please try again in good lighting, facing the camera directly.",
       };
     }
 
     try {
       const pool = await this.databaseService.connect();
 
-      await pool.request()
+      await pool
+        .request()
         .input('EmployeeID', sql.VarChar(25), employeeId)
         .input('Reason', sql.NVarChar(100), 'Superseded by new enrollment')
         .execute('USP_DeactivateEmployeeFaceVectors');
@@ -561,7 +729,8 @@ export class AttendanceService {
       let savedCount = 0;
       for (const { angleLabel, vectorBase64 } of computed.vectors) {
         const vectorBuffer = Buffer.from(vectorBase64, 'base64');
-        const request = pool.request()
+        const request = pool
+          .request()
           .input('EmployeeID', sql.VarChar(25), employeeId)
           .input('FaceVector', sql.VarBinary(sql.MAX), vectorBuffer)
           .input('VectorDimension', sql.SmallInt, computed.vectorDimension)
@@ -586,7 +755,10 @@ export class AttendanceService {
       }
 
       if (savedCount === 0) {
-        return { success: false, message: 'Could not register your face. Please try again.' };
+        return {
+          success: false,
+          message: 'Could not register your face. Please try again.',
+        };
       }
 
       return {
@@ -594,13 +766,20 @@ export class AttendanceService {
         message: `Face registered successfully (${savedCount} angle${savedCount === 1 ? '' : 's'} saved). You can now use it to punch in and out.`,
       };
     } catch (err) {
-      this.logger.error(`enrollFace failed for ${employeeId} - ${(err as Error).message}`);
-      return { success: false, message: 'Could not register your face. Please try again.' };
+      this.logger.error(
+        `enrollFace failed for ${employeeId} - ${(err as Error).message}`,
+      );
+      return {
+        success: false,
+        message: 'Could not register your face. Please try again.',
+      };
     }
   }
 
   async checkEnrollmentFrame(frame: Express.Multer.File): Promise<{
-    passed: boolean; reason?: string | null; message: string;
+    passed: boolean;
+    reason?: string | null;
+    message: string;
   }> {
     const form = new FormData();
     form.append('frame', frame.buffer, {
@@ -616,7 +795,9 @@ export class AttendanceService {
       );
       return response.data;
     } catch (err) {
-      this.logger.error(`checkEnrollmentFrame failed - ${(err as Error).message}`);
+      this.logger.error(
+        `checkEnrollmentFrame failed - ${(err as Error).message}`,
+      );
       return { passed: true, message: '' };
     }
   }
@@ -624,8 +805,10 @@ export class AttendanceService {
   private async computeFaceVectors(frames: Express.Multer.File[]): Promise<{
     success: boolean;
     vectors?: { angleLabel: string | null; vectorBase64: string }[];
-    vectorDimension?: number; modelVersion?: string;
-    message?: string; serviceUnavailable?: boolean;
+    vectorDimension?: number;
+    modelVersion?: string;
+    message?: string;
+    serviceUnavailable?: boolean;
   }> {
     const form = new FormData();
     frames.forEach((frame, i) => {
@@ -636,15 +819,20 @@ export class AttendanceService {
     });
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/enroll`, form, { headers: form.getHeaders(), timeout: 20000 }),
+        this.http.post(`${PYTHON_ATTENDANCE_URL}/enroll`, form, {
+          headers: form.getHeaders(),
+          timeout: 20000,
+        }),
       );
       return response.data;
     } catch (err) {
       const error = err as { code?: string; message?: string };
       this.logger.error(`Face-enroll compute call failed: ${error.message}`);
       const isServiceDown =
-        error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' ||
-        error.code === 'ECONNABORTED' || error.code === 'ENOTFOUND';
+        error.code === 'ECONNREFUSED' ||
+        error.code === 'ETIMEDOUT' ||
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ENOTFOUND';
       return { success: false, serviceUnavailable: isServiceDown };
     }
   }

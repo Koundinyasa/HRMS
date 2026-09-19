@@ -33,6 +33,7 @@ export interface ChatWidget {
   type: "date" | "leaveTypes" | "download" | "teamPreview" | "listPreview" | "dataCard" | "notice" | "steps";
   step?: string;
   minDate?: string;
+  holidays?: { date: string; name?: string }[];
   options?: ChatLeaveTypeOption[];
   url?: string;
   filename?: string;

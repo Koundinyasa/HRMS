@@ -32,6 +32,7 @@ export interface ResponseWidget {
     | 'steps';
   step?: string;
   minDate?: string;
+  holidays?: { date: string; name?: string }[];
   options?: LeaveTypeOption[];
   url?: string;
   filename?: string;

@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { IntentDefinition } from '../types';
 import { fuzzyContains } from '../utils/fuzzy.util';
 import { DraftService } from './draft.service';
- 
+
 @Injectable()
 export class EmployeeService {
   constructor(private readonly draftService: DraftService) {}
- 
+
   private notify(
     employeeId: string,
     tone: 'info' | 'warning' | 'danger',
@@ -18,7 +18,7 @@ export class EmployeeService {
     if (suggestions.length)
       this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
   }
- 
+
   getEmployeeCard(employee: Record<string, any>): string {
     return [
       `Name: ${employee.name}`,
@@ -27,7 +27,7 @@ export class EmployeeService {
       `Department: ${employee.department}`,
     ].join('\n');
   }
- 
+
   getOwnProfileGuide(
     employeeId: string,
     employee: Record<string, any>,
@@ -44,7 +44,7 @@ export class EmployeeService {
     });
     return `Here's how to find your profile:`;
   }
- 
+
   getPrivateDocGuide(employeeId: string, role: string): string {
     const baseSteps = [
       'Open the Employees menu.',
@@ -66,7 +66,7 @@ export class EmployeeService {
       ? `Here's how to access employee private details:`
       : `Here's how to open your private documents:`;
   }
- 
+
   getIntents(): IntentDefinition[] {
     return [
       {
@@ -104,7 +104,7 @@ export class EmployeeService {
           return `Access denied: you don't have permission to list all employee IDs.`;
         },
       },
- 
+
       {
         name: 'myDetails',
         test: (ctx) =>
@@ -140,8 +140,7 @@ export class EmployeeService {
         handle: async (ctx) => {
           if (!ctx.selfEmployee) return 'Employee data not found.';
           const e = ctx.selfEmployee;
-          console.log('MY DETAILS - selfEmployee:', JSON.stringify(e, null, 2));
- 
+
           if (
             (ctx.msg.includes('role') || ctx.msg.includes('designation')) &&
             !ctx.msg.includes('detail') &&
@@ -190,7 +189,7 @@ export class EmployeeService {
           return `Here's your profile:`;
         },
       },
- 
+
       {
         name: 'salaryHistory',
         test: (ctx) =>
@@ -214,7 +213,7 @@ export class EmployeeService {
           return `Here's how to view your salary history:`;
         },
       },
- 
+
       {
         name: 'mySalary',
         test: (ctx) =>
@@ -238,7 +237,7 @@ export class EmployeeService {
           return `Here's how to view your salary details:`;
         },
       },
- 
+
       {
         name: 'myPayslip',
         test: (ctx) =>
@@ -260,7 +259,7 @@ export class EmployeeService {
           return `Here's how to open your payslip:`;
         },
       },
- 
+
       {
         name: 'myForm16',
         test: (ctx) =>
@@ -285,133 +284,133 @@ export class EmployeeService {
           return `Here's how to open your Form16:`;
         },
       },
- 
+
       {
         name: 'familyDetails',
- 
+
         test: (ctx) =>
           ctx.msg.includes('family details') ||
           ctx.msg.includes('family information'),
- 
+
         handle: async (ctx) => {
           if (!ctx.selfEmployee)
             return 'Family Details not available. Contact HR team.';
- 
+
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your Family Details',
- 
+
             items: [
               'Open My Profile.',
               'Select Family Details.',
               'View your family information.',
             ],
           });
- 
+
           return `Here's how to open your Family Details:`;
         },
       },
- 
+
       {
         name: 'educationDetails',
- 
+
         test: (ctx) =>
           ctx.msg.includes('education details') ||
           ctx.msg.includes('educational details') ||
           ctx.msg.includes('education information'),
- 
+
         handle: async (ctx) => {
           if (!ctx.selfEmployee)
             return 'Education Details not available. Contact HR team.';
- 
+
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your Education Details',
- 
+
             items: [
               'Open My Profile.',
               'Select Education Details.',
               'View your educational information.',
             ],
           });
- 
+
           return `Here's how to open your Education Details:`;
         },
       },
- 
+
       {
         name: 'experienceDetails',
- 
+
         test: (ctx) =>
           ctx.msg.includes('experience details') ||
           ctx.msg.includes('experience information'),
- 
+
         handle: async (ctx) => {
           if (!ctx.selfEmployee)
             return 'Experience Details not available. Contact HR team.';
- 
+
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your Experience Details',
- 
+
             items: [
               'Open My Profile.',
               'Select Experience Details.',
               'View your experience information.',
             ],
           });
- 
+
           return `Here's how to open your Experience Details:`;
         },
       },
- 
+
       {
         name: 'bankInformation',
- 
+
         test: (ctx) =>
           ctx.msg.includes('bank information') ||
           ctx.msg.includes('bank details'),
- 
+
         handle: async (ctx) => {
           if (!ctx.selfEmployee)
             return 'Bank Information not available. Contact HR team.';
- 
+
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your Bank Information',
- 
+
             items: [
               'Open My Profile.',
               'Select Bank Information.',
               'View your registered bank information.',
             ],
           });
- 
+
           return `Here's how to open your Bank Information:`;
         },
       },
- 
+
       {
         name: 'uploadedDocuments',
- 
+
         test: (ctx) =>
           ctx.msg.includes('uploaded documents') ||
           ctx.msg.includes('uploaded files'),
- 
+
         handle: async (ctx) => {
           if (!ctx.selfEmployee)
             return 'Uploaded Documents not available. Contact HR team.';
- 
+
           this.draftService.pendingSteps.set(ctx.employeeId, {
             title: 'How to open your Uploaded Documents',
- 
+
             items: [
               'Open My Profile.',
               'Select Uploaded Documents.',
               'View your uploaded documents.',
             ],
           });
- 
+
           return `Here's how to open your Uploaded Documents:`;
         },
       },
- 
+
       {
         name: 'listEmployeeNames',
         test: (ctx) =>
@@ -430,7 +429,7 @@ export class EmployeeService {
           return `Here are all employee names (${ctx.directory.length}):`;
         },
       },
- 
+
       {
         name: 'listEmployeeIds',
         test: (ctx) =>
@@ -449,7 +448,7 @@ export class EmployeeService {
           return `Here are all employee IDs (${ctx.directory.length}):`;
         },
       },
- 
+
       {
         name: 'myCertificates',
         test: (ctx) =>
@@ -472,7 +471,7 @@ export class EmployeeService {
           return `Here's how to view your certificates:`;
         },
       },
- 
+
       {
         name: 'privateDocs',
         test: (ctx) =>
@@ -489,7 +488,35 @@ export class EmployeeService {
           return `Access denied: private employee documents are only visible for your own profile. ${guideIntro}`;
         },
       },
- 
+
+      {
+        name: 'downloadAllEmployees',
+        test: (ctx) =>
+          ctx.msg.includes('download all employees') &&
+          (ctx.msg.includes('excel') || ctx.msg.includes('pdf')),
+
+        handle: async (ctx) => {
+          if (ctx.role !== 'admin' && ctx.role !== 'hr') {
+            this.notify(ctx.employeeId, 'danger');
+
+            return 'Access denied: only HR/Admin can download employee data.';
+          }
+
+          const format = ctx.msg.includes('excel') ? 'excel' : 'pdf';
+
+          this.draftService.pendingSuggestedActions.set(ctx.employeeId, [
+            {
+              label: format === 'excel' ? 'Download Excel' : 'Download PDF',
+              send: `employee-export:${format}`,
+            },
+          ]);
+
+          return format === 'excel'
+            ? 'Employee Excel export is ready.'
+            : 'Employee PDF export is ready.';
+        },
+      },
+
       {
         name: 'allEmployees',
         test: (ctx) =>
@@ -510,14 +537,17 @@ export class EmployeeService {
             return `Access denied: you don't have permission to list all employee IDs.`;
           }
           if (ctx.role === 'admin' || ctx.role === 'hr') {
-            this.draftService.pendingListPreview.set(ctx.employeeId, {
-              title: `All Employees (${ctx.directory.length} active)`,
-              rows: ctx.directory.map((e) => ({
-                primary: e.code ? `${e.name} (${e.code})` : e.name,
-                secondary: e.id,
-              })),
-            });
-            return `Here's the employee directory (${ctx.directory.length} active):`;
+            this.draftService.setDraft(
+              this.draftService.employeeDirectoryDrafts,
+              ctx.employeeId,
+              {
+                step: 'awaiting_action',
+                action: '',
+                format: '',
+                directory: ctx.directory,
+              },
+            );
+            return `Employee Directory (${ctx.directory.length} active) — would you like to View the directory, or Download the data?`;
           }
           this.notify(ctx.employeeId, 'danger', [
             { label: 'My Details', send: 'my details' },
@@ -525,7 +555,130 @@ export class EmployeeService {
           return `Access denied: you don't have permission to view all employee details.`;
         },
       },
- 
+
+      {
+        name: 'employeeDirectoryCancelAny',
+        test: (ctx) => {
+          if (ctx.msg !== 'employees cancel') return false;
+          return this.draftService.hasDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          );
+        },
+        handle: async (ctx) => {
+          this.draftService.deleteDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          );
+          return `No problem — nothing was downloaded.`;
+        },
+      },
+
+      {
+        name: 'employeeDirectoryAction',
+        test: (ctx) => {
+          if (ctx.msg !== 'view employees' && ctx.msg !== 'download employees')
+            return false;
+          const draft = this.draftService.getDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          );
+          return !!draft && draft.step === 'awaiting_action';
+        },
+        handle: async (ctx) => {
+          const draft = this.draftService.getDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          )!;
+
+          if (ctx.msg === 'view employees') {
+            draft.action = 'view';
+            draft.step = 'viewed';
+            this.draftService.setDraft(
+              this.draftService.employeeDirectoryDrafts,
+              ctx.employeeId,
+              draft,
+            );
+
+            if (!draft.directory.length) {
+              return `No employees found on record right now.\n\nWould you like to Download this anyway, or Cancel?`;
+            }
+            return `Employee Directory (${draft.directory.length} active) — view the list below.\n\nWould you like to Download this data, or Cancel?`;
+          }
+
+          // download, chosen directly without viewing first
+          draft.action = 'download';
+          draft.step = 'awaiting_format';
+          this.draftService.setDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+            draft,
+          );
+          return `Download the employee directory as PDF or Excel?`;
+        },
+      },
+
+      {
+        name: 'employeeDirectoryViewFollowup',
+        test: (ctx) => {
+          if (ctx.msg !== 'download employees' && ctx.msg !== 'employees cancel')
+            return false;
+          const draft = this.draftService.getDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          );
+          return !!draft && draft.step === 'viewed';
+        },
+        handle: async (ctx) => {
+          const draft = this.draftService.getDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          )!;
+          if (ctx.msg === 'employees cancel') {
+            this.draftService.deleteDraft(
+              this.draftService.employeeDirectoryDrafts,
+              ctx.employeeId,
+            );
+            return `No problem — nothing was downloaded.`;
+          }
+          draft.action = 'download';
+          draft.step = 'awaiting_format';
+          this.draftService.setDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+            draft,
+          );
+          return `Download the employee directory as PDF or Excel?`;
+        },
+      },
+
+      {
+        name: 'employeeDirectoryFormat',
+        test: (ctx) => {
+          if (ctx.msg !== 'employees pdf' && ctx.msg !== 'employees excel')
+            return false;
+          const draft = this.draftService.getDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          );
+          return !!draft && draft.step === 'awaiting_format';
+        },
+        handle: async (ctx) => {
+          const draft = this.draftService.getDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+          )!;
+          draft.format = ctx.msg === 'employees pdf' ? 'pdf' : 'excel';
+          draft.step = 'ready_download';
+          this.draftService.setDraft(
+            this.draftService.employeeDirectoryDrafts,
+            ctx.employeeId,
+            draft,
+          );
+          return `Your employee directory ${draft.format.toUpperCase()} file is ready — tap below to download it.`;
+        },
+      },
+
       {
         name: 'salaryNotMine',
         test: (ctx) =>
@@ -551,7 +704,7 @@ export class EmployeeService {
           return `Access denied: salary information for other employees is confidential.`;
         },
       },
- 
+
       {
         name: 'employeeDetail',
         test: (ctx) =>

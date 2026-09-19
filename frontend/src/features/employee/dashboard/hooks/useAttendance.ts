@@ -15,7 +15,7 @@ const LOCATION_TIMEOUT_MS = 10000; // raised further — enableHighAccuracy belo
 // pure enrichment (never blocked a punch); it's now mandatory, but that
 // blocking decision is made by the CALLER (openCamera, below), not here
 // — this function's job stays simple: try, and report what happened.
-function getCurrentLocation(): Promise<{ latitude: number; longitude: number } | null> {
+function getCurrentLocation(): Promise<{ latitude: number; longitude: number; accuracy: number } | null> {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
       resolve(null);
@@ -26,6 +26,14 @@ function getCurrentLocation(): Promise<{ latitude: number; longitude: number } |
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
+          // NEW — radius in meters the browser itself is only confident to.
+          // Was being silently discarded before. A large value (e.g. tens
+          // of kilometers) means the browser fell back to a coarse
+          // IP-based guess instead of a real GPS/Wi-Fi fix — coordinates
+          // can look completely normal and still be many km off in that
+          // case, with nothing else in the payload able to tell the
+          // difference. See ACCURACY_THRESHOLD_METERS in attendance.service.ts.
+          accuracy: position.coords.accuracy,
         });
       },
       () => resolve(null), // denied, unavailable, or any other error
@@ -51,7 +59,7 @@ export function useAttendance() {
   // time. Also means there's a single moment (camera open) where location
   // is resolved, rather than two separate asks that could theoretically
   // disagree.
-  const locationRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const locationRef = useRef<{ latitude: number; longitude: number; accuracy: number } | null>(null);
 
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -105,26 +113,54 @@ export function useAttendance() {
   // If location isn't available, the camera never opens at all — same
   // spirit as the existing camera-permission failure below, just checked
   // first since it's now the harder requirement of the two.
+  // FIX — location and camera permission requests are now kicked off
+  // TOGETHER, in the same synchronous tick as the click that triggered
+  // this handler, instead of one fully finishing before the other starts.
+  //
+  // Why this mattered: browsers track a short-lived "the user just
+  // genuinely interacted with this page" window (transient activation)
+  // tied to the click. Waiting on ONE native permission dialog (location)
+  // to fully resolve before even calling getUserMedia() can burn through
+  // that window — so on a FIRST-EVER grant, the browser can silently
+  // block the second prompt (camera), since by the time it tries to show
+  // up it's no longer confident this is still tied to a real user action.
+  // Confirmed in real testing: worked fine after a refresh (location
+  // already granted, resolves near-instantly, activation window stays
+  // intact for the camera prompt) but failed on the very first grant.
+  //
+  // Firing both requests immediately, before either is awaited, means
+  // both permission dialogs originate from the SAME click's activation,
+  // even though the code below still awaits their results separately.
   const openCamera = useCallback(async () => {
     setResultMessage(null);
     setCameraError(null);
     setLocationStatus("checking");
 
-    const location = await getCurrentLocation();
+    const locationPromise = getCurrentLocation();
+    const cameraPromise = navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" },
+    });
+
+    const location = await locationPromise;
     if (!location) {
       setLocationStatus("unavailable");
       setCameraError(
         "Location is required to punch in or out. Please enable location access in your browser and try again."
       );
+      // Location failed, but the camera request may have already
+      // succeeded (or is still pending) since both fired together — make
+      // sure that stream doesn't leak, since we're bailing out here
+      // without ever opening the camera.
+      cameraPromise
+        .then((stream) => stream.getTracks().forEach((t) => t.stop()))
+        .catch(() => {});
       return;
     }
     locationRef.current = location;
     setLocationStatus("captured");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-      });
+      const stream = await cameraPromise;
       streamRef.current = stream;
       setIsCameraOpen(true);
     } catch {
@@ -218,6 +254,7 @@ export function useAttendance() {
     }
     formData.append("latitude", String(location.latitude));
     formData.append("longitude", String(location.longitude));
+    formData.append("accuracy", String(location.accuracy));
 
     try {
       const response = await punchAttendance(formData).unwrap();

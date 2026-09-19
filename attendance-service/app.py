@@ -65,6 +65,27 @@ MIN_FACE_WIDTH_FRACTION = 0.15
 # Giving real captures more headroom rather than sitting right on the
 # edge of rejecting a perfectly usable frame.
 BLUR_VARIANCE_THRESHOLD = 20.0
+
+# ── Low-light detection & correction ────────────────────────────────────
+# Motivation: dark punch/enrollment photos were silently falling through
+# to "no face detected" / "NoMatch" — a lighting problem was being
+# reported to the employee as an identity problem ("Face didn't match"),
+# which is actively misleading. This section does two things: (1) detects
+# when a frame is too dark to reliably run detection/encoding on, and
+# (2) rescues it with CLAHE enhancement BEFORE detection runs, so a face
+# that would've been missed gets a real second chance, rather than only
+# reporting the failure after the fact.
+
+# Mean pixel brightness on a 0-255 grayscale scale. CALIBRATED against
+# real test data (2026-09-16, employee 294663): brightness=65 produced
+# match distances of 0.53-0.55 (fails FACE_MATCH_TOLERANCE=0.48);
+# brightness=214+ produced 0.29-0.30 (clean pass). The original guess of
+# 60 was far too low — it left the entire 60-120ish range completely
+# uncorrected, including a confirmed-failing real attempt at 65. Set
+# comfortably above the confirmed failure point, with real margin left
+# before typical well-lit indoor brightness (200+), so this doesn't
+# start firing on rooms that don't actually need the rescue.
+LOW_LIGHT_BRIGHTNESS_THRESHOLD = 120.0
  
  
 def is_face_too_small(location: tuple[int, int, int, int], frame_width: int) -> bool:
@@ -79,6 +100,34 @@ def is_blurry(frame_rgb: np.ndarray) -> tuple[bool, float]:
     gray = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2GRAY)
     variance = cv2.Laplacian(gray, cv2.CV_64F).var()
     return variance < BLUR_VARIANCE_THRESHOLD, variance
+
+
+def mean_brightness(frame_rgb: np.ndarray) -> float:
+    """Simple, cheap proxy for overall exposure — mean grayscale pixel
+    value. Good enough to gate whether CLAHE enhancement below is worth
+    attempting; not meant to be a precise photometric measurement."""
+    gray = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2GRAY)
+    return float(gray.mean())
+
+
+def is_too_dark(frame_rgb: np.ndarray) -> bool:
+    return mean_brightness(frame_rgb) < LOW_LIGHT_BRIGHTNESS_THRESHOLD
+
+
+def enhance_low_light(frame_rgb: np.ndarray) -> np.ndarray:
+    """CLAHE (Contrast Limited Adaptive Histogram Equalization) on the L
+    channel of LAB color space — the standard, well-established technique
+    for improving face detection/recognition accuracy in underexposed
+    images, without blowing out color the way a flat brightness/gamma
+    boost would. Only ever called when a frame is ALREADY flagged as too
+    dark by is_too_dark() above — never applied to a well-lit frame, so
+    this can't degrade an already-good capture."""
+    lab = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2LAB)
+    l_channel, a_channel, b_channel = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+    l_enhanced = clahe.apply(l_channel)
+    enhanced_lab = cv2.merge((l_enhanced, a_channel, b_channel))
+    return cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2RGB)
  
  
 def eye_aspect_ratio(eye_points: list[tuple[int, int]]) -> float:
@@ -138,14 +187,25 @@ def prepare_frames(frames_rgb: list[np.ndarray]) -> list[dict]:
     ratio, unaffected by scale, so it still uses the small copy. But the
     actual identity MATCH now runs on full detail — using the downscaled
     copy for that step was quietly throwing away facial detail on exactly
-    the computation that decides "is this really you"."""
+    the computation that decides "is this really you".
+
+    LOW-LIGHT FIX — if a frame is too dark (see is_too_dark), it gets
+    CLAHE-enhanced BEFORE detection runs, not after. A face the detector
+    would've missed entirely in the dark original never gets a second
+    chance downstream — the fix has to happen here, at the source. The
+    enhanced version becomes "original" for the rest of the pipeline
+    (matching AND liveness both benefit), not just a one-off attempt."""
     prepared = []
     for frame in frames_rgb:
-        small, scale = resize_for_detection(frame)
+        working_frame = frame
+        if is_too_dark(frame):
+            working_frame = enhance_low_light(frame)
+
+        small, scale = resize_for_detection(working_frame)
         locations_small = face_recognition.face_locations(small)
         locations_original = [scale_location(loc, scale) for loc in locations_small]
         prepared.append({
-            "original": frame,
+            "original": working_frame,
             "small": small,
             "locations": locations_small,
             "locations_original": locations_original,
@@ -250,10 +310,23 @@ async def verify_face(
             "confidenceScore": 0.0,
             "thresholdUsed": THRESHOLD_PERCENT,
         }
+
+    # NEW — tracked BEFORE prepare_frames() runs its own CLAHE rescue, so
+    # we can still tell afterward whether darkness was a factor at all —
+    # prepare_frames() replaces "original" with the enhanced version, so
+    # this is the only point where the RAW brightness is still visible.
+    # FIX — now logs the actual measured brightness values, not just a
+    # boolean, so real observed numbers are available for calibrating
+    # LOW_LIGHT_BRIGHTNESS_THRESHOLD (same approach already used for
+    # BLUR_VARIANCE_THRESHOLD above). A boolean alone couldn't tell us
+    # whether a borderline result was just-above or way-above the line.
+    brightness_values = [mean_brightness(f) for f in frames_rgb]
+    any_frame_was_dark = any(b < LOW_LIGHT_BRIGHTNESS_THRESHOLD for b in brightness_values)
  
     # Detection now happens ONCE per frame here, on a downscaled copy —
     # both the liveness check and the matching step below reuse this same
-    # result instead of each re-detecting the face from scratch.
+    # result instead of each re-detecting the face from scratch. Also
+    # where low-light CLAHE rescue happens now (see prepare_frames).
     prepared = prepare_frames(frames_rgb)
     t_prepared = time.perf_counter()
  
@@ -262,11 +335,20 @@ async def verify_face(
  
     if not liveness_passed:
         print(f"[TIMING] vectorLookup={t_vector_lookup-t_start:.2f}s read={t_read-t_vector_lookup:.2f}s cv2decode={t_decoded-t_read:.2f}s prepare={t_prepared-t_decoded:.2f}s "
-              f"liveness={t_liveness-t_prepared:.2f}s total={t_liveness-t_start:.2f}s (stopped at liveness)")
+              f"liveness={t_liveness-t_prepared:.2f}s total={t_liveness-t_start:.2f}s (stopped at liveness, any_frame_was_dark={any_frame_was_dark})")
+        # FIX — darkness breaks blink-landmark tracking well before it
+        # breaks gross face detection (EAR needs precise eye-corner
+        # localization, a much harder ask than "is there a face here" at
+        # all — confirmed via real testing: a near-pitch-black room failed
+        # HERE, at liveness, not at the matching step below where
+        # PoorImageQuality was originally added). If darkness is why
+        # liveness failed, "blink naturally" tells the employee to do
+        # something they may already be doing — the real fix is more
+        # light, so say that instead.
         return {
             "verified": False,
             "livenessFailed": True,
-            "matchResult": "LivenessFailed",
+            "matchResult": "PoorImageQuality" if any_frame_was_dark else "LivenessFailed",
             "livenessCheckPassed": False,
             "confidenceScore": 0.0,
             "thresholdUsed": THRESHOLD_PERCENT,
@@ -299,10 +381,16 @@ async def verify_face(
     if not candidate_results:
         print(f"[TIMING] vectorLookup={t_vector_lookup-t_start:.2f}s read={t_read-t_vector_lookup:.2f}s cv2decode={t_decoded-t_read:.2f}s prepare={t_prepared-t_decoded:.2f}s "
               f"liveness={t_liveness-t_prepared:.2f}s encode={t_encoded-t_liveness:.2f}s "
-              f"total={t_encoded-t_start:.2f}s (no encoding found)")
+              f"total={t_encoded-t_start:.2f}s (no encoding found, any_frame_was_dark={any_frame_was_dark})")
+        # NEW — if darkness was a factor and we STILL couldn't get an
+        # encoding even after the CLAHE rescue attempt in prepare_frames,
+        # say so honestly instead of a generic "Error" that NestJS would
+        # otherwise show as "Face didn't match" — a lighting problem is
+        # not an identity problem, and the employee deserves the real
+        # reason so they know what to actually do about it.
         return {
             "verified": False,
-            "matchResult": "Error",
+            "matchResult": "PoorImageQuality" if any_frame_was_dark else "Error",
             "livenessCheckPassed": True,
             "confidenceScore": 0.0,
             "thresholdUsed": THRESHOLD_PERCENT,
@@ -360,12 +448,21 @@ async def verify_face(
           f"liveness={t_liveness-t_prepared:.2f}s encode={t_encoded-t_liveness:.2f}s "
           f"total={t_total-t_start:.2f}s frames={len(frames_rgb)} "
           f"consensus={len(passing)}/{len(candidate_results)} distances={[round(d, 3) for d, _ in candidate_results]} "
-          f"matchedFaceVectorId={matched_face_vector_id}")
+          f"matchedFaceVectorId={matched_face_vector_id} "
+          f"brightness={[round(b, 1) for b in brightness_values]} any_frame_was_dark={any_frame_was_dark}")
  
     return {
         "verified": matched,
         "employeeName": employee_name,
-        "matchResult": "Matched" if matched else "NoMatch",
+        # FIX — third spot with this exact gap (already fixed twice above,
+        # for liveness-failed and no-candidates). This branch — candidates
+        # WERE found, just none close enough to pass FACE_MATCH_TOLERANCE
+        # — is what both real tests today actually hit (consensus=0/3),
+        # and it was STILL returning the generic "NoMatch" regardless of
+        # any_frame_was_dark. Confirmed real: brightness=[47-49] on the
+        # second test, any_frame_was_dark=True, yet the employee saw "Face
+        # didn't match" instead of the lighting-specific message.
+        "matchResult": "Matched" if matched else ("PoorImageQuality" if any_frame_was_dark else "NoMatch"),
         "livenessCheckPassed": True,
         "confidenceScore": confidence_percent,
         "thresholdUsed": THRESHOLD_PERCENT,
@@ -394,19 +491,40 @@ async def check_enrollment_frame(frame: UploadFile = File(...)):
         return {"passed": False, "reason": "unreadable", "message": "Couldn't read that photo. Please try again."}
  
     frame_rgb = cv2.cvtColor(decoded, cv2.COLOR_BGR2RGB)
-    locations = face_recognition.face_locations(frame_rgb)
+
+    # NEW — same low-light rescue as /verify and /enroll below: enhance
+    # BEFORE attempting detection, so a genuinely dark capture gets a
+    # real second chance instead of being reported as "no face detected"
+    # when the real problem was lighting, not framing.
+    working_frame = frame_rgb
+    was_dark = is_too_dark(frame_rgb)
+    if was_dark:
+        working_frame = enhance_low_light(frame_rgb)
+
+    locations = face_recognition.face_locations(working_frame)
     if not locations:
+        if was_dark:
+            return {
+                "passed": False,
+                "reason": "too_dark",
+                "message": "It's too dark to see your face clearly — try facing a window or bright light.",
+            }
         return {"passed": False, "reason": "no_face", "message": "No face detected — make sure you're facing the camera."}
  
     location = locations[0]
-    frame_width = frame_rgb.shape[1]
+    frame_width = working_frame.shape[1]
  
     if is_face_too_small(location, frame_width):
         return {"passed": False, "reason": "too_small", "message": "Move a little closer to the camera."}
  
-    blurry, _variance = is_blurry(frame_rgb)
+    blurry, _variance = is_blurry(working_frame)
     if blurry:
         return {"passed": False, "reason": "blurry", "message": "Too blurry — hold still and try again."}
+
+    if was_dark:
+        # Detected fine after enhancement — let them know it worked
+        # rather than staying silent about the rescue.
+        return {"passed": True, "reason": "enhanced_low_light", "message": "Captured (lighting was a bit low, but usable)."}
  
     return {"passed": True, "reason": None, "message": "Captured clearly."}
  
@@ -443,16 +561,30 @@ async def enroll_face(frames: List[UploadFile] = File(...)):
     rejected_too_small = 0
     rejected_blurry = 0
     rejected_no_face = 0
+    rescued_low_light = 0
  
     for i, (angle_label, frame) in enumerate(labeled_frames):
-        locations = face_recognition.face_locations(frame)
+        # LOW-LIGHT FIX — same rescue as /verify and /enroll/check-frame.
+        # Applied here BEFORE detection so a dark enrollment photo gets a
+        # real chance to become a usable template, rather than being
+        # rejected outright. Just as important here as at punch time —
+        # arguably more so: a bad ENROLLMENT photo becomes the permanent
+        # reference every future punch gets compared against, so fixing
+        # lighting at the source matters more than patching around it later.
+        working_frame = frame
+        was_dark = is_too_dark(frame)
+        if was_dark:
+            working_frame = enhance_low_light(frame)
+
+        locations = face_recognition.face_locations(working_frame)
         if not locations:
             rejected_no_face += 1
-            print(f"[ENROLL DEBUG] frame {i} ({angle_label}): no face detected")
+            print(f"[ENROLL DEBUG] frame {i} ({angle_label}): no face detected"
+                  f"{' (attempted low-light enhancement)' if was_dark else ''}")
             continue
  
         location = locations[0]
-        frame_width = frame.shape[1]
+        frame_width = working_frame.shape[1]
         top, right, bottom, left = location
         face_width_fraction = (right - left) / frame_width
  
@@ -466,17 +598,26 @@ async def enroll_face(frames: List[UploadFile] = File(...)):
                   f"need >= {MIN_FACE_WIDTH_FRACTION})")
             continue
  
-        blurry, variance = is_blurry(frame)
+        blurry, variance = is_blurry(working_frame)
         if blurry:
             rejected_blurry += 1
             print(f"[ENROLL DEBUG] frame {i} ({angle_label}): too blurry (variance={variance:.1f}, "
                   f"need >= {BLUR_VARIANCE_THRESHOLD})")
             continue
+
+        if was_dark:
+            rescued_low_light += 1
  
-        print(f"[ENROLL DEBUG] frame {i} ({angle_label}): PASSED (face width fraction={face_width_fraction:.3f}, "
+        print(f"[ENROLL DEBUG] frame {i} ({angle_label}): PASSED"
+              f"{' (low-light enhanced)' if was_dark else ''} (face width fraction={face_width_fraction:.3f}, "
               f"blur variance={variance:.1f})")
  
-        encodings = face_recognition.face_encodings(frame, known_face_locations=[location])
+        # Encoding runs on working_frame (the enhanced version when dark),
+        # not the original — so the STORED template itself benefits from
+        # the same correction, not just the detection step. Keeps the
+        # reference template and any future verify-time match processed
+        # the same way.
+        encodings = face_recognition.face_encodings(working_frame, known_face_locations=[location])
         if encodings:
             vector_bytes = encodings[0].astype(np.float64).tobytes()
             vectors.append({
@@ -508,4 +649,3 @@ async def enroll_face(frames: List[UploadFile] = File(...)):
         "vectorDimension": EXPECTED_VECTOR_DIMENSION,
         "modelVersion": MODEL_VERSION,
     }
- 

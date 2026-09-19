@@ -18,7 +18,7 @@ export class ResponseService {
   async buildResponseExtras(
     employeeId: string,
     role: string,
-    user: Record<string, any>,
+    user: Record<string, unknown>,
   ): Promise<{ actions: ActionButton[]; widget: ResponseWidget | null }> {
     const menuKey = this.menuService.pendingMenu.get(employeeId);
     if (menuKey) {
@@ -32,6 +32,42 @@ export class ResponseService {
         return { actions, widget: null };
       }
     }
+
+    // Employee export download
+    const employeeExport =
+      this.draftService.pendingSuggestedActions.get(employeeId);
+
+    if (
+      employeeExport?.length === 1 &&
+      employeeExport[0].send.startsWith('employee-export:')
+    ) {
+      const format = employeeExport[0].send.split(':')[1];
+
+      this.draftService.pendingSuggestedActions.delete(employeeId);
+
+      if (format === 'excel') {
+        return {
+          actions: [],
+          widget: {
+            type: 'download',
+            url: '/chatbot/employees/export?format=excel',
+            filename: 'all-employees.xlsx',
+          },
+        };
+      }
+
+      if (format === 'pdf') {
+        return {
+          actions: [],
+          widget: {
+            type: 'download',
+            url: '/chatbot/employees/export?format=pdf',
+            filename: 'all-employees.pdf',
+          },
+        };
+      }
+    }
+
     const listPreview = this.draftService.pendingListPreview.get(employeeId);
     if (listPreview) {
       this.draftService.pendingListPreview.delete(employeeId);
@@ -159,6 +195,67 @@ export class ResponseService {
         return {
           actions: [],
           widget: { type: 'download', url, filename },
+        };
+      }
+    }
+
+    const employeeDirectoryDraft = this.draftService.getDraft(
+      this.draftService.employeeDirectoryDrafts,
+      employeeId,
+    );
+    if (employeeDirectoryDraft) {
+      if (employeeDirectoryDraft.step === 'awaiting_action') {
+        return {
+          actions: [
+            { label: 'View', send: 'view employees' },
+            { label: 'Download', send: 'download employees' },
+          ],
+          widget: null,
+        };
+      }
+      if (employeeDirectoryDraft.step === 'viewed') {
+        return {
+          actions: [
+            { label: 'Download', send: 'download employees' },
+            { label: 'Cancel', send: 'employees cancel' },
+          ],
+          widget: {
+            type: 'listPreview',
+            listTitle: `All Employees (${employeeDirectoryDraft.directory.length} active)`,
+            listRows: employeeDirectoryDraft.directory.map((e) => ({
+              primary: e.name,
+              meta: e.designation || undefined,
+              secondary: e.id,
+            })),
+          },
+        };
+      }
+      if (employeeDirectoryDraft.step === 'awaiting_format') {
+        return {
+          actions: [
+            { label: 'PDF', send: 'employees pdf' },
+            { label: 'Excel', send: 'employees excel' },
+            { label: 'Cancel', send: 'employees cancel' },
+          ],
+          widget: null,
+        };
+      }
+      if (employeeDirectoryDraft.step === 'ready_download') {
+        const extension =
+          employeeDirectoryDraft.format === 'pdf' ? 'pdf' : 'xlsx';
+        const url = `/chatbot/employees/export?format=${employeeDirectoryDraft.format}`;
+        // The file link has been delivered to the client — this draft is done.
+        this.draftService.deleteDraft(
+          this.draftService.employeeDirectoryDrafts,
+          employeeId,
+        );
+        return {
+          actions: [],
+          widget: {
+            type: 'download',
+            url,
+            filename: `all-employees.${extension}`,
+          },
         };
       }
     }

@@ -4,10 +4,39 @@ import React from "react";
 // Chrome/Edge ship SpeechRecognition natively; Firefox/Safari don't support it
 // at all, so we detect once and simply hide the mic button when unavailable
 // rather than showing a button that would silently do nothing.
-const SpeechRecognitionAPI =
+interface SpeechRecognitionResultEvent extends Event {
+    results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionInstance {
+    lang: string;
+    continuous: boolean;
+    interimResults: boolean;
+    onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+    onerror: (() => void) | null;
+    onend: (() => void) | null;
+    start: () => void;
+    stop: () => void;
+}
+
+interface SpeechRecognitionConstructor {
+    new (): SpeechRecognitionInstance;
+}
+
+interface SpeechRecognitionWindow extends Window {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+}
+
+const speechWindow =
     typeof window !== "undefined"
-        ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+        ? (window as SpeechRecognitionWindow)
         : null;
+
+const SpeechRecognitionAPI =
+    speechWindow?.SpeechRecognition ??
+    speechWindow?.webkitSpeechRecognition ??
+    null;
 
 import {
     useChatbot,
@@ -18,6 +47,7 @@ import {
 import {
     useDashboard,
 } from "@/features/employee/dashboard/hooks/useDashboard";
+import { Calendar } from "lucide-react";
 
 import type {
     ChatMessage,
@@ -418,7 +448,7 @@ export default function ChatbotWidget({
         useState(false);
 
     const recognitionRef =
-        useRef<any>(null);
+        useRef<SpeechRecognitionInstance | null>(null);
 
     const [loading, setLoading] =
         useState(false);
@@ -1045,6 +1075,7 @@ export default function ChatbotWidget({
                                                 {/* Interactive widget: date picker or leave-type cards */}
                                                 {isBot && msg.widget && (
                                                     <ChatWidgetRenderer
+                                                        key={`${msg.id}-${showResetConfirm ? 'reset' : 'normal'}`}
                                                         widget={msg.widget}
                                                         disabled={loading || !isLast}
                                                         onSubmit={sendText}
@@ -1204,8 +1235,112 @@ interface ChatWidgetRendererProps {
     onOpenTeamPreview: (teamName: string, members: ChatTeamMember[]) => void;
 }
 
+function formatDateInput(value: string): string {
+    const digits = value.replace(/\D/g, '');
+    const currentYear = new Date().getFullYear();
+    const previousYear = currentYear - 1;
+    let accepted = '';
+
+    for (const digit of digits) {
+        if (accepted.length === 0) {
+            if (digit <= '3') accepted = digit;
+            continue;
+        }
+
+        if (accepted.length === 1) {
+            const day = Number(`${accepted}${digit}`);
+            if (day >= 1 && day <= 31) accepted += digit;
+            continue;
+        }
+
+        if (accepted.length === 2) {
+            if (digit <= '1') accepted += digit;
+            continue;
+        }
+
+        if (accepted.length === 3) {
+            const month = Number(`${accepted[2]}${digit}`);
+            if (month >= 1 && month <= 12) accepted += digit;
+            continue;
+        }
+
+        if (accepted.length < 7) {
+            accepted += digit;
+            continue;
+        }
+
+        const year = Number(`${accepted.slice(4)}${digit}`);
+        if (year === currentYear || year === previousYear) accepted += digit;
+    }
+
+    return [accepted.slice(0, 2), accepted.slice(2, 4), accepted.slice(4, 8)]
+        .filter(Boolean)
+        .join('-');
+}
+
+function displayDateToIso(value: string): string | null {
+    const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(value);
+    if (!match) return null;
+
+    const [, dayText, monthText, yearText] = match;
+    const day = Number(dayText);
+    const month = Number(monthText);
+    const year = Number(yearText);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    const currentYear = new Date().getFullYear();
+    if (
+        year !== currentYear && year !== currentYear - 1 ||
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day
+    ) {
+        return null;
+    }
+
+    const dayOfWeek = date.getUTCDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) return null;
+
+    return `${yearText}-${monthText}-${dayText}`;
+}
+
+function isoToDisplayDate(value: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+}
+
+function localDateToIso(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function isoToMonthStart(value: string): Date {
+    const match = /^(\d{4})-(\d{2})-\d{2}$/.exec(value);
+    return match
+        ? new Date(Number(match[1]), Number(match[2]) - 1, 1)
+        : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+}
+
+function getLocalIsoDate(daysFromToday = 0): string {
+    const today = new Date();
+    today.setDate(today.getDate() + daysFromToday);
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 function ChatWidgetRenderer({ widget, disabled, onSubmit, onOpenListPreview, onOpenTeamPreview }: ChatWidgetRendererProps) {
     const [dateValue, setDateValue] = useState('')
+    const [dateError, setDateError] = useState(false)
+    const [showCalendar, setShowCalendar] = useState(false)
+    const [calendarMonth, setCalendarMonth] = useState(() => {
+        const month = new Date()
+        month.setDate(1)
+        return month
+    })
     const [copiedField, setCopiedField] = useState<number | null>(null)
     const [downloaded, setDownloaded] = useState(false)
 
@@ -1217,20 +1352,170 @@ function ChatWidgetRenderer({ widget, disabled, onSubmit, onOpenListPreview, onO
     }
 
     if (widget.type === 'date') {
+        const currentYear = new Date().getFullYear()
+        const minimumDate = widget.minDate ?? getLocalIsoDate(-7)
+        const holidayDates = new Map(
+            (widget.holidays ?? []).map((holiday) => [holiday.date.slice(0, 10), holiday.name ?? 'Holiday']),
+        )
+        const isWeekend = (iso: string) => {
+            const day = new Date(`${iso}T00:00:00Z`).getUTCDay()
+            return day === 0 || day === 6
+        }
+        const isHoliday = (iso: string) => holidayDates.has(iso)
+        const isSelectable = (iso: string) =>
+            iso >= minimumDate &&
+            iso <= `${currentYear}-12-31` &&
+            !isWeekend(iso) &&
+            !isHoliday(iso)
+
+        const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1)
+        const calendarStart = new Date(firstDay)
+        calendarStart.setDate(firstDay.getDate() - firstDay.getDay())
+        const calendarDays = Array.from({ length: 42 }, (_, index) => {
+            const day = new Date(calendarStart)
+            day.setDate(calendarStart.getDate() + index)
+            return day
+        })
+        const monthLabel = calendarMonth.toLocaleDateString([], { month: 'long', year: 'numeric' })
+        const previousMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1)
+        const nextMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1)
+        const canGoPrevious = previousMonth >= new Date(`${minimumDate.slice(0, 7)}-01T00:00:00`)
+        const canGoNext = nextMonth.getFullYear() <= currentYear
+        const handleDateChange = (value: string) => {
+            const formattedValue = formatDateInput(value)
+            const isoValue = displayDateToIso(formattedValue)
+
+            if (formattedValue.length === 10 && !isoValue) {
+                setDateValue('')
+                setDateError(true)
+                return
+            }
+
+            if (isoValue && isHoliday(isoValue)) {
+                setDateValue('')
+                setDateError(true)
+                return
+            }
+
+            setDateValue(formattedValue)
+            setDateError(false)
+        }
+
+        const handleDateSubmit = () => {
+            const isoValue = displayDateToIso(dateValue)
+            if (!isoValue || isoValue < minimumDate) {
+                setDateError(true)
+                return
+            }
+            onSubmit(isoValue)
+        }
+
         return (
             <div className="flex flex-wrap gap-2 mt-2.5 items-center">
-                <input
-                    type="date"
-                    value={dateValue}
-                    min={widget.minDate}
-                    disabled={disabled}
-                    onChange={(e) => setDateValue(e.target.value)}
-                    className="px-3 py-2.5 border border-[#eceef5] rounded-[11px] text-[13px] font-inherit text-[#1f2430] outline-none transition-colors focus:border-[var(--primary-color)] disabled:opacity-60"
-                />
+                <div className="relative flex items-center">
+                    <input
+                        type="text"
+                        value={dateValue}
+                        placeholder="DD-MM-YYYY"
+                        inputMode="numeric"
+                        maxLength={10}
+                        disabled={disabled}
+                        onChange={(e) => handleDateChange(e.target.value)}
+                        aria-label="Leave date"
+                        className="w-[145px] px-3 py-2.5 pr-10 border border-[#eceef5] rounded-[11px] text-[13px] font-inherit text-[#1f2430] outline-none transition-colors focus:border-[var(--primary-color)] disabled:opacity-60"
+                    />
+                    <button
+                        type="button"
+                        aria-label="Open date picker"
+                        title="Open date picker"
+                        disabled={disabled}
+                        onClick={() => {
+                            setShowCalendar((open) => {
+                                if (!open && widget.minDate) {
+                                    setCalendarMonth(isoToMonthStart(widget.minDate))
+                                }
+                                return !open
+                            })
+                        }}
+                        className="absolute right-1.5 flex h-8 w-8 items-center justify-center rounded-md border-none bg-transparent text-[#6b7280] cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+                    >
+                        <Calendar size={16} />
+                    </button>
+                    {showCalendar && !disabled && (
+                        <div className="absolute bottom-full left-0 z-30 mb-1 w-[296px] rounded-xl border border-[#eceef5] bg-white p-3 shadow-[0_8px_24px_rgba(43,30,120,0.16)]">
+                            <div className="mb-2 flex items-center justify-between">
+                                <button type="button" disabled={!canGoPrevious} onClick={() => setCalendarMonth(previousMonth)} className="h-7 w-7 rounded-md border-none bg-transparent text-lg text-[#1f2430] disabled:opacity-25">‹</button>
+                                <span className="text-[13px] font-semibold text-[#1f2430]">{monthLabel}</span>
+                                <button type="button" disabled={!canGoNext} onClick={() => setCalendarMonth(nextMonth)} className="h-7 w-7 rounded-md border-none bg-transparent text-lg text-[#1f2430] disabled:opacity-25">›</button>
+                            </div>
+                            <div className="grid grid-cols-7 text-center text-[11px] font-medium text-[#526079]">
+                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day} className="py-1">{day}</span>)}
+                                {calendarDays.map((day) => {
+                                    const iso = localDateToIso(day)
+                                    const outsideMonth = day.getMonth() !== calendarMonth.getMonth()
+                                    const weekend = isWeekend(iso)
+                                    const holiday = isHoliday(iso)
+                                    const selected = iso === dateValue.split('-').reverse().join('-')
+                                    const startDateReference = widget.minDate === iso
+                                    const selectable = isSelectable(iso)
+                                    return (
+                                        <button
+                                            key={iso}
+                                            type="button"
+                                            disabled={!selectable}
+                                            title={holiday ? holidayDates.get(iso) : weekend ? 'Weekend' : undefined}
+                                            onClick={() => {
+                                                handleDateChange(isoToDisplayDate(iso))
+                                                setShowCalendar(false)
+                                            }}
+                                            className={`mx-auto my-0.5 flex h-7 w-7 items-center justify-center rounded-full border-none text-[12px] ${outsideMonth ? 'text-[#b7bdc9]' : 'text-[#1f2430]'} ${weekend ? 'bg-[#ffe0e3] text-[#e33b49]' : ''} ${holiday ? 'bg-[#2f68df] text-white' : ''} ${startDateReference && !holiday && !weekend ? 'bg-[#dbeafe] text-[#1d4ed8]' : ''} ${selected ? 'ring-2 ring-[#1f5bd8] ring-offset-1' : ''} ${selectable ? 'cursor-pointer hover:bg-[var(--primary-light)]' : 'cursor-not-allowed opacity-75'}`}
+                                        >
+                                            {day.getDate()}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                            <div className="mt-2 flex items-center justify-center gap-4 border-t border-[#eceef5] pt-2 text-[10px] text-[#526079]">
+                                <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-[#e33b49]" />Weekend</span>
+                                <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-[#2f68df]" />Holiday</span>
+                            </div>
+                            <div className="mt-2 flex items-center justify-between">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setDateValue('')
+                                        setDateError(false)
+                                        setShowCalendar(false)
+                                    }}
+                                    className="border-none bg-transparent px-1 text-[12px] font-medium text-[#1677d2] cursor-pointer hover:text-[#125eaa]"
+                                >
+                                    Clear
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={!isSelectable(getLocalIsoDate())}
+                                    onClick={() => {
+                                        handleDateChange(isoToDisplayDate(getLocalIsoDate()))
+                                        setCalendarMonth(isoToMonthStart(getLocalIsoDate()))
+                                        setShowCalendar(false)
+                                    }}
+                                    className="border-none bg-transparent px-1 text-[12px] font-medium text-[#1677d2] cursor-pointer hover:text-[#125eaa] disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    Today
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                {dateError && (
+                    <span className="basis-full text-[12px] text-red-600">
+                        Enter a valid weekday on or after {isoToDisplayDate(minimumDate)}; weekends are not allowed.
+                    </span>
+                )}
                 <button
                     type="button"
                     disabled={disabled || !dateValue}
-                    onClick={() => onSubmit(dateValue)}
+                    onClick={handleDateSubmit}
                     style={GRADIENT_STYLE}
                     className={`px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none cursor-pointer shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-transform hover:-translate-y-0.5 disabled:opacity-45 disabled:cursor-not-allowed`}
                 >

@@ -5,6 +5,7 @@ import {
   PartialCancelDraft,
   CancelChoiceDraft,
   TeamDraft,
+  EmployeeDirectoryDraft,
 } from '../types';
 import { DRAFT_TTL_MS, DRAFT_MAX_SIZE } from '../constants/chatbot.constants';
  
@@ -14,6 +15,8 @@ export class DraftService {
   readonly partialCancelDrafts = new Map<string, Stamped<PartialCancelDraft>>();
   readonly cancelChoiceDrafts = new Map<string, Stamped<CancelChoiceDraft>>();
   readonly teamDrafts = new Map<string, Stamped<TeamDraft>>();
+  readonly employeeDirectoryDrafts = new Map<string, Stamped<EmployeeDirectoryDraft>>();
+  readonly pendingEmployeeExport = new Map<string, 'excel' | 'pdf'>();
  
   // Tracks the numbered leave list shown by "cancel leave" and the pending
   // confirmation target, keyed by employeeId.
@@ -114,6 +117,7 @@ export class DraftService {
     this.partialCancelDrafts.delete(employeeId);
     this.cancelChoiceDrafts.delete(employeeId);
     this.teamDrafts.delete(employeeId);
+    this.employeeDirectoryDrafts.delete(employeeId);
  
     this.cancelList.delete(employeeId);
     this.cancelTarget.delete(employeeId);
@@ -123,5 +127,6 @@ export class DraftService {
     this.pendingSuggestedActions.delete(employeeId);
     this.pendingNotice.delete(employeeId);
     this.pendingSteps.delete(employeeId);
-}
+    this.pendingEmployeeExport.delete(employeeId);
+  }
 }
