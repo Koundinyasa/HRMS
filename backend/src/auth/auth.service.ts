@@ -9,7 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
 import { randomBytes } from 'crypto';
 import { DraftService } from '../chatbot/services/draft.service';
- 
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -441,4 +441,70 @@ export class AuthService {
       throw error;
     }
   }
+
+  // ================= CHANGE PASSWORD =================
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+  try {
+    const pool = await this.dbService.connect();
+ 
+    const result = await pool
+      .request()
+      .input('EmailID', userId.trim())
+      .execute('USP_Validateuser');
+ 
+    const user = result.recordset?.[0];
+ 
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+ 
+    const isMatch = await bcrypt.compare(
+      dto.currentPassword,
+      user.PasswordHash,
+    );
+ 
+    if (!isMatch) {
+      throw new BadRequestException(
+        'Current password is incorrect',
+      );
+    }
+ 
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException(
+        'Passwords do not match',
+      );
+    }
+ 
+    const samePassword = await bcrypt.compare(
+      dto.newPassword,
+      user.PasswordHash,
+    );
+ 
+    if (samePassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+    }
+ 
+    const hashedPassword = await bcrypt.hash(
+      dto.newPassword,
+      10,
+    );
+ 
+    await pool
+      .request()
+      .input('EmployeeID', user.EmployeeID)
+      .input('PasswordHash', hashedPassword)
+      .input('Flag', 2)
+      .input('ModifiedBy', user.EmployeeID)
+      .execute('USP_UpdatePassword');
+ 
+    return {
+      success: true,
+      message: 'Password changed successfully',
+    };
+  } catch (error) {
+    throw error;
+  }
+}
 }
