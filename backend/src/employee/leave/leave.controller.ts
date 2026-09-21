@@ -23,7 +23,6 @@ import { LeaveRequestDto } from './dto/leave-request.dto';
 import { HierarchicalLeaveActionDto } from './dto/hierarchical-leave-action.dto';
 import { WithdrawCancelDto } from './dto/withdraw-cancel.dto'; // NEW IMPORT
 import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
-import { PendingLeaveRequestDto } from './dto/pending-leave-request.dto';
 @Controller('employee/leave')
 export class LeaveController {
   constructor(
@@ -31,9 +30,12 @@ export class LeaveController {
   ) {}
 
   // Leave Types
+@UseGuards(JwtAuthGuard)
   @Get('leavetypes')
-  async getLeaveTypes() {
-    return this.leaveService.getLeaveTypes();
+  async getLeaveTypes(@Req() req) {
+    const employeeId = req.user.employeeId;
+ 
+    return this.leaveService.getLeaveTypes(employeeId);
   }
 
   // Holiday List

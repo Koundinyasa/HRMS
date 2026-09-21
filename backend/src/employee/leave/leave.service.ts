@@ -8,20 +8,18 @@ export class LeaveService {
     private readonly databaseService: DatabaseService,
   ) {}
   // Leave Types
-  async getLeaveTypes() {
+async getLeaveTypes(employeeId: string) {
     try {
-      const pool =
-        await this.databaseService.connect();
-      const result =
-        await pool
-          .request()
-          .execute('USP_LeaveMasterData');
+      const pool = await this.databaseService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(100), employeeId)
+        .execute('USP_LeaveMasterData');
+ 
       return result.recordsets[0];
     } catch (error) {
-      console.error(
-        'Error in getLeaveTypes:',
-        error,
-      );
+      console.error('Error in getLeaveTypes:', error);
       throw error;
     }
   }
