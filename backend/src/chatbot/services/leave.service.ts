@@ -233,7 +233,7 @@ export class LeaveService {
   async buildLeaveTypeOptions(
     user: Record<string, any>,
   ): Promise<LeaveTypeOption[]> {
-    const typesRaw = await this.leaveApiService.getLeaveTypes();
+    const typesRaw = await this.leaveApiService.getLeaveTypes(user);
     const types: { id: number; code: string; name: string }[] = (
       typesRaw ?? []
     ).map((t: any) => ({ id: t.ID, code: t.Code, name: t.Name }));
@@ -897,9 +897,7 @@ export class LeaveService {
           ctx.msg.includes('leave approval') ||
           ctx.msg.includes('accept leave'),
         handle: async (ctx) => {
-          if (ctx.role === 'admin' || ctx.role === 'hr') {
-            return `As HR/Admin, you can review pending leave requests on the Leave Requests page. Select a pending request and click Approve when ready.`;
-          }
+          
           this.notify(ctx.employeeId, 'info');
           return `Only HR/Admin can approve leave requests. If you want to cancel a pending request before approval, use the Leave Requests page.`;
         },

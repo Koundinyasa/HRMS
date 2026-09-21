@@ -334,7 +334,7 @@ export class ChatbotService {
       announcements: [] as { date: string; title: string }[],
     };
 
-    const leaveTypesRaw = await this.leaveApiService.getLeaveTypes();
+    const leaveTypesRaw = await this.leaveApiService.getLeaveTypes(user);
     const leaveTypes = (leaveTypesRaw ?? []).map((t: any) => ({
       id: t.ID,
       name: t.Name,
