@@ -1,4 +1,4 @@
-import { Controller, Get,Req, UseGuards } from '@nestjs/common';
+import { Controller, Get,Req, UseGuards, Query } from '@nestjs/common';
 import { DashboardService } from './employee-dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -44,4 +44,18 @@ async getApprovalSummary(@Req() req: any) {
     req.user.employeeId,
   );
 }
+@Get('team-attendance')
+  async getTeamAttendance(
+    @Req() req: any,
+    @Query('date') date?: string,
+  ) {
+    const companyId = req.user.companyId;
+    const employeeId = req.user.employeeId;
+ 
+    return this.dashboardService.getTeamAttendance(
+      companyId,
+      employeeId,
+      date,
+    );
+  }
 }

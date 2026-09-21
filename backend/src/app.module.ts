@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 import { AppController } from './app.controller';
@@ -15,15 +14,13 @@ import { ChatbotModule } from './chatbot/chatbot.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { ReviewModule } from './review/review.module';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [configuration],        
-      validationSchema,             
+      load: [configuration],
+      validationSchema,
     }),
 
     JwtConfigModule,
@@ -35,8 +32,8 @@ import { ReviewModule } from './review/review.module';
     AdminModule,
     ChatbotModule,
     LoggerModule,
-    // LogsModule,
     ReviewModule,
+    // LogsModule,
   ],
   controllers: [AppController],
 })

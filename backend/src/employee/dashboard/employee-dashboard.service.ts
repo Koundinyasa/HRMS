@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException , BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import * as sql from 'mssql';
 
 @Injectable()
 export class DashboardService {
@@ -212,5 +213,37 @@ export class DashboardService {
     throw error;
   }
 }
+async getTeamAttendance(
+    companyId: number,
+    employeeId: string,
+    date?: string,
+  ) {
+    try {
+      const pool = await this.dbService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('EmployeeID', sql.VarChar(25), employeeId)
+        .input(
+          'Date',
+          sql.Date,
+          date ? new Date(date) : null,
+        )
+        .execute('USP_GetTeamAttendance');
+ 
+      return result.recordset;
+    } catch (error) {
+      console.error(
+        'Error while fetching team attendance:',
+        error,
+      );
+ 
+      throw new InternalServerErrorException(
+        'Unable to fetch team attendance.',
+      );
+    }
+  }
+ 
 
 }

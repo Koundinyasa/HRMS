@@ -1,268 +1,148 @@
 import { ChevronsUpDown } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
+import type { TeamAttendanceRow } from "../types/dashboard.types";
+
+const getValue = (row: TeamAttendanceRow, key: string) => {
+  const value = row[key];
+  return value == null || value === "" ? "-" : String(value);
+};
+
+const getInitials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "--";
+
+const getNameKey = (row: TeamAttendanceRow) =>
+  Object.keys(row).find((key) =>
+    ["members", "member", "fullname", "employeename"].includes(
+      key.toLowerCase(),
+    ),
+  ) ?? "Members";
+
+const getRoleKey = (row: TeamAttendanceRow) =>
+  Object.keys(row).find((key) =>
+    ["designation", "role", "department"].includes(key.toLowerCase()),
+  ) ?? "Designation";
+
+const getStatusClass = (value: string) => {
+  const normalized = value.toLowerCase();
+
+  if (normalized.includes("leave")) return "text-orange-500";
+  if (normalized === "wfh" || normalized.includes("home")) {
+    return "h-3 w-3 rounded-full bg-blue-500";
+  }
+  if (normalized === "office" || normalized.includes("present")) {
+    return "h-3 w-3 rounded-full bg-green-500";
+  }
+  if (normalized === "absent") return "h-3 w-3 rounded-full bg-red-500";
+  return "text-sm text-slate-700";
+};
+
+const isColorValue = (value: string) =>
+  /^#[0-9a-f]{6}$/i.test(value.trim());
 
 export default function TeamAttendanceCard() {
-  const { profileData } = useDashboard();
-
-  const employeeNames =
-    profileData?.data?.upcomingEvents ?? [];
-
-  const staticData = [
-    {
-      role: "UI Designer",
-      today: "11:56 AM",
-      day25: "12:45 AM",
-      day24: "10:44 AM",
-      day23: "Weekend",
-      color: "#DDE2FF",
-      textColor: "#4F46E5",
-    },
-    {
-      role: "Developer",
-      today: "wfh",
-      day25: "10:53 AM",
-      day24: "on leave",
-      day23: "Weekend",
-      color: "#FFE2F0",
-      textColor: "#DB2777",
-    },
-    {
-      role: "Developer",
-      today: "wfh",
-      day25: "10:21 AM",
-      day24: "wfh",
-      day23: "Weekend",
-      color: "#DDFCE7",
-      textColor: "#166534",
-    },
-    {
-      role: "Developer",
-      today: "office",
-      day25: "10:45 AM",
-      day24: "10:30 AM",
-      day23: "Weekend",
-      color: "#FEF3C7",
-      textColor: "#B45309",
-    },
-  ];
-  const teamData = staticData.map(
-    (item, index) => ({
-      initials:
-        employeeNames[index]?.FullName
-          ?.split(" ")
-          .map((word) => word[0])
-          .join("")
-          .substring(0, 2)
-          .toUpperCase() ?? "--",
-
-      name:
-        employeeNames[index]?.FullName ??
-        "No Employee",
-
-      ...item,
-    })
-  );
+  const { teamAttendance = [], teamAttendanceLoading } = useDashboard();
+  const rows = teamAttendance as TeamAttendanceRow[];
+  const firstRow = rows[0];
+  const nameKey = firstRow ? getNameKey(firstRow) : "Members";
+  const roleKey = firstRow ? getRoleKey(firstRow) : "Designation";
+  const columns = firstRow
+    ? Object.keys(firstRow).filter(
+        (key) => key !== nameKey && key !== roleKey,
+      )
+    : [];
 
   return (
     <div
-      className="
-  rounded-2xl
-  p-4 sm:p-5 lg:p-6
-  shadow-sm
-  border
-  w-full
-  min-w-0
-  overflow-hidden
-"
+      className="rounded-2xl border w-full min-w-0 overflow-hidden p-4 shadow-sm sm:p-5 lg:p-6"
       style={{
         backgroundColor: "var(--card-bg)",
         borderColor: "var(--primary-border)",
       }}
     >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h3
-          className="text-xl font-semibold"
-          style={{
-            color: "var(--primary-color)",
-          }}
-        >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-xl font-semibold" style={{ color: "var(--primary-color)" }}>
           Team
         </h3>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-green-500" />
-            <span>In Office</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-500" />
-            <span>Work From Home</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-red-500" />
-            <span>Absent</span>
-          </div>
+          <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-green-500" />In Office</div>
+          <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-blue-500" />Work From Home</div>
+          <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-red-500" />Absent</div>
         </div>
       </div>
 
-      {/* Divider */}
+      <div className="mb-4 mt-4 h-[2px]" style={{ backgroundColor: "var(--primary-border)" }} />
 
-      <div
-        className="h-[2px] mt-4 mb-4"
-        style={{
-          backgroundColor: "var(--primary-border)",
-        }}
-      />
-
-      {/* Table */}
-
-      <div className="w-full overflow-x-auto">
-        <div className="min-w-[600px]">
-
-          {/* Table Header */}
-
-          <div
-            className="grid grid-cols-[2.4fr_1fr_1fr_1fr_1fr]"
-            style={{
-              color: "var(--primary-color)",
-            }}
-          >
-            <div>Members</div>
-            <div className="flex items-center gap-1">
-              Today
-              <ChevronsUpDown
-                size={14}
-                color="var(--primary-color)"
-              />
-            </div>
-            <div className="flex items-center gap-1">
-              25/9
-              <ChevronsUpDown
-                size={14}
-                color="var(--primary-color)"
-              />
-            </div>
-            <div className="flex items-center gap-1">
-              24/9
-              <ChevronsUpDown
-                size={14}
-                color="var(--primary-color)"
-              />
-            </div>
-            <div className="flex items-center gap-1">
-              23/9
-              <ChevronsUpDown
-                size={14}
-                color="var(--primary-color)"
-              />
-            </div>
-          </div>
-
-          {/* Rows */}
-
-          {teamData.map((member, index) => (
+      {teamAttendanceLoading ? (
+        <div className="py-8 text-center text-sm text-slate-500">Loading team attendance...</div>
+      ) : rows.length === 0 ? (
+        <div className="py-8 text-center text-sm text-slate-500">No team attendance available.</div>
+      ) : (
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[600px]">
             <div
-              key={index}
-              className="
-  grid
-  grid-cols-[2.4fr_1fr_1fr_1fr_1fr]
-  items-center
-  py-4 sm:py-5
-  border-t
-"
-              style={{
-                borderColor: "var(--primary-border)",
-              }}
+              className="grid grid-cols-[2.4fr_repeat(4,1fr)]"
+              style={{ color: "var(--primary-color)" }}
             >
-              {/* Member */}
-              <div className="flex items-center gap-3 sm:gap-4 pl-2">
-                <div
-                  className="
-    w-10
-    h-10
-    sm:w-12
-    sm:h-12
-    min-w-[40px]
-    sm:min-w-[48px]
-    min-h-[40px]
-    sm:min-h-[48px]
-    shrink-0
-    rounded-full
-    flex
-    items-center
-    justify-center
-    font-semibold
-  "
-                  style={{
-                    backgroundColor: member.color,
-                    color: member.textColor,
-                  }}
-                >
-                  {member.initials}
+              <div>Members</div>
+              {columns.slice(0, 4).map((column) => (
+                <div key={column} className="flex items-center gap-1">
+                  {column}
+                  <ChevronsUpDown size={14} color="var(--primary-color)" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4
-                    className="
-    font-medium
-    text-sm sm:text-base
-    text-slate-800
-    leading-5 sm:leading-6
-    break-words
-  "
-                  >
-                    {member.name}
-                  </h4>
-                  <p className="text-sm text-slate-500 mt-0.5">
-                    {member.role}
-                  </p>
-                </div>
-              </div>
-
-              {/* Today */}
-
-              <div>
-                {member.today === "office" ? (
-                  <span className="w-3 h-3 rounded-full bg-green-500 block" />
-                ) : member.today === "wfh" ? (
-                  <span className="w-3 h-3 rounded-full bg-blue-500 block" />
-                ) : (
-                  <span className="text-sm text-slate-700">
-                    {member.today}
-                  </span>
-                )}
-              </div>
-
-              {/* 25/9 */}
-
-              <div>
-                {member.day25}
-              </div>
-
-              {/* 24/9 */}
-
-              <div>
-                {member.day24 === "on leave" ? (
-                  <span className="text-orange-500 text-sm">
-                    On Leave
-                  </span>
-                ) : member.day24 === "wfh" ? (
-                  <span className="w-3 h-3 rounded-full bg-blue-500 block" />
-                ) : (
-                  <span className="text-sm text-slate-700">
-                    {member.day24}
-                  </span>
-                )}
-              </div>
-
-              {/* 23/9 */}
-
-              <div>
-                {member.day23}
-              </div>
+              ))}
             </div>
-          ))}
+
+            <div className="max-h-[336px] overflow-y-auto">
+              {rows.map((row, index) => {
+                const name = getValue(row, nameKey);
+                return (
+                  <div
+                    key={`${name}-${index}`}
+                    className="grid grid-cols-[2.4fr_repeat(4,1fr)] items-center border-t py-4 sm:py-5"
+                    style={{ borderColor: "var(--primary-border)" }}
+                  >
+                    <div className="flex items-center gap-3 pl-2 sm:gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-600 sm:h-12 sm:w-12">
+                        {getInitials(name)}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="break-words text-sm font-medium text-slate-800 sm:text-base">{name}</h4>
+                        <p className="mt-0.5 text-sm text-slate-500">{getValue(row, roleKey)}</p>
+                      </div>
+                    </div>
+                    {columns.slice(0, 4).map((column) => {
+                      const value = getValue(row, column);
+                      const statusClass = getStatusClass(value);
+                      return (
+                        <div key={column}>
+                          {isColorValue(value) ? (
+                            <span
+                              className="block h-3 w-3 rounded-full"
+                              style={{ backgroundColor: value }}
+                              aria-label={`Attendance status ${value}`}
+                              title={value}
+                            />
+                          ) : statusClass.startsWith("h-") ? (
+                            <span className={statusClass} />
+                          ) : (
+                            <span className={statusClass}>{value}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
