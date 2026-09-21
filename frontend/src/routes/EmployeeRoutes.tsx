@@ -9,7 +9,6 @@ import {
    EMPLOYEE LAYOUT
 ========================================================= */
 
-import { Routes, Route, Navigate, useParams } from "react-router-dom";
  
 import Layout from "@/features/employee/components/Layout";
 

@@ -1,4 +1,4 @@
-import noPunchesImage from "../../../../../../assets/images/ChatGPT Image Sep 19, 2026, 01_52_56 PM.png";
+import noPunchesImage from "../../../../../../assets/images/no punch image.png";
 
 import type {
   RequestStatusProps,
