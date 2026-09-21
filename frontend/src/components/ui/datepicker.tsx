@@ -135,8 +135,8 @@ export function DatePicker({
       top-full
       z-[9999]
       mt-3
-      w-80
-      min-w-80
+      w-[min(20rem,calc(100vw-1.5rem))]
+      max-w-[calc(100vw-1.5rem)]
       overflow-hidden
       rounded-[22px]
       border

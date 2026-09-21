@@ -1,6 +1,12 @@
 import { baseApi } from "@/app/baseApi";
 
-import type { ProfileResponse, HolidayResponse, MenuResponse,ApprovalSummaryResponse, } from "../types/dashboard.types";
+import type {
+  ProfileResponse,
+  HolidayResponse,
+  MenuResponse,
+  ApprovalSummaryResponse,
+  TeamAttendanceResponse,
+} from "../types/dashboard.types";
 
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -33,8 +39,21 @@ export const dashboardApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
-    
+
+    getTeamAttendance: builder.query<TeamAttendanceResponse, string | void>({
+      query: (date) => ({
+        url: "/employee/dashboard/team-attendance",
+        method: "GET",
+        params: date ? { date } : undefined,
+      }),
+    }),
   }),
 });
 
-export const { useGetProfileQuery, useGetHolidayListQuery, useGetMenusQuery,useGetApprovalSummaryQuery, } = dashboardApi;
+export const {
+  useGetProfileQuery,
+  useGetHolidayListQuery,
+  useGetMenusQuery,
+  useGetApprovalSummaryQuery,
+  useGetTeamAttendanceQuery,
+} = dashboardApi;

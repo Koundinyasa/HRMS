@@ -9,6 +9,7 @@ import {
   useGetHolidayListQuery,
   useGetMenusQuery,
   useGetApprovalSummaryQuery,
+  useGetTeamAttendanceQuery,
 } from "../api/dashboardApi";
 
 export const useDashboard = () => {
@@ -46,6 +47,13 @@ export const useDashboard = () => {
     error: approvalSummaryApiError,
     refetch: refetchApprovalSummary,
   } = useGetApprovalSummaryQuery();
+
+  const {
+    data: teamAttendance,
+    isLoading: teamAttendanceLoading,
+    isError: teamAttendanceError,
+    refetch: refetchTeamAttendance,
+  } = useGetTeamAttendanceQuery();
 
   useEffect(() => {
     if (profileData?.data) {
@@ -92,5 +100,9 @@ export const useDashboard = () => {
     approvalSummaryError,
     approvalSummaryApiError,
     refetchApprovalSummary,
+    teamAttendance,
+    teamAttendanceLoading,
+    teamAttendanceError,
+    refetchTeamAttendance,
   };
 };

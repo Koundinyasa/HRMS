@@ -53,10 +53,14 @@ export interface ProfileResponse {
   };
 }
 
+export type TeamAttendanceRow = Record<string, string | number | null>;
+
 export interface MenuResponse {
   success: boolean;
   data: MenuItem[];
 }
+
+export type TeamAttendanceResponse = TeamAttendanceRow[];
 
 export interface Holiday {
   HolidayId: number;

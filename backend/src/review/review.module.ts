@@ -7,5 +7,6 @@ import { DatabaseModule } from '../database/database.module';
   imports: [DatabaseModule],
   controllers: [ReviewController],
   providers: [ReviewService],
+  exports: [ReviewService],
 })
 export class ReviewModule {}
