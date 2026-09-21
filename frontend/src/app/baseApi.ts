@@ -10,21 +10,23 @@ export const baseApi = createApi({
     credentials: 'include',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('token');
-
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-
       return headers;
     },
   }),
   tagTypes: [
-    'Leave',
-    'AssetRequests',
-    'AssetTypes',
-    'Separation',
-    'HelpDesk',
-    'Employees',
+    "Leave",
+    "AssetRequests",
+    "AssetTypes",
+     "Separation",
+     "HelpDesk",
+     "Employees",
+     "HolidayMaster",
+     "Holiday",
+     "WeeklyOff",
+     "ForceLeaveApproval",
     'Punch',
     'TAInsights',
   ],
