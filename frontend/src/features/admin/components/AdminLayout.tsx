@@ -15,7 +15,6 @@ export default function AdminLayout() {
 
   const afterAdmin = location.pathname.split(`/${domain}/admin/`)[1] ?? "";
   const section = afterAdmin.split("/")[0];
-  console.log({ pathname: location.pathname, domain, afterAdmin, section }); 
 
   const subNavItems = SUB_NAV_REGISTRY[section];
 

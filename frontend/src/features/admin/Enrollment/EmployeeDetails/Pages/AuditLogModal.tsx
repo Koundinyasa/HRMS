@@ -1,5 +1,621 @@
+// import React, { useState, useMemo, useRef, useEffect } from "react";
+// import { Search, ChevronDown, X, Check } from "lucide-react";
+
+// export interface AuditLogEntry {
+//   id: string;
+//   recordDetails: string;
+//   recordChanges: string;
+//   actionTime: string;
+//   user: string;
+//   employeeName: string;
+// }
+
+// interface AuditLogModalProps {
+//   open: boolean;
+//   onClose: () => void;
+//   entries: AuditLogEntry[];
+//   onExport?: () => void;
+// }
+
+// /* ---------- filter dropdown ---------- */
+
+// interface FilterDropdownProps {
+//   label: string;
+//   options: string[];
+//   selected: string[];
+//   onChange: (next: string[]) => void;
+// }
+
+// const FilterDropdown: React.FC<FilterDropdownProps> = ({
+//   label,
+//   options,
+//   selected,
+//   onChange,
+// }) => {
+//   const [open, setOpen] = useState(false);
+//   const ref = useRef<HTMLDivElement | null>(null);
+
+//   useEffect(() => {
+//     if (!open) return;
+//     const onDown = (e: MouseEvent) => {
+//       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+//     };
+//     document.addEventListener("mousedown", onDown);
+//     return () => document.removeEventListener("mousedown", onDown);
+//   }, [open]);
+
+//   const toggle = (opt: string) =>
+//     onChange(
+//       selected.includes(opt)
+//         ? selected.filter((s) => s !== opt)
+//         : [...selected, opt]
+//     );
+
+//   return (
+//     <div ref={ref} className="relative">
+//       <button
+//         type="button"
+//         onClick={() => setOpen((v) => !v)}
+//         className={`flex h-[26px] items-center gap-1 px-1.5 text-[12.5px] transition-colors ${
+//           selected.length
+//             ? "font-semibold text-[#2D8CF0]"
+//             : "text-[#5B6B80] hover:text-[#1F2A37]"
+//         }`}
+//       >
+//         {label}
+//         {selected.length > 1 && ` (+${selected.length - 1})`}
+//         <ChevronDown size={13} />
+//       </button>
+
+//       {open && (
+//         <div className="absolute right-0 top-full z-10 mt-2 max-h-[240px] w-[210px] overflow-y-auto rounded-lg border border-[#E6EBF2] bg-white py-1.5 shadow-[0_8px_24px_rgba(16,24,40,0.12)]">
+//           {options.length === 0 && (
+//             <div className="px-3.5 py-2 text-[12.5px] text-[#8494AB]">
+//               Nothing to filter yet.
+//             </div>
+//           )}
+
+//           {options.map((opt) => (
+//             <button
+//               type="button"
+//               key={opt}
+//               onClick={() => toggle(opt)}
+//               className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-left text-[12.5px] font-medium text-[#33415C] hover:bg-[#F5F8FC]"
+//             >
+//               <span
+//                 className={`flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] ${
+//                   selected.includes(opt)
+//                     ? "bg-[#2D8CF0]"
+//                     : "border border-[#C6D0DD] bg-white"
+//                 }`}
+//               >
+//                 {selected.includes(opt) && (
+//                   <Check size={11} strokeWidth={3.5} className="text-white" />
+//                 )}
+//               </span>
+//               <span className="truncate">{opt}</span>
+//             </button>
+//           ))}
+
+//           {selected.length > 0 && (
+//             <div className="mt-1 border-t border-[#EEF2F7] pt-1">
+//               <button
+//                 type="button"
+//                 onClick={() => {
+//                   onChange([]);
+//                   setOpen(false);
+//                 }}
+//                 className="flex w-full items-center justify-center gap-1.5 py-1.5 text-[12.5px] font-medium text-[#F04438] hover:bg-[#FEF3F2]"
+//               >
+//                 <X size={13} strokeWidth={2.5} />
+//                 Clear
+//               </button>
+//             </div>
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// /* ---------- modal ---------- */
+
+// const GRID =
+//   "grid grid-cols-[minmax(240px,2fr)_minmax(150px,1.2fr)_minmax(160px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)]";
+
+// const AuditLogModal: React.FC<AuditLogModalProps> = ({
+//   open,
+//   onClose,
+//   entries,
+//   onExport,
+// }) => {
+//   const [query, setQuery] = useState("");
+//   const [userFilter, setUserFilter] = useState<string[]>([]);
+//   const [employeeFilter, setEmployeeFilter] = useState<string[]>([]);
+//   const [actionFilter, setActionFilter] = useState<string[]>([]);
+
+//   const users = useMemo(
+//     () => Array.from(new Set(entries.map((e) => e.user))).filter(Boolean),
+//     [entries]
+//   );
+//   const employees = useMemo(
+//     () => Array.from(new Set(entries.map((e) => e.employeeName))).filter(Boolean),
+//     [entries]
+//   );
+//   /* First word of the record detail is the action: "Unblocked", "Blocked", … */
+//   const actions = useMemo(
+//     () =>
+//       Array.from(
+//         new Set(entries.map((e) => e.recordDetails.split(" ")[0]))
+//       ).filter(Boolean),
+//     [entries]
+//   );
+
+//   const filtered = useMemo(() => {
+//     const q = query.trim().toLowerCase();
+//     const has = (list: string[], val: string) =>
+//       list.length === 0 || list.includes(val);
+
+//     return entries.filter(
+//       (e) =>
+//         (!q ||
+//           `${e.recordDetails} ${e.user} ${e.employeeName}`
+//             .toLowerCase()
+//             .includes(q)) &&
+//         has(userFilter, e.user) &&
+//         has(employeeFilter, e.employeeName) &&
+//         has(actionFilter, e.recordDetails.split(" ")[0])
+//     );
+//   }, [entries, query, userFilter, employeeFilter, actionFilter]);
+
+//   useEffect(() => {
+//     if (!open) return;
+//     const onEsc = (e: KeyboardEvent) => {
+//       if (e.key === "Escape") onClose();
+//     };
+//     document.addEventListener("keydown", onEsc);
+//     return () => document.removeEventListener("keydown", onEsc);
+//   }, [open, onClose]);
+
+//   if (!open) return null;
+
+//   return (
+//     <div
+//       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1F2A37]/45 px-6 py-8"
+//       onMouseDown={onClose}
+//     >
+//       <div
+//         onMouseDown={(e) => e.stopPropagation()}
+//         className="flex h-[85vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-[10px] bg-white shadow-[0_24px_60px_rgba(16,24,40,0.28)]"
+//       >
+//         {/* Header */}
+//         <div className="flex flex-shrink-0 items-center justify-between border-b border-[#EEF0F3] px-5 py-3.5">
+//           <h2 className="text-[15px] font-semibold text-[#2B3A55]">Audit Log</h2>
+//           <button
+//             type="button"
+//             onClick={onExport}
+//             title="Export to Excel"
+//             className="flex h-[26px] w-[26px] items-center justify-center rounded-[5px] bg-[#22A45D] text-[9px] font-bold tracking-tight text-white shadow-[0_1px_3px_rgba(34,164,93,0.4)] transition-colors hover:bg-[#1B8B4E]"
+//           >
+//             XLS
+//           </button>
+//         </div>
+
+//         {/* Search + filters */}
+//         <div className="flex flex-shrink-0 items-center gap-3 border-b border-[#EEF0F3] px-5 py-2.5">
+//           <div className="relative w-[260px]">
+//             <Search
+//               size={14}
+//               className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[#9FB3CC]"
+//             />
+//             <input
+//               value={query}
+//               onChange={(e) => setQuery(e.target.value)}
+//               placeholder="Start Typing..."
+//               className="h-[26px] w-full border-none bg-transparent pl-[22px] text-[12.5px] text-[#33415C] placeholder:text-[#9FB3CC] focus:outline-none"
+//             />
+//           </div>
+
+//           <div className="ml-auto flex items-center gap-1">
+//             <FilterDropdown
+//               label="User"
+//               options={users}
+//               selected={userFilter}
+//               onChange={setUserFilter}
+//             />
+//             <FilterDropdown
+//               label="Employee"
+//               options={employees}
+//               selected={employeeFilter}
+//               onChange={setEmployeeFilter}
+//             />
+//             <FilterDropdown
+//               label="Action"
+//               options={actions}
+//               selected={actionFilter}
+//               onChange={setActionFilter}
+//             />
+//           </div>
+//         </div>
+
+//         {/* Table */}
+//         <div className="flex-1 overflow-y-auto">
+//           <div
+//             className={`${GRID} sticky top-0 z-10 items-center border-b border-[#DDE9F8] bg-[#EAF2FD] py-2.5 text-[12.5px] font-semibold text-[#2B3A55]`}
+//           >
+//             <div className="px-5">Record Details</div>
+//             <div className="px-5">Record Changes</div>
+//             <div className="px-5">Action Time</div>
+//             <div className="px-5">User</div>
+//             <div className="px-5">Employee Name</div>
+//           </div>
+
+//           {filtered.length === 0 ? (
+//             <div className="px-5 py-12 text-center text-[13px] text-[#8494AB]">
+//               No audit records match these filters.
+//             </div>
+//           ) : (
+//             filtered.map((entry, i) => (
+//               <div
+//                 key={entry.id}
+//                 className={`${GRID} items-center border-b border-[#F1F3F6] py-3 text-[13px] text-[#33415C] ${
+//                   i === 0 ? "bg-[#F3F8FE]" : ""
+//                 }`}
+//               >
+//                 <div className="px-5">{entry.recordDetails}</div>
+//                 <div className="px-5 text-[#98A2B3]">
+//                   {entry.recordChanges || "—"}
+//                 </div>
+//                 <div className="px-5">{entry.actionTime}</div>
+//                 <div className="px-5">{entry.user}</div>
+//                 <div className="px-5">{entry.employeeName}</div>
+//               </div>
+//             ))
+//           )}
+//         </div>
+
+//         {/* Footer */}
+//         <div className="flex flex-shrink-0 items-center justify-end border-t border-[#EEF0F3] px-5 py-2.5">
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             className="flex h-[30px] items-center gap-1.5 rounded-[6px] border border-[#E0E3E8] px-4 text-[12.5px] font-medium text-[#5A6472] transition-colors hover:bg-[#F7F8FA]"
+//           >
+//             <X size={13} />
+//             Cancel
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AuditLogModal;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useMemo, useRef, useEffect } from "react";
+// import { Search, ChevronDown, X, Check } from "lucide-react";
+
+// export interface AuditLogEntry {
+//   id: string;
+//   recordDetails: string;
+//   recordChanges: string;
+//   actionTime: string;
+//   user: string;
+//   employeeName: string;
+// }
+
+// interface AuditLogModalProps {
+//   open: boolean;
+//   onClose: () => void;
+//   entries: AuditLogEntry[];
+//   onExport?: () => void;
+// }
+
+// /* ---------- filter dropdown ---------- */
+
+// interface FilterDropdownProps {
+//   label: string;
+//   options: string[];
+//   selected: string[];
+//   onChange: (next: string[]) => void;
+// }
+
+// const FilterDropdown: React.FC<FilterDropdownProps> = ({
+//   label,
+//   options,
+//   selected,
+//   onChange,
+// }) => {
+//   const [open, setOpen] = useState(false);
+//   const ref = useRef<HTMLDivElement | null>(null);
+
+//   useEffect(() => {
+//     if (!open) return;
+//     const onDown = (e: MouseEvent) => {
+//       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+//     };
+//     document.addEventListener("mousedown", onDown);
+//     return () => document.removeEventListener("mousedown", onDown);
+//   }, [open]);
+
+//   const toggle = (opt: string) =>
+//     onChange(
+//       selected.includes(opt)
+//         ? selected.filter((s) => s !== opt)
+//         : [...selected, opt]
+//     );
+
+//   return (
+//     <div ref={ref} className="relative">
+//       <button
+//         type="button"
+//         onClick={() => setOpen((v) => !v)}
+//         className={`flex h-[26px] items-center gap-1 px-1.5 text-[12.5px] transition-colors ${
+//           selected.length
+//             ? "font-semibold text-[#2D8CF0]"
+//             : "text-[#5B6B80] hover:text-[#1F2A37]"
+//         }`}
+//       >
+//         {label}
+//         {selected.length > 1 && ` (+${selected.length - 1})`}
+//         <ChevronDown size={13} />
+//       </button>
+
+//       {open && (
+//         <div className="absolute right-0 top-full z-10 mt-2 max-h-[240px] w-[210px] overflow-y-auto rounded-lg border border-[#E6EBF2] bg-white py-1.5 shadow-[0_8px_24px_rgba(16,24,40,0.12)]">
+//           {options.length === 0 && (
+//             <div className="px-3.5 py-2 text-[12.5px] text-[#8494AB]">
+//               Nothing to filter yet.
+//             </div>
+//           )}
+
+//           {options.map((opt) => (
+//             <button
+//               type="button"
+//               key={opt}
+//               onClick={() => toggle(opt)}
+//               className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-left text-[12.5px] font-medium text-[#33415C] hover:bg-[#F5F8FC]"
+//             >
+//               <span
+//                 className={`flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] ${
+//                   selected.includes(opt)
+//                     ? "bg-[#2D8CF0]"
+//                     : "border border-[#C6D0DD] bg-white"
+//                 }`}
+//               >
+//                 {selected.includes(opt) && (
+//                   <Check size={11} strokeWidth={3.5} className="text-white" />
+//                 )}
+//               </span>
+//               <span className="truncate">{opt}</span>
+//             </button>
+//           ))}
+
+//           {selected.length > 0 && (
+//             <div className="mt-1 border-t border-[#EEF2F7] pt-1">
+//               <button
+//                 type="button"
+//                 onClick={() => {
+//                   onChange([]);
+//                   setOpen(false);
+//                 }}
+//                 className="flex w-full items-center justify-center gap-1.5 py-1.5 text-[12.5px] font-medium text-[#F04438] hover:bg-[#FEF3F2]"
+//               >
+//                 <X size={13} strokeWidth={2.5} />
+//                 Clear
+//               </button>
+//             </div>
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// /* ---------- modal ---------- */
+
+// const GRID =
+//   "grid grid-cols-[minmax(240px,2fr)_minmax(150px,1.2fr)_minmax(160px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)]";
+
+// const AuditLogModal: React.FC<AuditLogModalProps> = ({
+//   open,
+//   onClose,
+//   entries,
+//   onExport,
+// }) => {
+//   const [query, setQuery] = useState("");
+//   const [userFilter, setUserFilter] = useState<string[]>([]);
+//   const [employeeFilter, setEmployeeFilter] = useState<string[]>([]);
+//   const [actionFilter, setActionFilter] = useState<string[]>([]);
+
+//   const users = useMemo(
+//     () => Array.from(new Set(entries.map((e) => e.user))).filter(Boolean),
+//     [entries]
+//   );
+//   const employees = useMemo(
+//     () => Array.from(new Set(entries.map((e) => e.employeeName))).filter(Boolean),
+//     [entries]
+//   );
+//   /* First word of the record detail is the action: "Unblocked", "Blocked", … */
+//   const actions = useMemo(
+//     () =>
+//       Array.from(
+//         new Set(entries.map((e) => e.recordDetails.split(" ")[0]))
+//       ).filter(Boolean),
+//     [entries]
+//   );
+
+//   const filtered = useMemo(() => {
+//     const q = query.trim().toLowerCase();
+//     const has = (list: string[], val: string) =>
+//       list.length === 0 || list.includes(val);
+
+//     return entries.filter(
+//       (e) =>
+//         (!q ||
+//           `${e.recordDetails} ${e.user} ${e.employeeName}`
+//             .toLowerCase()
+//             .includes(q)) &&
+//         has(userFilter, e.user) &&
+//         has(employeeFilter, e.employeeName) &&
+//         has(actionFilter, e.recordDetails.split(" ")[0])
+//     );
+//   }, [entries, query, userFilter, employeeFilter, actionFilter]);
+
+//   useEffect(() => {
+//     if (!open) return;
+//     const onEsc = (e: KeyboardEvent) => {
+//       if (e.key === "Escape") onClose();
+//     };
+//     document.addEventListener("keydown", onEsc);
+//     return () => document.removeEventListener("keydown", onEsc);
+//   }, [open, onClose]);
+
+//   if (!open) return null;
+
+//   return (
+//     <div
+//       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1F2A37]/45 px-6 py-8"
+//       onMouseDown={onClose}
+//     >
+//       <div
+//         onMouseDown={(e) => e.stopPropagation()}
+//         className="flex h-[85vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-[10px] bg-white shadow-[0_24px_60px_rgba(16,24,40,0.28)]"
+//       >
+//         {/* Header */}
+//         <div className="flex flex-shrink-0 items-center justify-between border-b border-[#EEF0F3] px-5 py-3.5">
+//           <h2 className="text-[15px] font-semibold text-[#2B3A55]">Audit Log</h2>
+//           <button
+//             type="button"
+//             onClick={onExport}
+//             title="Export to Excel"
+//             className="flex h-[26px] w-[26px] items-center justify-center rounded-[5px] bg-[#22A45D] text-[9px] font-bold tracking-tight text-white shadow-[0_1px_3px_rgba(34,164,93,0.4)] transition-colors hover:bg-[#1B8B4E]"
+//           >
+//             XLS
+//           </button>
+//         </div>
+
+//         {/* Search + filters */}
+//         <div className="flex flex-shrink-0 items-center gap-3 border-b border-[#EEF0F3] px-5 py-2.5">
+//           <div className="relative w-[260px]">
+//             <Search
+//               size={14}
+//               className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[#9FB3CC]"
+//             />
+//             <input
+//               value={query}
+//               onChange={(e) => setQuery(e.target.value)}
+//               placeholder="Start Typing..."
+//               className="h-[26px] w-full border-none bg-transparent pl-[22px] text-[12.5px] text-[#33415C] placeholder:text-[#9FB3CC] focus:outline-none"
+//             />
+//           </div>
+
+//           <div className="ml-auto flex items-center gap-1">
+//             <FilterDropdown
+//               label="User"
+//               options={users}
+//               selected={userFilter}
+//               onChange={setUserFilter}
+//             />
+//             <FilterDropdown
+//               label="Employee"
+//               options={employees}
+//               selected={employeeFilter}
+//               onChange={setEmployeeFilter}
+//             />
+//             <FilterDropdown
+//               label="Action"
+//               options={actions}
+//               selected={actionFilter}
+//               onChange={setActionFilter}
+//             />
+//           </div>
+//         </div>
+
+//         {/* Table */}
+//         <div className="flex-1 overflow-y-auto">
+//           <div
+//             className={`${GRID} sticky top-0 z-10 items-center border-b border-[#DDE9F8] bg-[#EAF2FD] py-2.5 text-[12.5px] font-semibold text-[#2B3A55]`}
+//           >
+//             <div className="px-5">Record Details</div>
+//             <div className="px-5">Record Changes</div>
+//             <div className="px-5">Action Time</div>
+//             <div className="px-5">User</div>
+//             <div className="px-5">Employee Name</div>
+//           </div>
+
+//           {filtered.length === 0 ? (
+//             <div className="px-5 py-12 text-center text-[13px] text-[#8494AB]">
+//               No audit records match these filters.
+//             </div>
+//           ) : (
+//             filtered.map((entry, i) => (
+//               <div
+//                 key={entry.id}
+//                 className={`${GRID} items-center border-b border-[#F1F3F6] py-3 text-[13px] text-[#33415C] ${
+//                   i === 0 ? "bg-[#F3F8FE]" : ""
+//                 }`}
+//               >
+//                 <div className="px-5">{entry.recordDetails}</div>
+//                 <div className="px-5 text-[#98A2B3]">
+//                   {entry.recordChanges || "—"}
+//                 </div>
+//                 <div className="px-5">{entry.actionTime}</div>
+//                 <div className="px-5">{entry.user}</div>
+//                 <div className="px-5">{entry.employeeName}</div>
+//               </div>
+//             ))
+//           )}
+//         </div>
+
+//         {/* Footer */}
+//         <div className="flex flex-shrink-0 items-center justify-end border-t border-[#EEF0F3] px-5 py-2.5">
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             className="flex h-[30px] items-center gap-1.5 rounded-[6px] border border-[#E0E3E8] px-4 text-[12.5px] font-medium text-[#5A6472] transition-colors hover:bg-[#F7F8FA]"
+//           >
+//             <X size={13} />
+//             Cancel
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AuditLogModal;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Search, ChevronDown, X, Check } from "lucide-react";
+import { Search, ChevronDown, X, Check, History, FileSpreadsheet } from "lucide-react";
 
 export interface AuditLogEntry {
   id: string;
@@ -13,11 +629,18 @@ export interface AuditLogEntry {
 interface AuditLogModalProps {
   open: boolean;
   onClose: () => void;
+  /** rows straight from the backend — the modal never invents data */
   entries: AuditLogEntry[];
-  onExport?: () => void;
+  isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
+  /** optional override; by default the modal exports the filtered rows itself */
+  onExport?: (rows: AuditLogEntry[]) => void;
 }
 
-/* ---------- filter dropdown ---------- */
+/* =========================================================
+   Filter dropdown (multi-select, staged until Apply)
+========================================================= */
 
 interface FilterDropdownProps {
   label: string;
@@ -56,46 +679,46 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex h-[26px] items-center gap-1 px-1.5 text-[12.5px] transition-colors ${
+        className={`flex h-[30px] items-center gap-1 rounded-[6px] border px-2.5 text-[12.5px] transition-colors ${
           selected.length
-            ? "font-semibold text-[#2D8CF0]"
-            : "text-[#5B6B80] hover:text-[#1F2A37]"
+            ? "border-[#FDBA74] bg-[#FFF7ED] font-semibold text-[#C2410C]"
+            : "border-[#E4E7EC] bg-white text-[#5B6B80] hover:bg-[#F9FAFB]"
         }`}
       >
         {label}
-        {selected.length > 1 && ` (+${selected.length - 1})`}
+        {selected.length > 0 && ` (${selected.length})`}
         <ChevronDown size={13} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-2 max-h-[240px] w-[210px] overflow-y-auto rounded-lg border border-[#E6EBF2] bg-white py-1.5 shadow-[0_8px_24px_rgba(16,24,40,0.12)]">
-          {options.length === 0 && (
+        <div className="absolute right-0 top-full z-20 mt-1.5 max-h-[240px] w-[220px] overflow-y-auto rounded-[8px] border border-[#E6EBF2] bg-white py-1.5 shadow-[0_8px_24px_rgba(16,24,40,0.12)]">
+          {options.length === 0 ? (
             <div className="px-3.5 py-2 text-[12.5px] text-[#8494AB]">
               Nothing to filter yet.
             </div>
-          )}
-
-          {options.map((opt) => (
-            <button
-              type="button"
-              key={opt}
-              onClick={() => toggle(opt)}
-              className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-left text-[12.5px] font-medium text-[#33415C] hover:bg-[#F5F8FC]"
-            >
-              <span
-                className={`flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] ${
-                  selected.includes(opt)
-                    ? "bg-[#2D8CF0]"
-                    : "border border-[#C6D0DD] bg-white"
-                }`}
+          ) : (
+            options.map((opt) => (
+              <button
+                type="button"
+                key={opt}
+                onClick={() => toggle(opt)}
+                className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-left text-[12.5px] font-medium text-[#33415C] hover:bg-[#FFF7ED]"
               >
-                {selected.includes(opt) && (
-                  <Check size={11} strokeWidth={3.5} className="text-white" />
-                )}
-              </span>
-              <span className="truncate">{opt}</span>
-            </button>
-          ))}
+                <span
+                  className={`flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] ${
+                    selected.includes(opt)
+                      ? "bg-[#F97316]"
+                      : "border border-[#C6D0DD] bg-white"
+                  }`}
+                >
+                  {selected.includes(opt) && (
+                    <Check size={11} strokeWidth={3.5} className="text-white" />
+                  )}
+                </span>
+                <span className="truncate">{opt}</span>
+              </button>
+            ))
+          )}
 
           {selected.length > 0 && (
             <div className="mt-1 border-t border-[#EEF2F7] pt-1">
@@ -118,22 +741,49 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
   );
 };
 
-/* ---------- modal ---------- */
+/* =========================================================
+   Modal
+========================================================= */
 
-const GRID =
-  "grid grid-cols-[minmax(240px,2fr)_minmax(150px,1.2fr)_minmax(160px,1.3fr)_minmax(110px,1fr)_minmax(170px,1.4fr)]";
+interface AppliedFilters {
+  query: string;
+  users: string[];
+  employees: string[];
+  actions: string[];
+}
+
+const EMPTY_FILTERS: AppliedFilters = {
+  query: "",
+  users: [],
+  employees: [],
+  actions: [],
+};
+
+/** first word of the record detail is the action: "Unblocked", "Blocked", … */
+const actionOf = (e: AuditLogEntry) => e.recordDetails.split(" ")[0] ?? "";
 
 const AuditLogModal: React.FC<AuditLogModalProps> = ({
   open,
   onClose,
   entries,
+  isLoading = false,
+  isError = false,
+  onRetry,
   onExport,
 }) => {
-  const [query, setQuery] = useState("");
-  const [userFilter, setUserFilter] = useState<string[]>([]);
-  const [employeeFilter, setEmployeeFilter] = useState<string[]>([]);
-  const [actionFilter, setActionFilter] = useState<string[]>([]);
+  // draft = what's in the controls, applied = what the table is filtered by
+  const [draft, setDraft] = useState<AppliedFilters>(EMPTY_FILTERS);
+  const [applied, setApplied] = useState<AppliedFilters>(EMPTY_FILTERS);
 
+  // reset every time the modal is reopened
+  useEffect(() => {
+    if (open) {
+      setDraft(EMPTY_FILTERS);
+      setApplied(EMPTY_FILTERS);
+    }
+  }, [open]);
+
+  // filter options are derived from the rows the backend returned
   const users = useMemo(
     () => Array.from(new Set(entries.map((e) => e.user))).filter(Boolean),
     [entries]
@@ -142,31 +792,27 @@ const AuditLogModal: React.FC<AuditLogModalProps> = ({
     () => Array.from(new Set(entries.map((e) => e.employeeName))).filter(Boolean),
     [entries]
   );
-  /* First word of the record detail is the action: "Unblocked", "Blocked", … */
   const actions = useMemo(
-    () =>
-      Array.from(
-        new Set(entries.map((e) => e.recordDetails.split(" ")[0]))
-      ).filter(Boolean),
+    () => Array.from(new Set(entries.map(actionOf))).filter(Boolean),
     [entries]
   );
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = applied.query.trim().toLowerCase();
     const has = (list: string[], val: string) =>
       list.length === 0 || list.includes(val);
 
     return entries.filter(
       (e) =>
         (!q ||
-          `${e.recordDetails} ${e.user} ${e.employeeName}`
+          `${e.recordDetails} ${e.recordChanges} ${e.user} ${e.employeeName}`
             .toLowerCase()
             .includes(q)) &&
-        has(userFilter, e.user) &&
-        has(employeeFilter, e.employeeName) &&
-        has(actionFilter, e.recordDetails.split(" ")[0])
+        has(applied.users, e.user) &&
+        has(applied.employees, e.employeeName) &&
+        has(applied.actions, actionOf(e))
     );
-  }, [entries, query, userFilter, employeeFilter, actionFilter]);
+  }, [entries, applied]);
 
   useEffect(() => {
     if (!open) return;
@@ -177,109 +823,211 @@ const AuditLogModal: React.FC<AuditLogModalProps> = ({
     return () => document.removeEventListener("keydown", onEsc);
   }, [open, onClose]);
 
+  const handleExport = () => {
+    if (onExport) {
+      onExport(filtered);
+      return;
+    }
+    if (!filtered.length) return;
+
+    const header = [
+      "Record Details",
+      "Record Changes",
+      "Action Time",
+      "User",
+      "Employee Name",
+    ];
+    const esc = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [
+      header.join(","),
+      ...filtered.map((e) =>
+        [e.recordDetails, e.recordChanges, e.actionTime, e.user, e.employeeName]
+          .map(esc)
+          .join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (!open) return null;
+
+  const showEmpty = !isLoading && !isError && filtered.length === 0;
 
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1F2A37]/45 px-6 py-8"
       onMouseDown={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Audit Log"
     >
       <div
         onMouseDown={(e) => e.stopPropagation()}
-        className="flex h-[85vh] w-full max-w-[1100px] flex-col overflow-hidden rounded-[10px] bg-white shadow-[0_24px_60px_rgba(16,24,40,0.28)]"
+        className="flex h-[80vh] w-full max-w-[1000px] flex-col overflow-hidden rounded-[12px] bg-white shadow-[0_24px_60px_rgba(16,24,40,0.28)]"
       >
-        {/* Header */}
+        {/* ---------- HEADER ---------- */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-[#EEF0F3] px-5 py-3.5">
-          <h2 className="text-[15px] font-semibold text-[#2B3A55]">Audit Log</h2>
+          <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#2B3A55]">
+            <History size={16} className="text-[#5B6B80]" />
+            Audit Log
+          </h2>
           <button
             type="button"
-            onClick={onExport}
-            title="Export to Excel"
-            className="flex h-[26px] w-[26px] items-center justify-center rounded-[5px] bg-[#22A45D] text-[9px] font-bold tracking-tight text-white shadow-[0_1px_3px_rgba(34,164,93,0.4)] transition-colors hover:bg-[#1B8B4E]"
+            onClick={onClose}
+            aria-label="Close audit log"
+            className="flex h-[26px] w-[26px] items-center justify-center rounded-[6px] text-[#98A2B3] transition-colors hover:bg-[#F2F4F7] hover:text-[#344054]"
           >
-            XLS
+            <X size={16} />
           </button>
         </div>
 
-        {/* Search + filters */}
-        <div className="flex flex-shrink-0 items-center gap-3 border-b border-[#EEF0F3] px-5 py-2.5">
-          <div className="relative w-[260px]">
+        {/* ---------- SEARCH + FILTERS ---------- */}
+        <div className="flex flex-shrink-0 flex-wrap items-center gap-2 border-b border-[#EEF0F3] px-5 py-3">
+          <div className="relative w-[240px]">
             <Search
               size={14}
-              className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[#9FB3CC]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9FB3CC]"
             />
             <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Start Typing..."
-              className="h-[26px] w-full border-none bg-transparent pl-[22px] text-[12.5px] text-[#33415C] placeholder:text-[#9FB3CC] focus:outline-none"
+              value={draft.query}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, query: e.target.value }))
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") setApplied(draft);
+              }}
+              placeholder="Start typing..."
+              className="h-[30px] w-full rounded-[6px] border border-[#E4E7EC] bg-[#F9FAFB] pl-8 pr-3 text-[12.5px] text-[#33415C] outline-none placeholder:text-[#9FB3CC] focus:border-[#F97316] focus:bg-white"
             />
           </div>
 
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-2">
             <FilterDropdown
               label="User"
               options={users}
-              selected={userFilter}
-              onChange={setUserFilter}
+              selected={draft.users}
+              onChange={(users) => setDraft((d) => ({ ...d, users }))}
             />
             <FilterDropdown
               label="Employee"
               options={employees}
-              selected={employeeFilter}
-              onChange={setEmployeeFilter}
+              selected={draft.employees}
+              onChange={(employees) => setDraft((d) => ({ ...d, employees }))}
             />
             <FilterDropdown
               label="Action"
               options={actions}
-              selected={actionFilter}
-              onChange={setActionFilter}
+              selected={draft.actions}
+              onChange={(actions) => setDraft((d) => ({ ...d, actions }))}
             />
+            <button
+              type="button"
+              onClick={() => setApplied(draft)}
+              className="h-[30px] rounded-[6px] bg-[#F97316] px-4 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#EA6A0B]"
+            >
+              Apply
+            </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-y-auto">
-          <div
-            className={`${GRID} sticky top-0 z-10 items-center border-b border-[#DDE9F8] bg-[#EAF2FD] py-2.5 text-[12.5px] font-semibold text-[#2B3A55]`}
+        {/* ---------- TABLE ---------- */}
+        <div className="flex-1 overflow-auto">
+          <table className="w-full min-w-[820px] border-collapse text-left text-[13px]">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-[#FED7AA] bg-[#FFF1E6] text-[12px] font-semibold text-[#9A3412]">
+                <th className="px-5 py-3">Record Details</th>
+                <th className="px-5 py-3">Record Changes</th>
+                <th className="px-5 py-3">Action Time</th>
+                <th className="px-5 py-3">User</th>
+                <th className="px-5 py-3">Employee Name</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-5 py-14 text-center text-[13px] text-[#98A2B3]"
+                  >
+                    Loading audit log…
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-14 text-center">
+                    <p className="text-[13px] text-[#D92D20]">
+                      Couldn't load the audit log.
+                    </p>
+                    {onRetry && (
+                      <button
+                        type="button"
+                        onClick={onRetry}
+                        className="mt-1 text-[12px] font-medium text-[#C2410C] underline"
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ) : showEmpty ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-5 py-14 text-center text-[13px] text-[#8494AB]"
+                  >
+                    {entries.length === 0
+                      ? "No audit records yet."
+                      : "No audit records match these filters."}
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((entry) => (
+                  <tr
+                    key={entry.id}
+                    className="border-b border-[#F1F3F6] text-[#33415C] transition-colors last:border-b-0 hover:bg-[#FFFBF5]"
+                  >
+                    <td className="px-5 py-3">{entry.recordDetails}</td>
+                    <td className="px-5 py-3 text-[#98A2B3]">
+                      {entry.recordChanges || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-3">
+                      {entry.actionTime}
+                    </td>
+                    <td className="px-5 py-3">{entry.user}</td>
+                    <td className="px-5 py-3">{entry.employeeName}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ---------- FOOTER ---------- */}
+        <div className="flex flex-shrink-0 items-center justify-between border-t border-[#EEF0F3] px-5 py-3">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-1.5 text-[12.5px] font-medium text-[#22A45D] transition-colors hover:text-[#1B8B4E] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <div className="px-5">Record Details</div>
-            <div className="px-5">Record Changes</div>
-            <div className="px-5">Action Time</div>
-            <div className="px-5">User</div>
-            <div className="px-5">Employee Name</div>
-          </div>
+            <FileSpreadsheet size={15} />
+            Export to Excel
+          </button>
 
-          {filtered.length === 0 ? (
-            <div className="px-5 py-12 text-center text-[13px] text-[#8494AB]">
-              No audit records match these filters.
-            </div>
-          ) : (
-            filtered.map((entry, i) => (
-              <div
-                key={entry.id}
-                className={`${GRID} items-center border-b border-[#F1F3F6] py-3 text-[13px] text-[#33415C] ${
-                  i === 0 ? "bg-[#F3F8FE]" : ""
-                }`}
-              >
-                <div className="px-5">{entry.recordDetails}</div>
-                <div className="px-5 text-[#98A2B3]">
-                  {entry.recordChanges || "—"}
-                </div>
-                <div className="px-5">{entry.actionTime}</div>
-                <div className="px-5">{entry.user}</div>
-                <div className="px-5">{entry.employeeName}</div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex flex-shrink-0 items-center justify-end border-t border-[#EEF0F3] px-5 py-2.5">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-[30px] items-center gap-1.5 rounded-[6px] border border-[#E0E3E8] px-4 text-[12.5px] font-medium text-[#5A6472] transition-colors hover:bg-[#F7F8FA]"
+            className="flex h-[32px] items-center gap-1.5 rounded-[6px] border border-[#E0E3E8] px-4 text-[12.5px] font-medium text-[#5A6472] transition-colors hover:bg-[#F7F8FA]"
           >
             <X size={13} />
             Cancel

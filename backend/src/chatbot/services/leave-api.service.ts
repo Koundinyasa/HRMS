@@ -28,42 +28,52 @@ export class LeaveApiService {
     return { Cookie: `access_token=${token}` };
   }
 
-  // Public — no auth required per the real controller.
-  async getLeaveTypes() {
-    const res = await firstValueFrom(this.http.get(`${BASE_URL}/leavetypes`));
-    return res.data;
-  }
+  // NOTE: /leavetypes IS guarded by JwtAuthGuard on the real controller
+  // (unlike /holidaylist below, which really is public) — it needs the
+  // minted cookie too, or the guard rejects it with "Token missing or
+  // invalid" before this call ever reaches LeaveService.
 
-  // Public — no auth required per the real controller.
-  async getHolidayList() {
-    const res = await firstValueFrom(this.http.get(`${BASE_URL}/holidaylist`));
+  async getLeaveTypes(user: Record<string, any>) {
+    const res = await firstValueFrom(
+      this.http.get(`${BASE_URL}/leavetypes`, {
+        headers: this.mintCookieHeader(user),
+      }),
+    );
     return res.data;
   }
 
   async getLeaveBalance(user: Record<string, any>) {
     const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/balance`, { headers: this.mintCookieHeader(user) }),
+      this.http.get(`${BASE_URL}/balance`, {
+        headers: this.mintCookieHeader(user),
+      }),
     );
     return res.data;
   }
 
   async getLeaveHistory(user: Record<string, any>) {
     const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/history`, { headers: this.mintCookieHeader(user) }),
+      this.http.get(`${BASE_URL}/history`, {
+        headers: this.mintCookieHeader(user),
+      }),
     );
     return res.data;
   }
 
   async getLeaveStatus(user: Record<string, any>) {
     const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/status`, { headers: this.mintCookieHeader(user) }),
+      this.http.get(`${BASE_URL}/status`, {
+        headers: this.mintCookieHeader(user),
+      }),
     );
     return res.data;
   }
 
   async getPendingLeaveRequests(user: Record<string, any>) {
     const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/pending`, { headers: this.mintCookieHeader(user) }),
+      this.http.get(`${BASE_URL}/pending`, {
+        headers: this.mintCookieHeader(user),
+      }),
     );
     return res.data;
   }

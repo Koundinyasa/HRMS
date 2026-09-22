@@ -1,8 +1,5 @@
 import { Navigate, Route } from "react-router-dom";
-
-
 import AdminCenterPage from "../pages/AdminCenterPage";
-
 //Company
 import CompanyDetailsPage from "../company/pages/CompanyDetailsPage";
 import CompanyDocumentsPage from "../company/pages/CompanyDocumentsPage";

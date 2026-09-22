@@ -1,30 +1,21 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { applyTheme } from "../../employee/components/theme";
- 
+import { applyTheme } from "../../employee/components/theme"; 
 import { useLoginMutation, useLazyGetCaptchaQuery } from "../api/authApi";
 import { loginSuccess } from "../authSlice";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
-import { showPageLoader } from "../../employee/employeeSlice";
- 
+import { showPageLoader } from "../../employee/employeeSlice"; 
 import type { LoginFormData } from "../validation/loginSchema";
  
 export const useLogin = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { domain } = useParams();
- 
-  const [triggerGetCaptcha, { data: captcha, isFetching: captchaLoading }] =
-    useLazyGetCaptchaQuery();
- 
+  const { domain } = useParams(); 
+  const [triggerGetCaptcha, { data: captcha, isFetching: captchaLoading }] =useLazyGetCaptchaQuery();
   const [triggerLogin] = useLoginMutation();
- 
-  const hasFetched = useRef(false); // StrictMode guard
- 
-  const loadCaptcha = useCallback(() => {
-    triggerGetCaptcha();
-  }, [triggerGetCaptcha]);
+  const hasFetched = useRef(false); 
+  const loadCaptcha = useCallback(() => {triggerGetCaptcha();}, [triggerGetCaptcha]);
  
   useEffect(() => {
     if (hasFetched.current) return;
@@ -52,12 +43,10 @@ export const useLogin = () => {
       applyTheme("blue");
       dispatch(showPageLoader());
       toast.success("Login successful.");
- 
       if (response.isFirstLogin) {
         navigate(`/${domain}/first-login-reset-password`);
         return;
       }
- 
       const roleId =
         (response.data as any)?.roleId ?? (response as any)?.roleId;
  
@@ -77,7 +66,6 @@ export const useLogin = () => {
       } else {
         toast.error(message);
       }
- 
       loadCaptcha();
     }
   };

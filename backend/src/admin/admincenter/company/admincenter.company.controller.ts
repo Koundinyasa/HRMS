@@ -12,10 +12,12 @@ import {
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../../common/guards/permission.guard';
 import { AdmincentercompanyService} from './admincenter.company.service';
-
 import { CompanyConfigurationDto } from './dto/company-configuration.dto';
 import { PFConfigurationDto, PFDefaultConfigurationDto } from './dto/pf-configuration.dto';
-import { ESIConfigurationDto, ESIDefaultConfigurationDto } from './dto/esi-configuration.dto';
+import {
+  ESIConfigurationDto,
+  ESIDefaultConfigurationDto,
+} from './dto/esi-configuration.dto';
 import { PTConfigurationDto, PTConfigurationResponseDto } from './dto/pt-configuration.dto';
 import { LWFConfigurationDto, LWFDefaultConfigurationDto } from './dto/lwf-configuration.dto';
 import { EstablishmentConfigurationDto } from './dto/establishment-configuration.dto';
