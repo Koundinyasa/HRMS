@@ -1,411 +1,324 @@
+// import {
+//   Controller,
+//   Get,
+//   Post,
+//   Put,
+//   Body,
+//   Req,
+//   UploadedFile,
+//   UseGuards,
+//   UseInterceptors,
+// } from '@nestjs/common';
+// import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+// import { PermissionGuard } from '../../../common/guards/permission.guard';
+// import { AdmincentercompanyService} from './admincenter.company.service';
+ 
+// import { CompanyConfigurationDto } from './dto/company-configuration.dto';
+// import { PFConfigurationDto, PFDefaultConfigurationDto } from './dto/pf-configuration.dto';
+// import { ESIConfigurationDto, ESIDefaultConfigurationDto } from './dto/esi-configuration.dto';
+// import { PTConfigurationDto, PTConfigurationResponseDto } from './dto/pt-configuration.dto';
+// import { LWFConfigurationDto, LWFDefaultConfigurationDto } from './dto/lwf-configuration.dto';
+// import { EstablishmentConfigurationDto } from './dto/establishment-configuration.dto';
+// import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/file.interceptor';
+// import { diskStorage } from 'multer';
+// import { Permission } from '../../../common/decorators/permission.decorator';
+ 
+// const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
+ 
+// @Controller('admin/configuration')
+// @UseGuards(JwtAuthGuard, PermissionGuard)
+// export class AdmincentercompanyController {
+//   constructor(
+//     private readonly admincenterService: AdmincentercompanyService,
+//   ) {}
+ 
+//   @Get('company')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
+//   getCompanyConfiguration(
+//     @Req() req,
+//   ): Promise<CompanyConfigurationDto> {
+//     return this.admincenterService.getCompanyConfiguration(
+//       req.user.companyId,
+//     );
+//   }
+ 
+//   @Get('pf')
+//   getPFConfiguration(
+//     @Req() req,
+//   ): Promise<PFConfigurationDto> {
+//     return this.admincenterService.getPFConfiguration(
+//       req.user.companyId,
+//     );
+//   }
+ 
+//   @Get('esi')
+//   getESIConfiguration(
+//     @Req() req,
+//   ): Promise<ESIConfigurationDto> {
+//     return this.admincenterService.getESIConfiguration(
+//       req.user.companyId,
+//     );
+//   }
+ 
+//   // @Get('pt')
+//   // getPTConfiguration(
+//   //   @Req() req,
+//   // ): Promise<PTConfigurationDto> {
+//   //   return this.admincenterService.getPTConfiguration(
+//   //     req.user.companyId,
+//   //   );
+//   // }
+ 
+//   @Get('pt')
+//   getPTConfiguration(
+//     @Req() req,
+//   ): Promise<PTConfigurationResponseDto> {
+//     return this.admincenterService.getPTConfiguration(
+//       req.user.companyId,
+//     );
+//   }
+ 
+//   @Get('lwf')
+//   getLWFConfiguration(
+//     @Req() req,
+//   ): Promise<LWFConfigurationDto> {
+//     return this.admincenterService.getLWFConfiguration(
+//       req.user.companyId,
+//     );
+//   }
+ 
+//   @Get('establishment')
+//   getEstablishmentConfiguration(
+//     @Req() req,
+//   ): Promise<EstablishmentConfigurationDto> {
+//     return this.admincenterService.getEstablishmentConfiguration(
+//       req.user.companyId,
+//     );
+//   }
+ 
+ 
+ 
+// @Put('company')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   updateCompanyConfiguration(
+//     @Req() req,
+//     @Body() dto: CompanyConfigurationDto,
+//   ): Promise<void> {
+ 
+//     return this.admincenterService.updateCompanyConfiguration(
+//       req.user.companyId,
+//       req.user.createdBy,
+//       dto,
+//     );
+//   }
+ 
+//   // @Put('pf')
+//   // @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   // updatePFConfiguration(
+//   //   @Req() req,
+//   //   @Body() dto: PFDefaultConfigurationDto,
+//   // ): Promise<void> {
+//   //   return this.admincenterService.updatePFConfiguration(
+//   //     req.user.companyId,
+//   //     req.user.createdBy,
+//   //     dto,
+//   //   );
+//   //
+ 
+ 
+ 
+ 
+ 
+//    @Put('pf')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   updatePFConfiguration(
+//     @Req() req,
+//     @Body() dto: PFDefaultConfigurationDto,
+//   ): Promise<any> {
+ 
+//     return this.admincenterService.updatePFConfiguration(
+//       req.user.companyId,
+//       req.user.createdBy,
+//       dto,
+//     );
+//   }
+ 
+//   @Put('esi')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   updateESIConfiguration(
+//     @Req() req,
+//     @Body() dto: ESIDefaultConfigurationDto,
+//   ): Promise<void> {
+//     return this.admincenterService.updateESIConfiguration(
+//       req.user.companyId,
+//       req.user.createdBy,
+//       dto,
+//     );
+//   }
+ 
+ 
+//   @Put('lwf')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   updateLWFConfiguration(
+//     @Req() req,
+//     @Body() dto: LWFDefaultConfigurationDto,
+//   ): Promise<void> {
+//     return this.admincenterService.updateLWFConfiguration(
+//       req.user.companyId,
+//       req.user.createdBy,
+//       dto,
+//     );
+//   }
+ 
+//   // @Put('pt')
+//   // @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   // updatePTConfiguration(
+//   //   @Req() req,
+//   //   @Body() dto: PTConfigurationDto,
+//   // ): Promise<void> {
+//   //   return this.admincenterService.updatePTConfiguration(
+//   //     req.user.companyId,
+//   //     req.user.createdBy,
+//   //     dto,
+//   //   );
+//   // }
+ 
+ 
+ 
+ 
+//    @Put('pt')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   updatePTConfiguration(
+//     @Req() req,
+//     @Body() dto: PTConfigurationDto,
+//   ): Promise<void> {
+//     return this.admincenterService.updatePTConfiguration(
+//       req.user.companyId,
+//       req.user.createdBy,
+//       dto,
+//     );
+//   }
+     
+ 
+//   @Put('establishment')
+//   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
+//   updateEstablishmentConfiguration(
+//     @Req() req,
+//     @Body() dto: EstablishmentConfigurationDto,
+//   ): Promise<void> {
+//     return this.admincenterService.updateEstablishmentConfiguration(
+//       req.user.companyId,
+//       req.user.createdBy,
+//       dto,
+//     );
+//   }
+ 
+ 
+//   @Post('documents/upload')
+//   @UseInterceptors(
+//     FileInterceptor('file', {
+//       storage: diskStorage({
+//         destination: './uploads/company-documents',
+//         filename: (req, file, cb) => {
+//           const uniqueName = `${Date.now()}-${file.originalname}`;
+//           cb(null, uniqueName);
+//         },
+//       }),
+//     }),
+//   )
+//   uploadDocument(@UploadedFile() file: Express.Multer.File) {
+//     return this.admincenterService.uploadDocument(file);
+//   }
+// }
+ 
+ 
 import {
+  BadRequestException,
+  Body,
   Controller,
   Get,
-  Post,
-  Put,
   Param,
-  Body,
-  Query,
+  Post,
   Req,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
-  ParseIntPipe,
 } from '@nestjs/common';
-
-import { FileInterceptor } from '@nestjs/platform-express';
-
+ 
 import { EmployeeDetailsService } from './employee-details.service';
-
-import { GetEmployeesDto } from './dto/get-employees.dto';
-import { CreateEmployeeGroupDto } from './dto/create-employee-group.dto';
-import { UpdatePendingCandidateDto } from './dto/update-pending-candidate.dto';
-import { UpdateGeneralDto } from './dto/update-general.dto';
-import { UpdateClassificationDto } from './dto/update-classification.dto';
-import { UpdateStatutoryDto } from './dto/update-statutory.dto';
-import { UpdateAddressDto } from './dto/update-address.dto';
-import { UpdateHrCategoryDto } from './dto/update-hrcategory.dto';
-import { UpdateDocumentsDto } from './dto/update-documents.dto';
-import { UpdateSalaryRateDto } from './dto/update-salary-rate.dto';
-import { UnblockUserDto } from './dto/unblock-user.dto';
-import { ImportEmployeeDto } from './dto/import-employee.dto';
-
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-
-@Controller('enrollment/employeedetails')
+import { OrganizationChartDto } from './dto/organization-chart.dto';
+import { UpdateEmployeeGeneralDetailsDto } from './dto/update-employee-general-details.dto';
+ 
+@Controller('admin/employee-details')
 @UseGuards(JwtAuthGuard)
 export class EmployeeDetailsController {
   constructor(
     private readonly employeeDetailsService: EmployeeDetailsService,
-  ) {}
-  // =========================================================
-  // 3. Employee List
-  // =========================================================
-
-  @Get('employeelist')
-  async getEmployees(@Query() dto: GetEmployeesDto) {
-    return this.employeeDetailsService.getEmployees(dto);
-  }
-
-  //=====================================
-  //Get Employees
-  //=====================================
-  // @Get('details/:employeeId')
-  // async getEmployeeDetails(@Param('employeeId') employeeId: string) {
-  //   return this.employeeDetailsService.getEmployeeDetails(employeeId);
-  // }
-
+  ) { }
+ 
   // ==========================================
   // Employees By Company
   // ==========================================
-
-  // @Get('employees/:companyId')
-  // async getEmployeesByCompanyId(@Param('companyId') companyId: string) {
-  //   return this.employeeDetailsService.getEmployeesByCompanyId(
-  //     Number(companyId),
-  //   );
-  // }
-
-  // =========================================================
-  // 4. Employee Groups
-  // =========================================================
-
-  @Get('employeegroups')
-  async getEmployeeGroups() {
-    return this.employeeDetailsService.getEmployeeGroups();
-  }
-
-  // =========================================================
-  // 5. Employees for Group Selection
-  // =========================================================
-
-  @Get('employeegroups/employees')
-  async getEmployeeGroupEmployees() {
-    return this.employeeDetailsService.getEmployeeGroupEmployees();
-  }
-
-  // =========================================================
-  // 6. Create / Save Employee Group
-  // =========================================================
-
-  @Post('employeegroups')
-  async createEmployeeGroup(
-    @Body() dto: CreateEmployeeGroupDto,
-    @Req() req: any,
-  ) {
-    const createdBy = req.user.createdBy;
-
-    return this.employeeDetailsService.createEmployeeGroup(dto, createdBy);
-  }
-
-  // =========================================================
-  // 7. Pending Candidates
-  // =========================================================
-
-  @Get('pendingcandidates')
-  async getPendingCandidates() {
-    return this.employeeDetailsService.getPendingCandidates();
-  }
-
-  // =========================================================
-  // 8. Pending Candidate Details
-  // =========================================================
-
-  @Get('pendingcandidates/:employeeId')
-  async getPendingCandidateDetails(@Param('employeeId') employeeId: string) {
-    return this.employeeDetailsService.getPendingCandidateDetails(employeeId);
-  }
-
-  // =========================================================
-  // 9. Update Pending Candidate
-  // =========================================================
-
-  @Put('pendingcandidates/:employeeId')
-  async updatePendingCandidate(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdatePendingCandidateDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updatePendingCandidate(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 10. General
-  // =========================================================
-
-  @Put(':employeeId/general')
-  async updateGeneral(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdateGeneralDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateGeneral(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 11. Classification
-  // =========================================================
-
-  @Put(':employeeId/classification')
-  async updateClassification(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdateClassificationDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateClassification(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 12. Statutory
-  // =========================================================
-
-  @Put(':employeeId/statutory')
-  async updateStatutory(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdateStatutoryDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateStatutory(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 13. Address
-  // =========================================================
-
-  @Put(':employeeId/address')
-  async updateAddress(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdateAddressDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateAddress(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 14. HR Category
-  // =========================================================
-
-  @Put(':employeeId/hrcategory')
-  async updateHrCategory(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdateHrCategoryDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateHrCategory(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 15. Documents
-  // =========================================================
-
-  @Post(':employeeId/documents')
-  @UseInterceptors(FileInterceptor('file'))
-  async updateDocuments(
-    @Param('employeeId') employeeId: string,
-    @UploadedFile() file: any,
-    @Body() dto: UpdateDocumentsDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateDocuments(
-      employeeId,
-      file,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 16. Salary Rate
-  // =========================================================
-
-  @Put(':employeeId/salaryrate')
-  async updateSalaryRate(
-    @Param('employeeId') employeeId: string,
-    @Body() dto: UpdateSalaryRateDto,
-    @Req() req: any,
-  ) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.updateSalaryRate(
-      employeeId,
-      dto,
-      modifiedBy,
-    );
-  }
-
-  // =========================================================
-  // 17. Organization Chart
-  // =========================================================
-
-  @Get('organizationchart')
-  async getOrganizationChart(
-    @Query('employeeId') employeeId?: string,
-    @Query('view') view?: string,
-    @Query('branchId') branchId?: string,
-    @Query('departmentId') departmentId?: string,
-  ) {
-    return this.employeeDetailsService.getOrganizationChart(
-      employeeId,
-      view,
-      branchId,
-      departmentId,
-    );
-  }
-
-  // =========================================================
-  // 18. Organization Chart Download
-  // =========================================================
-
-  @Get('organizationchart/download')
-  async downloadOrganizationChart(
-    @Query('employeeId') employeeId?: string,
-    @Query('view') view?: string,
-    @Query('branchId') branchId?: string,
-    @Query('departmentId') departmentId?: string,
-  ) {
-    return this.employeeDetailsService.downloadOrganizationChart(
-      employeeId,
-      view,
-      branchId,
-      departmentId,
-    );
-  }
-
-  // =========================================================
-  // 19. Reset Blocked Users
-  // =========================================================
-
-  @Get('resetblockedusers')
-  async getResetBlockedUsers() {
-    return this.employeeDetailsService.getResetBlockedUsers();
-  }
-
-  // =========================================================
-  // 20. Unblock User
-  // =========================================================
-
-  @Put('resetblockedusers/unblock')
-  async unblockUser(@Body() dto: UnblockUserDto, @Req() req: any) {
-    const modifiedBy = req.user.createdBy;
-
-    return this.employeeDetailsService.unblockUser(dto, modifiedBy);
-  }
-
-  // =========================================================
-  // 21. Audit Log
-  // =========================================================
-
-  @Get('auditlog')
-  async getAuditLog(
-    @Query('search') search?: string,
-    @Query('userId') userId?: string,
-    @Query('employeeId') employeeId?: string,
-    @Query('action') action?: string,
-  ) {
-    return this.employeeDetailsService.getAuditLog(
-      search,
-      userId,
-      employeeId,
-      action,
-    );
-  }
-
-  // =========================================================
-  // 22. Import Template Types
-  // =========================================================
-
-  @Get('import/templatetypes')
-  async getImportTemplateTypes() {
-    return this.employeeDetailsService.getImportTemplateTypes();
-  }
-
-  // =========================================================
-  // 23. Download Import Template
-  // =========================================================
-
-  @Get('import/template')
-  async getImportTemplate(
-    @Query('templateTypeId', ParseIntPipe)
-    templateTypeId: number,
-  ) {
-    return this.employeeDetailsService.getImportTemplate(templateTypeId);
-  }
-
-  // =========================================================
-  // 24. Import Employee
-  // =========================================================
-
-  @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
-  async importEmployee(
-    @UploadedFile() file: any,
-    @Body() dto: ImportEmployeeDto,
-    @Req() req: any,
-  ) {
-    const createdBy = req.user.createdBy;
-
-    return this.employeeDetailsService.importEmployee(file, dto, createdBy);
-  }
-
-  // List endpoint — powers the dashboard drill-through / EmployeePage1
+ 
   @Get('employees')
-  async getEmployeesByCompanyId(
+  async getEmployeesByCompanyId(@Req() req: any) {
+    const companyId = req.user?.companyId;
+ 
+    if (!companyId) {
+      throw new BadRequestException(
+        'CompanyId not found in JWT',
+      );
+    }
+ 
+    return this.employeeDetailsService.getEmployeesByCompanyId(
+      Number(companyId),
+    );
+  }
+ 
+  // ==========================================
+  // Get Employee Details
+  // ==========================================
+ 
+  @Get(':employeeId')
+  async getEmployeeDetails(
+    @Param('employeeId') employeeId: string,
+  ) {
+    return this.employeeDetailsService.getEmployeeDetails(
+      employeeId,
+    );
+  }
+ 
+  // ==========================================
+  // Organization Chart
+  // ==========================================
+ 
+  @Post('organization-chart')
+  async getOrganizationChart(
+    @Body() dto: OrganizationChartDto,
     @Req() req: any,
-    @Query('flag', ParseIntPipe) flag: number,
-    @Query('month') month?: string,
-    @Query('year') year?: string,
   ) {
     const companyId = req.user.companyId;
-
-    return this.employeeDetailsService.getEmployeesByCompanyId(
+ 
+    return this.employeeDetailsService.getOrganizationChart(
+      dto,
       companyId,
-      flag,
-      month ? Number(month) : undefined,
-      year ? Number(year) : undefined,
     );
   }
-
-  // Single-employee detail page — powers EmployeeDetailsPage
-  @Get('details/:employeeId')
-  async getEmployeeDetails(@Param('employeeId') employeeId: string) {
-    return this.employeeDetailsService.getEmployeeDetails(employeeId);
+ 
+  // ==========================================
+  // Update General Details
+  // ==========================================
+ 
+  @Post('general-details/update')
+  async updateEmployeeGeneralDetails(
+    @Body() dto: UpdateEmployeeGeneralDetailsDto,
+    @Req() req: any,
+  ) {
+    const modifiedBy = Number(req.user?.createdBy);
+ 
+ 
+    return this.employeeDetailsService.updateEmployeeGeneralDetails(
+      dto,
+      modifiedBy,
+    );
   }
 }

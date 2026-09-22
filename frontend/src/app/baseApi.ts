@@ -8,27 +8,20 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL,
     credentials: 'include',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
   }),
   tagTypes: [
     "Leave",
     "AssetRequests",
     "AssetTypes",
-     "Separation",
-     "HelpDesk",
-     "Employees",
-     "HolidayMaster",
-     "Holiday",
-     "WeeklyOff",
-     "ForceLeaveApproval",
-    'Punch',
-    'TAInsights',
+    "Separation",
+    "HelpDesk",
+    "Employees",
+    "HolidayMaster",
+    "Holiday",
+    "WeeklyOff",
+    "ForceLeaveApproval",
+    "Punch",
+    "TAInsights",
   ],
   endpoints: () => ({}),
 });

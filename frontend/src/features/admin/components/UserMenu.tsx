@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { KeyRound, HelpCircle, LogOut, ChevronDown } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { logout } from "@/features/auth/authSlice";
 import { useLogoutMutation } from "@/features/auth/api/authApi";
 
 interface UserMenuProps {
@@ -14,7 +15,7 @@ interface UserMenuProps {
 export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { domain } = useParams();
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
@@ -41,7 +42,8 @@ export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProp
     } catch (err) {
       console.error("Logout request failed:", err);
     } finally {
-      navigate(`/${domain}/login`);
+      dispatch(logout());
+      navigate(`/${domain}/login`, { replace: true });
     }
   };
 

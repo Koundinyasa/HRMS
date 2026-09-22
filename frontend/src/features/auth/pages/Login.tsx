@@ -1,4 +1,3 @@
-
 import LoginForm from "../components/LoginForm";
 import bgImage from "@/assets/images/background-bg.png";
 import peopleImage from "@/assets/images/people.png";

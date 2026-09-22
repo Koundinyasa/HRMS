@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { User, Briefcase, ShieldCheck, MapPin, FileText, LogOut, Workflow } from "lucide-react";
-import { useGetEmployeeDetailQuery } from "../api/employeedetailsApi"; // adjust relative path
-
+import { useGetEmployeeDetailQuery } from "../api/employeedetailsApi";
+ 
 const TABS = [
   { key: "general", label: "General", icon: User },
   { key: "classification", label: "Classification", icon: Briefcase },
@@ -12,65 +12,70 @@ const TABS = [
   { key: "separation", label: "Separation", icon: LogOut },
   { key: "workflow", label: "Workflow", icon: Workflow },
 ] as const;
-
+ 
 type TabKey = (typeof TABS)[number]["key"];
-
+ 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value === null || value === undefined || value === "") return null;
   return (
     <div className="min-w-0">
-      <div className="text-[10px] font-medium uppercase tracking-wide text-[#94A3B8]">{label}</div>
-      <div className="mt-[3px] text-[13px] text-[#26364F] truncate">{value}</div>
+      {/* STYLE: label → #626262 */}
+      <div className="text-[10px] font-medium uppercase tracking-wide text-[#626262]">{label}</div>
+      {/* STYLE: value → #131313 */}
+      <div className="mt-[3px] truncate text-[13px] text-[#131313]">{value}</div>
     </div>
   );
 }
-
+ 
 function Boolean_({ label, value }: { label: string; value: 0 | 1 | undefined }) {
   if (value === undefined) return null;
   return (
     <div className="flex items-center gap-[8px]">
-      <span className={["h-[8px] w-[8px] rounded-full", value === 1 ? "bg-[#2E7D32]" : "bg-[#CBD5E1]"].join(" ")} />
-      <span className="text-[12px] text-[#405168]">{label}</span>
+      {/* STYLE: success → #10B981 | inactive → #BFBFBF */}
+      <span className={["h-[8px] w-[8px] rounded-full", value === 1 ? "bg-[#10B981]" : "bg-[#BFBFBF]"].join(" ")} />
+      <span className="text-[12px] text-[#626262]">{label}</span>
     </div>
   );
 }
-
+ 
 export default function EmployeeDetailsPage() {
   const { empId } = useParams<{ empId: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>("general");
-
+ 
   const { data, isLoading, isError } = useGetEmployeeDetailQuery(empId!, { skip: !empId });
-
+ 
   if (isLoading) {
-    return <div className="flex min-h-[400px] items-center justify-center text-[12px] text-[#8291A4]">Loading employee details...</div>;
+    return <div className="flex min-h-[400px] items-center justify-center text-[12px] text-[#626262]">Loading employee details...</div>;
   }
-
+ 
   if (isError || !data?.success || !data.data) {
-    return <div className="flex min-h-[400px] items-center justify-center text-[12px] text-[#F04438]">Could not load employee details.</div>;
+    return <div className="flex min-h-[400px] items-center justify-center text-[12px] text-[#DD3232]">Could not load employee details.</div>;
   }
-
+ 
   const { general, classification, statutory, address, documents, separation, workflowDetails } = data.data;
   const g = general[0];
   const c = classification[0];
   const s = statutory[0];
   const a = address[0];
   const sep = separation[0];
-
+ 
   return (
-    <div className="min-h-full w-full bg-[#F4F7FB] text-[#26364F]">
-      <div className="rounded-[7px] border border-[#E5EAF0] bg-white p-[16px] shadow-[0_1px_3px_rgba(25,45,70,0.07)]">
+    /* STYLE: page bg → #EDEDED | text → #131313 | font Urbanist */
+    <div className="min-h-full w-full bg-[#EDEDED] font-[Urbanist,sans-serif] text-[#131313]">
+      <div className="rounded-[8px] border border-[#E2E2E2] bg-white p-[16px] shadow-[0_1px_3px_rgba(19,19,19,0.07)]">
         <div className="flex items-center gap-[14px]">
           {g?.ProfilePhoto ? (
             <img src={g.ProfilePhoto} alt={g.FullName} className="h-[54px] w-[54px] rounded-full object-cover" />
           ) : (
-            <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-[#E5F0FB] text-[#2D8CF0] text-[16px] font-semibold">
+            /* STYLE: avatar → #FFF5EE + #FF6200 */
+            <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-[#FFF5EE] text-[16px] font-semibold text-[#FF6200]">
               {g?.FullName?.charAt(0) ?? "?"}
             </div>
           )}
           <div className="min-w-0">
-            <div className="text-[16px] font-semibold text-[#263B55] truncate">{g?.FullName ?? "—"}</div>
-            {c?.DesignationName && <div className="text-[12px] text-[#718198] mt-[2px]">{c.DesignationName}</div>}
-            <div className="flex flex-wrap items-center gap-[10px] mt-[6px] text-[11px] text-[#8291A4]">
+            <div className="truncate text-[16px] font-semibold text-[#131313]">{g?.FullName ?? "—"}</div>
+            {c?.DesignationName && <div className="mt-[2px] text-[12px] text-[#626262]">{c.DesignationName}</div>}
+            <div className="mt-[6px] flex flex-wrap items-center gap-[10px] text-[11px] text-[#626262]">
               {g?.EmployeeID && <span>ID: {g.EmployeeID}</span>}
               {g?.Email && <span>{g.Email}</span>}
               {c?.Department && <span>{c.Department}</span>}
@@ -78,8 +83,8 @@ export default function EmployeeDetailsPage() {
           </div>
         </div>
       </div>
-
-      <div className="mt-[10px] flex flex-wrap gap-[4px] rounded-[7px] border border-[#E5EAF0] bg-white p-[4px] shadow-[0_1px_3px_rgba(25,45,70,0.07)]">
+ 
+      <div className="mt-[10px] flex flex-wrap gap-[4px] rounded-[8px] border border-[#E2E2E2] bg-white p-[4px] shadow-[0_1px_3px_rgba(19,19,19,0.07)]">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -87,7 +92,8 @@ export default function EmployeeDetailsPage() {
             onClick={() => setActiveTab(key)}
             className={[
               "flex items-center gap-[6px] rounded-[5px] px-[12px] py-[7px] text-[12px] font-medium transition-colors",
-              activeTab === key ? "bg-[#EDF5FE] text-[#2D8CF0]" : "text-[#68798E] hover:bg-[#F4F7FA]",
+              /* STYLE: active #FFF5EE + #FF6200 | inactive #626262 */
+              activeTab === key ? "bg-[#FFF5EE] text-[#FF6200]" : "text-[#626262] hover:bg-[#F5F5F5]",
             ].join(" ")}
           >
             <Icon size={13} strokeWidth={2} />
@@ -95,8 +101,8 @@ export default function EmployeeDetailsPage() {
           </button>
         ))}
       </div>
-
-      <div className="mt-[10px] rounded-[7px] border border-[#E5EAF0] bg-white p-[18px] shadow-[0_1px_3px_rgba(25,45,70,0.07)]">
+ 
+      <div className="mt-[10px] rounded-[8px] border border-[#E2E2E2] bg-white p-[18px] shadow-[0_1px_3px_rgba(19,19,19,0.07)]">
         {activeTab === "general" && g && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
             <Field label="First Name" value={g.FirstName} />
@@ -111,7 +117,7 @@ export default function EmployeeDetailsPage() {
             <Field label="Reporting Authority" value={g.ReportingAuthorityName} />
           </div>
         )}
-
+ 
         {activeTab === "classification" && c && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
             <Field label="Branch" value={c.BranchName} />
@@ -123,7 +129,7 @@ export default function EmployeeDetailsPage() {
             <Field label="IFSC" value={c.IFSC} />
           </div>
         )}
-
+ 
         {activeTab === "statutory" && s && (
           <div className="space-y-[20px]">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
@@ -135,7 +141,7 @@ export default function EmployeeDetailsPage() {
               <Field label="Financial Year" value={s.FinancialYear} />
               <Field label="Effective From" value={s.EffectiveFrom} />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-[12px] pt-[14px] border-t border-[#EEF2F6]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-[12px] pt-[14px] border-t border-[#E2E2E2]">
               <Boolean_ label="PF Applicable" value={s.PFApplicable} />
               <Boolean_ label="Voluntary PF" value={s.PFVoluntary} />
               <Boolean_ label="Zero Pension" value={s.ZeroPension} />
@@ -147,7 +153,7 @@ export default function EmployeeDetailsPage() {
             </div>
           </div>
         )}
-
+ 
         {activeTab === "address" && a && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
             <Field label="Address Type" value={a.AddressType} />
@@ -164,23 +170,23 @@ export default function EmployeeDetailsPage() {
             <Field label="Emergency No" value={a.EmergencyNo} />
           </div>
         )}
-
+ 
         {activeTab === "documents" && (
           documents.length === 0 ? (
-            <div className="py-[40px] text-center text-[12px] text-[#8291A4]">No documents uploaded.</div>
+            <div className="py-[40px] text-center text-[12px] text-[#626262]">No documents uploaded.</div>
           ) : (
             <div className="space-y-[8px]">
               {documents.map((doc) => (
-                <div key={doc.ID} className="flex items-center justify-between rounded-[6px] border border-[#E5EAF0] px-[14px] py-[10px]">
+                <div key={doc.ID} className="flex items-center justify-between rounded-[6px] border border-[#E2E2E2] px-[14px] py-[10px]">
                   <div className="min-w-0">
-                    <div className="text-[12.5px] font-medium text-[#263B55] truncate">{doc.DocumentName ?? doc.FileName}</div>
-                    <div className="text-[10.5px] text-[#8291A4] mt-[2px]">
+                    <div className="truncate text-[12.5px] font-medium text-[#131313]">{doc.DocumentName ?? doc.FileName}</div>
+                    <div className="mt-[2px] text-[10.5px] text-[#626262]">
                       {doc.DocumentType && <span>{doc.DocumentType} · </span>}
                       {doc.Date && <span>{doc.Date}</span>}
                     </div>
                   </div>
                   {doc.FilePath && (
-                    <a href={doc.FilePath} target="_blank" rel="noreferrer" className="shrink-0 text-[11px] font-medium text-[#2D8CF0] hover:underline">
+                    <a href={doc.FilePath} target="_blank" rel="noreferrer" className="shrink-0 text-[11px] font-medium text-[#FF6200] hover:underline">
                       View
                     </a>
                   )}
@@ -189,7 +195,7 @@ export default function EmployeeDetailsPage() {
             </div>
           )
         )}
-
+ 
         {activeTab === "separation" && (
           sep && (sep.ResignationDate || sep.DateofLeaving || sep.Reason || sep.Remarks) ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-[18px]">
@@ -199,25 +205,25 @@ export default function EmployeeDetailsPage() {
               <Field label="Remarks" value={sep.Remarks} />
             </div>
           ) : (
-            <div className="py-[40px] text-center text-[12px] text-[#8291A4]">No separation record — employee is active.</div>
+            <div className="py-[40px] text-center text-[12px] text-[#626262]">No separation record — employee is active.</div>
           )
         )}
-
+ 
         {activeTab === "workflow" && (
           workflowDetails.length === 0 ? (
-            <div className="py-[40px] text-center text-[12px] text-[#8291A4]">No workflow details available.</div>
+            <div className="py-[40px] text-center text-[12px] text-[#626262]">No workflow details available.</div>
           ) : (
             <div className="space-y-[8px]">
               {workflowDetails.map((w, i) => (
-                <div key={`${w.Name}-${w.SlNo}-${i}`} className="flex items-center justify-between rounded-[6px] border border-[#E5EAF0] px-[14px] py-[10px]">
+                <div key={`${w.Name}-${w.SlNo}-${i}`} className="flex items-center justify-between rounded-[6px] border border-[#E2E2E2] px-[14px] py-[10px]">
                   <div className="min-w-0">
-                    <div className="text-[12.5px] font-medium text-[#263B55]">{w.WorkflowName}</div>
-                    <div className="text-[10.5px] text-[#8291A4] mt-[2px]">
+                    <div className="text-[12.5px] font-medium text-[#131313]">{w.WorkflowName}</div>
+                    <div className="mt-[2px] text-[10.5px] text-[#626262]">
                       {w.Approver && <span>Approver: {w.Approver}</span>}
                       {w.GroupName && <span> · {w.GroupName}</span>}
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-[4px] bg-[#E5F0FB] px-[8px] py-[3px] text-[10px] font-semibold text-[#1565C0]">
+                  <span className="shrink-0 rounded-[4px] bg-[#FFF5EE] px-[8px] py-[3px] text-[10px] font-semibold text-[#FF6200]">
                     Level {w.Level}
                   </span>
                 </div>

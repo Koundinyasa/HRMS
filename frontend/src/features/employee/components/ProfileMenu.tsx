@@ -1,89 +1,51 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
-
-import {
-  HelpCircle,
-  KeyRound,
-  LogOut,
-} from "lucide-react";
-
+import { HelpCircle, KeyRound, LogOut } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
-
 import { useLogoutMutation } from "@/features/auth/api/authApi";
-
 import { baseApi } from "@/app/baseApi";
-
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-
 import ChangePasswordModal from "./ChangePasswordModal";
+import { logout } from "@/features/auth/authSlice";
 
 export default function ProfileMenu() {
   const [open, setOpen] = useState(false);
-
-  const [
-    changePasswordOpen,
-    setChangePasswordOpen,
-  ] = useState(false);
-
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const navigate = useNavigate();
-
   const { domain } = useParams();
-
-  const [
-    logoutUser,
-    {
-      isLoading: isLoggingOut,
-    },
-  ] = useLogoutMutation();
-
+  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
   const dispatch = useAppDispatch();
-
   const { profileData } = useDashboard();
-
   const profile = profileData?.data.profile;
-
-  const lastLogin =
-    profile?.LastLoginDateTime ?? "--";
+  const lastLogin = profile?.LastLoginDateTime ?? "--";
 
   // =========================
   // Profile Menu Reference
   // =========================
 
-  const profileMenuRef =
-    useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // =========================
   // Close Menu On Outside Click
   // =========================
 
   useEffect(() => {
-    const handleOutsideClick = (
-      event: MouseEvent
-    ) => {
+    const handleOutsideClick = (event: MouseEvent) => {
       if (
         profileMenuRef.current &&
-        !profileMenuRef.current.contains(
-          event.target as Node
-        )
+        !profileMenuRef.current.contains(event.target as Node)
       ) {
         setOpen(false);
       }
     };
 
     if (open) {
-      document.addEventListener(
-        "mousedown",
-        handleOutsideClick
-      );
+      document.addEventListener("mousedown", handleOutsideClick);
     }
 
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleOutsideClick
-      );
+      document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [open]);
 
@@ -93,28 +55,19 @@ export default function ProfileMenu() {
 
   const handleSignOut = async () => {
     setOpen(false);
-
     try {
       await logoutUser().unwrap();
     } catch (err) {
-      console.error(
-        "Logout request failed:",
-        err
-      );
+      console.error("Logout request failed:", err);
     } finally {
-      dispatch(
-        baseApi.util.resetApiState()
-      );
-
-      navigate(`/${domain}/login`);
+      dispatch(logout());
+      dispatch(baseApi.util.resetApiState());
+      navigate(`/${domain}/login`, { replace: true });
     }
   };
 
   return (
-    <div
-      ref={profileMenuRef}
-      className="relative"
-    >
+    <div ref={profileMenuRef} className="relative">
       {/* =========================
           Profile Button
       ========================= */}
@@ -231,9 +184,7 @@ export default function ProfileMenu() {
                 {profile?.FullName}
               </h3>
 
-              <p className="text-xs text-slate-500">
-                {profile?.Email}
-              </p>
+              <p className="text-xs text-slate-500">{profile?.Email}</p>
             </div>
           </div>
 
@@ -261,11 +212,7 @@ export default function ProfileMenu() {
               hover:text-[#1E3A5F]
             "
           >
-            <KeyRound
-              size={16}
-              strokeWidth={2}
-            />
-
+            <KeyRound size={16} strokeWidth={2} />
             Change Password
           </Button>
 
@@ -287,11 +234,7 @@ export default function ProfileMenu() {
               hover:text-[#1E3A5F]
             "
           >
-            <HelpCircle
-              size={16}
-              strokeWidth={2}
-            />
-
+            <HelpCircle size={16} strokeWidth={2} />
             Help
           </Button>
 
@@ -317,15 +260,9 @@ export default function ProfileMenu() {
               disabled:opacity-50
             "
           >
-            <LogOut
-              size={17}
-              strokeWidth={2}
-              className="text-[#64748B]"
-            />
+            <LogOut size={17} strokeWidth={2} className="text-[#64748B]" />
 
-            {isLoggingOut
-              ? "Signing out..."
-              : "Sign Out"}
+            {isLoggingOut ? "Signing out..." : "Sign Out"}
           </button>
         </div>
       )}
@@ -336,9 +273,7 @@ export default function ProfileMenu() {
 
       <ChangePasswordModal
         open={changePasswordOpen}
-        onClose={() =>
-          setChangePasswordOpen(false)
-        }
+        onClose={() => setChangePasswordOpen(false)}
       />
     </div>
   );
