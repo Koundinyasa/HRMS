@@ -214,6 +214,7 @@ export interface DateFieldProps {
   id?: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   min?: string;
   max?: string;
   isInvalid?: boolean;
@@ -305,4 +306,3 @@ export interface LeaveHistoryTableProps {
 export interface LeaveBalanceCardProps {
   balances: LeaveBalanceSection | null;
 }
-

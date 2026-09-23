@@ -450,6 +450,11 @@ export default function EmployeeRoutes() {
           element={<AttendanceOverview />}
         />
 
+        <Route
+          path="attendanceoverview"
+          element={<AttendanceOverview />}
+        />
+
       </Route>
       
     </Routes>

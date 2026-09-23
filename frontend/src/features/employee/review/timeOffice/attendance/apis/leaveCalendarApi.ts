@@ -75,6 +75,7 @@ export const leaveCalendarApi =
         UseMonthlyLeaveCalendarParams
       >({
         query: ({
+          companyId,
           year,
           month,
           branchId,
@@ -83,6 +84,7 @@ export const leaveCalendarApi =
           method: "POST",
 
           body: {
+            companyId,
             year,
             month,
             branchId,

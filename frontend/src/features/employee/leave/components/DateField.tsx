@@ -79,6 +79,7 @@ const toMonthStart = (value: string, initialMonth?: string) => {
 export default function DateField({
   value,
   onChange,
+  onBlur,
   min,
   max,
   id,
@@ -150,13 +151,18 @@ export default function DateField({
   const handleBlur = () => {
     const digits = text.replace(/\D/g, "");
 
-    if (digits.length === 0) return;
+    if (digits.length === 0) {
+      onBlur?.();
+      return;
+    }
 
     const iso = digitstoIso(digits);
 
-    if (!iso || !isDisabled(iso)) {
+    if (!iso || isDisabled(iso)) {
       setText(toDisplay(value));
     }
+
+    onBlur?.();
   };
 
   const handleSelectDay = (iso: string) => {

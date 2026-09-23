@@ -157,31 +157,56 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
             <div className="max-h-[380px] overflow-y-auto">
               {events.length > 0 ? (
                 events.map((item, index) => (
-                  <div
-                    key={`${item.code}-${index}`}
-                    className="flex items-center justify-between px-5 py-4 border-b border-slate-50"
-                  >
-                    <div>
-                      <h4 className="font-medium text-slate-800 text-sm">{item.fullName}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">{item.eventName}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {formatEventDate(item.eventDate, true)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelected(item);
-                        setOpenAllModal(false);
-                        setOpenWishModal(true);
-                      }}
-                      className="px-4 py-2 rounded-lg text-white text-xs font-medium hover:opacity-90"
-                      style={{ background: BRAND_PURPLE }}
-                    >
-                      Wish
-                    </button>
-                  </div>
-                ))
+  <div
+    key={`${item.code}-${index}`}
+    className="items-center gap-3 px-5 py-4 border-b border-slate-50"
+    style={{
+      display: "grid",
+      gridTemplateColumns: "40px minmax(0, 1fr) 96px",
+    }}
+  >
+    {/* Fixed-size icon wrapper — same for every row */}
+    <div
+      className="w-10 h-10 rounded-full flex items-center justify-center bg-amber-50"
+      style={{ gridColumn: 1, gridRow: 1 }}
+    >
+      {item.eventName === "Birthday" ? (
+        <span className="text-lg">🎂</span>
+      ) : (
+        <span className="text-lg">🏅</span>
+      )}
+    </div>
+
+    {/* Text always starts right after the fixed-width icon */}
+    <div
+      className="min-w-0 w-full text-left"
+      style={{ gridColumn: 2, gridRow: 1 }}
+    >
+      <h4 className="font-medium text-slate-800 text-sm">{item.fullName}</h4>
+      <p className="text-xs text-slate-500 mt-0.5">{item.eventName}</p>
+      <p className="text-xs text-slate-400 mt-0.5">
+        {formatEventDate(item.eventDate, true)}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      onClick={() => {
+        setSelected(item);
+        setOpenAllModal(false);
+        setOpenWishModal(true);
+      }}
+      className="px-4 py-2 rounded-lg text-white text-xs font-medium hover:opacity-90"
+      style={{
+        background: BRAND_PURPLE,
+        gridColumn: 3,
+        gridRow: 1,
+      }}
+    >
+      Wish
+    </button>
+  </div>
+))
               ) : (
                 <div className="py-12 text-center text-slate-400 text-sm">
                   No celebrations available
