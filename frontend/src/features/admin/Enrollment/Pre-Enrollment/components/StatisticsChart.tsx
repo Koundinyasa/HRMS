@@ -10,7 +10,9 @@
 import type { DotProps } from "recharts";
 
 type TrendDotProps = DotProps & {
-  payload?: { week?: string };
+  payload?: {
+    week?: string;
+  };
 };
 
 const data = [
@@ -30,173 +32,278 @@ const data = [
 
 export default function StatisticsChart() {
   return (
-    <div className="mt-5 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_14px_rgba(15,23,42,0.10)]">
-
+    <div
+      className="
+        mt-5
+        w-full
+        overflow-hidden
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        shadow-[0_4px_14px_rgba(15,23,42,0.10)]
+        font-urbanist
+      "
+    >
       {/* Header */}
-      <div className="flex flex-col gap-3 px-4 pt-4 sm:flex-row sm:items-start sm:justify-between sm:px-6 sm:pt-5">
-
-        <div>
-          <h2 className="text-[15px] font-semibold leading-5 text-slate-900">
+      <div
+        className="
+          flex
+          flex-col
+          gap-3
+          px-4
+          pt-4
+          font-urbanist
+          sm:flex-row
+          sm:items-start
+          sm:justify-between
+          sm:px-6
+          sm:pt-5
+        "
+      >
+        <div className="font-urbanist">
+          <h2
+            className="
+              font-urbanist
+              text-base
+              font-semibold
+              leading-6
+              text-slate-900
+            "
+          >
             Onboarding Trends
           </h2>
 
-          <p className="mt-1 text-[11px] leading-4 text-slate-400">
+          <p
+            className="
+              mt-1
+              font-urbanist
+              text-sm
+              font-medium
+              leading-5
+              text-slate-400
+            "
+          >
             Monthly active verification flow &amp; completed candidates
           </p>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-2 pt-1">
+        <div
+          className="
+            flex
+            items-center
+            gap-2
+            pt-1
+            font-urbanist
+          "
+        >
           <span className="h-2 w-2 rounded-full bg-orange-500" />
 
-          <span className="text-[11px] font-medium text-slate-400">
+          <span
+            className="
+              font-urbanist
+              text-sm
+              font-semibold
+              leading-5
+              text-slate-400
+            "
+          >
             Verification Volume
           </span>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="mx-3 mt-4 h-[200px] bg-[#FFF9F6] sm:mx-6 sm:h-[220px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{
-              top: 18,
-              right: 0,
-              left: 0,
-              bottom: 4,
-            }}
+      {/* =====================================================
+          GRAPH AREA
+      ===================================================== */}
+
+      <div className="mx-3 mt-4 sm:mx-6">
+        {/* Orange graph only */}
+        <div
+          className="
+            h-[190px]
+            bg-[#FFF9F6]
+            font-urbanist
+            sm:h-[205px]
+          "
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{
+                top: 18,
+                right: 0,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <defs>
+                <linearGradient
+                  id="orangeTrendGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor="#FF6B00"
+                    stopOpacity={0.03}
+                  />
+
+                  <stop
+                    offset="100%"
+                    stopColor="#FF6B00"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+
+              <CartesianGrid
+                vertical={false}
+                stroke="#E5E7EB"
+                strokeDasharray="3 3"
+              />
+
+              {/* Hide week labels from Recharts */}
+              <XAxis
+                dataKey="week"
+                axisLine={false}
+                tickLine={false}
+                tick={false}
+              />
+
+              <YAxis
+                hide
+                domain={[0, 60]}
+              />
+
+              <Tooltip
+                cursor={false}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #E5E7EB",
+                  backgroundColor: "#FFFFFF",
+                  fontSize: "12px",
+                  fontFamily: "Urbanist",
+                  fontWeight: 500,
+                  lineHeight: "16px",
+                  boxShadow:
+                    "0 4px 12px rgba(15, 23, 42, 0.08)",
+                }}
+              />
+
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#FF6900"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="url(#orangeTrendGradient)"
+                dot={(props: TrendDotProps) => {
+                  const { cx, cy, payload } = props;
+
+                  if (
+                    payload?.week === "Week 02" ||
+                    payload?.week === "Week 03"
+                  ) {
+                    return (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={2.5}
+                        fill="#FF6900"
+                        stroke="#FFFFFF"
+                        strokeWidth={1.5}
+                      />
+                    );
+                  }
+
+                  return <g />;
+                }}
+                activeDot={{
+                  r: 4,
+                  fill: "#FF6900",
+                  stroke: "#FFFFFF",
+                  strokeWidth: 2,
+                }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* =====================================================
+            WHITE SPACE FOR WEEK LABELS
+        ===================================================== */}
+
+        <div
+          className="
+            flex
+            h-[42px]
+            items-center
+            justify-between
+            bg-white
+            px-[0px]
+            font-urbanist
+          "
+        >
+          <span
+            className="
+             ml-[2px]
+    translate-y-[4px]
+              font-urbanist
+              text-[10px]
+              font-medium
+              leading-[14px]
+              text-slate-400
+            "
           >
-            <defs>
-              <linearGradient
-                id="orangeTrendGradient"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor="#FF6B00"
-                  stopOpacity={0.03}
-                />
+            Week 01
+          </span>
 
-                <stop
-                  offset="100%"
-                  stopColor="#FF6B00"
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
+          <span
+            className="
+             ml-[2px]
+    translate-y-[4px]
+              font-urbanist
+              text-[10px]
+              font-medium
+              leading-[14px]
+              text-slate-400
+            "
+          >
+            Week 02
+          </span>
 
-            {/* Horizontal dotted grid */}
-            <CartesianGrid
-              vertical={false}
-              stroke="#E5E7EB"
-              strokeDasharray="3 3"
-            />
+          <span
+            className="
+             ml-[2px]
+    translate-y-[4px]
+              font-urbanist
+              text-[10px]
+              font-medium
+              leading-[14px]
+              text-slate-400
+            "
+          >
+            Week 03
+          </span>
 
-            {/* Bottom labels */}
-            {/* <XAxis
-              dataKey="week"
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fill: "#94A3B8",
-                fontSize: 10,
-              }}
-              interval={0}
-              padding={{
-                left: 21,
-                right: 21,
-              }}
-            /> */}
-            <XAxis
-  dataKey="week"
-  axisLine={false}
-  tickLine={false}
-  tick={{
-    fill: "#94A3B8",
-    fontSize: 10,
-  }}
-  interval={0}
-  padding={{
-    left: 25,
-    right: 25,
-  }}
-/>
-<XAxis
-  dataKey="week"
-  axisLine={false}
-  tickLine={false}
-  tick={{
-    fill: "#94A3B8",
-    fontSize: 10,
-  }}
-  interval={0}
-  padding={{
-    left: 25,
-    right: 25,
-  }}
-/>
-
-            {/* Hidden Y axis */}
-            <YAxis
-              hide
-              domain={[0, 60]}
-            />
-
-            {/* Tooltip */}
-            <Tooltip
-              cursor={false}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #E5E7EB",
-                backgroundColor: "#FFFFFF",
-                fontSize: "11px",
-                boxShadow: "0 4px 12px rgba(15, 23, 42, 0.08)",
-              }}
-            />
-
-            {/* Orange Trend */}
-            <Area
-              type="monotone"
-              dataKey="value"
-              stroke="#FF6900"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="url(#orangeTrendGradient)"
-              dot={(props: TrendDotProps) => {
-                const { cx, cy, payload } = props;
-
-                if (
-                  payload.week === "Week 02" ||
-                  payload.week === "Week 03"
-                ) {
-                  return (
-                    <circle
-                      cx={cx}
-                      cy={cy}
-                      r={2.5}
-                      fill="#FF6900"
-                      stroke="#FFFFFF"
-                      strokeWidth={1.5}
-                    />
-                  );
-                }
-
-                return <g />;
-              }}
-              activeDot={{
-                r: 4,
-                fill: "#FF6900",
-                stroke: "#FFFFFF",
-                strokeWidth: 2,
-              }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+          <span
+            className="
+             ml-[2px]
+    translate-y-[4px]
+              font-urbanist
+              text-[10px]
+              font-medium
+              leading-[14px]
+              text-slate-400
+            "
+          >
+            Week 04
+          </span>
+        </div>
       </div>
 
       {/* Bottom spacing */}

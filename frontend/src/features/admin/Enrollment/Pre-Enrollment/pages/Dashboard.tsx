@@ -27,7 +27,6 @@
 //     </PreOnboardPageShell>
 //   );
 // }
-
 import DateRangePicker from "../components/DateRangePicker";
 import CandidateStats from "../components/CandidateStats";
 import StatisticsChart from "../components/StatisticsChart";
@@ -43,6 +42,7 @@ export default function Dashboard() {
           px-3
           pb-6
           pt-2
+          font-urbanist
           sm:px-4
           sm:pb-8
           sm:pt-3
@@ -69,18 +69,17 @@ export default function Dashboard() {
             sm:gap-4
           "
         >
-          {/* Page Title */}
+          {/* Page Title - Display / Heading */}
 
           <h1
             className="
               whitespace-nowrap
-              text-lg
-              font-semibold
-              leading-tight
+              font-urbanist
+              text-2xl
+              font-bold
+              leading-8
+              tracking-tight
               text-slate-800
-              sm:text-xl
-              md:text-xl
-              lg:text-2xl
             "
           >
             Onboarding Analytics
@@ -91,6 +90,7 @@ export default function Dashboard() {
           <div
             className="
               w-full
+              font-urbanist
               sm:w-auto
               sm:shrink-0
             "
@@ -108,6 +108,7 @@ export default function Dashboard() {
             mt-4
             w-full
             min-w-0
+            font-urbanist
             sm:mt-5
             md:mt-6
           "
@@ -124,6 +125,7 @@ export default function Dashboard() {
             mt-4
             w-full
             min-w-0
+            font-urbanist
             sm:mt-5
             md:mt-6
           "

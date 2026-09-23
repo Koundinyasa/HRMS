@@ -1008,7 +1008,6 @@
 //     </div>
 //   );
 // }
-
 import { useEffect, useMemo, useState } from "react";
 import { Eye } from "lucide-react";
 import type { CompletedCandidateRow } from "../types/preEnrollment.types";
@@ -1040,9 +1039,7 @@ export default function CompletedCandidateTable({
   // =========================================================
 
   const filteredRows = useMemo(() => {
-    const query = searchTerm
-      .trim()
-      .toLowerCase();
+    const query = searchTerm.trim().toLowerCase();
 
     if (!query) {
       return rows;
@@ -1224,6 +1221,7 @@ export default function CompletedCandidateTable({
         border
         border-slate-200
         bg-white
+        font-urbanist
         shadow-[0_8px_24px_rgba(15,23,42,0.16)]
       "
     >
@@ -1254,7 +1252,6 @@ export default function CompletedCandidateTable({
               "
             >
               {/* Candidate Name */}
-
               <th
                 onClick={() =>
                   handleSort("name")
@@ -1264,9 +1261,10 @@ export default function CompletedCandidateTable({
                   cursor-pointer
                   px-5
                   py-3
-                  text-[11px]
+                  font-urbanist
+                  text-sm
                   font-semibold
-                  uppercase
+                  leading-5
                   text-slate-700
                   sm:px-6
                 "
@@ -1275,7 +1273,6 @@ export default function CompletedCandidateTable({
               </th>
 
               {/* Email */}
-
               <th
                 onClick={() =>
                   handleSort("email")
@@ -1285,9 +1282,10 @@ export default function CompletedCandidateTable({
                   cursor-pointer
                   px-5
                   py-3
-                  text-[11px]
+                  font-urbanist
+                  text-sm
                   font-semibold
-                  uppercase
+                  leading-5
                   text-slate-700
                   sm:px-6
                 "
@@ -1296,7 +1294,6 @@ export default function CompletedCandidateTable({
               </th>
 
               {/* Mobile */}
-
               <th
                 onClick={() =>
                   handleSort("mobile")
@@ -1306,9 +1303,10 @@ export default function CompletedCandidateTable({
                   cursor-pointer
                   px-5
                   py-3
-                  text-[11px]
+                  font-urbanist
+                  text-sm
                   font-semibold
-                  uppercase
+                  leading-5
                   text-slate-700
                   sm:px-6
                 "
@@ -1317,21 +1315,19 @@ export default function CompletedCandidateTable({
               </th>
 
               {/* Joining Date */}
-
               <th
                 onClick={() =>
-                  handleSort(
-                    "joiningDate",
-                  )
+                  handleSort("joiningDate")
                 }
                 className="
                   w-[20%]
                   cursor-pointer
                   px-5
                   py-3
-                  text-[11px]
+                  font-urbanist
+                  text-sm
                   font-semibold
-                  uppercase
+                  leading-5
                   text-slate-700
                   sm:px-6
                 "
@@ -1340,16 +1336,16 @@ export default function CompletedCandidateTable({
               </th>
 
               {/* Actions */}
-
               <th
                 className="
                   w-[14%]
                   px-5
                   py-3
                   text-center
-                  text-[11px]
+                  font-urbanist
+                  text-sm
                   font-semibold
-                  uppercase
+                  leading-5
                   text-slate-700
                   sm:px-6
                 "
@@ -1377,10 +1373,7 @@ export default function CompletedCandidateTable({
                     hover:bg-slate-50
                   "
                 >
-                  {/* =========================================
-                      CANDIDATE NAME
-                  ========================================= */}
-
+                  {/* Candidate Name */}
                   <td
                     className="
                       px-5
@@ -1390,7 +1383,6 @@ export default function CompletedCandidateTable({
                   >
                     <div className="flex items-center gap-3">
                       {/* Initial */}
-
                       <div
                         className="
                           flex
@@ -1401,8 +1393,10 @@ export default function CompletedCandidateTable({
                           justify-center
                           rounded-full
                           bg-orange-50
-                          text-[12px]
+                          font-urbanist
+                          text-sm
                           font-semibold
+                          leading-5
                           text-orange-500
                         "
                       >
@@ -1412,26 +1406,22 @@ export default function CompletedCandidateTable({
                       </div>
 
                       {/* Name */}
-
                       <span
                         className="
                           truncate
-                          text-[13px]
+                          font-urbanist
+                          text-sm
                           font-semibold
+                          leading-5
                           text-slate-800
                         "
                       >
-                        {
-                          candidate.name
-                        }
+                        {candidate.name}
                       </span>
                     </div>
                   </td>
 
-                  {/* =========================================
-                      EMAIL
-                  ========================================= */}
-
+                  {/* Email */}
                   <td
                     className="
                       px-5
@@ -1442,20 +1432,18 @@ export default function CompletedCandidateTable({
                     <span
                       className="
                         truncate
-                        text-[13px]
+                        font-urbanist
+                        text-sm
+                        font-medium
+                        leading-5
                         text-slate-500
                       "
                     >
-                      {
-                        candidate.email
-                      }
+                      {candidate.email}
                     </span>
                   </td>
 
-                  {/* =========================================
-                      MOBILE
-                  ========================================= */}
-
+                  {/* Mobile */}
                   <td
                     className="
                       px-5
@@ -1466,20 +1454,18 @@ export default function CompletedCandidateTable({
                     <span
                       className="
                         whitespace-nowrap
-                        text-[13px]
+                        font-urbanist
+                        text-sm
+                        font-medium
+                        leading-5
                         text-slate-500
                       "
                     >
-                      {
-                        candidate.mobile
-                      }
+                      {candidate.mobile}
                     </span>
                   </td>
 
-                  {/* =========================================
-                      JOINING DATE
-                  ========================================= */}
-
+                  {/* Joining Date */}
                   <td
                     className="
                       px-5
@@ -1490,20 +1476,18 @@ export default function CompletedCandidateTable({
                     <span
                       className="
                         whitespace-nowrap
-                        text-[13px]
+                        font-urbanist
+                        text-sm
+                        font-medium
+                        leading-5
                         text-slate-500
                       "
                     >
-                      {
-                        candidate.joiningDate
-                      }
+                      {candidate.joiningDate}
                     </span>
                   </td>
 
-                  {/* =========================================
-                      VIEW BUTTON
-                  ========================================= */}
-
+                  {/* View Button */}
                   <td
                     className="
                       px-5
@@ -1527,8 +1511,10 @@ export default function CompletedCandidateTable({
                         rounded-full
                         bg-emerald-50
                         px-4
-                        text-[12px]
+                        font-urbanist
+                        text-sm
                         font-semibold
+                        leading-5
                         text-emerald-600
                         transition
                         hover:bg-emerald-100
@@ -1536,9 +1522,7 @@ export default function CompletedCandidateTable({
                     >
                       <Eye
                         size={14}
-                        strokeWidth={
-                          2.5
-                        }
+                        strokeWidth={2.5}
                       />
 
                       View
@@ -1548,12 +1532,8 @@ export default function CompletedCandidateTable({
               ),
             )}
 
-            {/* ===============================================
-                EMPTY STATE
-            =============================================== */}
-
-            {pageRows.length ===
-              0 && (
+            {/* Empty State */}
+            {pageRows.length === 0 && (
               <tr>
                 <td
                   colSpan={5}
@@ -1561,12 +1541,14 @@ export default function CompletedCandidateTable({
                     h-[160px]
                     px-5
                     text-center
+                    font-urbanist
                     text-sm
+                    font-medium
+                    leading-5
                     text-slate-500
                   "
                 >
-                  No candidates
-                  found.
+                  No candidates found.
                 </td>
               </tr>
             )}
@@ -1590,19 +1572,18 @@ export default function CompletedCandidateTable({
           bg-white
           px-5
           sm:px-6
-          sm:px-6
         "
       >
-        {/* ===================================================
-            LEFT SIDE
-        =================================================== */}
-
+        {/* LEFT SIDE */}
         <div
           className="
             flex
             items-center
             gap-2
-            text-[12px]
+            font-urbanist
+            text-sm
+            font-medium
+            leading-5
             text-slate-500
           "
         >
@@ -1623,76 +1604,48 @@ export default function CompletedCandidateTable({
               border-slate-200
               bg-white
               px-2
-              text-[12px]
+              font-urbanist
+              text-sm
               font-medium
+              leading-5
               text-slate-700
               outline-none
               focus:border-orange-400
             "
           >
-            <option value={5}>
-              5
-            </option>
-
-            <option value={10}>
-              10
-            </option>
-
-            <option value={20}>
-              20
-            </option>
-
-            <option value={50}>
-              50
-            </option>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
           </select>
         </div>
 
-        {/* ===================================================
-            RIGHT SIDE
-        =================================================== */}
-
-        <div
-          className="
-            flex
-            items-center
-            gap-6
-          "
-        >
+        {/* RIGHT SIDE */}
+        <div className="flex items-center gap-6">
           {/* Candidate Count */}
-
           <span
             className="
               whitespace-nowrap
-              text-[12px]
-              font-normal
+              font-urbanist
+              text-sm
+              font-medium
+              leading-5
               text-slate-500
             "
           >
-            {startItem}-
-            {endItem} of{" "}
-            {sortedRows.length}{" "}
-            candidates
+            {startItem}-{endItem} of{" "}
+            {sortedRows.length} candidates
           </span>
 
           {/* Page Numbers */}
-
-          <div
-            className="
-              flex
-              items-center
-              gap-5
-            "
-          >
+          <div className="flex items-center gap-5">
             {visiblePages.map(
               (page) => (
                 <button
                   key={page}
                   type="button"
                   onClick={() =>
-                    setCurrentPage(
-                      page,
-                    )
+                    setCurrentPage(page)
                   }
                   className={`
                     flex
@@ -1701,12 +1654,13 @@ export default function CompletedCandidateTable({
                     items-center
                     justify-center
                     rounded-md
-                    text-[12px]
-                    font-medium
+                    font-urbanist
+                    text-sm
+                    font-semibold
+                    leading-5
                     transition
                     ${
-                      currentPage ===
-                      page
+                      currentPage === page
                         ? "bg-orange-500 text-white shadow-sm"
                         : "bg-transparent text-slate-600 hover:bg-orange-50 hover:text-orange-500"
                     }

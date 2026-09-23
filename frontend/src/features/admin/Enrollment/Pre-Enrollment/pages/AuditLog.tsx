@@ -1,10 +1,7 @@
 ﻿import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import {
-  X,
-  Clock3,
-  Download,
-} from "lucide-react";
+import { X, Clock3, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 
 interface AuditEvent {
@@ -18,6 +15,11 @@ interface AuditLogModalProps {
   onClose: () => void;
 }
 
+/*
+ * MOCK DATA
+ * Backend integration is still in progress.
+ * Keep this data until the real audit-log API is available.
+ */
 const auditEvents: AuditEvent[] = [
   {
     id: 1,
@@ -60,7 +62,6 @@ const auditEvents: AuditEvent[] = [
 export default function AuditLogModal({
   onClose,
 }: AuditLogModalProps) {
-
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -70,21 +71,52 @@ export default function AuditLogModal({
 
     document.addEventListener("keydown", handleEscape);
 
-    const previousOverflow =
-      document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
 
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.removeEventListener(
-        "keydown",
-        handleEscape
-      );
-
-      document.body.style.overflow =
-        previousOverflow;
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousOverflow;
     };
   }, [onClose]);
+
+  /* =========================================================
+     EXPORT AUDIT LOG TO EXCEL
+  ========================================================= */
+
+  const handleExportLog = () => {
+    const exportData = auditEvents.map((event, index) => ({
+      "S.No": index + 1,
+      "Event": event.title,
+      "Actor": event.actor,
+      "Date & Time": event.dateTime,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Audit Log",
+    );
+
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 8 },
+      { wch: 45 },
+      { wch: 32 },
+      { wch: 28 },
+    ];
+
+    // Download Excel file
+    XLSX.writeFile(
+      workbook,
+      "Audit_Log.xlsx",
+    );
+  };
 
   return createPortal(
     <div
@@ -92,379 +124,385 @@ export default function AuditLogModal({
         fixed
         inset-0
         z-[99999]
+        flex
+        items-center
+        justify-center
+        translate-x-[226px]
+        translate-y-[65px]
         bg-slate-900/10
+        font-urbanist
         backdrop-blur-[4px]
+        p-3
+        sm:p-5
       "
       onClick={onClose}
     >
+      {/* =====================================================
+          AUDIT LOG MODAL
+      ===================================================== */}
 
       <div
         className="
-          absolute
-          inset-0
           flex
-          items-center
-          justify-center
-          p-3
-          sm:p-5
-          md:left-[380px]
+          h-[550px]
+          w-[790px]
+          max-h-[calc(100dvh-24px)]
+          max-w-[calc(100vw-24px)]
+          flex-col
+          overflow-hidden
+          rounded-[14px]
+          border
+          border-slate-455
+          bg-white
+          font-urbanist
+          shadow-[0_12px_30px_rgba(15,23,42,0.22)]
+          sm:max-h-[calc(100dvh-40px)]
+          sm:max-w-[calc(100vw-40px)]
         "
+        onClick={(event) => event.stopPropagation()}
       >
-
-        {/* ===================================================
-            AUDIT LOG CARD
-        =================================================== */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <div
           className="
             flex
-            max-h-[calc(100dvh-24px)]
-            w-full
-            max-w-[755px]
-            flex-col
-            overflow-hidden
-            rounded-[14px]
-            border
-            border-slate-300
+            min-h-[86px]
+            shrink-0
+            items-center
+            justify-between
+            gap-4
+            border-b
+            border-slate-200
             bg-white
-            shadow-[0_12px_30px_rgba(15,23,42,0.22)]
-            sm:max-h-[calc(100dvh-40px)]
-            md:max-w-[calc(100vw-420px)]
+            px-[22px]
+            font-urbanist
           "
-          onClick={(event) =>
-            event.stopPropagation()
-          }
         >
+          <div className="min-w-0">
+            <h2
+              className="
+                font-urbanist
+                text-[18px]
+                font-bold
+                leading-[22px]
+                text-slate-800
+              "
+            >
+              Audit Log
+            </h2>
 
-          {/* =================================================
-              HEADER
-          ================================================= */}
+            <p
+              className="
+                mt-[3px]
+                font-urbanist
+                text-[12px]
+                font-normal
+                leading-[16px]
+                text-slate-500
+              "
+            >
+              Email Verification &amp; Onboarding Event
+              History for Sai Chandu
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            onClick={onClose}
+            aria-label="Close Audit Log"
+            variant="ghost"
+            size="sm"
+            className="
+              flex
+              h-[32px]
+              w-[32px]
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              bg-slate-100
+              p-0
+              font-urbanist
+              text-slate-700
+              transition
+              hover:bg-slate-200
+            "
+          >
+            <X
+              size={16}
+              strokeWidth={2.5}
+            />
+          </Button>
+        </div>
+
+        {/* =================================================
+            AUDIT EVENTS
+        ================================================= */}
+
+        <div
+          className="
+            min-h-0
+            w-full
+            flex-1
+            overflow-y-auto
+            font-urbanist
+          "
+        >
+          {auditEvents.map((event) => (
+            <div
+              key={event.id}
+              className="
+                flex
+                min-h-[63px]
+                items-center
+                border-b
+                border-slate-200
+                bg-slate-50/70
+                px-[22px]
+                font-urbanist
+              "
+            >
+              {/* ORANGE DOT */}
+
+              <div
+                className="
+                  flex
+                  w-[32px]
+                  shrink-0
+                  items-center
+                "
+              >
+                <span
+                  className="
+                    h-[8px]
+                    w-[8px]
+                    rounded-full
+                    bg-orange-500
+                  "
+                />
+              </div>
+
+              {/* EVENT INFORMATION */}
+
+              <div
+                className="
+                  min-w-0
+                  flex-1
+                  pr-4
+                  font-urbanist
+                "
+              >
+                <p
+                  className="
+                    truncate
+                    font-urbanist
+                    text-[13px]
+                    font-semibold
+                    leading-[18px]
+                    text-slate-800
+                  "
+                >
+                  {event.title}
+                </p>
+
+                <p
+                  className="
+                    truncate
+                    font-urbanist
+                    text-[11px]
+                    font-normal
+                    leading-[15px]
+                    text-slate-500
+                  "
+                >
+                  Actor: {event.actor}
+                </p>
+              </div>
+
+              {/* DATE / TIME */}
+
+              <div
+                className="
+                  ml-4
+                  flex
+                  shrink-0
+                  items-center
+                  gap-[6px]
+                  font-urbanist
+                  text-[11px]
+                  font-medium
+                  leading-[15px]
+                  text-slate-600
+                "
+              >
+                <Clock3
+                  size={14}
+                  strokeWidth={2}
+                />
+
+                <span className="hidden sm:inline">
+                  {event.dateTime}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* =================================================
+            FOOTER
+        ================================================= */}
+
+        <div
+          className="
+            flex
+            min-h-[75px]
+            shrink-0
+            flex-col
+            items-stretch
+            justify-center
+            gap-3
+            border-t
+            border-slate-200
+            bg-slate-50
+            px-[22px]
+            py-3
+            font-urbanist
+            sm:flex-row
+            sm:items-center
+            sm:justify-between
+          "
+        >
+          {/* ROWS PER PAGE */}
 
           <div
             className="
               flex
-              min-h-[74px]
               items-center
-              justify-between
-              border-b
-              border-slate-200
-              bg-white
-              gap-3
-              px-4
-              sm:px-[20px]
+              gap-[4px]
+              font-urbanist
+              text-[12px]
+              font-medium
+              leading-[16px]
+              text-slate-500
             "
           >
+            <span
+              className="
+                font-urbanist
+                text-[12px]
+                font-normal
+                leading-[16px]
+                text-slate-500
+              "
+            >
+              Rows per page:
+            </span>
 
-            <div>
+            <span
+              className="
+                font-urbanist
+                text-[12px]
+                font-medium
+                leading-[16px]
+                text-slate-600
+              "
+            >
+              10
+            </span>
 
-              <h2
-                className="
-                  text-[16px]
-                  font-semibold
-                  leading-[20px]
-                  text-slate-800
-                "
-              >
-                Audit Log
-              </h2>
+            <span
+              className="
+                ml-[1px]
+                font-urbanist
+                text-[10px]
+                font-medium
+                leading-[14px]
+                text-slate-600
+              "
+            >
+              ▼
+            </span>
+          </div>
 
-              <p
-                className="
-                  mt-[3px]
-                  text-[10px]
-                  leading-[15px]
-                  text-slate-500
-                "
-              >
-                Email Verification &amp; Onboarding
-                Event History for Sai Chandu
-              </p>
+          {/* BUTTONS */}
 
-            </div>
-
+          <div
+            className="
+              flex
+              flex-wrap
+              items-center
+              gap-[10px]
+              font-urbanist
+            "
+          >
             {/* CLOSE */}
 
             <Button
               type="button"
               onClick={onClose}
-              aria-label="Close Audit Log"
-              variant="ghost"
+              variant="outline"
               size="sm"
               className="
                 flex
-                h-[32px]
-                w-[32px]
+                h-[30px]
                 items-center
                 justify-center
-                rounded-full
-                bg-slate-100
-                text-slate-700
+                rounded-[8px]
+                border
+                border-slate-200
+                bg-white
+                px-[16px]
+                font-urbanist
+                text-[12px]
+                font-medium
+                leading-[16px]
+                text-slate-600
+                shadow-sm
                 transition
-                hover:bg-slate-200
+                hover:bg-slate-50
               "
             >
-              <X
-                size={16}
-                strokeWidth={2.5}
-              />
+              Close
             </Button>
 
-          </div>
+            {/* EXPORT LOG */}
 
-
-          {/* =================================================
-              AUDIT EVENTS
-          ================================================= */}
-
-          <div className="min-h-0 w-full flex-1 overflow-y-auto">
-
-            {auditEvents.map((event) => (
-
-              <div
-                key={event.id}
-                className="
-                  flex
-                  min-h-[55px]
-                  items-center
-                  border-b
-                  border-slate-200
-                  bg-slate-50/70
-                  py-2
-                  px-4
-                  sm:px-[20px]
-                "
-              >
-
-                {/* ORANGE DOT */}
-
-                <div
-                  className="
-                    flex
-                    w-[30px]
-                    shrink-0
-                    items-center
-                  "
-                >
-                  <span
-                    className="
-                      h-[8px]
-                      w-[8px]
-                      rounded-full
-                      bg-orange-500
-                    "
-                  />
-                </div>
-
-
-                {/* EVENT INFORMATION */}
-
-                <div
-                  className="
-                    min-w-0
-                    flex-1
-                  "
-                >
-
-                  <p
-                    className="
-                      truncate
-                      text-[11px]
-                      font-semibold
-                      leading-[16px]
-                      text-slate-700
-                    "
-                  >
-                    {event.title}
-                  </p>
-
-                  <p
-                    className="
-                      truncate
-                      text-[9px]
-                      leading-[14px]
-                      text-slate-500
-                    "
-                  >
-                    Actor: {event.actor}
-                  </p>
-
-                </div>
-
-
-                {/* DATE */}
-
-                <div
-                  className="
-                    ml-2
-                    sm:ml-4
-                    flex
-                    shrink-0
-                    items-center
-                    gap-[6px]
-                    text-[9px]
-                    font-medium
-                    text-slate-600
-                  "
-                >
-
-                  <Clock3
-                    size={13}
-                    strokeWidth={2}
-                  />
-
-                  <span className="hidden sm:inline">
-                    {event.dateTime}
-                  </span>
-
-                </div>
-
-              </div>
-
-            ))}
-
-          </div>
-
-
-          {/* =================================================
-              FOOTER
-          ================================================= */}
-
-          <div
-            className="
-              flex
-              min-h-[67px]
-              flex-col
-              items-stretch
-              justify-center
-              gap-3
-              bg-slate-50
-              px-4
-              py-3
-              sm:flex-row
-              sm:items-center
-              sm:justify-between
-              sm:px-[20px]
-            "
-          >
-
-            {/* ROWS PER PAGE */}
-
-            <div
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleExportLog}
               className="
                 flex
+                h-[30px]
                 items-center
-                gap-[4px]
-                text-[9px]
-                text-slate-500
+                justify-center
+                gap-[6px]
+                rounded-[8px]
+                bg-orange-500
+                px-[16px]
+                font-urbanist
+                text-[12px]
+                font-semibold
+                leading-[16px]
+                text-white
+                shadow-sm
+                transition
+                hover:bg-orange-600
               "
             >
+              <Download
+                size={13}
+                strokeWidth={2.5}
+              />
 
-              <span>
-                Rows per page:
-              </span>
-
-              <span
-                className="
-                  font-medium
-                  text-slate-600
-                "
-              >
-                10
-              </span>
-
-              <span
-                className="
-                  text-[8px]
-                  text-slate-600
-                "
-              >
-                ▼
-              </span>
-
-            </div>
-
-
-            {/* BUTTONS */}
-
-            <div
-              className="
-                flex
-                flex-wrap
-                items-center
-                gap-[9px]
-              "
-            >
-
-              {/* CLOSE */}
-
-              <Button
-                type="button"
-                onClick={onClose}
-                variant="outline"
-                size="sm"
-                className="
-                  flex
-                  h-[30px]
-                  items-center
-                  justify-center
-                  rounded-[8px]
-                  border
-                  border-slate-200
-                  bg-white
-                  px-[16px]
-                  text-[9px]
-                  font-medium
-                  text-slate-600
-                  shadow-sm
-                  transition
-                  hover:bg-slate-50
-                "
-              >
-                Close
-              </Button>
-
-
-              {/* EXPORT LOG */}
-
-              <Button
-                type="button"
-                size="sm"
-                className="
-                  flex
-                  h-[30px]
-                  items-center
-                  justify-center
-                  gap-[6px]
-                  rounded-[8px]
-                  bg-orange-500
-                  px-[16px]
-                  text-[9px]
-                  font-semibold
-                  text-white
-                  shadow-sm
-                  transition
-                  hover:bg-orange-600
-                "
-              >
-
-                <Download
-                  size={12}
-                  strokeWidth={2.5}
-                />
-
-                Export Log
-
-              </Button>
-
-            </div>
-
+              Export Log
+            </Button>
           </div>
-
         </div>
-
       </div>
-
     </div>,
-    document.body
+    document.body,
   );
 }
