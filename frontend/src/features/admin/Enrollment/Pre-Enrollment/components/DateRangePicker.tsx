@@ -44,7 +44,6 @@
 //   );
 // }
 
-
 import { useState } from "react";
 import DatePickerField from "./DatePickerField";
 import { useDatePicker } from "../hooks/useDatePicker";
@@ -53,8 +52,15 @@ export default function DateRangePicker() {
   const [fromDate, setFromDate] = useState("01/04/2026");
   const [toDate, setToDate] = useState("30/06/2026");
 
-  const fromPicker = useDatePicker(fromDate, setFromDate);
-  const toPicker = useDatePicker(toDate, setToDate);
+  const fromPicker = useDatePicker(
+    fromDate,
+    setFromDate,
+  );
+
+  const toPicker = useDatePicker(
+    toDate,
+    setToDate,
+  );
 
   return (
     <div
@@ -67,22 +73,45 @@ export default function DateRangePicker() {
         gap-x-3
         gap-y-2
         flex-wrap
+        font-urbanist
         sm:justify-end
       "
     >
       {/* From Month */}
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      <div
+        className="
+          flex
+          min-w-0
+          flex-wrap
+          items-center
+          gap-x-2
+          gap-y-1
+          font-urbanist
+        "
+      >
+        {/* Label */}
         <span
           className="
-            text-[12px]
-            font-medium
+            whitespace-nowrap
+            font-urbanist
+            text-sm
+            font-semibold
+            leading-5
             text-slate-800
           "
         >
           From Month
         </span>
 
-        <div className="w-[109px] max-w-full shrink-0">
+        {/* Date Picker */}
+        <div
+          className="
+            w-[124px]
+            max-w-full
+            shrink-0
+            font-urbanist
+          "
+        >
           <DatePickerField
             id="from-month"
             label=""
@@ -92,18 +121,40 @@ export default function DateRangePicker() {
       </div>
 
       {/* To Month */}
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      <div
+        className="
+          flex
+          min-w-0
+          flex-wrap
+          items-center
+          gap-x-2
+          gap-y-1
+          font-urbanist
+        "
+      >
+        {/* Label */}
         <span
           className="
-            text-[12px]
-            font-medium
+            whitespace-nowrap
+            font-urbanist
+            text-sm
+            font-semibold
+            leading-5
             text-slate-800
           "
         >
           To Month
         </span>
 
-        <div className="w-[109px] max-w-full shrink-0">
+        {/* Date Picker */}
+        <div
+          className="
+            w-[124px]
+            max-w-full
+            shrink-0
+            font-urbanist
+          "
+        >
           <DatePickerField
             id="to-month"
             label=""

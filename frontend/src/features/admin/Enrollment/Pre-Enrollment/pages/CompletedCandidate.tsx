@@ -1,7 +1,7 @@
 ﻿// import { useMemo, useState } from "react";
 // import { useNavigate, useSearchParams } from "react-router-dom";
 
-// import PreOnboardPageShell from "../components/PreOnboardPageShell";
+// import PreOnboardPageShell from "../components/PreEnrollmentPageShell";
 
 // type CompletedCandidateRow = {
 //   id: number;
@@ -11,6 +11,11 @@
 //   joiningDate: string;
 // };
 
+// /*
+//  * MOCK DATA
+//  * Backend integration is still in progress.
+//  * Keep this data until the real API is available.
+//  */
 // const completedCandidates: CompletedCandidateRow[] = [
 //   {
 //     id: 1,
@@ -81,9 +86,15 @@
 
 //     return completedCandidates.filter(
 //       (candidate) =>
-//         candidate.candidateName.toLowerCase().includes(search) ||
-//         candidate.email.toLowerCase().includes(search) ||
-//         candidate.mobile.toLowerCase().includes(search),
+//         candidate.candidateName
+//           .toLowerCase()
+//           .includes(search) ||
+//         candidate.email
+//           .toLowerCase()
+//           .includes(search) ||
+//         candidate.mobile
+//           .toLowerCase()
+//           .includes(search),
 //     );
 //   }, [searchTerm]);
 
@@ -94,14 +105,19 @@
 //     Math.ceil(totalCandidates / rowsPerPage),
 //   );
 
-//   const safePage = Math.min(currentPage, totalPages);
-
-//   const startIndex = (safePage - 1) * rowsPerPage;
-
-//   const visibleCandidates = filteredCandidates.slice(
-//     startIndex,
-//     startIndex + rowsPerPage,
+//   const safePage = Math.min(
+//     currentPage,
+//     totalPages,
 //   );
+
+//   const startIndex =
+//     (safePage - 1) * rowsPerPage;
+
+//   const visibleCandidates =
+//     filteredCandidates.slice(
+//       startIndex,
+//       startIndex + rowsPerPage,
+//     );
 
 //   const getInitial = (name: string) => {
 //     return name.charAt(0).toUpperCase();
@@ -109,20 +125,24 @@
 
 //   return (
 //     <PreOnboardPageShell>
+//       {/* =====================================================
+//           CANDIDATE TABLE CONTAINER
+//       ===================================================== */}
+
 //       <div
 //         className="
 //           relative
 //           -mt-1
 //           w-full
 //           min-w-0
-//           px-3
 //           pb-8
-//           sm:px-4
-//           md:px-5
-//           lg:px-6
+//           font-urbanist
 //         "
 //       >
-//         {/* CARD */}
+//         {/* ===================================================
+//             CARD
+//         =================================================== */}
+
 //         <div
 //           className="
 //             w-full
@@ -131,75 +151,111 @@
 //             border
 //             border-slate-200
 //             bg-white
-//             shadow-[0_8px_24px_rgba(15,23,42,0.14)]
+//             font-urbanist
+//             shadow-[0_8px_45px_rgba(15,23,42,0.16)]
 //           "
 //         >
-//           {/* TABLE SCROLL AREA */}
-//           <div className="w-full overflow-x-auto">
-//             <table className="w-full min-w-[900px] border-collapse">
-//               {/* HEADER */}
+//           {/* =================================================
+//               TABLE SCROLL AREA
+//           ================================================= */}
+
+//           <div className="w-full overflow-x-auto font-urbanist">
+//             <table
+//               className="
+//                 w-full
+//                 min-w-[900px]
+//                 border-collapse
+//                 font-urbanist
+//               "
+//             >
+//               {/* =================================================
+//                   HEADER
+//               ================================================= */}
+
 //               <thead>
-//                 <tr className="h-[52px] border-b border-slate-200 bg-slate-50">
+//                 <tr
+//                   className="
+//                     h-[52px]
+//                     border-b
+//                     border-slate-200
+//                     bg-slate-50
+//                     font-urbanist
+//                   "
+//                 >
+//                   {/* Label */}
+
 //                   <th
 //                     className="
 //                       px-6
 //                       text-left
-//                       text-[12px]
+//                       font-urbanist
+//                       text-[13px]
 //                       font-semibold
-//                       uppercase
-//                       tracking-[0.01em]
+//                       leading-[18px]
 //                       text-slate-700
 //                     "
 //                   >
 //                     Candidate Name
 //                   </th>
 
+//                   {/* Label */}
+
 //                   <th
 //                     className="
 //                       px-6
 //                       text-left
-//                       text-[12px]
+//                       font-urbanist
+//                       text-[13px]
 //                       font-semibold
-//                       uppercase
+//                       leading-[18px]
 //                       text-slate-700
 //                     "
 //                   >
 //                     Email ID
 //                   </th>
 
+//                   {/* Label */}
+
 //                   <th
 //                     className="
 //                       px-6
 //                       text-left
-//                       text-[12px]
+//                       font-urbanist
+//                       text-[13px]
 //                       font-semibold
-//                       uppercase
+//                       leading-[18px]
 //                       text-slate-700
 //                     "
 //                   >
 //                     Mobile No
 //                   </th>
 
+//                   {/* Label */}
+
 //                   <th
 //                     className="
 //                       px-6
 //                       text-left
-//                       text-[12px]
+//                       font-urbanist
+//                       text-[13px]
 //                       font-semibold
-//                       uppercase
+//                       leading-[18px]
 //                       text-slate-700
 //                     "
 //                   >
 //                     Joining Date
 //                   </th>
 
+//                   {/* Label */}
+
 //                   <th
 //                     className="
 //                       px-6
 //                       text-center
-//                       text-[12px]
+//                       font-urbanist
+//                       text-[13px]
 //                       font-semibold
-//                       uppercase
+//                       leading-[18px]
 //                       text-slate-700
 //                     "
 //                   >
@@ -208,123 +264,169 @@
 //                 </tr>
 //               </thead>
 
-//               {/* BODY */}
+//               {/* =================================================
+//                   BODY
+//               ================================================= */}
+
 //               <tbody>
 //                 {visibleCandidates.length > 0 ? (
-//                   visibleCandidates.map((candidate) => (
-//                     <tr
-//                       key={candidate.id}
-//                       className="
-//                         h-[63px]
-//                         border-b
-//                         border-slate-200
-//                         last:border-b-0
-//                         hover:bg-slate-50
-//                       "
-//                     >
-//                       {/* NAME */}
-//                       <td className="px-6">
-//                         <div className="flex items-center gap-4">
+//                   visibleCandidates.map(
+//                     (candidate) => (
+//                       <tr
+//                         key={candidate.id}
+//                         className="
+//                           h-[63px]
+//                           border-b
+//                           border-slate-200
+//                           font-urbanist
+//                           last:border-b-0
+//                           hover:bg-slate-50
+//                         "
+//                       >
+//                         {/* NAME */}
+
+//                         <td className="px-6 font-urbanist">
 //                           <div
 //                             className="
 //                               flex
-//                               h-8
-//                               w-8
-//                               shrink-0
 //                               items-center
-//                               justify-center
-//                               rounded-full
-//                               bg-orange-50
-//                               text-[12px]
-//                               font-semibold
-//                               text-orange-500
+//                               gap-4
+//                               font-urbanist
 //                             "
 //                           >
-//                             {getInitial(candidate.candidateName)}
+//                             <div
+//                               className="
+//                                 flex
+//                                 h-8
+//                                 w-8
+//                                 shrink-0
+//                                 items-center
+//                                 justify-center
+//                                 rounded-full
+//                                 bg-orange-50
+//                                 font-urbanist
+//                                 text-xs
+//                                 font-semibold
+//                                 leading-4
+//                                 text-orange-500
+//                               "
+//                             >
+//                               {getInitial(
+//                                 candidate.candidateName,
+//                               )}
+//                             </div>
+
+//                             {/* Body */}
+
+//                             <span
+//                               className="
+//                                 whitespace-nowrap
+//                                 font-urbanist
+//                                 text-sm
+//                                 font-semibold
+//                                 leading-5
+//                                 text-slate-800
+//                               "
+//                             >
+//                               {candidate.candidateName}
+//                             </span>
 //                           </div>
+//                         </td>
 
-//                           <span
-//                             className="
-//                               whitespace-nowrap
-//                               text-[13px]
-//                               font-semibold
-//                               text-slate-800
-//                             "
-//                           >
-//                             {candidate.candidateName}
-//                           </span>
-//                         </div>
-//                       </td>
+//                         {/* EMAIL */}
 
-//                       {/* EMAIL */}
-//                       <td
-//                         className="
-//                           whitespace-nowrap
-//                           px-6
-//                           text-[13px]
-//                           text-slate-500
-//                         "
-//                       >
-//                         {candidate.email}
-//                       </td>
-
-//                       {/* MOBILE */}
-//                       <td
-//                         className="
-//                           whitespace-nowrap
-//                           px-6
-//                           text-[13px]
-//                           text-slate-500
-//                         "
-//                       >
-//                         {candidate.mobile}
-//                       </td>
-
-//                       {/* DATE */}
-//                       <td
-//                         className="
-//                           whitespace-nowrap
-//                           px-6
-//                           text-[13px]
-//                           text-slate-500
-//                         "
-//                       >
-//                         {candidate.joiningDate}
-//                       </td>
-
-//                       {/* ACTION */}
-//                       <td className="px-6 text-center">
-//                         <button
-//                           type="button"
-//                           onClick={() =>
-//                             navigate(
-//                               `${candidate.id}/tasks`,
-//                             )
-//                           }
+//                         <td
 //                           className="
-//                             inline-flex
-//                             items-center
-//                             gap-2
-//                             rounded-full
-//                             bg-emerald-50
-//                             px-5
-//                             py-2
-//                             text-[13px]
-//                             font-semibold
-//                             text-emerald-600
-//                             transition
-//                             hover:bg-emerald-100
+//                             whitespace-nowrap
+//                             px-6
+//                             font-urbanist
+//                             text-sm
+//                             font-medium
+//                             leading-5
+//                             text-slate-500
 //                           "
 //                         >
-//                           <span className="text-[14px]">
-//                             ◉
-//                           </span>
+//                           {candidate.email}
+//                         </td>
 
-//                           View
-//                         </button>
-//                       </td>
-//                     </tr>
-//                   ))
+//                         {/* MOBILE */}
+
+//                         <td
+//                           className="
+//                             whitespace-nowrap
+//                             px-6
+//                             font-urbanist
+//                             text-sm
+//                             font-medium
+//                             leading-5
+//                             text-slate-500
+//                           "
+//                         >
+//                           {candidate.mobile}
+//                         </td>
+
+//                         {/* DATE */}
+
+//                         <td
+//                           className="
+//                             whitespace-nowrap
+//                             px-6
+//                             font-urbanist
+//                             text-sm
+//                             font-medium
+//                             leading-5
+//                             text-slate-500
+//                           "
+//                         >
+//                           {candidate.joiningDate}
+//                         </td>
+
+//                         {/* ACTION */}
+
+//                         <td className="px-6 text-center font-urbanist">
+//                           <button
+//                             type="button"
+//                             onClick={() =>
+//                               navigate(
+//                                 `${candidate.id}/tasks`,
+//                               )
+//                             }
+//                             className="
+//                               inline-flex
+//                               items-center
+//                               gap-2
+//                               rounded-full
+//                               bg-emerald-50
+//                               px-5
+//                               py-2
+//                               font-urbanist
+//                               text-xs
+//                               font-semibold
+//                               leading-4
+//                               text-emerald-600
+//                               transition
+//                               hover:bg-emerald-100
+//                             "
+//                           >
+//                             {/* Utility / UI */}
+
+//                             <span
+//                               className="
+//                                 font-urbanist
+//                                 text-sm
+//                                 font-semibold
+//                                 leading-5
+//                               "
+//                             >
+//                               ◉
+//                             </span>
+
+//                             View
+//                           </button>
+//                         </td>
+//                       </tr>
+//                     ),
+//                   )
 //                 ) : (
 //                   <tr>
 //                     <td
@@ -332,7 +434,10 @@
 //                       className="
 //                         h-[180px]
 //                         text-center
+//                         font-urbanist
 //                         text-sm
+//                         font-medium
+//                         leading-5
 //                         text-slate-500
 //                       "
 //                     >
@@ -344,7 +449,10 @@
 //             </table>
 //           </div>
 
-//           {/* PAGINATION */}
+//           {/* =================================================
+//               PAGINATION
+//           ================================================= */}
+
 //           <div
 //             className="
 //               flex
@@ -356,14 +464,37 @@
 //               bg-white
 //               px-6
 //               py-4
+//               font-urbanist
 //               sm:flex-row
 //               sm:items-center
 //               sm:justify-between
 //             "
 //           >
 //             {/* ROWS PER PAGE */}
-//             <div className="flex items-center gap-2 text-[13px] text-slate-500">
-//               <span>Rows per page:</span>
+
+//             <div
+//               className="
+//                 flex
+//                 items-center
+//                 gap-2
+//                 font-urbanist
+//               "
+//             >
+//               {/* Label */}
+
+//               <span
+//                 className="
+//                   font-urbanist
+//                   text-sm
+//                   font-semibold
+//                   leading-5
+//                   text-slate-500
+//                 "
+//               >
+//                 Rows per page:
+//               </span>
+
+//               {/* Utility / UI */}
 
 //               <select
 //                 value={rowsPerPage}
@@ -381,7 +512,10 @@
 //                   bg-white
 //                   px-2
 //                   py-1
-//                   text-[13px]
+//                   font-urbanist
+//                   text-sm
+//                   font-medium
+//                   leading-5
 //                   text-slate-700
 //                   outline-none
 //                 "
@@ -393,26 +527,60 @@
 //               </select>
 //             </div>
 
-//             {/* PAGE NUMBERS */}
-//             <div className="flex items-center gap-5">
-//               <span className="whitespace-nowrap text-[13px] text-slate-500">
+//             {/* PAGE INFORMATION */}
+
+//             <div
+//               className="
+//                 flex
+//                 items-center
+//                 gap-5
+//                 font-urbanist
+//               "
+//             >
+//               {/* Body */}
+
+//               <span
+//                 className="
+//                   whitespace-nowrap
+//                   font-urbanist
+//                   text-sm
+//                   font-medium
+//                   leading-5
+//                   text-slate-500
+//                 "
+//               >
 //                 {totalCandidates === 0
 //                   ? "0-0 of 0 candidates"
 //                   : `${startIndex + 1}-${Math.min(
-//                       startIndex + rowsPerPage,
+//                       startIndex +
+//                         rowsPerPage,
 //                       totalCandidates,
 //                     )} of ${totalCandidates} candidates`}
 //               </span>
 
-//               <div className="flex items-center gap-3">
+//               {/* Page Numbers */}
+
+//               <div
+//                 className="
+//                   flex
+//                   items-center
+//                   gap-3
+//                   font-urbanist
+//                 "
+//               >
 //                 {Array.from(
-//                   { length: totalPages },
-//                   (_, index) => index + 1,
+//                   {
+//                     length: totalPages,
+//                   },
+//                   (_, index) =>
+//                     index + 1,
 //                 ).map((page) => (
 //                   <button
 //                     key={page}
 //                     type="button"
-//                     onClick={() => setCurrentPage(page)}
+//                     onClick={() =>
+//                       setCurrentPage(page)
+//                     }
 //                     className={`
 //                       flex
 //                       h-8
@@ -421,8 +589,10 @@
 //                       justify-center
 //                       rounded-md
 //                       px-2
-//                       text-[13px]
-//                       font-medium
+//                       font-urbanist
+//                       text-sm
+//                       font-semibold
+//                       leading-5
 //                       transition
 //                       ${
 //                         safePage === page
@@ -430,6 +600,11 @@
 //                           : "text-slate-600 hover:bg-slate-100"
 //                       }
 //                     `}
+//                     aria-current={
+//                       safePage === page
+//                         ? "page"
+//                         : undefined
+//                     }
 //                   >
 //                     {page}
 //                   </button>
@@ -442,7 +617,6 @@
 //     </PreOnboardPageShell>
 //   );
 // }
-
 
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -457,6 +631,11 @@ type CompletedCandidateRow = {
   joiningDate: string;
 };
 
+/*
+ * MOCK DATA
+ * Backend integration is still in progress.
+ * Keep this data until the real API is available.
+ */
 const completedCandidates: CompletedCandidateRow[] = [
   {
     id: 1,
@@ -555,7 +734,10 @@ export default function CompletedCandidate() {
 
   return (
     <PreOnboardPageShell>
-      {/* Candidate Table Container */}
+      {/* =====================================================
+          CANDIDATE TABLE CONTAINER
+      ===================================================== */}
+
       <div
         className="
           relative
@@ -563,9 +745,13 @@ export default function CompletedCandidate() {
           w-full
           min-w-0
           pb-8
+          font-urbanist
         "
       >
-        {/* CARD */}
+        {/* ===================================================
+            CARD
+        =================================================== */}
+
         <div
           className="
             w-full
@@ -574,23 +760,47 @@ export default function CompletedCandidate() {
             border
             border-slate-200
             bg-white
+            font-urbanist
             shadow-[0_8px_45px_rgba(15,23,42,0.16)]
           "
         >
-          {/* TABLE SCROLL AREA */}
-          <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse">
-              {/* HEADER */}
+          {/* =================================================
+              TABLE SCROLL AREA
+          ================================================= */}
+
+          <div className="w-full overflow-x-auto font-urbanist">
+            <table
+              className="
+                w-full
+                min-w-[900px]
+                border-collapse
+                font-urbanist
+              "
+            >
+              {/* =================================================
+                  HEADER
+              ================================================= */}
+
               <thead>
-                <tr className="h-[52px] border-b border-slate-200 bg-slate-50">
+                <tr
+                  className="
+                    h-[52px]
+                    border-b
+                    border-slate-200
+                    bg-slate-50
+                    font-urbanist
+                  "
+                >
+                  {/* Utility / UI — Table/Header */}
+
                   <th
                     className="
                       px-6
                       text-left
+                      font-urbanist
                       text-[12px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.01em]
+                      font-medium
+                      leading-[16px]
                       text-slate-700
                     "
                   >
@@ -601,9 +811,10 @@ export default function CompletedCandidate() {
                     className="
                       px-6
                       text-left
+                      font-urbanist
                       text-[12px]
-                      font-semibold
-                      uppercase
+                      font-medium
+                      leading-[16px]
                       text-slate-700
                     "
                   >
@@ -614,9 +825,10 @@ export default function CompletedCandidate() {
                     className="
                       px-6
                       text-left
+                      font-urbanist
                       text-[12px]
-                      font-semibold
-                      uppercase
+                      font-medium
+                      leading-[16px]
                       text-slate-700
                     "
                   >
@@ -627,9 +839,10 @@ export default function CompletedCandidate() {
                     className="
                       px-6
                       text-left
+                      font-urbanist
                       text-[12px]
-                      font-semibold
-                      uppercase
+                      font-medium
+                      leading-[16px]
                       text-slate-700
                     "
                   >
@@ -640,9 +853,10 @@ export default function CompletedCandidate() {
                     className="
                       px-6
                       text-center
+                      font-urbanist
                       text-[12px]
-                      font-semibold
-                      uppercase
+                      font-medium
+                      leading-[16px]
                       text-slate-700
                     "
                   >
@@ -651,7 +865,10 @@ export default function CompletedCandidate() {
                 </tr>
               </thead>
 
-              {/* BODY */}
+              {/* =================================================
+                  BODY
+              ================================================= */}
+
               <tbody>
                 {visibleCandidates.length > 0 ? (
                   visibleCandidates.map((candidate) => (
@@ -661,13 +878,25 @@ export default function CompletedCandidate() {
                         h-[63px]
                         border-b
                         border-slate-200
+                        font-urbanist
                         last:border-b-0
                         hover:bg-slate-50
                       "
                     >
                       {/* NAME */}
-                      <td className="px-6">
-                        <div className="flex items-center gap-4">
+
+                      <td className="px-6 font-urbanist">
+                        <div
+                          className="
+                            flex
+                            items-center
+                            gap-4
+                            font-urbanist
+                          "
+                        >
+                          {/* Label/SM
+                              Urbanist Medium 13px */}
+
                           <div
                             className="
                               flex
@@ -678,19 +907,26 @@ export default function CompletedCandidate() {
                               justify-center
                               rounded-full
                               bg-orange-50
-                              text-[12px]
-                              font-semibold
+                              font-urbanist
+                              text-[13px]
+                              font-medium
+                              leading-[18px]
                               text-orange-500
                             "
                           >
                             {getInitial(candidate.candidateName)}
                           </div>
 
+                          {/* Label/LG
+                              Urbanist Medium 16px */}
+
                           <span
                             className="
                               whitespace-nowrap
-                              text-[13px]
-                              font-semibold
+                              font-urbanist
+                              text-[16px]
+                              font-medium
+                              leading-[20px]
                               text-slate-800
                             "
                           >
@@ -699,36 +935,54 @@ export default function CompletedCandidate() {
                         </div>
                       </td>
 
-                      {/* EMAIL */}
+                      {/* EMAIL
+                          Body/SM
+                          Urbanist Regular 13px */}
+
                       <td
                         className="
                           whitespace-nowrap
                           px-6
+                          font-urbanist
                           text-[13px]
+                          font-normal
+                          leading-[18px]
                           text-slate-500
                         "
                       >
                         {candidate.email}
                       </td>
 
-                      {/* MOBILE */}
+                      {/* MOBILE
+                          Body/SM
+                          Urbanist Regular 13px */}
+
                       <td
                         className="
                           whitespace-nowrap
                           px-6
+                          font-urbanist
                           text-[13px]
+                          font-normal
+                          leading-[18px]
                           text-slate-500
                         "
                       >
                         {candidate.mobile}
                       </td>
 
-                      {/* DATE */}
+                      {/* DATE
+                          Body/SM
+                          Urbanist Regular 13px */}
+
                       <td
                         className="
                           whitespace-nowrap
                           px-6
+                          font-urbanist
                           text-[13px]
+                          font-normal
+                          leading-[18px]
                           text-slate-500
                         "
                       >
@@ -736,7 +990,8 @@ export default function CompletedCandidate() {
                       </td>
 
                       {/* ACTION */}
-                      <td className="px-6 text-center">
+
+                      <td className="px-6 text-center font-urbanist">
                         <button
                           type="button"
                           onClick={() =>
@@ -750,14 +1005,25 @@ export default function CompletedCandidate() {
                             bg-emerald-50
                             px-5
                             py-2
-                            text-[13px]
-                            font-semibold
+                            font-urbanist
+                            text-[14px]
+                            font-medium
+                            leading-[18px]
                             text-emerald-600
                             transition
                             hover:bg-emerald-100
                           "
                         >
-                          <span className="text-[14px]">
+                          {/* Utility / UI */}
+
+                          <span
+                            className="
+                              font-urbanist
+                              text-[12px]
+                              font-medium
+                              leading-[16px]
+                            "
+                          >
                             ◉
                           </span>
 
@@ -773,7 +1039,10 @@ export default function CompletedCandidate() {
                       className="
                         h-[180px]
                         text-center
-                        text-sm
+                        font-urbanist
+                        text-[13px]
+                        font-normal
+                        leading-[18px]
                         text-slate-500
                       "
                     >
@@ -785,7 +1054,10 @@ export default function CompletedCandidate() {
             </table>
           </div>
 
-          {/* PAGINATION */}
+          {/* =================================================
+              PAGINATION
+          ================================================= */}
+
           <div
             className="
               flex
@@ -797,14 +1069,39 @@ export default function CompletedCandidate() {
               bg-white
               px-6
               py-4
+              font-urbanist
               sm:flex-row
               sm:items-center
               sm:justify-between
             "
           >
             {/* ROWS PER PAGE */}
-            <div className="flex items-center gap-2 text-[13px] text-slate-500">
-              <span>Rows per page:</span>
+
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+                font-urbanist
+              "
+            >
+              {/* Label/SM
+                  Urbanist Medium 13px */}
+
+              <span
+                className="
+                  font-urbanist
+                  text-[13px]
+                  font-medium
+                  leading-[18px]
+                  text-slate-500
+                "
+              >
+                Rows per page:
+              </span>
+
+              {/* Body/SM
+                  Urbanist Regular 13px */}
 
               <select
                 value={rowsPerPage}
@@ -820,7 +1117,10 @@ export default function CompletedCandidate() {
                   bg-white
                   px-2
                   py-1
+                  font-urbanist
                   text-[13px]
+                  font-normal
+                  leading-[18px]
                   text-slate-700
                   outline-none
                 "
@@ -832,9 +1132,29 @@ export default function CompletedCandidate() {
               </select>
             </div>
 
-            {/* PAGE NUMBERS */}
-            <div className="flex items-center gap-5">
-              <span className="whitespace-nowrap text-[13px] text-slate-500">
+            {/* PAGE INFORMATION */}
+
+            <div
+              className="
+                flex
+                items-center
+                gap-5
+                font-urbanist
+              "
+            >
+              {/* Body/SM
+                  Urbanist Regular 13px */}
+
+              <span
+                className="
+                  whitespace-nowrap
+                  font-urbanist
+                  text-[13px]
+                  font-normal
+                  leading-[18px]
+                  text-slate-500
+                "
+              >
                 {totalCandidates === 0
                   ? "0-0 of 0 candidates"
                   : `${startIndex + 1}-${Math.min(
@@ -843,9 +1163,20 @@ export default function CompletedCandidate() {
                     )} of ${totalCandidates} candidates`}
               </span>
 
-              <div className="flex items-center gap-3">
+              {/* PAGE NUMBERS */}
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  font-urbanist
+                "
+              >
                 {Array.from(
-                  { length: totalPages },
+                  {
+                    length: totalPages,
+                  },
                   (_, index) => index + 1,
                 ).map((page) => (
                   <button
@@ -860,15 +1191,19 @@ export default function CompletedCandidate() {
                       justify-center
                       rounded-md
                       px-2
-                      text-[13px]
-                      font-medium
+                      font-urbanist
+                      text-[14px]
+                      leading-[18px]
                       transition
                       ${
                         safePage === page
-                          ? "bg-orange-500 text-white"
-                          : "text-slate-600 hover:bg-slate-100"
+                          ? "font-semibold bg-orange-500 text-white"
+                          : "font-medium text-slate-600 hover:bg-slate-100"
                       }
                     `}
+                    aria-current={
+                      safePage === page ? "page" : undefined
+                    }
                   >
                     {page}
                   </button>
