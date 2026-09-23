@@ -157,6 +157,19 @@ function loadWidgetMessages(employeeId?: string): ChatMessage[] | null {
     return null;
   }
 }
+function pruneOtherWidgetStorage(employeeId?: string): void {
+  const currentKey = getWidgetStorageKey(employeeId);
+  const keysToRemove: string[] = [];
+
+  for (let i = 0; i < window.localStorage.length; i++) {
+    const key = window.localStorage.key(i);
+    if (key && key.startsWith("hrmsChatbotWidgetMessages-") && key !== currentKey) {
+      keysToRemove.push(key);
+    }
+  }
+
+  keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+}
 
 function getTimeGreeting(): string {
   const hour = new Date().getHours();
@@ -507,6 +520,20 @@ export default function ChatbotWidget({
 
   const conversationVersionRef = useRef(0);
 
+  const employeeIdRef = useRef<string | undefined>(employeeId);
+
+  useEffect(() => {
+    employeeIdRef.current = employeeId;
+  }, [employeeId]);
+
+  useEffect(() => {
+    return () => {
+      if (employeeIdRef.current) {
+        window.localStorage.removeItem(getWidgetStorageKey(employeeIdRef.current));
+      }
+    };
+  }, []);
+
   const handleMessagesScroll = () => {
     const el = messagesContainerRef.current;
     if (!el) return;
@@ -531,14 +558,15 @@ export default function ChatbotWidget({
       setNewMessageCount((c) => c + 1);
     }
   }, [messages]);
-
   useEffect(() => {
-    const saved = loadWidgetMessages(employeeId);
+  pruneOtherWidgetStorage(employeeId);
 
-    setMessages(saved ?? []);
+  const saved = loadWidgetMessages(employeeId);
 
-    menuShownRef.current = false;
-  }, [employeeId, employeeName]);
+  setMessages(saved ?? []);
+
+  menuShownRef.current = false;
+}, [employeeId, employeeName]);
 
   useEffect(() => {
     localStorage.setItem(
