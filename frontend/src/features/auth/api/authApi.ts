@@ -1,4 +1,5 @@
 import { baseApi } from "@/app/baseApi";
+ 
 import type {
   LoginRequest,
   LoginResponse,
@@ -8,9 +9,9 @@ import type {
   ChangePasswordRequest,
   ChangePasswordResponse,
 } from "../types/auth.types";
-
+ 
 import type { DomainRequest } from "@/features/domain-verification/types/domain.types";
-
+ 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // =========================
@@ -19,7 +20,7 @@ export const authApi = baseApi.injectEndpoints({
     getCaptcha: builder.query<CaptchaResponse, void>({
       query: () => "/auth/captcha",
     }),
-
+ 
     // =========================
     // Login
     // =========================
@@ -30,7 +31,7 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-
+ 
     // =========================
     // Logout
     // =========================
@@ -40,7 +41,7 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
       }),
     }),
-
+ 
     // =========================
     // Forgot Password
     // =========================
@@ -61,7 +62,7 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-
+ 
     // =========================
     // Verify OTP
     // =========================
@@ -78,7 +79,7 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-
+ 
     // =========================
     // Reset Forgot Password
     // =========================
@@ -86,6 +87,7 @@ export const authApi = baseApi.injectEndpoints({
       void,
       {
         employeeId: string;
+        userId?: string | null;
         newPassword: string;
         confirmPassword: string;
       }
@@ -96,7 +98,7 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-
+ 
     // =========================
     // Reset Password
     // =========================
@@ -113,7 +115,7 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-
+ 
     // =========================
     // First Login Reset Password
     // =========================
@@ -127,7 +129,7 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-
+ 
     // =========================
     // Change Password
     // =========================
@@ -143,7 +145,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
   }),
 });
-
+ 
 export const {
   useGetCaptchaQuery,
   useLazyGetCaptchaQuery,
@@ -156,3 +158,4 @@ export const {
   useFirstLoginResetPasswordMutation,
   useChangePasswordMutation,
 } = authApi;
+ 

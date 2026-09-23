@@ -194,23 +194,23 @@ export default function ProfileMenu() {
               Change Password
           ========================= */}
 
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              setOpen(false);
-              setChangePasswordOpen(true);
-            }}
-            className="
-              w-full
-              justify-start
-              gap-3
-              px-4
-              py-6
-              text-[#1E3A5F]
-              hover:bg-[#EAF5FE]
-              hover:text-[#1E3A5F]
-            "
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setOpen(false);
+                setChangePasswordOpen(true);
+              }}
+              className="
+                w-full
+                justify-start
+                gap-3
+                px-4
+                py-6
+                text-[#1E3A5F]
+                hover:bg-[#EAF5FE]
+                hover:text-[#1E3A5F]
+              "
           >
             <KeyRound size={16} strokeWidth={2} />
             Change Password

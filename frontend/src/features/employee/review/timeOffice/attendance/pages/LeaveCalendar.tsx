@@ -142,7 +142,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useParams } from "react-router-dom";
 
-import LeaveCalendarHeader from "../components/LeaveCalendarHeader";
 import LeaveCalendarSearch from "../components/LeaveCalendarSearch";
 import LeaveCalendarTable from "../components/LeaveCalendarTable";
 import LeaveCalendarFooter from "../components/LeaveCalendarFooter";
@@ -164,6 +163,17 @@ import {
   LEAVE_CALENDAR_CONSTANTS,
 } from "../constants/leaveCalendar.constants";
 import { useLazyGetEmployeeDailyRawPunchesQuery } from "../../../Attandance overview/timeOffice/api/regularizationApi";
+import {
+  Bookmark,
+  ChevronDown,
+  FileSpreadsheet,
+  Filter,
+  History,
+  MoreVertical,
+  Plus,
+  X,
+} from "lucide-react";
+import { MonthPicker } from "@/components/ui/monthpicker";
 
 // =========================================================
 // RAW PUNCH API
@@ -177,6 +187,7 @@ const LeaveCalendar = () => {
   // =========================================================
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [leaveType, setLeaveType] = useState("");
 
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().getMonth(),
@@ -734,12 +745,12 @@ const LeaveCalendar = () => {
       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4">
         <nav
           aria-label="Time office navigation"
-          className="mb-3 flex min-w-0 shrink-0 items-center gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4"
+          className="mb-2 flex min-w-0 shrink-0 items-center gap-7 overflow-x-auto rounded-lg border border-[#e0e5ec] bg-white px-3"
         >
           <NavLink
             to={`/${domain}/employee/Regularization/Punch`}
             className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-4 text-[15px] font-semibold ${
+              `whitespace-nowrap border-b-2 px-1 py-3 text-[13px] font-semibold ${
                 isActive
                   ? "border-[#1997e8] text-[#1997e8]"
                   : "border-transparent text-[#68758a]"
@@ -751,7 +762,7 @@ const LeaveCalendar = () => {
           <NavLink
             to={`/${domain}/employee/Regularization/MissedPunch`}
             className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-4 text-[15px] font-semibold ${
+              `whitespace-nowrap border-b-2 px-1 py-3 text-[13px] font-semibold ${
                 isActive
                   ? "border-[#1997e8] text-[#1997e8]"
                   : "border-transparent text-[#68758a]"
@@ -763,7 +774,7 @@ const LeaveCalendar = () => {
           <NavLink
             to={`/${domain}/employee/time-office/regularization/attendance`}
             className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-4 text-[15px] font-semibold ${
+              `whitespace-nowrap border-b-2 px-1 py-3 text-[13px] font-semibold ${
                 isActive
                   ? "border-[#1997e8] text-[#1997e8]"
                   : "border-transparent text-[#68758a]"
@@ -775,7 +786,7 @@ const LeaveCalendar = () => {
           <NavLink
             to={`/${domain}/employee/Regularization/TAInsights`}
             className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-4 text-[15px] font-semibold ${
+              `whitespace-nowrap border-b-2 px-1 py-3 text-[13px] font-semibold ${
                 isActive
                   ? "border-[#1997e8] text-[#1997e8]"
                   : "border-transparent text-[#68758a]"
@@ -784,24 +795,63 @@ const LeaveCalendar = () => {
           >
             TA Insights
           </NavLink>
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+          <MonthPicker
+            value={`${new Date(2000, selectedMonth, 1).toLocaleDateString("en-US", { month: "short" })}/${selectedYear}`}
+            onChange={(value) => {
+              const monthIndex = new Date(`${value.split("/")[0]} 1, 2000`).getMonth();
+              if (!Number.isNaN(monthIndex)) setSelectedMonth(monthIndex);
+            }}
+            className="h-8 w-[115px] rounded-md border-slate-200 bg-white text-xs"
+          />
+          <div className="flex items-center gap-2">
+            <select
+              aria-label="Select Leave Type"
+              value={leaveType}
+              onChange={(event) => setLeaveType(event.target.value)}
+              className="h-8 w-[130px] rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600"
+            >
+              <option value="">Select Leave Type</option>
+              <option value="P">Present</option>
+              <option value="A">Absent</option>
+              <option value="W">Week Off</option>
+              <option value="H">Holiday</option>
+            </select>
+            <button type="button" title="Export attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-200 text-emerald-600">
+              <FileSpreadsheet size={16} />
+            </button>
+            <button type="button" title="Filter attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500">
+              <Filter size={16} />
+            </button>
+            <button type="button" title="Attendance history" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500">
+              <History size={16} />
+            </button>
+          </div>
+          </div>
         </nav>
 
-        {/* HEADER */}
-
-        <div className="shrink-0">
-          <LeaveCalendarHeader
-            selectedMonth={
-              selectedMonth
-            }
-            setSelectedMonth={
-              setSelectedMonth
-            }
-          />
+        <div className="flex shrink-0 items-center justify-end gap-2 border-b border-slate-200 bg-white px-3 py-2">
+          {["Half Day Status", "Revert", "Bulk Correction", "Exception", "Process"].map(
+            (label) => (
+              <button
+                key={label}
+                type="button"
+                className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium ${
+                  label === "Half Day Status" || label === "Exception"
+                    ? "border-[#1997e8] bg-[#1997e8] text-white"
+                    : "border-slate-200 bg-slate-100 text-slate-400"
+                }`}
+              >
+                <Bookmark size={13} />
+                {label}
+              </button>
+            ),
+          )}
         </div>
 
         {/* SEARCH */}
 
-        <div className="shrink-0">
+        <div className="flex min-h-10 items-center gap-4 border-b border-slate-200 bg-white px-3 py-1.5">
           <LeaveCalendarSearch
             searchTerm={
               searchTerm
@@ -810,6 +860,32 @@ const LeaveCalendar = () => {
               setSearchTerm
             }
           />
+          <div className="ml-auto flex items-center gap-5">
+            <button type="button" className="flex items-center gap-1 text-xs text-slate-600">
+              <Plus size={14} /> Add Filter
+            </button>
+            {["Query", "TA Policy", "Pattern", "TA Supervisor", "Attendance", "Leave"].map(
+              (label) => (
+                <button key={label} type="button" className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-slate-500">
+                  {label} <ChevronDown size={12} />
+                </button>
+              ),
+            )}
+            <button type="button" title="More filters" className="text-slate-500">
+              <MoreVertical size={16} />
+            </button>
+            <button
+              type="button"
+              title="Clear filters"
+              onClick={() => {
+                setSearchTerm("");
+                setLeaveType("");
+              }}
+              className="text-red-400"
+            >
+              <X size={17} />
+            </button>
+          </div>
         </div>
 
         {/* LOADING */}

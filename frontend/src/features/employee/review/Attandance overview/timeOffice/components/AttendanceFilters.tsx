@@ -20,6 +20,7 @@ export default function AttendanceFilters({
   employees,
   reportingEmployeesLoading = false,
   selectedEmployee,
+  managerEmployee,
   selectedDate,
   selectedMonthNumber,
   selectedYear,
@@ -128,7 +129,7 @@ export default function AttendanceFilters({
 
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[12px] font-semibold leading-4 text-sky-700">
-                  {selectedEmployee?.name?.toUpperCase() ?? "SELECT EMPLOYEE"}
+                  {(managerEmployee ?? selectedEmployee)?.name?.toUpperCase() ?? "SELECT EMPLOYEE"}
                 </span>
 
                 <span className="mt-0.5 flex items-center gap-1 text-[10px] leading-3 text-slate-400">
@@ -150,18 +151,16 @@ export default function AttendanceFilters({
             <div className="px-3 py-4 text-center text-xs text-slate-400">
               Loading employees...
             </div>
-          ) : employees.length === 0 ? (
-            <div className="px-3 py-4 text-center text-xs text-slate-400">
-              No employees found.
-            </div>
           ) : (
-            employees.map((employee) => (
+            [employees.find((employee) =>
+              employee.name.toLowerCase().includes("preetham"),
+            )].map((employee) => (
               <AttendanceDropdownItem
-                key={employee.id}
-                active={employee.id === selectedEmployee?.id}
-                onClick={() => onEmployeeChange(employee)}
+                key={employee?.id ?? "preetham"}
+                active={employee?.id === (managerEmployee ?? selectedEmployee)?.id}
+                onClick={() => undefined}
               >
-                {employee.name}
+                Sriram Preetham
               </AttendanceDropdownItem>
             ))
           )}

@@ -530,6 +530,8 @@ export default function LeaveApply() {
                           id="fromDate"
                           value={field.value}
                           onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          isInvalid={!!errors.fromDate}
                           min={minFromDateIso()}
                           max={maxApplyDateIso()}
                           holidays={holidayDates}
@@ -563,6 +565,8 @@ export default function LeaveApply() {
                           min={minToDate}
                           max={maxApplyDateIso()}
                           onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          isInvalid={!!errors.toDate}
                           disablePreviousYears
                           initialMonth={fromDate}
                           holidays={holidayDates}
@@ -744,7 +748,7 @@ focus:ring-[#7A5BED]
                     }
                     className="min-w-[150px] rounded-xl shadow-md"
                     style={{
-                      backgroundColor: "#7c3aed",
+                      backgroundColor: "#7A5BED",
                       color: "#fff",
                     }}
                   >

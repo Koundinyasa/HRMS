@@ -102,7 +102,10 @@ export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProp
           {/* Menu items */}
           <div className="py-2">
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                navigate(`/${domain}/reset-password`);
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             >
               <KeyRound size={17} className="text-slate-500" />

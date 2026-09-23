@@ -140,6 +140,8 @@ export interface AttendanceFiltersProps {
 
   selectedEmployee: Employee | null;
 
+  managerEmployee?: Employee | null;
+
   onEmployeeChange: (
     employee: Employee,
   ) => void;

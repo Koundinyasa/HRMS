@@ -64,11 +64,39 @@ export const useAssetManagement = () => {
       return true;
     } catch (err) {
       console.error("Asset request submission failed:", err);
-      const backendMessage =
-        err && typeof err === "object" && "data" in err
-          ? (err as { data?: { Message?: string } }).data?.Message
+      const errorObject =
+        err && typeof err === "object"
+          ? (err as {
+              data?: unknown;
+              error?: string;
+            })
           : undefined;
-      toast.error(backendMessage || "Unable to submit the asset request. Please try again.");
+      const responseData = errorObject?.data;
+
+      let backendMessage: string | undefined;
+
+      if (typeof responseData === "string") {
+        backendMessage = responseData;
+      } else if (responseData && typeof responseData === "object") {
+        const data = responseData as {
+          Message?: unknown;
+          message?: unknown;
+          error?: unknown;
+        };
+        const message = data.Message ?? data.message ?? data.error;
+        backendMessage = Array.isArray(message)
+          ? message.filter((item): item is string => typeof item === "string").join(", ")
+          : typeof message === "string"
+            ? message
+            : undefined;
+      }
+
+      backendMessage ||= errorObject?.error;
+
+      toast.error(
+        backendMessage ||
+          "Unable to submit the asset request. Please try again.",
+      );
     }
   };
 

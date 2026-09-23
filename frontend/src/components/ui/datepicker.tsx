@@ -105,7 +105,11 @@ export function DatePicker({
                 )}
                 // ✅ STYLING CHANGE — dynamic focus border color using the theme's primary color variable
                 style={{
-                    borderColor: open ? "var(--primary-color)" : undefined,
+                    borderColor: isInvalid
+                        ? "#ef4444"
+                        : open
+                            ? "var(--primary-color)"
+                            : undefined,
                 }}
             />
  

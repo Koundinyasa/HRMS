@@ -148,7 +148,7 @@ export default function CancelLeaveDialog({
                             !remarks.trim()
                         }
                         style={{
-                            backgroundColor: "#7C3AED",
+                            backgroundColor: "#7A5BED",
                             color: "#fff",
                         }}
                     >

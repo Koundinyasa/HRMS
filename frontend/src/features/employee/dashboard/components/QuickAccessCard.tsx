@@ -32,7 +32,7 @@ const REQUEST_TYPE_CONFIG: Record<string, RequestTypeConfig> = {
     icon: Calendar,
     bg: "#f3f0ff",
     color: "#8b5cf6",
-    path: (domain) => `/${domain}/employee/leave/status`,
+    path: (domain) => `/${domain}/employee/review/requisition`,
   },
  
   // ADDED: Asset Requests configuration

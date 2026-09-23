@@ -21,7 +21,7 @@ import { EmployeeDashboardCountsDto } from './dto/employee-dashboard-counts.dto'
 import { EmployeeMonthlyAttendanceDetailsDto } from './dto/employee-monthly-attendance-details.dto';
 import { EmployeeAttendanceOverviewDto } from './dto/employee-attendance-overview.dto';
 import { EmployeeDashboardDetailsDto } from './dto/employee-dashboard-details.dto';
-
+import { HierarchicalLeaveActionDto } from '../employee/leave/dto/hierarchical-leave-action.dto';
 @Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
@@ -136,6 +136,20 @@ export class ReviewController {
   async getReportingManagerEmployeeList(@Req() req) {
     return this.reviewService.getReportingManagerEmployeeList(
       req.user.createdBy,
+    );
+  }
+  // Approval / Rejection
+  @UseGuards(JwtAuthGuard)
+  @Post('approval')
+  async hierarchicalLeaveAction(
+    @Req() req,
+    @Body() body: HierarchicalLeaveActionDto,
+  ) {
+    return this.reviewService.hierarchicalLeaveAction(
+      body.approvalId,
+      req.user.employeeId,
+      body.actionStatusId,
+      body. remarks,
     );
   }
 }

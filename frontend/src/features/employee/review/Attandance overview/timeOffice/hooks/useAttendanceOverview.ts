@@ -871,15 +871,6 @@ export function useAttendanceOverview() {
   const [selectedEmployee, setSelectedEmployee] =
     useState<Employee | null>(null);
 
-  useEffect(() => {
-    if (
-      employeeOptions.length > 0 &&
-      !selectedEmployee
-    ) {
-      setSelectedEmployee(employeeOptions[0]);
-    }
-  }, [employeeOptions, selectedEmployee]);
-
   // =====================================================
   // ATTENDANCE VIEW
   // =====================================================

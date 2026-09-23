@@ -6,8 +6,8 @@ const LeaveCalendarSearch = ({
   setSearchTerm,
 }: LeaveCalendarSearchProps) => {
   return (
-    <div className="border-b border-gray-200 px-4 py-3">
-      <div className="relative max-w-sm">
+    <div className="shrink-0 px-0 py-0">
+      <div className="relative w-[250px]">
         <Search
           size={16}
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -18,7 +18,7 @@ const LeaveCalendarSearch = ({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Start Typing..."
-          className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          className="h-8 w-full rounded-md border border-gray-200 py-1 pl-8 pr-3 text-xs outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
       </div>
     </div>

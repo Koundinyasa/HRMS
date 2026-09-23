@@ -6,9 +6,17 @@ import PunchDetails from "../components/PunchDetails";
 import RequestStatus from "../components/RequestStatus";
 import ToastStack from "../components/ToastStack";
 import { useAttendanceOverview } from "../hooks/useAttendanceOverview";
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
+import { useState } from "react";
+import { CalendarDays, FileSpreadsheet, Grid2X2, History, List } from "lucide-react";
+import { MonthPicker } from "@/components/ui/monthpicker";
+import { useGetProfileQuery } from "../../../../dashboard/api/dashboardApi";
 
 export default function AttendanceOverview() {
+  const [showAttendanceDetails, setShowAttendanceDetails] = useState(false);
+  const { domain } = useParams();
+  const { data: profileData } = useGetProfileQuery();
+
   const {
     view,
 
@@ -18,6 +26,8 @@ export default function AttendanceOverview() {
     reportingEmployeesLoading,
 
     selectedMonth,
+    setSelectedMonth,
+    setView,
 
     selectedMonthNumber,
     selectedYear,
@@ -69,132 +79,134 @@ export default function AttendanceOverview() {
     rawPunches,
   } = useAttendanceOverview();
 
+  const profile = profileData?.data?.profile;
+  const managerEmployee = profile
+    ? {
+        id: profile.Code || profile.EmployeeID,
+        name: profile.FullName || "Sriram Preetham",
+      }
+    : null;
+
   return (
     <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-800">
       <div className="mx-auto max-w-[1600px] space-y-4">
-        <div className="flex min-w-0 items-center gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4">
+        <div className="flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4">
+          <div className="flex min-w-max items-center gap-8">
           <NavLink
-            to="../../Punch"
-            className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-5 text-[15px] font-semibold ${
-                isActive
-                  ? "border-[#1997e8] text-[#1997e8]"
-                  : "border-transparent text-[#68758a]"
-              }`
-            }
+            to={`/${domain}/employee/TA/attendanceoverview`}
+            className="whitespace-nowrap border-b-2 border-[#1997e8] px-1 py-5 text-[15px] font-semibold text-[#1997e8]"
           >
-            Punch
+            Attendance Overview
           </NavLink>
-          <NavLink
-            to="../../MissedPunch"
-            className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-5 text-[15px] font-semibold ${
-                isActive
-                  ? "border-[#1997e8] text-[#1997e8]"
-                  : "border-transparent text-[#68758a]"
-              }`
-            }
-          >
-            Missed Punch
-          </NavLink>
-          <NavLink
-            to="../attendanceoverview"
-            className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-5 text-[15px] font-semibold ${
-                isActive
-                  ? "border-[#1997e8] text-[#1997e8]"
-                  : "border-transparent text-[#68758a]"
-              }`
-            }
-          >
-            Attendance
-          </NavLink>
-          <NavLink
-            to="../../TAInsights"
-            className={({ isActive }) =>
-              `whitespace-nowrap border-b-2 px-1 py-5 text-[15px] font-semibold ${
-                isActive
-                  ? "border-[#1997e8] text-[#1997e8]"
-                  : "border-transparent text-[#68758a]"
-              }`
-            }
-          >
-            TA Insights
-          </NavLink>
+          </div>
+          <div className="flex min-w-max items-center gap-2">
+            <button type="button" title="List view" onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 text-slate-500"}`}>
+              <List size={16} />
+            </button>
+            <button type="button" title="Calendar view" onClick={() => setView("calendar")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "calendar" ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 text-slate-500"}`}>
+              <CalendarDays size={16} />
+            </button>
+            <div className="w-[120px]">
+              <MonthPicker value={selectedMonth} onChange={setSelectedMonth} className="h-9 rounded-lg border-slate-200 bg-white text-xs" />
+            </div>
+            <select
+              aria-label="Select employee"
+              value={selectedEmployee?.id ?? ""}
+              onChange={(event) => {
+                const employee = employees.find((item) => item.id === event.target.value);
+                if (employee) {
+                  selectEmployee(employee);
+                  setShowAttendanceDetails(true);
+                } else {
+                  setShowAttendanceDetails(false);
+                }
+              }}
+              disabled={reportingEmployeesLoading || employees.length === 0}
+              className="h-9 w-[180px] rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-600"
+            >
+              <option value="">
+                {reportingEmployeesLoading ? "Loading employees..." : "Select employee"}
+              </option>
+              {employees.map((employee) => (
+                <option key={employee.id} value={employee.id}>{employee.id} {employee.name}</option>
+              ))}
+            </select>
+            <button type="button" title="Grid view" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeGridClick"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500">
+              <Grid2X2 size={16} />
+            </button>
+            <button type="button" title="Export" onClick={handleExport} className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200 text-emerald-600">
+              <FileSpreadsheet size={16} />
+            </button>
+            <button type="button" title="History" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeHistory"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500">
+              <History size={16} />
+            </button>
+          </div>
         </div>
 
         {/* ================================================================
             ATTENDANCE FILTERS
         ================================================================ */}
 
-        <AttendanceFilters
-          employees={employees}
-          reportingEmployeesLoading={reportingEmployeesLoading}
-          selectedEmployee={selectedEmployee}
-          selectedDate={selectedDate}
-          selectedMonthNumber={selectedMonthNumber}
-          selectedYear={selectedYear}
-          assignedShift={assignedShift}
-          workedShift={workedShift}
-          assignedPolicy={assignedPolicy}
-          assignedPattern={assignedPattern}
-          processed={processed}
-          processedAt={processedAt}
-          processMenuOpen={processMenuOpen}
-          days={days}
-          onDateChange={setSelectedDate}
-          onEmployeeChange={selectEmployee}
-          onShiftChange={setAssignedShift}
-          onWorkedShiftChange={setWorkedShift}
-          onPolicyChange={setAssignedPolicy}
-          onPatternChange={setAssignedPattern}
-          onProcessClick={handleProcessClick}
-          onReprocess={handleReprocess}
-          onUndoProcess={handleUndoProcess}
-          onExport={handleExport}
-          onProcessMenuOpenChange={setProcessMenuOpen}
-        />
-
-        {/* ================================================================
-            LOADING
-        ================================================================ */}
-
-        {loading && (
-          <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-medium text-sky-700">
-            Loading attendance for {selectedEmployee?.name ?? "employee"}...
-          </div>
+        {showAttendanceDetails && (
+          <AttendanceFilters
+            employees={employees}
+            reportingEmployeesLoading={reportingEmployeesLoading}
+            selectedEmployee={selectedEmployee}
+            managerEmployee={managerEmployee}
+            selectedDate={selectedDate}
+            selectedMonthNumber={selectedMonthNumber}
+            selectedYear={selectedYear}
+            assignedShift={assignedShift}
+            workedShift={workedShift}
+            assignedPolicy={assignedPolicy}
+            assignedPattern={assignedPattern}
+            processed={processed}
+            processedAt={processedAt}
+            processMenuOpen={processMenuOpen}
+            days={days}
+            onDateChange={setSelectedDate}
+            onEmployeeChange={(employee) => {
+              selectEmployee(employee);
+              setShowAttendanceDetails(true);
+            }}
+            onShiftChange={setAssignedShift}
+            onWorkedShiftChange={setWorkedShift}
+            onPolicyChange={setAssignedPolicy}
+            onPatternChange={setAssignedPattern}
+            onProcessClick={handleProcessClick}
+            onReprocess={handleReprocess}
+            onUndoProcess={handleUndoProcess}
+            onExport={handleExport}
+            onProcessMenuOpenChange={setProcessMenuOpen}
+          />
         )}
 
-        {/* ================================================================
-            API ERROR
-        ================================================================ */}
+        {showAttendanceDetails && (
+          <>
+            {loading && (
+              <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-medium text-sky-700">
+                Loading attendance for {selectedEmployee?.name ?? "employee"}...
+              </div>
+            )}
 
-        {error && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700">
-            Attendance API could not be loaded.
-            <span className="ml-1">{error}</span>
-          </div>
-        )}
+            {error && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700">
+                Attendance API could not be loaded.
+                <span className="ml-1">{error}</span>
+              </div>
+            )}
 
-        {/* ================================================================
-            ATTENDANCE TABLE
-        ================================================================ */}
+            <AttendanceTable
+              days={days}
+              view={view}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              onInfo={(message) => {
+                pushToast(message, "info");
+              }}
+            />
 
-        <AttendanceTable
-          days={days}
-          view={view}
-          selectedDate={selectedDate}
-          onSelectDate={setSelectedDate}
-          onInfo={(message) => {
-            pushToast(message, "info");
-          }}
-        />
-
-        {/* ================================================================
-            BOTTOM SECTION
-        ================================================================ */}
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Monthly Overview */}
 
           <MonthlyOverview
@@ -226,7 +238,9 @@ export default function AttendanceOverview() {
               )
             }
           />
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ================================================================

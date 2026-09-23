@@ -208,7 +208,7 @@ export default function CelebrationsCard() {
  
         {/* Employee Name */}
  
-        <h2 className="text-lg sm:text-xl font-semibold mt-4 sm:mt-5 text-slate-800 break-words max-w-full px-2">
+        <h2 className="text-lg sm:text-xl font-semibold mt-4 sm:mt-5 text-slate-300 break-words max-w-full px-2">
           {celebration?.FullName ??
             "No Upcoming Celebrations"}
         </h2>
@@ -540,142 +540,73 @@ export default function CelebrationsCard() {
            <div className="max-h-[60vh] overflow-y-auto">
  
               {celebrations.length > 0 ? (
- 
-                celebrations.map(
-                  (
-                    item,
-                    index
-                  ) => (
- 
-                    <div
-                      key={index}
-                      className="
-  flex
-  flex-col
-  sm:flex-row
-  sm:items-center
-  sm:justify-between
-  gap-4
-  px-4 sm:px-6
-  py-4 sm:py-5
-  border-b
-  hover:bg-slate-50
-  transition
-"
-                      style={{
-                        borderColor:
-                          "var(--primary-border)",
-                      }}
-                    >
- 
-                      {/* Left */}
- 
-                     
- 
-                        <div
-                          className="
-                           w-11 h-11 sm:w-14 sm:h-14
-rounded-full
-shrink-0
-                            flex
-                            items-center
-                            justify-center
-                          "
-                          style={{
-                            backgroundColor:
-                              item.EventName ===
-                                "Birthday"
-                                ? "#FEF3C7"
-                                : "#DBEAFE",
-                          }}
-                        >
-                          {item.EventName ===
-                            "Birthday" ? (
-                            <Cake
-                              size={28}
-                              color="#D97706"
-                            />
-                          ) : (
-                            <Award
-                              size={22}
-className="sm:w-7 sm:h-7"
-                              color="#2563EB"
-                            />
-                          )}
-                        </div>
- 
-                        <div className="min-w-0">
- 
-                          <h3 className="font-semibold text-slate-800 break-words">
-                            {item.FullName}
-                          </h3>
- 
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
- 
-                            <span
-                              className="
-                                px-3
-                                py-1
-                                rounded-full
-                                text-xs
-                                font-medium
-                              "
-                              style={{
-                                backgroundColor:
-                                  item.EventName ===
-                                    "Birthday"
-                                    ? "#FEF3C7"
-                                    : "#DBEAFE",
-                              }}
-                            >
-                              {item.EventName}
-                            </span>
- 
-                            <span className="text-sm text-slate-500">
-                              {new Date(
-                                item.EventDate
-                              ).toLocaleDateString(
-                                "en-IN",
-                                {
-                                  day: "numeric",
-                                  month: "long",
-                                  year: "numeric",
-                                }
-                              )}
-                            </span>
- 
-                          </div>
- 
-                          <p className="text-xs text-orange-500 mt-2">
-                            {getDaysRemaining(
-                              item.EventDate
-                            )}
-                          </p>
- 
-                       
- 
-                      </div>
- 
-                      {/* Right */}
- 
-                      <Button
-  onClick={() => {
-    setSelectedEvent(item);
-    setOpenAllCelebrations(false);
-    setOpenWishModal(true);
-  }}
-  style={{
-    background:
-      "var(--primary-gradient)",
-  }}
-  className="w-full sm:w-auto shrink-0 text-white"
->
-  {item.EventName === "Birthday"
-    ? "Wish"
-    : "Congratulate"}
-</Button>
- 
-                    </div>
+  celebrations.map((item, index) => (
+    <div
+      key={index}
+      className="flex items-center gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b hover:bg-slate-50 transition"
+      style={{ borderColor: "var(--primary-border)" }}
+    >
+      {/* Icon */}
+      <div
+        className="w-11 h-11 sm:w-14 sm:h-14 rounded-full shrink-0 flex items-center justify-center"
+        style={{
+          backgroundColor:
+            item.EventName === "Birthday" ? "#FEF3C7" : "#DBEAFE",
+        }}
+      >
+        {item.EventName === "Birthday" ? (
+          <Cake size={28} color="#D97706" />
+        ) : (
+          <Award size={22} className="sm:w-7 sm:h-7" color="#2563EB" />
+        )}
+      </div>
+
+      {/* Name + details */}
+      <div className="min-w-0 flex-1">
+        <h3 className="font-semibold text-slate-800 break-words leading-snug">
+          {item.FullName}
+        </h3>
+
+        <div className="flex flex-wrap items-center gap-2 mt-1.5">
+          <span
+            className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+            style={{
+              backgroundColor:
+                item.EventName === "Birthday" ? "#FEF3C7" : "#DBEAFE",
+            }}
+          >
+            {item.EventName}
+          </span>
+
+          <span className="text-sm text-slate-500 whitespace-nowrap">
+            {new Date(item.EventDate).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
+        </div>
+
+        <p className="text-xs text-orange-500 mt-1.5">
+          {getDaysRemaining(item.EventDate)}
+        </p>
+      </div>
+
+      {/* Button – fixed width so every card lines up perfectly */}
+      <div className="w-[120px] sm:w-[130px] shrink-0 flex justify-end">
+        <Button
+          onClick={() => {
+            setSelectedEvent(item);
+            setOpenAllCelebrations(false);
+            setOpenWishModal(true);
+          }}
+          className="w-full text-white"
+          style={{ background: "var(--primary-gradient)" }}
+        >
+          {item.EventName === "Birthday" ? "Wish" : "Congratulate"}
+        </Button>
+      </div>
+    </div>
  
                   )
                 )
