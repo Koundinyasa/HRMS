@@ -7,21 +7,22 @@ export class MonthlyLeaveCalendarDto {
   @Min(1)
   companyId!: number;
 
-  @IsOptional()
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
-  @Min(2000)
+  @Min(1900)
+  @Max(2099)
   year?: number;
 
-  @IsOptional()
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(12)
   month?: number;
 
-  @IsOptional()
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
   @Min(1)
   branchId?: number;

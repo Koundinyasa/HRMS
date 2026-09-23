@@ -82,6 +82,7 @@ import AttendanceOverview from "@/features/employee/review/Attandance overview/t
 import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendance/components/LeaveCalendarHistory";
 import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
 import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
+import RequisitionPage from "@/features/employee/review/requisition/pages/RequisitionPage";
 
 /* =========================================================
    APPLY LEAVE FOR EMPLOYEE REDIRECT
@@ -272,6 +273,13 @@ export default function EmployeeRoutes() {
           />
 
         </Route>
+
+        {/* Applied Leave */}
+
+        <Route
+          path="review/requisition"
+          element={<RequisitionPage />}
+        />
 
         {/* ===================================================
             ASSETS
