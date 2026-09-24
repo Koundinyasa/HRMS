@@ -1,27 +1,32 @@
-import { z } from "zod";
 
+
+ 
+import { z } from "zod";
+ 
 import {
   BACKDATE_ALLOWED_DAYS,
   MAX_REASON_LENGTH,
   isWeekendIso,
   minFromDateIso,
   maxApplyDateIso,
+  countDaysExcludingHolidays, // 🔴 CHANGED (1 of 5): added import
 } from "../constants/leave.constants";
-
-export const leaveApplySchema = z
+ 
+// 🔴 CHANGED (2 of 5): schema is now a function that receives the holiday dates
+export const makeLeaveApplySchema = (holidayIsos: Set<string>) => z
   .object({
     leaveType: z
       .string()
       .min(1, "Please select a leave type."),
-
+ 
     fromDate: z
       .string()
       .min(1, "From Date is required."),
-
+ 
     toDate: z
       .string()
       .min(1, "To Date is required."),
-
+ 
     // Optional: may be left empty, and any length is accepted.
     reason: z
       .string()
@@ -30,13 +35,13 @@ export const leaveApplySchema = z
         MAX_REASON_LENGTH,
         `Reason cannot exceed ${MAX_REASON_LENGTH} characters.`
       ),
-
+ 
     attachment: z.instanceof(File).nullable(),
-
+ 
     isHalfDay: z.boolean(),
-
+ 
     sessionFrom: z.string(),
-
+ 
     sessionTo: z.string(),
   })
   .refine(
@@ -53,6 +58,22 @@ export const leaveApplySchema = z
       path: ["toDate"],
       message:
         "Weekends cannot be selected. Please choose a weekday.",
+    }
+  )
+  // 🔴 CHANGED (3 of 5): NEW -> reject a holiday as From Date
+  .refine(
+    (data) => !holidayIsos.has(data.fromDate),
+    {
+      path: ["fromDate"],
+      message: "From Date is a holiday. Please choose a working day.",
+    }
+  )
+  // 🔴 CHANGED (3 of 5): NEW -> reject a holiday as To Date
+  .refine(
+    (data) => !holidayIsos.has(data.toDate),
+    {
+      path: ["toDate"],
+      message: "To Date is a holiday. Please choose a working day.",
     }
   )
   .refine(
@@ -84,7 +105,7 @@ export const leaveApplySchema = z
         "To Date should be greater than or equal to From Date.",
     }
   )
-
+ 
   .refine(
     (data) =>
       new Date(data.fromDate).getFullYear() ===
@@ -108,13 +129,13 @@ export const leaveApplySchema = z
     }
   )
   .superRefine((data, ctx) => {
-    const totalDays =
-      Math.floor(
-        (new Date(data.toDate).getTime() -
-          new Date(data.fromDate).getTime()) /
-        (1000 * 60 * 60 * 24)
-      ) + 1;
-
+    // 🔴 CHANGED (4 of 5): all days except holidays (weekend logic unchanged)
+    const totalDays = countDaysExcludingHolidays(
+      data.fromDate,
+      data.toDate,
+      holidayIsos
+    );
+ 
     // Maternity Leave - Maximum 180 days
     if (
       data.leaveType === "4" &&
@@ -127,7 +148,7 @@ export const leaveApplySchema = z
           "Maternity Leave cannot exceed 180 days.",
       });
     }
-
+ 
     // Paternity Leave - Maximum 15 days
     if (
       data.leaveType === "5" &&
@@ -140,7 +161,7 @@ export const leaveApplySchema = z
           "Paternity Leave cannot exceed 15 days.",
       });
     }
-
+ 
     // Sick Leave - Attachment required if more than 1 day
     if (
       data.leaveType === "2" &&
@@ -155,8 +176,10 @@ export const leaveApplySchema = z
       });
     }
   });
-
+ 
+// 🔴 CHANGED (5 of 5): NEW -> keeps old imports of leaveApplySchema working (no holidays)
+export const leaveApplySchema = makeLeaveApplySchema(new Set());
+ 
 export type LeaveApplyFormData =
   z.infer<typeof leaveApplySchema>;
-
-
+ 

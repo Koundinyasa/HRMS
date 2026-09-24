@@ -263,7 +263,7 @@ export default function LeaveHistoryTable({
                               setSelectedRecord(record);
                               setDialogOpen(true);
                             }}
-                            className="!bg-[#7A5BED] !text-white hover:!bg-[#6847D8]"
+                            className="!bg-[#7c3aed] !text-white hover:!bg-[#6d28d9]"
                           >
                             Withdraw
                           </Button>
@@ -357,7 +357,7 @@ export default function LeaveHistoryTable({
   font-medium
   transition
   ${currentPage === 1
-                ? "!bg-[#7A5BED] !border-[#7A5BED] !text-white"
+                ? "!bg-[#7c3aed] !border-[#7c3aed] !text-white"
                 : "bg-white text-slate-700 hover:bg-slate-50"
               }
 `}
@@ -383,7 +383,7 @@ export default function LeaveHistoryTable({
   font-medium
   transition
   ${currentPage === 2
-                  ? "!bg-[#7A5BED] !border-[#7A5BED] !text-white"
+                  ? "!bg-[#7c3aed] !border-[#7c3aed] !text-white"
                   : "bg-white text-slate-700 hover:bg-slate-50"
                 }
 `}

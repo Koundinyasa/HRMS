@@ -1,3 +1,6 @@
+
+
+ 
 export const MAX_REASON_LENGTH = 500;
  
  
@@ -29,27 +32,27 @@ export const minFromDateIso = () => {
  
   return toIsoDate(date);
 };
-
+ 
 export const maxApplyDateIso = () => {
   const date = new Date();
   date.setFullYear(date.getFullYear() + 1);
  
   return toIsoDate(date);
 };
-
+ 
 export const MATERNITY_LEAVE_ID = "4";
 export const PATERNITY_LEAVE_ID = "5";
  
 export const MATERNITY_MAX_DAYS = 180;
 export const PATERNITY_MAX_DAYS = 15;
-
-
+ 
+ 
 export const currentYearStartIso = () => {
   const year = new Date().getFullYear();
-
+ 
   return `${year}-01-01`;
 };
-
+ 
 // Counts weekdays (Mon–Fri) between two ISO dates, inclusive.
 export const countWeekdays = (fromIso: string, toIso: string) => {
   if (!fromIso || !toIso) return 0;
@@ -71,6 +74,31 @@ export const countWeekdays = (fromIso: string, toIso: string) => {
   return count;
 };
  
+// 🔴 CHANGED: NEW HELPER -> counts all days in the range EXCEPT holidays
+// (Saturday / Sunday are NOT skipped here - weekend logic is unchanged)
+export const countDaysExcludingHolidays = (
+  fromIso: string,
+  toIso: string,
+  holidayIsos: Set<string>
+) => {
+  if (!fromIso || !toIso) return 0;
+ 
+  const start = new Date(`${fromIso}T00:00:00`);
+  const end = new Date(`${toIso}T00:00:00`);
+ 
+  if (end < start) return 0;
+ 
+  let count = 0;
+  const cursor = new Date(start);
+ 
+  while (cursor <= end) {
+    if (!holidayIsos.has(toIsoDate(cursor))) count++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+ 
+  return count;
+};
+ 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
  
 export const ALLOWED_FILE_TYPES = [
@@ -79,4 +107,4 @@ export const ALLOWED_FILE_TYPES = [
   "image/png",
   "image/jpeg",
 ];
-
+ 

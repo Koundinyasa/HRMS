@@ -48,7 +48,7 @@ export default function LeaveNavbar() {
         overflow-x-auto
         rounded-lg
         border
-        border-[#D9CCFB]
+        border-[#b9a5ff]
         p-[0.3320625rem]
       "
       // style={{
@@ -56,7 +56,7 @@ export default function LeaveNavbar() {
       // }}
 
       style={{
-        backgroundColor: "#F5F3FF",
+        backgroundColor: "#f7f5ff",
       }}
     >
       <div className="flex w-full min-w-0 justify-between">
@@ -99,7 +99,7 @@ export default function LeaveNavbar() {
                 rounded-md
                 border
                 bg-white
-                border-[#D9CCFB]
+                border-[#c5b0ff]
                 h-[2.3244375rem]
                 px-[0.9961875rem]
                 py-0
@@ -110,7 +110,7 @@ export default function LeaveNavbar() {
                 duration-300
 
                 ${isActive
-                  ? "text-[#7A5BED]"
+                  ? "text-[#7c3aed]"
                   : "text-black hover:text-slate-700"
                 }
                 `
@@ -118,8 +118,8 @@ export default function LeaveNavbar() {
               style={({ isActive }) =>
                 isActive
                   ? {
-                    color: "#7A5BED",
-                    borderColor: "#7A5BED",
+                    color: "#7c3aed",
+                    borderColor: "#7c3aed",
                   }
                   : {}
               }
