@@ -200,7 +200,6 @@ import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegist
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {
   const { domain } = useParams();
- 
   return (
     <Navigate to={`/${domain}/employee/leave/apply-for-employee`} replace />
   );
