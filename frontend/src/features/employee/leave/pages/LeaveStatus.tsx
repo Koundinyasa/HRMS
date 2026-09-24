@@ -206,8 +206,8 @@ export default function LeaveStatus() {
                   style={
                     currentPage === page
                       ? {
-                        backgroundColor: "#7A5BED",
-borderColor: "#7A5BED",
+                        backgroundColor: "#7c3aed",
+                        borderColor: "#7c3aed",
                       }
                       : {}
                   }

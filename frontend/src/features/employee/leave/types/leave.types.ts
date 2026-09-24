@@ -151,7 +151,7 @@ export interface ReportingEmployee {
  
 export interface HrApplyLeavePayload extends ApplyLeavePayload {
   employeeId: string;
-  isHRForceApply?: boolean;
+  isHRForceApply?: 0 | 1;
 }
 
 // GET /employee/leave/employee-details — three recordsets of raw rows.
@@ -214,7 +214,6 @@ export interface DateFieldProps {
   id?: string;
   value: string;
   onChange: (value: string) => void;
-  onBlur?: () => void;
   min?: string;
   max?: string;
   isInvalid?: boolean;
@@ -306,3 +305,4 @@ export interface LeaveHistoryTableProps {
 export interface LeaveBalanceCardProps {
   balances: LeaveBalanceSection | null;
 }
+
