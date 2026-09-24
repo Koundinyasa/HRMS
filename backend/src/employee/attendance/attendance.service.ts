@@ -86,6 +86,23 @@ export class AttendanceService {
   private readonly ESS_DEVICE_ID = 4;
   private readonly ANGLE_LABEL_COLUMN_READY = true;
 
+  // NEW — WFH's punch-out-vs-punch-in self-check. Flag only, never
+  // blocks, same philosophy as GEOFENCE_REQUIRED/ACCURACY_CHECK_REQUIRED
+  // (both currently true and DO block — this one is deliberately kept
+  // flag-only per an explicit decision, not an oversight).
+  private readonly WFH_SELF_DISTANCE_THRESHOLD_METERS = 300;
+
+  // Mst_Status IDs, confirmed against the real DB schema (2026-09-24).
+  // Only WFH has real logic below right now — Remote and ClientSite
+  // fall through as "no special handling", same as any unrecognized
+  // value, until those are designed.
+  private static readonly PUNCH_MODE = {
+    OFFICE: 69,
+    WFH: 70,
+    REMOTE: 71,
+    CLIENT_SITE: 72,
+  } as const;
+
   constructor(
     private readonly http: HttpService,
     private readonly databaseService: DatabaseService,
@@ -265,6 +282,7 @@ export class AttendanceService {
     longitude?: number,
     device?: string,
     accuracy?: number,
+    punchMode?: number,
   ): Promise<PunchResult> {
     if (latitude === undefined || longitude === undefined) {
       return {
@@ -287,6 +305,11 @@ export class AttendanceService {
       }
     }
 
+    // NEW — WFH's own 300m self-check needs to know if THIS punch is a
+    // WFH one before the geofence check runs below, so it's resolved
+    // once, up front.
+    const isWfhPunch = punchMode === AttendanceService.PUNCH_MODE.WFH;
+
     const verify = await this.verifyFace(employeeId, frames);
 
     if (verify.serviceUnavailable) {
@@ -307,8 +330,13 @@ export class AttendanceService {
 
     const locationInfo = await this.resolveEmployeeLocation(employeeId);
 
+    // NEW — Office keeps the existing real-geofence check, unchanged.
+    // WFH skips it entirely — comparing a home address to the office's
+    // GeoFences would never make sense — and gets its own check further
+    // below instead (self-referential, against that session's own
+    // punch-in location, not the office).
     const geoFenceId =
-      latitude !== undefined && longitude !== undefined && locationInfo
+      !isWfhPunch && latitude !== undefined && longitude !== undefined && locationInfo
         ? await this.findMatchingGeoFence(
             locationInfo.companyId,
             latitude,
@@ -316,7 +344,7 @@ export class AttendanceService {
           )
         : null;
 
-    if (this.GEOFENCE_REQUIRED && geoFenceId === null) {
+    if (this.GEOFENCE_REQUIRED && !isWfhPunch && geoFenceId === null) {
       await this.recordVerificationAttempt(
         employeeId,
         verify,
@@ -325,6 +353,7 @@ export class AttendanceService {
         longitude,
         geoFenceId,
         locationInfo?.branchId ?? null,
+        punchMode ?? null,
       );
       return {
         success: false,
@@ -337,6 +366,15 @@ export class AttendanceService {
       ? await this.determineNextPunchType(employeeId)
       : null;
 
+    // NEW — WFH's 300m self-check: only meaningful on a punch-OUT (there's
+    // nothing to compare an IN against yet — it establishes the baseline
+    // for this session). Flag only, never blocks, per explicit decision —
+    // same as ACCURACY_CHECK_REQUIRED's pattern, just permanently
+    // non-blocking rather than toggled by a flag.
+    if (isWfhPunch && punchType === 'OUT' && verify.verified) {
+      await this.checkWfhSelfDistance(employeeId, latitude, longitude);
+    }
+
     const recorded = await this.recordVerificationAttempt(
       employeeId,
       verify,
@@ -345,16 +383,16 @@ export class AttendanceService {
       longitude,
       geoFenceId,
       locationInfo?.branchId ?? null,
+      punchMode ?? null,
     );
 
     if (!verify.verified) {
-      // NEW — PoorImageQuality means the Python service detected the
-      // frame was too dark to reliably detect/encode a face, even after
-      // its own CLAHE low-light rescue attempt. This used to fall
+      // PoorImageQuality means the Python service detected the frame was
+      // too dark to reliably detect/encode a face, even after its own
+      // CLAHE low-light rescue attempt. Without this branch it would fall
       // through to the generic "didn't match" message below, which is
       // actively misleading — it implies an identity mismatch when the
-      // real problem is lighting, giving the employee no idea what to
-      // actually do differently.
+      // real problem is lighting.
       const message =
         verify.matchResult === 'LivenessFailed'
           ? "We couldn't confirm a live face — please look directly at the camera and blink naturally, then try again."
@@ -387,6 +425,53 @@ export class AttendanceService {
       latitude,
       longitude,
     };
+  }
+
+  // NEW — compares this WFH punch-OUT's coordinates against the most
+  // recent WFH punch already on record for this employee (their punch-IN
+  // for this same session). Flag only — logs a warning, never blocks or
+  // affects the punch's success in any way. Deliberately does NOT try to
+  // scope "same session" by date/shift — just "their most recent WFH
+  // punch, period" — mirroring the same simple, no-date-filter approach
+  // getLastPunch() already uses for the general punch-state logic.
+  private async checkWfhSelfDistance(
+    employeeId: string,
+    currentLat: number,
+    currentLon: number,
+  ): Promise<void> {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId)
+        .input('PunchMode', sql.Int, AttendanceService.PUNCH_MODE.WFH).query(`
+          SELECT TOP 1 Latitude, Longitude
+          FROM RawPunches
+          WHERE EmployeeID = @EmployeeID
+            AND PunchMode = @PunchMode
+            AND Latitude IS NOT NULL AND Longitude IS NOT NULL
+          ORDER BY PunchTimestamp DESC
+        `);
+      const row = result.recordset?.[0];
+      if (!row) return; // no prior WFH punch-in on record — nothing to compare against
+
+      const distance = AttendanceService.haversineMeters(
+        currentLat,
+        currentLon,
+        Number(row.Latitude),
+        Number(row.Longitude),
+      );
+
+      if (distance > this.WFH_SELF_DISTANCE_THRESHOLD_METERS) {
+        this.logger.warn(
+          `WFH punch-out far from punch-in location for ${employeeId} - distance: ${Math.round(distance)}m (threshold: ${this.WFH_SELF_DISTANCE_THRESHOLD_METERS}m)`,
+        );
+      }
+    } catch (err) {
+      this.logger.error(
+        `checkWfhSelfDistance failed for ${employeeId} - ${(err as Error).message}`,
+      );
+    }
   }
 
   private static readonly PUNCH_TYPE_CODE: Record<'IN' | 'OUT', string> = {
@@ -455,7 +540,7 @@ export class AttendanceService {
         message?: string;
         response?: { status?: number; data?: unknown };
       };
-        // Permanent diagnostic logging, not a temporary debug leftover —
+      // Permanent diagnostic logging, not a temporary debug leftover —
       // confirmed genuinely useful in real testing (2026-09-17): a bare
       // error.message alone can be blank/unhelpful for some connection
       // failures, but this full shape (code, message, and whatever the
@@ -483,6 +568,7 @@ export class AttendanceService {
     longitude?: number,
     geoFenceId?: number | null,
     clientLocationId?: number | null,
+    punchMode?: number | null,
   ): Promise<{ ok: boolean }> {
     try {
       const pool = await this.databaseService.connect();
@@ -519,6 +605,7 @@ export class AttendanceService {
         .input('Longitude', sql.Decimal(9, 6), longitude ?? null)
         .input('GeoFenceID', sql.Int, geoFenceId ?? null)
         .input('ClientLocationID', sql.Int, clientLocationId ?? null)
+        .input('PunchMode', sql.Int, punchMode ?? null)
         .input('PunchLocation', sql.VarChar(sql.MAX), null)
         .execute('USP_RecordFaceVerificationPunch');
       return { ok: true };

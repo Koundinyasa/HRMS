@@ -33,6 +33,8 @@ interface PunchLocationBody {
   latitude?: string;
   longitude?: string;
   accuracy?: string;
+  punchMode?: string; // NEW — sent as a stringified Mst_Status.ID (69/70/71/72),
+                       // not a text label — see PUNCH_MODE_ID in useAttendance.ts
 }
 
 // Small, dependency-free parse — just enough to produce a friendly
@@ -110,6 +112,15 @@ export class AttendanceController {
     const accuracy = body.accuracy !== undefined ? Number(body.accuracy) : undefined;
     const hasValidAccuracy = accuracy !== undefined && !Number.isNaN(accuracy);
 
+
+
+    // NEW — punchMode is the numeric Mst_Status.ID, same defensive
+    // parse pattern as everything else in this body: malformed/absent
+    // just becomes undefined, never throws at this layer.
+    const punchMode = body.punchMode !== undefined ? Number(body.punchMode) : undefined;
+    const hasValidPunchMode = punchMode !== undefined && !Number.isNaN(punchMode);
+
+
     const device = parseDeviceLabel(req.headers['user-agent']);
 
     return this.attendanceService.punch(
@@ -119,6 +130,7 @@ export class AttendanceController {
       hasValidCoords ? longitude : undefined,
       device,
       hasValidAccuracy ? accuracy : undefined,
+      hasValidPunchMode ? punchMode : undefined,
     );
   }
 

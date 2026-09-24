@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePunchAttendanceMutation } from "../api/attendanceApi";
 
+// All 4 real modes, matching Mst_Status. Only OFFICE/WFH are reachable
+// through the UI right now (see FacePunchModal.tsx) — REMOTE/CLIENT_SITE
+// exist here so the type system, this mapping, and the backend payload
+// shape are all already correct for when those two get turned on, no
+// rework needed then beyond uncommenting the two buttons.
+export type PunchMode = "OFFICE" | "WFH" | "REMOTE" | "CLIENT_SITE";
+
+// Maps each mode to its real Mst_Status.ID — RawPunches.PunchMode is an
+// INT foreign key (not a string), confirmed against the real DB schema
+// (2026-09-24): 69=Office, 70=WFH, 71=Remote, 72=ClientSite.
+const PUNCH_MODE_ID: Record<PunchMode, number> = {
+  OFFICE: 69,
+  WFH: 70,
+  REMOTE: 71,
+  CLIENT_SITE: 72,
+};
+
 const CAPTURE_DURATION_MS = 2400;
 const CAPTURE_INTERVAL_MS = 120; // ~20 frames — frequent enough to reliably
                                   // catch a blink, which typically lasts 200-400ms
@@ -11,8 +28,7 @@ const LOCATION_TIMEOUT_MS = 10000; // raised further — enableHighAccuracy belo
 
 // Resolves to coordinates on success, or null on denial / timeout / any
 // error / unsupported browser. This function itself never throws — it
-// always resolves, one way or the other. UPDATED: location used to be
-// pure enrichment (never blocked a punch); it's now mandatory, but that
+// always resolves, one way or the other. Location is mandatory; that
 // blocking decision is made by the CALLER (openCamera, below), not here
 // — this function's job stays simple: try, and report what happened.
 function getCurrentLocation(): Promise<{ latitude: number; longitude: number; accuracy: number } | null> {
@@ -26,13 +42,6 @@ function getCurrentLocation(): Promise<{ latitude: number; longitude: number; ac
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-          // NEW — radius in meters the browser itself is only confident to.
-          // Was being silently discarded before. A large value (e.g. tens
-          // of kilometers) means the browser fell back to a coarse
-          // IP-based guess instead of a real GPS/Wi-Fi fix — coordinates
-          // can look completely normal and still be many km off in that
-          // case, with nothing else in the payload able to tell the
-          // difference. See ACCURACY_THRESHOLD_METERS in attendance.service.ts.
           accuracy: position.coords.accuracy,
         });
       },
@@ -54,7 +63,7 @@ export function useAttendance() {
   const streamRef = useRef<MediaStream | null>(null);
   const isCapturingRef = useRef(false);
 
-  // NEW — caches the location fetched in openCamera() below, so
+  // Caches the location fetched in openCamera() below, so
   // captureAndSubmit() doesn't need to ask the browser for it a second
   // time. Also means there's a single moment (camera open) where location
   // is resolved, rather than two separate asks that could theoretically
@@ -82,10 +91,9 @@ export function useAttendance() {
   const [isCapturingSequence, setIsCapturingSequence] = useState(false);
   const [captureProgress, setCaptureProgress] = useState(0);
 
-  // NEW — 'checking' added: location is now mandatory (the backend
-  // rejects any punch without coordinates), so this needs a distinct
-  // in-progress state shown WHILE openCamera is waiting on the GPS fix,
-  // before the camera itself even opens.
+  // 'checking' is shown WHILE openCamera is waiting on the GPS fix,
+  // before the camera itself even opens. Location is mandatory (the
+  // backend rejects any punch without coordinates).
   const [locationStatus, setLocationStatus] = useState<"idle" | "checking" | "captured" | "unavailable">("idle");
 
   const [punchAttendance, { isLoading: isSubmitting }] = usePunchAttendanceMutation();
@@ -107,17 +115,11 @@ export function useAttendance() {
     setCaptureProgress(0);
   }, []);
 
-  // FIX — location is now checked HERE, before the camera even opens,
-  // instead of only being discovered as a failure at final submit time
-  // (after the employee already went through the whole capture flow).
-  // If location isn't available, the camera never opens at all — same
-  // spirit as the existing camera-permission failure below, just checked
-  // first since it's now the harder requirement of the two.
-  // FIX — location and camera permission requests are now kicked off
-  // TOGETHER, in the same synchronous tick as the click that triggered
-  // this handler, instead of one fully finishing before the other starts.
+  // Location and camera permission requests are kicked off TOGETHER, in
+  // the same synchronous tick as the click that triggered this handler,
+  // instead of one fully finishing before the other starts.
   //
-  // Why this mattered: browsers track a short-lived "the user just
+  // Why this matters: browsers track a short-lived "the user just
   // genuinely interacted with this page" window (transient activation)
   // tied to the click. Waiting on ONE native permission dialog (location)
   // to fully resolve before even calling getUserMedia() can burn through
@@ -207,7 +209,12 @@ export function useAttendance() {
   // Captures a short burst of frames over CAPTURE_DURATION_MS, then sends
   // the whole sequence to the backend at once for blink-based liveness
   // checking + face matching.
-  const captureAndSubmit = useCallback(async () => {
+  //
+  // Requires punchMode, set by the caller (FacePunchModal's mode-selector
+  // screen) BEFORE the camera flow is even reachable, so this is never
+  // called without one. Sent as the numeric Mst_Status.ID the backend's
+  // RawPunches.PunchMode column actually expects, not the string label.
+  const captureAndSubmit = useCallback(async (punchMode: PunchMode) => {
     if (isCapturingRef.current) return;
     isCapturingRef.current = true;
     setIsCapturingSequence(true);
@@ -238,7 +245,7 @@ export function useAttendance() {
       formData.append("frames", frame, `frame_${i}.jpg`);
     });
 
-    // FIX — location is no longer re-fetched here. openCamera() already
+    // Location is no longer re-fetched here. openCamera() already
     // required and cached it before the camera could even open, so by
     // the time this runs it's guaranteed to be present. The defensive
     // null check stays only for the theoretical case of permission being
@@ -255,6 +262,7 @@ export function useAttendance() {
     formData.append("latitude", String(location.latitude));
     formData.append("longitude", String(location.longitude));
     formData.append("accuracy", String(location.accuracy));
+    formData.append("punchMode", String(PUNCH_MODE_ID[punchMode]));
 
     try {
       const response = await punchAttendance(formData).unwrap();
