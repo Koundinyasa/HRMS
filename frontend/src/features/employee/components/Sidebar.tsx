@@ -282,7 +282,7 @@ const DEFAULT_ICON_COLOR = "#0F172A";
  
 const getActiveModuleKey = (pathname: string): string | null => {
   const path = pathname.toLowerCase();
- 
+
   if (path.includes("/profile")) return "profile";
   if (path.includes("/leave")) return "leave";
   if (path.includes("/asset") || path.includes("/assets")) return "asset";
@@ -292,7 +292,7 @@ const getActiveModuleKey = (pathname: string): string | null => {
   if (path.includes("/learning") || path.includes("/lnd")) return "learning";
   if (path.includes("/review")) return "review";
   if (path.includes("/dashboard")) return "dashboard";
- 
+
   return null;
 };
  
