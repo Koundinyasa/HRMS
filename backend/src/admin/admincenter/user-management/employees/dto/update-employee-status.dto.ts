@@ -1,10 +1,4 @@
-import {
-  IsIn,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateEmployeeStatusDto {
   @IsNotEmpty()
@@ -13,11 +7,7 @@ export class UpdateEmployeeStatusDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn([
-    'LOCK',
-    'UNLOCK',
-    'RESET_PASSWORD',
-  ])
+  @IsIn(['LOCK', 'UNLOCK', 'RESET_PASSWORD'])
   securityAction!: string;
 
   @IsOptional()

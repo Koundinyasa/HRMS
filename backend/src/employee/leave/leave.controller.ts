@@ -35,7 +35,7 @@ export class LeaveController {
   @Get('leavetypes')
   async getLeaveTypes(@Req() req) {
     const employeeId = req.user.employeeId;
- 
+
     return this.leaveService.getLeaveTypes(employeeId);
   }
  
@@ -289,9 +289,7 @@ export class LeaveController {
   // Upload Holiday Excel
   @Post('holidaysupload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadHolidayFile(
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+  async uploadHolidayFile(@UploadedFile() file: Express.Multer.File) {
     return this.leaveService.uploadHolidayFile(file);
   }
  

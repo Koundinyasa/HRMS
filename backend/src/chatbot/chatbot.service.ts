@@ -328,7 +328,9 @@ export class ChatbotService {
     const info = await this.hrmsDbService.getUserInfo(employeeId);
     const selfEmployee = info?.self ?? null;
 
-    const employees: Record<string, unknown>[] = selfEmployee ? [selfEmployee] : [];
+    const employees: Record<string, unknown>[] = selfEmployee
+      ? [selfEmployee]
+      : [];
     const companyData = {
       holidays: info?.holidays ?? [],
       announcements: [] as { date: string; title: string }[],

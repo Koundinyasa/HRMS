@@ -3,14 +3,14 @@ import { IntentDefinition } from '../types';
 import { fuzzyContains } from '../utils/fuzzy.util';
 import { MenuService } from './menu.service';
 import { DraftService } from './draft.service';
- 
+
 @Injectable()
 export class CompanyService {
   constructor(
     private readonly menuService: MenuService,
     private readonly draftService: DraftService,
   ) {}
- 
+
   // Tints the reply bubble (info/warning/danger) and optionally attaches a
   // quick-reply chip, for dead-end replies (no data, access denied, etc.)
   // that would otherwise just be a plain, easy-to-miss sentence.
@@ -25,7 +25,7 @@ export class CompanyService {
     if (suggestions.length)
       this.draftService.pendingSuggestedActions.set(employeeId, suggestions);
   }
- 
+
   getIntents(): IntentDefinition[] {
     return [
       {
@@ -38,7 +38,7 @@ export class CompanyService {
             ctx.msg.includes('branch')),
         handle: async (ctx) => {
           const isPrivileged = ctx.role === 'admin' || ctx.role === 'hr';
- 
+
           if (!isPrivileged) {
             if (!ctx.ownOffice) {
               this.notify(ctx.employeeId, 'info');
@@ -55,12 +55,12 @@ export class CompanyService {
             });
             return `Your office location:`;
           }
- 
+
           this.menuService.pendingMenu.set(ctx.employeeId, 'officeChoice');
           return `You can view your current office, or every office in the company.\nType "current office" or "all offices".`;
         },
       },
- 
+
       {
         name: 'officeLocationCurrent',
         test: (ctx) =>
@@ -85,7 +85,7 @@ export class CompanyService {
           return `Your current office:`;
         },
       },
- 
+
       {
         name: 'officeLocationAll',
         test: (ctx) =>
@@ -109,7 +109,7 @@ export class CompanyService {
           return `Here are all ${ctx.branches.length} office locations:`;
         },
       },
- 
+
       {
         name: 'holidays',
         test: (ctx) =>
@@ -134,7 +134,7 @@ export class CompanyService {
           return `Here are your upcoming holidays (${relevant.length}):`;
         },
       },
- 
+
       {
         name: 'announcements',
         test: (ctx) =>
@@ -157,7 +157,7 @@ export class CompanyService {
           return `Here are the latest announcements:`;
         },
       },
- 
+
       {
         name: 'policy',
         test: (ctx) =>
@@ -184,7 +184,7 @@ export class CompanyService {
           return `Here are the leave types and policy:`;
         },
       },
- 
+
       {
         name: 'designation',
         test: (ctx) =>
@@ -205,7 +205,7 @@ export class CompanyService {
           return `Here are all company designations:`;
         },
       },
- 
+
       {
         name: 'companyInfo',
         test: (ctx) =>
@@ -236,7 +236,7 @@ export class CompanyService {
           return `Company details:`;
         },
       },
- 
+
       {
         name: 'department',
         test: (ctx) => ctx.msg.includes('department'),

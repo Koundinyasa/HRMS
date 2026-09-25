@@ -1,13 +1,7 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class LeaveRequestDto {
-
   @Type(() => Number)
   @IsNumber()
   leaveTypeId: number;

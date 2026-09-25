@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -11,6 +12,113 @@
   --primary-border: #93C5FD;
   --primary-gradient: linear-gradient(90deg,#2563EB,#00C2FF);
   --card-bg: #FFFFFF;
+  --dashboard-heading: #0F172A;
+  --dashboard-subheading: #1F2A37;
+  --dashboard-label: #475569;
+  --dashboard-muted: #64748B;
+}
+
+html, body, #root {
+  font-family: "Urbanist", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  color: var(--dashboard-heading, #0F172A);
+  background: #f5f7fb;
+}
+
+*,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+button,
+input,
+textarea,
+select,
+label,
+small,
+a,
+header,
+nav,
+aside,
+main,
+section,
+article,
+li,
+ul,
+ol {
+  font-family: "Urbanist", "Segoe UI", sans-serif;
+}
+
+.font-sans,
+.font-heading,
+.font-medium,
+.font-semibold,
+.font-bold,
+.dashboard-shell {
+  font-family: "Urbanist", "Segoe UI", sans-serif !important;
+}
+
+.dashboard-shell {
+  font-family: "Urbanist", "Segoe UI", sans-serif;
+}
+
+.dashboard-shell h1,
+.dashboard-shell h2,
+.dashboard-shell h3,
+.dashboard-shell h4,
+.dashboard-shell h5,
+.dashboard-shell h6,
+.dashboard-shell p,
+.dashboard-shell span,
+.dashboard-shell button,
+.dashboard-shell small,
+.dashboard-shell label,
+.dashboard-shell a {
+  font-family: "Urbanist", "Segoe UI", sans-serif;
+}
+
+.dashboard-shell .dashboard-heading {
+  color: var(--dashboard-heading);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.dashboard-shell .dashboard-subheading {
+  color: var(--dashboard-subheading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-shell .dashboard-label {
+  color: var(--dashboard-label);
+  font-weight: 500;
+}
+
+.dashboard-shell .dashboard-muted {
+  color: var(--dashboard-muted);
+}
+
+.module-shell {
+  background: #f8fbff;
+  border: 0;
+  border-radius: 0;
+}
+
+.module-content-shell {
+  background: #f8fbff;
+  border: 0;
+  border-radius: 14px;
 }
 
 @keyframes bubble1 {

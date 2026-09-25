@@ -48,11 +48,8 @@ export default function HolidayListPage() {
  
   return (
     <div
-      className="rounded-3xl border p-5 sm:p-8"
-      style={{
-        backgroundColor: "var(--card-bg)",
-        borderColor: "var(--primary-border)",
-      }}
+      className="rounded-3xl border border-[#1F2937] p-5 sm:p-8"
+      style={{ backgroundColor: "var(--card-bg)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

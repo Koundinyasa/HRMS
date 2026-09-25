@@ -14,20 +14,20 @@ const TAInsightCard: React.FC<TAInsightCardProps> = ({
 }) => {
   return (
     <div
-      className="flex h-[182px] min-w-0 flex-col overflow-hidden rounded-[20px] border bg-white shadow-sm transition-all duration-200 hover:shadow-md"
+      className="flex h-[182px] min-w-0 flex-col overflow-hidden rounded-[20px] border bg-white shadow-sm transition-all duration-200 hover:shadow-md font-[Urbanist]"
       style={{
         borderColor: card.borderColor,
       }}
     >
       {/* Card Content */}
-      <div className="flex flex-1 flex-col px-[18px] py-[15px]">
-        <h3 className="text-[15px] font-semibold text-slate-800">
+      <div className="flex flex-1 flex-col px-[18px] py-[15px] font-[Urbanist]">
+        <h3 className="text-[15px] font-semibold text-slate-800 font-[Urbanist]">
           {card.title}
         </h3>
 
-        <div className="mt-auto flex items-baseline gap-1">
+        <div className="mt-auto flex items-baseline gap-1 font-[Urbanist]">
           <span
-            className="text-[32px] font-bold leading-none"
+            className="text-[32px] font-bold leading-none font-[Urbanist]"
             style={{
               color: card.textColor,
             }}
@@ -36,7 +36,7 @@ const TAInsightCard: React.FC<TAInsightCardProps> = ({
           </span>
 
           <span
-            className="text-[15px]"
+            className="text-[15px] font-[Urbanist]"
             style={{
               color: card.textColor,
             }}
@@ -45,7 +45,7 @@ const TAInsightCard: React.FC<TAInsightCardProps> = ({
           </span>
 
           <span
-            className="text-[15px]"
+            className="text-[15px] font-[Urbanist]"
             style={{
               color: card.textColor,
             }}
@@ -53,7 +53,7 @@ const TAInsightCard: React.FC<TAInsightCardProps> = ({
             {card.employeeCount}
           </span>
 
-          <span className="text-[14px] text-slate-500">
+          <span className="text-[14px] text-slate-500 font-[Urbanist]">
             {card.employeeText}
           </span>
         </div>

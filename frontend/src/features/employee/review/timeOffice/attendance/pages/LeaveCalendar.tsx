@@ -81,17 +81,17 @@
 //     setCurrentPage(1);
 //   };
 //   return (
-//     <div className="h-full min-h-0 w-full overflow-hidden bg-gray-50 p-2 sm:p-3 md:p-4">
-//       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4">
+//     <div className="h-full min-h-0 w-full overflow-hidden bg-gray-50 p-2 sm:p-3 md:p-4 font-[Urbanist]">
+//       <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4 font-[Urbanist]">
 //         {/* Header */}
-//         <div className="shrink-0">
+//         <div className="shrink-0 font-[Urbanist]">
 //           <LeaveCalendarHeader
 //             selectedMonth={selectedMonth}
 //             setSelectedMonth={setSelectedMonth}
 //           />
 //         </div>
 //         {/* Search */}
-//         <div className="shrink-0">
+//         <div className="shrink-0 font-[Urbanist]">
 //           <LeaveCalendarSearch
 //             searchTerm={searchTerm}
 //             setSearchTerm={setSearchTerm}
@@ -99,27 +99,27 @@
 //         </div>
 //         {/* Loading */}
 //         {isLoading && (
-//           <div className="shrink-0 py-6 text-center text-gray-500">
+//           <div className="shrink-0 py-6 text-center text-gray-500 font-[Urbanist]">
 //             Loading monthly leave calendar...
 //           </div>
 //         )}
 //         {/* Error */}
 //         {isError && (
-//           <div className="shrink-0 py-6 text-center text-red-500">
+//           <div className="shrink-0 py-6 text-center text-red-500 font-[Urbanist]">
 //             <p>Failed to load monthly leave calendar.</p>
-//             <pre className="mt-2 max-h-40 overflow-auto text-left text-xs">
+//             <pre className="mt-2 max-h-40 overflow-auto text-left text-xs font-[Urbanist]">
 //               {JSON.stringify(error, null, 2)}
 //             </pre>
 //           </div>
 //         )}
 //         {/* Calendar table area */}
 //         {!isLoading && !isError && (
-//           <div className="min-h-0 flex-1 overflow-hidden">
+//           <div className="min-h-0 flex-1 overflow-hidden font-[Urbanist]">
 //             <LeaveCalendarTable employees={paginatedEmployees} days={days} />
 //           </div>
 //         )}
 //         {/* Footer */}
-//         <div className="shrink-0">
+//         <div className="shrink-0 font-[Urbanist]">
 //           <LeaveCalendarFooter
 //             totalItems={totalItems}
 //             currentPage={safePage}
@@ -741,11 +741,11 @@ const LeaveCalendar = () => {
   // =========================================================
 
   return (
-    <div className="h-full min-h-0 w-full overflow-hidden bg-gray-50 p-2 sm:p-3 md:p-4">
-      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4">
+    <div className="h-full min-h-0 w-full overflow-hidden bg-gray-50 p-2 sm:p-3 md:p-4 font-[Urbanist]">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4 font-[Urbanist]">
         <nav
           aria-label="Time office navigation"
-          className="mb-2 flex min-w-0 shrink-0 items-center gap-7 overflow-x-auto rounded-lg border border-[#e0e5ec] bg-white px-3"
+          className="mb-2 flex min-w-0 shrink-0 items-center gap-7 overflow-x-auto rounded-lg border border-[#e0e5ec] bg-white px-3 font-[Urbanist]"
         >
           <NavLink
             to={`/${domain}/employee/Regularization/Punch`}
@@ -795,21 +795,21 @@ const LeaveCalendar = () => {
           >
             TA Insights
           </NavLink>
-          <div className="ml-auto flex shrink-0 items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2 font-[Urbanist]">
           <MonthPicker
             value={`${new Date(2000, selectedMonth, 1).toLocaleDateString("en-US", { month: "short" })}/${selectedYear}`}
             onChange={(value) => {
               const monthIndex = new Date(`${value.split("/")[0]} 1, 2000`).getMonth();
               if (!Number.isNaN(monthIndex)) setSelectedMonth(monthIndex);
             }}
-            className="h-8 w-[115px] rounded-md border-slate-200 bg-white text-xs"
+            className="h-8 w-[115px] rounded-md border-black bg-white text-xs font-[Urbanist]"
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-[Urbanist]">
             <select
               aria-label="Select Leave Type"
               value={leaveType}
               onChange={(event) => setLeaveType(event.target.value)}
-              className="h-8 w-[130px] rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-600"
+              className="h-8 w-[130px] rounded-md border border-black bg-white px-2 text-xs text-slate-600 font-[Urbanist]"
             >
               <option value="">Select Leave Type</option>
               <option value="P">Present</option>
@@ -817,20 +817,20 @@ const LeaveCalendar = () => {
               <option value="W">Week Off</option>
               <option value="H">Holiday</option>
             </select>
-            <button type="button" title="Export attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-200 text-emerald-600">
+            <button type="button" title="Export attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-black text-emerald-600 font-[Urbanist]">
               <FileSpreadsheet size={16} />
             </button>
-            <button type="button" title="Filter attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500">
+            <button type="button" title="Filter attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-black text-slate-500 font-[Urbanist]">
               <Filter size={16} />
             </button>
-            <button type="button" title="Attendance history" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500">
+            <button type="button" title="Attendance history" className="flex h-8 w-8 items-center justify-center rounded-md border border-black text-slate-500 font-[Urbanist]">
               <History size={16} />
             </button>
           </div>
           </div>
         </nav>
 
-        <div className="flex shrink-0 items-center justify-end gap-2 border-b border-slate-200 bg-white px-3 py-2">
+        <div className="flex shrink-0 items-center justify-end gap-2 border-b border-black bg-white px-3 py-2 font-[Urbanist]">
           {["Half Day Status", "Revert", "Bulk Correction", "Exception", "Process"].map(
             (label) => (
               <button
@@ -851,7 +851,7 @@ const LeaveCalendar = () => {
 
         {/* SEARCH */}
 
-        <div className="flex min-h-10 items-center gap-4 border-b border-slate-200 bg-white px-3 py-1.5">
+        <div className="flex min-h-10 items-center gap-4 border-b border-black bg-white px-3 py-1.5 font-[Urbanist]">
           <LeaveCalendarSearch
             searchTerm={
               searchTerm
@@ -860,18 +860,18 @@ const LeaveCalendar = () => {
               setSearchTerm
             }
           />
-          <div className="ml-auto flex items-center gap-5">
-            <button type="button" className="flex items-center gap-1 text-xs text-slate-600">
+          <div className="ml-auto flex items-center gap-5 font-[Urbanist]">
+            <button type="button" className="flex items-center gap-1 text-xs text-slate-600 font-[Urbanist]">
               <Plus size={14} /> Add Filter
             </button>
             {["Query", "TA Policy", "Pattern", "TA Supervisor", "Attendance", "Leave"].map(
               (label) => (
-                <button key={label} type="button" className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-slate-500">
+                <button key={label} type="button" className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-slate-500 font-[Urbanist]">
                   {label} <ChevronDown size={12} />
                 </button>
               ),
             )}
-            <button type="button" title="More filters" className="text-slate-500">
+            <button type="button" title="More filters" className="text-slate-500 font-[Urbanist]">
               <MoreVertical size={16} />
             </button>
             <button
@@ -881,7 +881,7 @@ const LeaveCalendar = () => {
                 setSearchTerm("");
                 setLeaveType("");
               }}
-              className="text-red-400"
+              className="text-red-400 font-[Urbanist]"
             >
               <X size={17} />
             </button>
@@ -891,7 +891,7 @@ const LeaveCalendar = () => {
         {/* LOADING */}
 
         {isLoading && (
-          <div className="shrink-0 py-6 text-center text-gray-500">
+          <div className="shrink-0 py-6 text-center text-gray-500 font-[Urbanist]">
             Loading monthly leave calendar...
           </div>
         )}
@@ -899,12 +899,12 @@ const LeaveCalendar = () => {
         {/* ERROR */}
 
         {isError && (
-          <div className="shrink-0 py-6 text-center text-red-500">
+          <div className="shrink-0 py-6 text-center text-red-500 font-[Urbanist]">
             <p>
               Failed to load monthly leave calendar.
             </p>
 
-            <pre className="mt-2 max-h-40 overflow-auto text-left text-xs">
+            <pre className="mt-2 max-h-40 overflow-auto text-left text-xs font-[Urbanist]">
               {JSON.stringify(
                 error,
                 null,
@@ -918,7 +918,7 @@ const LeaveCalendar = () => {
 
         {!isLoading &&
           !isError && (
-            <div className="min-h-0 flex-1 overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-hidden font-[Urbanist]">
               <LeaveCalendarTable
                 employees={
                   paginatedEmployees
@@ -933,7 +933,7 @@ const LeaveCalendar = () => {
 
         {/* FOOTER */}
 
-        <div className="shrink-0">
+        <div className="shrink-0 font-[Urbanist]">
           <LeaveCalendarFooter
             totalItems={
               totalItems

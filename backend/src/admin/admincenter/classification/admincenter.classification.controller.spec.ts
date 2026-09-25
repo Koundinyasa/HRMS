@@ -9,7 +9,9 @@ describe('AdmincenterClassificationController', () => {
       controllers: [AdmincenterClassificationController],
     }).compile();
 
-    controller = module.get<AdmincenterClassificationController>(AdmincenterClassificationController);
+    controller = module.get<AdmincenterClassificationController>(
+      AdmincenterClassificationController,
+    );
   });
 
   it('should be defined', () => {

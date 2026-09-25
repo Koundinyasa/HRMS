@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
@@ -22,9 +15,7 @@ import { UpdatePunchIntegrationDto } from './dto/update-punch-integration.dto';
 import { ReadPunchDataDto } from './dto/read-punch-data.dto';
 
 @Controller('admin/timeattendance/timeoffice/settings')
-
 @UseGuards(JwtAuthGuard)
-
 export class TimeOfficeSettingsController {
   constructor(
     private readonly timeOfficeSettingsService: TimeOfficeSettingsService,
@@ -44,12 +35,8 @@ export class TimeOfficeSettingsController {
   // 2. Update General Settings
 
   @Put('general')
-  async updateGeneralSettings(
-    @Body() dto: UpdateGeneralSettingsDto,
-  ) {
-    return this.timeOfficeSettingsService.updateGeneralSettings(
-      dto,
-    );
+  async updateGeneralSettings(@Body() dto: UpdateGeneralSettingsDto) {
+    return this.timeOfficeSettingsService.updateGeneralSettings(dto);
   }
 
   // =========================================================
@@ -66,12 +53,8 @@ export class TimeOfficeSettingsController {
   // 4. Update Auto Process Settings
 
   @Put('autoprocess')
-  async updateAutoProcessSettings(
-    @Body() dto: UpdateAutoProcessDto,
-  ) {
-    return this.timeOfficeSettingsService.updateAutoProcessSettings(
-      dto,
-    );
+  async updateAutoProcessSettings(@Body() dto: UpdateAutoProcessDto) {
+    return this.timeOfficeSettingsService.updateAutoProcessSettings(dto);
   }
 
   // =========================================================
@@ -88,12 +71,8 @@ export class TimeOfficeSettingsController {
   // 6. Update Mail Scheduler Settings
 
   @Put('mailscheduler')
-  async updateMailSchedulerSettings(
-    @Body() dto: UpdateMailSchedulerDto,
-  ) {
-    return this.timeOfficeSettingsService.updateMailSchedulerSettings(
-      dto,
-    );
+  async updateMailSchedulerSettings(@Body() dto: UpdateMailSchedulerDto) {
+    return this.timeOfficeSettingsService.updateMailSchedulerSettings(dto);
   }
 
   // =========================================================
@@ -110,21 +89,14 @@ export class TimeOfficeSettingsController {
   // 8. Update Punch Integration Settings
 
   @Put('punchintegration')
-  async updatePunchIntegrationSettings(
-    @Body() dto: UpdatePunchIntegrationDto,
-  ) {
-    return this.timeOfficeSettingsService.updatePunchIntegrationSettings(
-      dto,
-    );
+  async updatePunchIntegrationSettings(@Body() dto: UpdatePunchIntegrationDto) {
+    return this.timeOfficeSettingsService.updatePunchIntegrationSettings(dto);
   }
-
 
   // 9. Read Punch Data
 
   @Post('punchintegration/readdata')
-  async readPunchData(
-    @Body() dto: ReadPunchDataDto,
-  ) {
+  async readPunchData(@Body() dto: ReadPunchDataDto) {
     return this.timeOfficeSettingsService.readPunchData(dto);
   }
 }

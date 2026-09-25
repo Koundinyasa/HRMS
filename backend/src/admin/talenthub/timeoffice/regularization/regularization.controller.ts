@@ -22,9 +22,7 @@ import { ApplyLeaveDto } from './dto/apply-leave.dto';
 @Controller('admin/timeattendance/timeoffice/regularization')
 @UseGuards(JwtAuthGuard)
 export class RegularizationController {
-  constructor(
-    private readonly regularizationService: RegularizationService,
-  ) {}
+  constructor(private readonly regularizationService: RegularizationService) {}
 
   // =========================================================
   // PUNCH TAB
@@ -36,17 +34,12 @@ export class RegularizationController {
     @Query('date') date: string,
     @Query('employeeId') employeeId?: string,
   ) {
-    return this.regularizationService.getPunchDetails(
-      date,
-      employeeId,
-    );
+    return this.regularizationService.getPunchDetails(date, employeeId);
   }
 
   // 2. Add Punch
   @Post('punch')
-  async addPunch(
-    @Body() dto: AddPunchDto,
-  ) {
+  async addPunch(@Body() dto: AddPunchDto) {
     return this.regularizationService.addPunch(dto);
   }
 
@@ -56,10 +49,7 @@ export class RegularizationController {
     @Param('punchId') punchId: string,
     @Body() dto: UpdatePunchDto,
   ) {
-    return this.regularizationService.updatePunch(
-      punchId,
-      dto,
-    );
+    return this.regularizationService.updatePunch(punchId, dto);
   }
 
   // =========================================================
@@ -72,10 +62,7 @@ export class RegularizationController {
     @Query('fromDate') fromDate: string,
     @Query('toDate') toDate: string,
   ) {
-    return this.regularizationService.getMissedPunch(
-      fromDate,
-      toDate,
-    );
+    return this.regularizationService.getMissedPunch(fromDate, toDate);
   }
 
   // 5. Get Missed Punch Regularization Details
@@ -114,10 +101,7 @@ export class RegularizationController {
     @Query('month') month: string,
     @Query('employeeId') employeeId?: string,
   ) {
-    return this.regularizationService.getAttendance(
-      month,
-      employeeId,
-    );
+    return this.regularizationService.getAttendance(month, employeeId);
   }
 
   // 8. Get Daily Log
@@ -126,10 +110,7 @@ export class RegularizationController {
     @Query('employeeId') employeeId: string,
     @Query('date') date: string,
   ) {
-    return this.regularizationService.getDailyLog(
-      employeeId,
-      date,
-    );
+    return this.regularizationService.getDailyLog(employeeId, date);
   }
 
   // 9. Correct Status
@@ -139,11 +120,7 @@ export class RegularizationController {
     @Query('date') date: string,
     @Body() dto: CorrectStatusDto,
   ) {
-    return this.regularizationService.correctStatus(
-      employeeId,
-      date,
-      dto,
-    );
+    return this.regularizationService.correctStatus(employeeId, date, dto);
   }
 
   // 10. Apply Leave
@@ -153,11 +130,7 @@ export class RegularizationController {
     @Query('date') date: string,
     @Body() dto: ApplyLeaveDto,
   ) {
-    return this.regularizationService.applyLeave(
-      employeeId,
-      date,
-      dto,
-    );
+    return this.regularizationService.applyLeave(employeeId, date, dto);
   }
 
   // 11. Add Punch from Attendance Daily Log
@@ -166,10 +139,7 @@ export class RegularizationController {
     @Query('employeeId') employeeId: string,
     @Body() dto: AddPunchDto,
   ) {
-    return this.regularizationService.addAttendancePunch(
-      employeeId,
-      dto,
-    );
+    return this.regularizationService.addAttendancePunch(employeeId, dto);
   }
 
   // 12. Edit Punch from Attendance Daily Log
@@ -178,10 +148,7 @@ export class RegularizationController {
     @Param('punchId') punchId: string,
     @Body() dto: UpdatePunchDto,
   ) {
-    return this.regularizationService.updateAttendancePunch(
-      punchId,
-      dto,
-    );
+    return this.regularizationService.updateAttendancePunch(punchId, dto);
   }
 
   // =========================================================
@@ -194,10 +161,7 @@ export class RegularizationController {
     @Query('fromDate') fromDate: string,
     @Query('toDate') toDate: string,
   ) {
-    return this.regularizationService.getTaInsights(
-      fromDate,
-      toDate,
-    );
+    return this.regularizationService.getTaInsights(fromDate, toDate);
   }
 
   // 14. Get TA Insights Details

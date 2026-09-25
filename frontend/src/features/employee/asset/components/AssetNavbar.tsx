@@ -45,8 +45,8 @@ export default function AssetNavbar() {
         gap-2
         overflow-x-auto
         overflow-y-hidden
-        rounded-lg
-        border
+        rounded-2xl
+        border-2
         border-blue-300
         bg-[#E8F3FE]
         p-1.5

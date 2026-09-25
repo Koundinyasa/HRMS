@@ -34,7 +34,6 @@ export class ReportController {
     return this.reportService.getMonths();
   }
 
-
   // ==========================================
   // Attendance Independent Report
   // ==========================================
@@ -44,10 +43,7 @@ export class ReportController {
     @Query('month') month: string,
     @Query('groupBy') groupBy?: string,
   ) {
-    return this.reportService.getAttendanceIndependentReport(
-      month,
-      groupBy,
-    );
+    return this.reportService.getAttendanceIndependentReport(month, groupBy);
   }
 
   // ==========================================
@@ -59,10 +55,7 @@ export class ReportController {
     @Query('fromMonth') fromMonth: string,
     @Query('toMonth') toMonth: string,
   ) {
-    return this.reportService.getTopAttendanceReport(
-      fromMonth,
-      toMonth,
-    );
+    return this.reportService.getTopAttendanceReport(fromMonth, toMonth);
   }
 
   // ==========================================
@@ -74,12 +67,8 @@ export class ReportController {
     @Query('fromMonth') fromMonth: string,
     @Query('toMonth') toMonth: string,
   ) {
-    return this.reportService.getTopLeaveTakenReport(
-      fromMonth,
-      toMonth,
-    );
+    return this.reportService.getTopLeaveTakenReport(fromMonth, toMonth);
   }
-
 
   // Starting from here actual SPs
   // ==========================================
@@ -87,17 +76,12 @@ export class ReportController {
   // ==========================================
 
   @Post('availed')
-  async getAvailedReport(
-    @Req() req: any,
-    @Body() body: any,
-  ) {
+  async getAvailedReport(@Req() req: any, @Body() body: any) {
     return this.reportService.getAvailedReport(
       req.user.companyId,
       body.FromMonth,
       body.ToMonth,
-      body.LeavePolicyId
-        ? Number(body.LeavePolicyId)
-        : undefined,
+      body.LeavePolicyId ? Number(body.LeavePolicyId) : undefined,
     );
   }
 
@@ -109,12 +93,8 @@ export class ReportController {
     };
   }
 
-
   @Post('attendance')
-  async getAttendanceReport(
-    @Req() req: any,
-    @Body() body: any,
-  ) {
+  async getAttendanceReport(@Req() req: any, @Body() body: any) {
     return this.reportService.getAttendanceReport(
       req.user.companyId,
       body.FromMonth,
@@ -123,10 +103,7 @@ export class ReportController {
   }
 
   @Post('leave-taken')
-  async getLeaveTakenReport(
-    @Req() req: any,
-    @Body() body: any,
-  ) {
+  async getLeaveTakenReport(@Req() req: any, @Body() body: any) {
     return this.reportService.getLeaveTakenReport(
       req.user.companyId,
       body.FromMonth,
@@ -134,22 +111,15 @@ export class ReportController {
     );
   }
 
-
   @Post('allotment')
-  async getLeaveAllotmentReport(
-    @Req() req: any,
-    @Body() body: any,
-  ) {
+  async getLeaveAllotmentReport(@Req() req: any, @Body() body: any) {
     return this.reportService.getLeaveAllotmentReport(
       req.user.companyId,
       body.FromMonth,
       body.ToMonth,
-      body.LeavePolicyId
-        ? Number(body.LeavePolicyId)
-        : undefined,
+      body.LeavePolicyId ? Number(body.LeavePolicyId) : undefined,
     );
   }
-
 
   @Post('summary-detailed')
   async getLeaveSummaryDetailed(
@@ -162,7 +132,6 @@ export class ReportController {
       dto.ToMonth,
     );
   }
-
 
   @Post('history/date-wise')
   async getLeaveHistoryDateWiseReport(
@@ -188,17 +157,12 @@ export class ReportController {
     );
   }
 
-
   // ==========================================
-// Generic Report Excel Export
-// ==========================================
+  // Generic Report Excel Export
+  // ==========================================
 
   @Post('export')
-  async exportReport(
-    @Req() req: any,
-    @Body() body: any,
-    @Res() res: Response,
-  ) {
+  async exportReport(@Req() req: any, @Body() body: any, @Res() res: Response) {
     const companyId = req.user.companyId;
 
     const report = body.report;
@@ -210,25 +174,22 @@ export class ReportController {
       });
     }
 
-    const result =
-      await this.reportService.getReportExportData(
-        report,
-        companyId,
-        body,
-      );
+    const result = await this.reportService.getReportExportData(
+      report,
+      companyId,
+      body,
+    );
 
-    const file =
-      await this.reportExportService.generateExcel(
-        result.data,
-        result.fileName,
-      );
+    const file = await this.reportExportService.generateExcel(
+      result.data,
+      result.fileName,
+    );
 
     res.set({
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 
-      'Content-Disposition':
-        `attachment; filename="${result.fileName}.xlsx"`,
+      'Content-Disposition': `attachment; filename="${result.fileName}.xlsx"`,
 
       'Content-Length': file.length,
     });

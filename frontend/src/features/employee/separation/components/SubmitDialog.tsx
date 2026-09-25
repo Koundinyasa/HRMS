@@ -19,7 +19,8 @@ export default function SubmitDialog({
 }: SubmitDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[calc(100%-24px)]
+            <DialogContent
+                className="w-[calc(100%-24px)]
           max-w-[520px]
           overflow-hidden
           rounded-2xl
@@ -28,7 +29,9 @@ export default function SubmitDialog({
           bg-white
           p-0
           shadow-xl
-          sm:w-full">
+                    sm:w-full"
+                                style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
+                        >
                 <DialogHeader className="px-5
             pb-4
             pt-5

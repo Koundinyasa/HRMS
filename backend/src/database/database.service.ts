@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
- 
- 
- 
+
 @Injectable()
 export class DatabaseService {
   private pool: sql.ConnectionPool;
- 
+
   constructor(private readonly configService: ConfigService) {}
- 
+
   async connect(): Promise<sql.ConnectionPool> {
     if (!this.pool) {
       this.pool = await sql.connect({
@@ -37,10 +35,10 @@ export class DatabaseService {
         },
       });
     }
- 
+
     return this.pool;
   }
- 
+
   async healthCheck(): Promise<boolean> {
     const pool = await this.connect();
     await pool.request().query('SELECT 1 AS ok');

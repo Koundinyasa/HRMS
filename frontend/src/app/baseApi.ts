@@ -22,6 +22,13 @@ export const baseApi = createApi({
     "ForceLeaveApproval",
     "Punch",
     "TAInsights",
+    "ClassificationSummary",
+    "Branches",
+    "Designations",
+    "Banks",
+    "AdditionalClassifications",
+    "BankFieldMapping",
+    "SalaryComponents",
   ],
   endpoints: () => ({}),
 });

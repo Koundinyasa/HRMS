@@ -275,15 +275,15 @@
 // // // // // //   ======================================================= */
 
 // // // // // //   return (
-// // // // // //     <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+// // // // // //     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 font-[Urbanist]">
 
 // // // // // //       {/* ===================================================
 // // // // // //           TIME OFFICE NAVIGATION
 // // // // // //       =================================================== */}
 
-// // // // // //       <div className="mb-4 overflow-x-auto rounded-xl border border-gray-200 bg-white">
+// // // // // //       <div className="mb-4 overflow-x-auto rounded-xl border border-black bg-white font-[Urbanist]">
 
-// // // // // //         <div className="flex min-w-max">
+// // // // // //         <div className="flex min-w-max font-[Urbanist]">
 
 // // // // // //           {/* PUNCH */}
 
@@ -319,14 +319,14 @@
 
 // // // // // //           {/* ATTENDANCE */}
 
-// // // // // //           <span className="px-6 py-4 text-sm font-medium text-gray-300">
+// // // // // //           <span className="px-6 py-4 text-sm font-medium text-gray-300 font-[Urbanist]">
 // // // // // //             Attendance
 // // // // // //           </span>
 
 
 // // // // // //           {/* TA INSIGHTS */}
 
-// // // // // //           <span className="px-6 py-4 text-sm font-medium text-gray-300">
+// // // // // //           <span className="px-6 py-4 text-sm font-medium text-gray-300 font-[Urbanist]">
 // // // // // //             TA Insights
 // // // // // //           </span>
 
@@ -339,9 +339,9 @@
 // // // // // //           FILTERS
 // // // // // //       =================================================== */}
 
-// // // // // //       <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+// // // // // //       <div className="mb-4 rounded-xl border border-black bg-white p-4 font-[Urbanist]">
 
-// // // // // //         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+// // // // // //         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 font-[Urbanist]">
 
 
 // // // // // //           {/* =================================================
@@ -350,14 +350,14 @@
 
 // // // // // //           <div>
 
-// // // // // //             <label className="mb-1 block text-xs font-medium text-gray-500">
+// // // // // //             <label className="mb-1 block text-xs font-medium text-gray-500 font-[Urbanist]">
 // // // // // //               Date
 // // // // // //             </label>
 
-// // // // // //             <div className="relative">
+// // // // // //             <div className="relative font-[Urbanist]">
 
 // // // // // //               <CalendarDays
-// // // // // //                 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+// // // // // //                 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // // // // //               />
 
 // // // // // //               <input
@@ -368,7 +368,7 @@
 // // // // // //                     event.target.value,
 // // // // // //                   )
 // // // // // //                 }
-// // // // // //                 className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-500"
+// // // // // //                 className="w-full rounded-md border border-black py-2 pl-9 pr-3 text-sm outline-none focus:border-black font-[Urbanist]"
 // // // // // //               />
 
 // // // // // //             </div>
@@ -382,11 +382,11 @@
 
 // // // // // //           <div>
 
-// // // // // //             <label className="mb-1 block text-xs font-medium text-gray-500">
+// // // // // //             <label className="mb-1 block text-xs font-medium text-gray-500 font-[Urbanist]">
 // // // // // //               Employee
 // // // // // //             </label>
 
-// // // // // //             <div className="relative">
+// // // // // //             <div className="relative font-[Urbanist]">
 
 // // // // // //               <select
 // // // // // //                 value={
@@ -400,7 +400,7 @@
 // // // // // //                 disabled={
 // // // // // //                   employeesLoading
 // // // // // //                 }
-// // // // // //                 className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-blue-500"
+// // // // // //                 className="w-full appearance-none rounded-md border border-black bg-white px-3 py-2 pr-9 text-sm outline-none focus:border-black font-[Urbanist]"
 // // // // // //               >
 
 // // // // // //                 <option value="">
@@ -437,7 +437,7 @@
 
 
 // // // // // //               <ChevronDown
-// // // // // //                 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+// // // // // //                 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // // // // //               />
 
 // // // // // //             </div>
@@ -451,7 +451,7 @@
 // // // // // //             BUTTONS
 // // // // // //         ================================================= */}
 
-// // // // // //         <div className="mt-4 flex justify-end gap-2">
+// // // // // //         <div className="mt-4 flex justify-end gap-2 font-[Urbanist]">
 
 
 // // // // // //           {/* REFRESH */}
@@ -469,7 +469,7 @@
 // // // // // //               isLoading ||
 // // // // // //               employeesLoading
 // // // // // //             }
-// // // // // //             className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+// // // // // //             className="flex items-center gap-2 rounded-md border border-black bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 font-[Urbanist]"
 // // // // // //           >
 
 // // // // // //             <RefreshCw
@@ -493,7 +493,7 @@
 // // // // // //             onClick={() => {
 // // // // // //               void refetch();
 // // // // // //             }}
-// // // // // //             className="rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+// // // // // //             className="rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 font-[Urbanist]"
 // // // // // //           >
 // // // // // //             Update
 // // // // // //           </button>
@@ -509,7 +509,7 @@
 
 // // // // // //       {employeesError && (
 
-// // // // // //         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+// // // // // //         <div className="mb-4 rounded-lg border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]">
 
 // // // // // //           {employeesError}
 
@@ -524,7 +524,7 @@
 
 // // // // // //       {error && (
 
-// // // // // //         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+// // // // // //         <div className="mb-4 rounded-lg border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]">
 
 // // // // // //           {error}
 
@@ -539,7 +539,7 @@
 
 // // // // // //       {saveError && (
 
-// // // // // //         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+// // // // // //         <div className="mb-4 rounded-lg border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]">
 
 // // // // // //           {saveError}
 
@@ -552,7 +552,7 @@
 // // // // // //           EMPLOYEE PROFILE
 // // // // // //       =================================================== */}
 
-// // // // // //       <div className="mb-4">
+// // // // // //       <div className="mb-4 font-[Urbanist]">
 
 // // // // // //         <EmployeeProfileCard
 // // // // // //           profile={profile}
@@ -565,7 +565,7 @@
 // // // // // //           ATTENDANCE + PUNCH
 // // // // // //       =================================================== */}
 
-// // // // // //       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+// // // // // //       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 font-[Urbanist]">
 
 
 // // // // // //         {/* =================================================
@@ -588,13 +588,13 @@
 
 // // // // // //         <div>
 
-// // // // // //           <div className="mb-3">
+// // // // // //           <div className="mb-3 font-[Urbanist]">
 
-// // // // // //             <h2 className="text-base font-semibold text-gray-800">
+// // // // // //             <h2 className="text-base font-semibold text-gray-800 font-[Urbanist]">
 // // // // // //               Punch Records
 // // // // // //             </h2>
 
-// // // // // //             <p className="text-xs text-gray-400">
+// // // // // //             <p className="text-xs text-gray-400 font-[Urbanist]">
 // // // // // //               Punch details for selected employee
 // // // // // //             </p>
 
@@ -605,7 +605,7 @@
 
 // // // // // //           {isLoading && (
 
-// // // // // //             <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
+// // // // // //             <div className="rounded-xl border border-black bg-white p-8 text-center text-sm text-gray-400 font-[Urbanist]">
 
 // // // // // //               Loading punch records...
 
@@ -619,7 +619,7 @@
 // // // // // //           {!isLoading &&
 // // // // // //             punchRecords.length === 0 && (
 
-// // // // // //               <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
+// // // // // //               <div className="rounded-xl border border-black bg-white p-8 text-center text-sm text-gray-400 font-[Urbanist]">
 
 // // // // // //                 No punch records found.
 
@@ -630,7 +630,7 @@
 
 // // // // // //           {/* RECORDS */}
 
-// // // // // //           <div className="grid grid-cols-1 gap-4">
+// // // // // //           <div className="grid grid-cols-1 gap-4 font-[Urbanist]">
 
 // // // // // //             {punchRecords.map(
 // // // // // //               (record) => {
@@ -1065,19 +1065,19 @@
 
 
 // // // // //   return (
-// // // // //     <div className="min-h-screen bg-[#f4f5f9]">
+// // // // //     <div className="min-h-screen bg-[#f4f5f9] font-[Urbanist]">
 
 // // // // //       {/* ===================================================
 // // // // //           TOP NAVIGATION
 // // // // //       =================================================== */}
 
-// // // // //       <div className="border-b border-gray-200 bg-white">
+// // // // //       <div className="border-b border-black bg-white font-[Urbanist]">
 
-// // // // //         <div className="flex items-center justify-between gap-4 px-4 py-2">
+// // // // //         <div className="flex items-center justify-between gap-4 px-4 py-2 font-[Urbanist]">
 
 // // // // //           {/* TABS */}
 
-// // // // //           <div className="flex min-w-0 items-center gap-8 overflow-x-auto">
+// // // // //           <div className="flex min-w-0 items-center gap-8 overflow-x-auto font-[Urbanist]">
 
 // // // // //             <NavLink
 // // // // //               to="../Punch"
@@ -1105,11 +1105,11 @@
 // // // // //               Missed Punch
 // // // // //             </NavLink>
 
-// // // // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400">
+// // // // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400 font-[Urbanist]">
 // // // // //               Attendance
 // // // // //             </span>
 
-// // // // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400">
+// // // // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400 font-[Urbanist]">
 // // // // //               TA Insights
 // // // // //             </span>
 
@@ -1118,17 +1118,17 @@
 
 // // // // //           {/* RIGHT FILTERS */}
 
-// // // // //           <div className="hidden items-center gap-4 xl:flex">
+// // // // //           <div className="hidden items-center gap-4 xl:flex font-[Urbanist]">
 
 // // // // //             {/* DATE */}
 
-// // // // //             <div className="flex items-center gap-2">
+// // // // //             <div className="flex items-center gap-2 font-[Urbanist]">
 
-// // // // //               <span className="text-sm font-medium text-gray-700">
+// // // // //               <span className="text-sm font-medium text-gray-700 font-[Urbanist]">
 // // // // //                 Date
 // // // // //               </span>
 
-// // // // //               <div className="relative">
+// // // // //               <div className="relative font-[Urbanist]">
 
 // // // // //                 <input
 // // // // //                   type="date"
@@ -1138,12 +1138,12 @@
 // // // // //                       event.target.value,
 // // // // //                     )
 // // // // //                   }
-// // // // //                   className="h-10 w-[195px] rounded-md border border-gray-200 bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400"
+// // // // //                   className="h-10 w-[195px] rounded-md border border-black bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // // // // //                 />
 
 // // // // //                 <CalendarDays
 // // // // //                   size={17}
-// // // // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// // // // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // // // //                 />
 
 // // // // //               </div>
@@ -1153,13 +1153,13 @@
 
 // // // // //             {/* EMPLOYEE */}
 
-// // // // //             <div className="flex items-center gap-2">
+// // // // //             <div className="flex items-center gap-2 font-[Urbanist]">
 
-// // // // //               <span className="text-sm font-medium text-gray-700">
+// // // // //               <span className="text-sm font-medium text-gray-700 font-[Urbanist]">
 // // // // //                 Employee
 // // // // //               </span>
 
-// // // // //               <div className="relative">
+// // // // //               <div className="relative font-[Urbanist]">
 
 // // // // //                 <select
 // // // // //                   value={
@@ -1173,7 +1173,7 @@
 // // // // //                   disabled={
 // // // // //                     employeesLoading
 // // // // //                   }
-// // // // //                   className="h-10 w-[200px] appearance-none truncate rounded-md border border-gray-200 bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-blue-400"
+// // // // //                   className="h-10 w-[200px] appearance-none truncate rounded-md border border-black bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // // // // //                 >
 
 // // // // //                   <option value="">
@@ -1208,7 +1208,7 @@
 
 // // // // //                 <ChevronDown
 // // // // //                   size={16}
-// // // // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// // // // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // // // //                 />
 
 // // // // //               </div>
@@ -1223,7 +1223,7 @@
 // // // // //               onClick={() => {
 // // // // //                 void refetch();
 // // // // //               }}
-// // // // //               className="flex h-10 items-center gap-2 rounded-md bg-[#1597e5] px-5 text-sm font-semibold text-white hover:bg-[#0788d2]"
+// // // // //               className="flex h-10 items-center gap-2 rounded-md bg-[#1597e5] px-5 text-sm font-semibold text-white hover:bg-[#0788d2] font-[Urbanist]"
 // // // // //             >
 
 // // // // //               <Bookmark
@@ -1242,7 +1242,7 @@
 // // // // //               onClick={
 // // // // //                 handleRefresh
 // // // // //               }
-// // // // //               className="rounded-full p-2 text-gray-400 hover:bg-gray-100"
+// // // // //               className="rounded-full p-2 text-gray-400 hover:bg-gray-100 font-[Urbanist]"
 // // // // //             >
 
 // // // // //               <RefreshCw
@@ -1272,7 +1272,7 @@
 // // // // //         error ||
 // // // // //         saveError) && (
 
-// // // // //         <div className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+// // // // //         <div className="mx-4 mt-3 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
 
 // // // // //           {employeesError ||
 // // // // //             error ||
@@ -1287,50 +1287,50 @@
 // // // // //           MAIN CONTENT
 // // // // //       =================================================== */}
 
-// // // // //       <div className="p-4">
+// // // // //       <div className="p-4 font-[Urbanist]">
 
 
 // // // // //         {/* =================================================
 // // // // //             TWO COLUMN AREA
 // // // // //         ================================================= */}
 
-// // // // //         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[36%_64%]">
+// // // // //         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[36%_64%] font-[Urbanist]">
 
 
 // // // // //           {/* =================================================
 // // // // //               LEFT SIDE
 // // // // //           ================================================= */}
 
-// // // // //           <div className="space-y-3">
+// // // // //           <div className="space-y-3 font-[Urbanist]">
 
 
 // // // // //             {/* =================================================
 // // // // //                 EMPLOYEE PROFILE
 // // // // //             ================================================= */}
 
-// // // // //             <div className="rounded-xl border border-gray-200 bg-white">
+// // // // //             <div className="rounded-xl border border-black bg-white font-[Urbanist]">
 
 // // // // //               {isLoading &&
 // // // // //               !profile ? (
 
-// // // // //                 <div className="flex min-h-[180px] items-center justify-center text-sm text-gray-400">
+// // // // //                 <div className="flex min-h-[180px] items-center justify-center text-sm text-gray-400 font-[Urbanist]">
 // // // // //                   Loading employee details...
 // // // // //                 </div>
 
 // // // // //               ) : profile ? (
 
-// // // // //                 <div className="p-4">
+// // // // //                 <div className="p-4 font-[Urbanist]">
 
 
 // // // // //                   {/* EMPLOYEE NAME */}
 
-// // // // //                   <div className="text-center">
+// // // // //                   <div className="text-center font-[Urbanist]">
 
-// // // // //                     <h1 className="text-[23px] font-semibold text-[#1597e5]">
+// // // // //                     <h1 className="text-[23px] font-semibold text-[#1597e5] font-[Urbanist]">
 // // // // //                       {profile.employeeName}
 // // // // //                     </h1>
 
-// // // // //                     <div className="mt-1 inline-block rounded-sm bg-[#ddd4ff] px-2 py-1 text-[15px] font-semibold text-gray-800">
+// // // // //                     <div className="mt-1 inline-block rounded-sm bg-[#ddd4ff] px-2 py-1 text-[15px] font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                       {profile.employeeId}
 // // // // //                     </div>
 
@@ -1339,13 +1339,13 @@
 
 // // // // //                   {/* REPORTING AUTHORITY */}
 
-// // // // //                   <div className="mt-2 flex items-center justify-center gap-2">
+// // // // //                   <div className="mt-2 flex items-center justify-center gap-2 font-[Urbanist]">
 
-// // // // //                     <span className="rounded-md border border-gray-300 bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700">
+// // // // //                     <span className="rounded-md border border-black bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700 font-[Urbanist]">
 // // // // //                       R.A
 // // // // //                     </span>
 
-// // // // //                     <span className="truncate text-sm font-medium text-gray-600">
+// // // // //                     <span className="truncate text-sm font-medium text-gray-600 font-[Urbanist]">
 // // // // //                       {profile.reportingAuthorityName ||
 // // // // //                         "Reporting Authority"}
 // // // // //                     </span>
@@ -1355,24 +1355,24 @@
 
 // // // // //                   {/* DETAILS */}
 
-// // // // //                   <div className="mt-5 grid grid-cols-2 gap-5">
+// // // // //                   <div className="mt-5 grid grid-cols-2 gap-5 font-[Urbanist]">
 
 // // // // //                     {/* POLICY */}
 
 // // // // //                     <div>
 
-// // // // //                       <h3 className="border-b border-gray-200 pb-2 text-[15px] font-semibold text-[#1597e5]">
+// // // // //                       <h3 className="border-b border-black pb-2 text-[15px] font-semibold text-[#1597e5] font-[Urbanist]">
 // // // // //                         Policy Details
 // // // // //                       </h3>
 
-// // // // //                       <div className="mt-2 space-y-1">
+// // // // //                       <div className="mt-2 space-y-1 font-[Urbanist]">
 
-// // // // //                         <p className="text-sm text-gray-500">
+// // // // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // // // //                           {profile.policyName ||
 // // // // //                             "General Policy"}
 // // // // //                         </p>
 
-// // // // //                         <p className="text-sm text-gray-500">
+// // // // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // // // //                           {profile.doublePunchPolicy ||
 // // // // //                             "Double Punch"}
 // // // // //                         </p>
@@ -1386,18 +1386,18 @@
 
 // // // // //                     <div>
 
-// // // // //                       <h3 className="border-b border-gray-200 pb-2 text-[15px] font-semibold text-[#1597e5]">
+// // // // //                       <h3 className="border-b border-black pb-2 text-[15px] font-semibold text-[#1597e5] font-[Urbanist]">
 // // // // //                         Shift Details
 // // // // //                       </h3>
 
-// // // // //                       <div className="mt-2 space-y-1">
+// // // // //                       <div className="mt-2 space-y-1 font-[Urbanist]">
 
-// // // // //                         <p className="text-sm text-gray-500">
+// // // // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // // // //                           {profile.shiftName ||
 // // // // //                             "General Shift (GS)"}
 // // // // //                         </p>
 
-// // // // //                         <p className="text-sm text-gray-500">
+// // // // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // // // //                           {profile.shiftTiming ||
 // // // // //                             "10:00 TO 19:00"}
 // // // // //                         </p>
@@ -1412,7 +1412,7 @@
 
 // // // // //               ) : (
 
-// // // // //                 <div className="p-6 text-center text-sm text-gray-400">
+// // // // //                 <div className="p-6 text-center text-sm text-gray-400 font-[Urbanist]">
 // // // // //                   Select an employee to view details.
 // // // // //                 </div>
 
@@ -1425,18 +1425,18 @@
 // // // // //                 MONTH / WEEK FILTER
 // // // // //             ================================================= */}
 
-// // // // //             <div className="rounded-xl border border-gray-200 bg-white p-3">
+// // // // //             <div className="rounded-xl border border-black bg-white p-3 font-[Urbanist]">
 
-// // // // //               <p className="mb-3 text-sm font-medium text-gray-700">
+// // // // //               <p className="mb-3 text-sm font-medium text-gray-700 font-[Urbanist]">
 // // // // //                 Select a month or week to see absences for that period
 // // // // //               </p>
 
-// // // // //               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+// // // // //               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 font-[Urbanist]">
 
 
 // // // // //                 {/* PERIOD */}
 
-// // // // //                 <div className="relative">
+// // // // //                 <div className="relative font-[Urbanist]">
 
 // // // // //                   <select
 // // // // //                     value={periodType}
@@ -1447,7 +1447,7 @@
 // // // // //                           | "Custom Week",
 // // // // //                       )
 // // // // //                     }
-// // // // //                     className="h-10 w-full appearance-none rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-700 outline-none"
+// // // // //                     className="h-10 w-full appearance-none rounded-md border border-black bg-white px-3 pr-8 text-sm text-gray-700 outline-none font-[Urbanist]"
 // // // // //                   >
 
 // // // // //                     <option>
@@ -1462,7 +1462,7 @@
 
 // // // // //                   <ChevronDown
 // // // // //                     size={16}
-// // // // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+// // // // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // // // //                   />
 
 // // // // //                 </div>
@@ -1479,13 +1479,13 @@
 // // // // //                       event.target.value,
 // // // // //                     )
 // // // // //                   }
-// // // // //                   className="h-10 rounded-md border border-gray-200 px-3 text-sm outline-none"
+// // // // //                   className="h-10 rounded-md border border-black px-3 text-sm outline-none font-[Urbanist]"
 // // // // //                 />
 
 
 // // // // //                 {/* LEAVE */}
 
-// // // // //                 <div className="relative">
+// // // // //                 <div className="relative font-[Urbanist]">
 
 // // // // //                   <select
 // // // // //                     value={leaveFilter}
@@ -1494,7 +1494,7 @@
 // // // // //                         event.target.value,
 // // // // //                       )
 // // // // //                     }
-// // // // //                     className="h-10 w-full appearance-none rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-700 outline-none"
+// // // // //                     className="h-10 w-full appearance-none rounded-md border border-black bg-white px-3 pr-8 text-sm text-gray-700 outline-none font-[Urbanist]"
 // // // // //                   >
 
 // // // // //                     <option>
@@ -1509,7 +1509,7 @@
 
 // // // // //                   <ChevronDown
 // // // // //                     size={16}
-// // // // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+// // // // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // // // //                   />
 
 // // // // //                 </div>
@@ -1523,33 +1523,33 @@
 // // // // //                 ATTENDANCE TABLE
 // // // // //             ================================================= */}
 
-// // // // //             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+// // // // //             <div className="overflow-hidden rounded-xl border border-black bg-white font-[Urbanist]">
 
-// // // // //               <div className="overflow-x-auto">
+// // // // //               <div className="overflow-x-auto font-[Urbanist]">
 
-// // // // //                 <table className="w-full min-w-[520px]">
+// // // // //                 <table className="w-full min-w-[520px] font-[Urbanist]">
 
 // // // // //                   <thead>
 
-// // // // //                     <tr className="bg-[#d4e9f7]">
+// // // // //                     <tr className="bg-[#d4e9f7] font-[Urbanist]">
 
-// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                         Date
 // // // // //                       </th>
 
-// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                         Shift
 // // // // //                       </th>
 
-// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                         First Half
 // // // // //                       </th>
 
-// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                         Second Half
 // // // // //                       </th>
 
-// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // // // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                         Day Status
 // // // // //                       </th>
 
@@ -1566,7 +1566,7 @@
 
 // // // // //                         <td
 // // // // //                           colSpan={5}
-// // // // //                           className="px-4 py-8 text-center text-sm text-gray-400"
+// // // // //                           className="px-4 py-8 text-center text-sm text-gray-400 font-[Urbanist]"
 // // // // //                         >
 // // // // //                           Loading attendance...
 // // // // //                         </td>
@@ -1579,7 +1579,7 @@
 
 // // // // //                         <td
 // // // // //                           colSpan={5}
-// // // // //                           className="px-4 py-8 text-center text-sm text-gray-400"
+// // // // //                           className="px-4 py-8 text-center text-sm text-gray-400 font-[Urbanist]"
 // // // // //                         >
 // // // // //                           No attendance data found.
 // // // // //                         </td>
@@ -1596,38 +1596,38 @@
 
 // // // // //                           <tr
 // // // // //                             key={`${row.date}-${index}`}
-// // // // //                             className="border-t border-gray-100 bg-white"
+// // // // //                             className="border-t border-black bg-white font-[Urbanist]"
 // // // // //                           >
 
-// // // // //                             <td className="px-3 py-4 text-sm text-gray-700">
+// // // // //                             <td className="px-3 py-4 text-sm text-gray-700 font-[Urbanist]">
 // // // // //                               {formatDisplayDate(
 // // // // //                                 row.date,
 // // // // //                               )}
 // // // // //                             </td>
 
-// // // // //                             <td className="px-3 py-4 text-sm text-gray-700">
+// // // // //                             <td className="px-3 py-4 text-sm text-gray-700 font-[Urbanist]">
 // // // // //                               {row.shift}
 // // // // //                             </td>
 
-// // // // //                             <td className="px-3 py-4">
+// // // // //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// // // // //                               <span className="inline-flex rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+// // // // //                               <span className="inline-flex rounded-md border border-black bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 font-[Urbanist]">
 // // // // //                                 {row.firstHalf}
 // // // // //                               </span>
 
 // // // // //                             </td>
 
-// // // // //                             <td className="px-3 py-4">
+// // // // //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// // // // //                               <span className="inline-flex rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+// // // // //                               <span className="inline-flex rounded-md border border-black bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 font-[Urbanist]">
 // // // // //                                 {row.secondHalf}
 // // // // //                               </span>
 
 // // // // //                             </td>
 
-// // // // //                             <td className="px-3 py-4">
+// // // // //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// // // // //                               <span className="inline-flex rounded-md border border-green-300 bg-green-50 px-2 py-1 text-xs font-semibold text-green-600">
+// // // // //                               <span className="inline-flex rounded-md border border-black bg-green-50 px-2 py-1 text-xs font-semibold text-green-600 font-[Urbanist]">
 // // // // //                                 {row.dayStatus}
 // // // // //                               </span>
 
@@ -1655,38 +1655,38 @@
 // // // // //               RIGHT SIDE - PUNCH RECORDS
 // // // // //           ================================================= */}
 
-// // // // //           <div className="rounded-xl border border-gray-200 bg-white">
+// // // // //           <div className="rounded-xl border border-black bg-white font-[Urbanist]">
 
 
 // // // // //             {/* HEADER */}
 
-// // // // //             <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d3e8f5] px-4 py-3">
+// // // // //             <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d3e8f5] px-4 py-3 font-[Urbanist]">
 
 // // // // //               <div>
 
-// // // // //                 <h2 className="text-base font-semibold text-gray-800">
+// // // // //                 <h2 className="text-base font-semibold text-gray-800 font-[Urbanist]">
 // // // // //                   Punch Records
 // // // // //                 </h2>
 
-// // // // //                 <p className="text-xs text-gray-500">
+// // // // //                 <p className="text-xs text-gray-500 font-[Urbanist]">
 // // // // //                   Review, correct and add punch times
 // // // // //                 </p>
 
 // // // // //               </div>
 
 
-// // // // //               <div className="flex items-center gap-2">
+// // // // //               <div className="flex items-center gap-2 font-[Urbanist]">
 
 // // // // //                 <button
 // // // // //                   type="button"
-// // // // //                   className="rounded-full bg-[#b8d9e9] px-4 py-2 text-sm font-semibold text-[#1597e5]"
+// // // // //                   className="rounded-full bg-[#b8d9e9] px-4 py-2 text-sm font-semibold text-[#1597e5] font-[Urbanist]"
 // // // // //                 >
 // // // // //                   Show All
 // // // // //                 </button>
 
 // // // // //                 <button
 // // // // //                   type="button"
-// // // // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white"
+// // // // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white font-[Urbanist]"
 // // // // //                 >
 // // // // //                   <Plus size={16} />
 // // // // //                   Permission
@@ -1694,7 +1694,7 @@
 
 // // // // //                 <button
 // // // // //                   type="button"
-// // // // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white"
+// // // // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white font-[Urbanist]"
 // // // // //                 >
 // // // // //                   <Plus size={16} />
 // // // // //                   Punch
@@ -1707,23 +1707,23 @@
 
 // // // // //             {/* PUNCH CARDS */}
 
-// // // // //             <div className="p-4">
+// // // // //             <div className="p-4 font-[Urbanist]">
 
 // // // // //               {isLoading ? (
 
-// // // // //                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+// // // // //                 <div className="rounded-xl border border-black bg-white p-12 text-center text-sm text-gray-400 font-[Urbanist]">
 // // // // //                   Loading punch records...
 // // // // //                 </div>
 
 // // // // //               ) : punchRecords.length === 0 ? (
 
-// // // // //                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+// // // // //                 <div className="rounded-xl border border-black bg-white p-12 text-center text-sm text-gray-400 font-[Urbanist]">
 // // // // //                   No punch records found.
 // // // // //                 </div>
 
 // // // // //               ) : (
 
-// // // // //                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+// // // // //                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 font-[Urbanist]">
 
 // // // // //                   {punchRecords.map(
 // // // // //                     (record) => {
@@ -1742,7 +1742,7 @@
 // // // // //                           key={
 // // // // //                             record.punchId
 // // // // //                           }
-// // // // //                           className="min-w-0"
+// // // // //                           className="min-w-0 font-[Urbanist]"
 // // // // //                         >
 
 // // // // //                           <PunchRecordCard
@@ -2353,21 +2353,21 @@
 // // //   ======================================================= */
 
 // // //   return (
-// // //     <div className="min-h-screen bg-[#f4f5f9]">
+// // //     <div className="min-h-screen bg-[#f4f5f9] font-[Urbanist]">
 
 // // //       {/* ===================================================
 // // //           TOP NAVIGATION
 // // //       =================================================== */}
 
-// // //       <div className="border-b border-gray-200 bg-white">
+// // //       <div className="border-b border-black bg-white font-[Urbanist]">
 
-// // //         <div className="flex items-center justify-between gap-4 px-4 py-2">
+// // //         <div className="flex items-center justify-between gap-4 px-4 py-2 font-[Urbanist]">
 
 // // //           {/* =================================================
 // // //               TABS
 // // //           ================================================= */}
 
-// // //           <div className="flex min-w-0 items-center gap-8 overflow-x-auto">
+// // //           <div className="flex min-w-0 items-center gap-8 overflow-x-auto font-[Urbanist]">
 
 // // //             {/* PUNCH */}
 
@@ -2405,13 +2405,13 @@
 
 // // //             {/* ATTENDANCE */}
 
-// // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400">
+// // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400 font-[Urbanist]">
 // // //               Attendance
 // // //             </span>
 
 // // //             {/* TA INSIGHTS */}
 
-// // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400">
+// // //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400 font-[Urbanist]">
 // // //               TA Insights
 // // //             </span>
 
@@ -2421,17 +2421,17 @@
 // // //               RIGHT FILTERS
 // // //           ================================================= */}
 
-// // //           <div className="hidden items-center gap-4 xl:flex">
+// // //           <div className="hidden items-center gap-4 xl:flex font-[Urbanist]">
 
 // // //             {/* DATE */}
 
-// // //             <div className="flex items-center gap-2">
+// // //             <div className="flex items-center gap-2 font-[Urbanist]">
 
-// // //               <span className="text-sm font-medium text-gray-700">
+// // //               <span className="text-sm font-medium text-gray-700 font-[Urbanist]">
 // // //                 Date
 // // //               </span>
 
-// // //               <div className="relative">
+// // //               <div className="relative font-[Urbanist]">
 
 // // //                 <input
 // // //                   type="date"
@@ -2445,12 +2445,12 @@
 // // //                       event.target.value,
 // // //                     )
 // // //                   }
-// // //                   className="h-10 w-[195px] rounded-md border border-gray-200 bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400"
+// // //                   className="h-10 w-[195px] rounded-md border border-black bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // // //                 />
 
 // // //                 <CalendarDays
 // // //                   size={17}
-// // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // //                 />
 
 // // //               </div>
@@ -2459,13 +2459,13 @@
 
 // // //             {/* EMPLOYEE */}
 
-// // //             <div className="flex items-center gap-2">
+// // //             <div className="flex items-center gap-2 font-[Urbanist]">
 
-// // //               <span className="text-sm font-medium text-gray-700">
+// // //               <span className="text-sm font-medium text-gray-700 font-[Urbanist]">
 // // //                 Employee
 // // //               </span>
 
-// // //               <div className="relative">
+// // //               <div className="relative font-[Urbanist]">
 
 // // //                 <select
 // // //                   value={
@@ -2481,7 +2481,7 @@
 // // //                   disabled={
 // // //                     employeesLoading
 // // //                   }
-// // //                   className="h-10 w-[220px] appearance-none truncate rounded-md border border-gray-200 bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+// // //                   className="h-10 w-[220px] appearance-none truncate rounded-md border border-black bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-black disabled:cursor-not-allowed disabled:opacity-60 font-[Urbanist]"
 // // //                 >
 
 // // //                   <option value="">
@@ -2517,7 +2517,7 @@
 
 // // //                 <ChevronDown
 // // //                   size={16}
-// // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// // //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // //                 />
 
 // // //               </div>
@@ -2535,7 +2535,7 @@
 // // //                 isLoading ||
 // // //                 !selectedEmployeeId
 // // //               }
-// // //               className="flex h-10 items-center gap-2 rounded-md bg-[#1597e5] px-5 text-sm font-semibold text-white hover:bg-[#0788d2] disabled:cursor-not-allowed disabled:opacity-60"
+// // //               className="flex h-10 items-center gap-2 rounded-md bg-[#1597e5] px-5 text-sm font-semibold text-white hover:bg-[#0788d2] disabled:cursor-not-allowed disabled:opacity-60 font-[Urbanist]"
 // // //             >
 // // //               <Bookmark
 // // //                 size={16}
@@ -2555,7 +2555,7 @@
 // // //                 isLoading ||
 // // //                 employeesLoading
 // // //               }
-// // //               className="rounded-full p-2 text-gray-400 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+// // //               className="rounded-full p-2 text-gray-400 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 font-[Urbanist]"
 // // //             >
 // // //               <RefreshCw
 // // //                 size={20}
@@ -2581,7 +2581,7 @@
 // // //       {(employeesError ||
 // // //         error ||
 // // //         saveError) && (
-// // //         <div className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+// // //         <div className="mx-4 mt-3 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
 // // //           {employeesError ||
 // // //             error ||
 // // //             saveError}
@@ -2592,19 +2592,19 @@
 // // //           MOBILE FILTERS
 // // //       =================================================== */}
 
-// // //       <div className="block border-b border-gray-200 bg-white p-3 xl:hidden">
+// // //       <div className="block border-b border-black bg-white p-3 xl:hidden font-[Urbanist]">
 
-// // //         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+// // //         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 font-[Urbanist]">
 
 // // //           {/* DATE */}
 
 // // //           <div>
 
-// // //             <label className="mb-1 block text-xs font-medium text-gray-600">
+// // //             <label className="mb-1 block text-xs font-medium text-gray-600 font-[Urbanist]">
 // // //               Date
 // // //             </label>
 
-// // //             <div className="relative">
+// // //             <div className="relative font-[Urbanist]">
 
 // // //               <input
 // // //                 type="date"
@@ -2618,12 +2618,12 @@
 // // //                     event.target.value,
 // // //                   )
 // // //                 }
-// // //                 className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400"
+// // //                 className="h-10 w-full rounded-md border border-black bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // // //               />
 
 // // //               <CalendarDays
 // // //                 size={17}
-// // //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// // //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // //               />
 
 // // //             </div>
@@ -2634,11 +2634,11 @@
 
 // // //           <div>
 
-// // //             <label className="mb-1 block text-xs font-medium text-gray-600">
+// // //             <label className="mb-1 block text-xs font-medium text-gray-600 font-[Urbanist]">
 // // //               Employee
 // // //             </label>
 
-// // //             <div className="relative">
+// // //             <div className="relative font-[Urbanist]">
 
 // // //               <select
 // // //                 value={
@@ -2654,7 +2654,7 @@
 // // //                 disabled={
 // // //                   employeesLoading
 // // //                 }
-// // //                 className="h-10 w-full appearance-none truncate rounded-md border border-gray-200 bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-blue-400"
+// // //                 className="h-10 w-full appearance-none truncate rounded-md border border-black bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // // //               >
 
 // // //                 <option value="">
@@ -2690,7 +2690,7 @@
 
 // // //               <ChevronDown
 // // //                 size={16}
-// // //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// // //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // //               />
 
 // // //             </div>
@@ -2699,14 +2699,14 @@
 
 // // //         </div>
 
-// // //         <div className="mt-3 flex justify-end gap-2">
+// // //         <div className="mt-3 flex justify-end gap-2 font-[Urbanist]">
 
 // // //           <button
 // // //             type="button"
 // // //             onClick={
 // // //               handleRefresh
 // // //             }
-// // //             className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700"
+// // //             className="flex items-center gap-2 rounded-md border border-black bg-white px-4 py-2 text-sm text-gray-700 font-[Urbanist]"
 // // //           >
 // // //             <RefreshCw
 // // //               size={16}
@@ -2729,7 +2729,7 @@
 // // //             disabled={
 // // //               !selectedEmployeeId
 // // //             }
-// // //             className="flex items-center gap-2 rounded-md bg-[#1597e5] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
+// // //             className="flex items-center gap-2 rounded-md bg-[#1597e5] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 font-[Urbanist]"
 // // //           >
 // // //             <Bookmark
 // // //               size={16}
@@ -2746,44 +2746,44 @@
 // // //           MAIN CONTENT
 // // //       =================================================== */}
 
-// // //       <div className="p-4">
+// // //       <div className="p-4 font-[Urbanist]">
 
-// // //         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[36%_64%]">
+// // //         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[36%_64%] font-[Urbanist]">
 
 // // //           {/* =================================================
 // // //               LEFT SIDE
 // // //           ================================================= */}
 
-// // //           <div className="space-y-3">
+// // //           <div className="space-y-3 font-[Urbanist]">
 
 // // //             {/* =================================================
 // // //                 EMPLOYEE PROFILE
 // // //             ================================================= */}
 
-// // //             <div className="rounded-xl border border-gray-200 bg-white">
+// // //             <div className="rounded-xl border border-black bg-white font-[Urbanist]">
 
 // // //               {isLoading &&
 // // //               !profile ? (
 
-// // //                 <div className="flex min-h-[180px] items-center justify-center text-sm text-gray-400">
+// // //                 <div className="flex min-h-[180px] items-center justify-center text-sm text-gray-400 font-[Urbanist]">
 // // //                   Loading employee details...
 // // //                 </div>
 
 // // //               ) : profile ? (
 
-// // //                 <div className="p-4">
+// // //                 <div className="p-4 font-[Urbanist]">
 
 // // //                   {/* EMPLOYEE NAME */}
 
-// // //                   <div className="text-center">
+// // //                   <div className="text-center font-[Urbanist]">
 
-// // //                     <h1 className="text-[23px] font-semibold text-[#1597e5]">
+// // //                     <h1 className="text-[23px] font-semibold text-[#1597e5] font-[Urbanist]">
 // // //                       {
 // // //                         profile.employeeName
 // // //                       }
 // // //                     </h1>
 
-// // //                     <div className="mt-1 inline-block rounded-sm bg-[#ddd4ff] px-2 py-1 text-[15px] font-semibold text-gray-800">
+// // //                     <div className="mt-1 inline-block rounded-sm bg-[#ddd4ff] px-2 py-1 text-[15px] font-semibold text-gray-800 font-[Urbanist]">
 // // //                       {
 // // //                         profile.employeeId
 // // //                       }
@@ -2793,13 +2793,13 @@
 
 // // //                   {/* REPORTING AUTHORITY */}
 
-// // //                   <div className="mt-2 flex items-center justify-center gap-2">
+// // //                   <div className="mt-2 flex items-center justify-center gap-2 font-[Urbanist]">
 
-// // //                     <span className="rounded-md border border-gray-300 bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700">
+// // //                     <span className="rounded-md border border-black bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700 font-[Urbanist]">
 // // //                       R.A
 // // //                     </span>
 
-// // //                     <span className="truncate text-sm font-medium text-gray-600">
+// // //                     <span className="truncate text-sm font-medium text-gray-600 font-[Urbanist]">
 // // //                       {
 // // //                         profile.reportingAuthorityName ||
 // // //                         "Reporting Authority"
@@ -2810,26 +2810,26 @@
 
 // // //                   {/* DETAILS */}
 
-// // //                   <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+// // //                   <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 font-[Urbanist]">
 
 // // //                     {/* POLICY */}
 
 // // //                     <div>
 
-// // //                       <h3 className="border-b border-gray-200 pb-2 text-[15px] font-semibold text-[#1597e5]">
+// // //                       <h3 className="border-b border-black pb-2 text-[15px] font-semibold text-[#1597e5] font-[Urbanist]">
 // // //                         Policy Details
 // // //                       </h3>
 
-// // //                       <div className="mt-2 space-y-1">
+// // //                       <div className="mt-2 space-y-1 font-[Urbanist]">
 
-// // //                         <p className="text-sm text-gray-500">
+// // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // //                           {
 // // //                             profile.policyName ||
 // // //                             "General Policy"
 // // //                           }
 // // //                         </p>
 
-// // //                         <p className="text-sm text-gray-500">
+// // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // //                           {
 // // //                             profile.doublePunchPolicy ||
 // // //                             "Double Punch"
@@ -2844,20 +2844,20 @@
 
 // // //                     <div>
 
-// // //                       <h3 className="border-b border-gray-200 pb-2 text-[15px] font-semibold text-[#1597e5]">
+// // //                       <h3 className="border-b border-black pb-2 text-[15px] font-semibold text-[#1597e5] font-[Urbanist]">
 // // //                         Shift Details
 // // //                       </h3>
 
-// // //                       <div className="mt-2 space-y-1">
+// // //                       <div className="mt-2 space-y-1 font-[Urbanist]">
 
-// // //                         <p className="text-sm text-gray-500">
+// // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // //                           {
 // // //                             profile.shiftName ||
 // // //                             "General Shift (GS)"
 // // //                           }
 // // //                         </p>
 
-// // //                         <p className="text-sm text-gray-500">
+// // //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // // //                           {
 // // //                             profile.shiftTiming ||
 // // //                             "10:00 TO 19:00"
@@ -2874,7 +2874,7 @@
 
 // // //               ) : (
 
-// // //                 <div className="p-6 text-center text-sm text-gray-400">
+// // //                 <div className="p-6 text-center text-sm text-gray-400 font-[Urbanist]">
 // // //                   {employeesLoading
 // // //                     ? "Loading employees..."
 // // //                     : "Select an employee to view details."}
@@ -2888,17 +2888,17 @@
 // // //                 MONTH / WEEK FILTER
 // // //             ================================================= */}
 
-// // //             <div className="rounded-xl border border-gray-200 bg-white p-3">
+// // //             <div className="rounded-xl border border-black bg-white p-3 font-[Urbanist]">
 
-// // //               <p className="mb-3 text-sm font-medium text-gray-700">
+// // //               <p className="mb-3 text-sm font-medium text-gray-700 font-[Urbanist]">
 // // //                 Select a month or week to see absences for that period
 // // //               </p>
 
-// // //               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+// // //               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 font-[Urbanist]">
 
 // // //                 {/* PERIOD */}
 
-// // //                 <div className="relative">
+// // //                 <div className="relative font-[Urbanist]">
 
 // // //                   <select
 // // //                     value={
@@ -2914,7 +2914,7 @@
 // // //                           | "Custom Week",
 // // //                       )
 // // //                     }
-// // //                     className="h-10 w-full appearance-none rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-700 outline-none"
+// // //                     className="h-10 w-full appearance-none rounded-md border border-black bg-white px-3 pr-8 text-sm text-gray-700 outline-none font-[Urbanist]"
 // // //                   >
 
 // // //                     <option value="Custom Month">
@@ -2929,7 +2929,7 @@
 
 // // //                   <ChevronDown
 // // //                     size={16}
-// // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+// // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // //                   />
 
 // // //                 </div>
@@ -2949,12 +2949,12 @@
 // // //                       event.target.value,
 // // //                     )
 // // //                   }
-// // //                   className="h-10 rounded-md border border-gray-200 px-3 text-sm outline-none"
+// // //                   className="h-10 rounded-md border border-black px-3 text-sm outline-none font-[Urbanist]"
 // // //                 />
 
 // // //                 {/* LEAVE */}
 
-// // //                 <div className="relative">
+// // //                 <div className="relative font-[Urbanist]">
 
 // // //                   <select
 // // //                     value={
@@ -2967,7 +2967,7 @@
 // // //                         event.target.value,
 // // //                       )
 // // //                     }
-// // //                     className="h-10 w-full appearance-none rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-700 outline-none"
+// // //                     className="h-10 w-full appearance-none rounded-md border border-black bg-white px-3 pr-8 text-sm text-gray-700 outline-none font-[Urbanist]"
 // // //                   >
 
 // // //                     <option value="Select Leave">
@@ -2982,7 +2982,7 @@
 
 // // //                   <ChevronDown
 // // //                     size={16}
-// // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+// // //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // // //                   />
 
 // // //                 </div>
@@ -2995,33 +2995,33 @@
 // // //                 ATTENDANCE TABLE
 // // //             ================================================= */}
 
-// // //             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+// // //             <div className="overflow-hidden rounded-xl border border-black bg-white font-[Urbanist]">
 
-// // //               <div className="overflow-x-auto">
+// // //               <div className="overflow-x-auto font-[Urbanist]">
 
-// // //                 <table className="w-full min-w-[520px]">
+// // //                 <table className="w-full min-w-[520px] font-[Urbanist]">
 
 // // //                   <thead>
 
-// // //                     <tr className="bg-[#d4e9f7]">
+// // //                     <tr className="bg-[#d4e9f7] font-[Urbanist]">
 
-// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // //                         Date
 // // //                       </th>
 
-// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // //                         Shift
 // // //                       </th>
 
-// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // //                         First Half
 // // //                       </th>
 
-// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // //                         Second Half
 // // //                       </th>
 
-// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// // //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // // //                         Day Status
 // // //                       </th>
 
@@ -3037,7 +3037,7 @@
 
 // // //                         <td
 // // //                           colSpan={5}
-// // //                           className="px-4 py-8 text-center text-sm text-gray-400"
+// // //                           className="px-4 py-8 text-center text-sm text-gray-400 font-[Urbanist]"
 // // //                         >
 // // //                           Loading attendance...
 // // //                         </td>
@@ -3051,7 +3051,7 @@
 
 // // //                         <td
 // // //                           colSpan={5}
-// // //                           className="px-4 py-8 text-center text-sm text-gray-400"
+// // //                           className="px-4 py-8 text-center text-sm text-gray-400 font-[Urbanist]"
 // // //                         >
 // // //                           No attendance data found.
 // // //                         </td>
@@ -3068,10 +3068,10 @@
 
 // // //                           <tr
 // // //                             key={`${row.date}-${index}`}
-// // //                             className="border-t border-gray-100 bg-white"
+// // //                             className="border-t border-black bg-white font-[Urbanist]"
 // // //                           >
 
-// // //                             <td className="px-3 py-4 text-sm text-gray-700">
+// // //                             <td className="px-3 py-4 text-sm text-gray-700 font-[Urbanist]">
 // // //                               {
 // // //                                 formatDisplayDate(
 // // //                                   row.date,
@@ -3079,15 +3079,15 @@
 // // //                               }
 // // //                             </td>
 
-// // //                             <td className="px-3 py-4 text-sm text-gray-700">
+// // //                             <td className="px-3 py-4 text-sm text-gray-700 font-[Urbanist]">
 // // //                               {
 // // //                                 row.shift
 // // //                               }
 // // //                             </td>
 
-// // //                             <td className="px-3 py-4">
+// // //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// // //                               <span className="inline-flex rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+// // //                               <span className="inline-flex rounded-md border border-black bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 font-[Urbanist]">
 // // //                                 {
 // // //                                   row.firstHalf
 // // //                                 }
@@ -3095,9 +3095,9 @@
 
 // // //                             </td>
 
-// // //                             <td className="px-3 py-4">
+// // //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// // //                               <span className="inline-flex rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+// // //                               <span className="inline-flex rounded-md border border-black bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 font-[Urbanist]">
 // // //                                 {
 // // //                                   row.secondHalf
 // // //                                 }
@@ -3105,9 +3105,9 @@
 
 // // //                             </td>
 
-// // //                             <td className="px-3 py-4">
+// // //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// // //                               <span className="inline-flex rounded-md border border-green-300 bg-green-50 px-2 py-1 text-xs font-semibold text-green-600">
+// // //                               <span className="inline-flex rounded-md border border-black bg-green-50 px-2 py-1 text-xs font-semibold text-green-600 font-[Urbanist]">
 // // //                                 {
 // // //                                   row.dayStatus
 // // //                                 }
@@ -3136,36 +3136,36 @@
 // // //               RIGHT SIDE - PUNCH RECORDS
 // // //           ================================================= */}
 
-// // //           <div className="rounded-xl border border-gray-200 bg-white">
+// // //           <div className="rounded-xl border border-black bg-white font-[Urbanist]">
 
 // // //             {/* HEADER */}
 
-// // //             <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d3e8f5] px-4 py-3">
+// // //             <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d3e8f5] px-4 py-3 font-[Urbanist]">
 
 // // //               <div>
 
-// // //                 <h2 className="text-base font-semibold text-gray-800">
+// // //                 <h2 className="text-base font-semibold text-gray-800 font-[Urbanist]">
 // // //                   Punch Records
 // // //                 </h2>
 
-// // //                 <p className="text-xs text-gray-500">
+// // //                 <p className="text-xs text-gray-500 font-[Urbanist]">
 // // //                   Review, correct and add punch times
 // // //                 </p>
 
 // // //               </div>
 
-// // //               <div className="flex flex-wrap items-center gap-2">
+// // //               <div className="flex flex-wrap items-center gap-2 font-[Urbanist]">
 
 // // //                 <button
 // // //                   type="button"
-// // //                   className="rounded-full bg-[#b8d9e9] px-4 py-2 text-sm font-semibold text-[#1597e5]"
+// // //                   className="rounded-full bg-[#b8d9e9] px-4 py-2 text-sm font-semibold text-[#1597e5] font-[Urbanist]"
 // // //                 >
 // // //                   Show All
 // // //                 </button>
 
 // // //                 <button
 // // //                   type="button"
-// // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white"
+// // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white font-[Urbanist]"
 // // //                 >
 // // //                   <Plus
 // // //                     size={16}
@@ -3176,7 +3176,7 @@
 
 // // //                 <button
 // // //                   type="button"
-// // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white"
+// // //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white font-[Urbanist]"
 // // //                 >
 // // //                   <Plus
 // // //                     size={16}
@@ -3191,24 +3191,24 @@
 
 // // //             {/* PUNCH CARDS */}
 
-// // //             <div className="p-4">
+// // //             <div className="p-4 font-[Urbanist]">
 
 // // //               {isLoading ? (
 
-// // //                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+// // //                 <div className="rounded-xl border border-black bg-white p-12 text-center text-sm text-gray-400 font-[Urbanist]">
 // // //                   Loading punch records...
 // // //                 </div>
 
 // // //               ) : punchRecords.length ===
 // // //                 0 ? (
 
-// // //                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+// // //                 <div className="rounded-xl border border-black bg-white p-12 text-center text-sm text-gray-400 font-[Urbanist]">
 // // //                   No punch records found.
 // // //                 </div>
 
 // // //               ) : (
 
-// // //                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+// // //                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 font-[Urbanist]">
 
 // // //                   {punchRecords.map(
 // // //                     (record) => {
@@ -3226,7 +3226,7 @@
 // // //                           key={
 // // //                             record.punchId
 // // //                           }
-// // //                           className="min-w-0"
+// // //                           className="min-w-0 font-[Urbanist]"
 // // //                         >
 
 // // //                           <PunchRecordCard
@@ -4082,19 +4082,19 @@
 // //   ======================================================= */
 
 // //   return (
-// //     <div className="min-h-screen bg-[#f4f5f9]">
+// //     <div className="min-h-screen bg-[#f4f5f9] font-[Urbanist]">
 
 // //       {/* ===================================================
 // //           TOP NAVIGATION
 // //       =================================================== */}
 
-// //       <div className="border-b border-gray-200 bg-white">
+// //       <div className="border-b border-black bg-white font-[Urbanist]">
 
-// //         <div className="flex items-center justify-between gap-4 px-4 py-2">
+// //         <div className="flex items-center justify-between gap-4 px-4 py-2 font-[Urbanist]">
 
 // //           {/* TABS */}
 
-// //           <div className="flex min-w-0 items-center gap-8 overflow-x-auto">
+// //           <div className="flex min-w-0 items-center gap-8 overflow-x-auto font-[Urbanist]">
 
 // //             <NavLink
 // //               to="../Punch"
@@ -4128,12 +4128,12 @@
 // //             </NavLink>
 
 
-// //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400">
+// //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400 font-[Urbanist]">
 // //               Attendance
 // //             </span>
 
 
-// //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400">
+// //             <span className="whitespace-nowrap px-1 py-4 text-[15px] font-semibold text-gray-400 font-[Urbanist]">
 // //               TA Insights
 // //             </span>
 
@@ -4142,18 +4142,18 @@
 
 // //           {/* DESKTOP FILTERS */}
 
-// //           <div className="hidden items-center gap-4 xl:flex">
+// //           <div className="hidden items-center gap-4 xl:flex font-[Urbanist]">
 
 // //             {/* DATE */}
 
-// //             <div className="flex items-center gap-2">
+// //             <div className="flex items-center gap-2 font-[Urbanist]">
 
-// //               <span className="text-sm font-medium text-gray-700">
+// //               <span className="text-sm font-medium text-gray-700 font-[Urbanist]">
 // //                 Date
 // //               </span>
 
 
-// //               <div className="relative">
+// //               <div className="relative font-[Urbanist]">
 
 // //                 <input
 // //                   type="date"
@@ -4168,13 +4168,13 @@
 // //                         .value,
 // //                     )
 // //                   }
-// //                   className="h-10 w-[195px] rounded-md border border-gray-200 bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400"
+// //                   className="h-10 w-[195px] rounded-md border border-black bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // //                 />
 
 
 // //                 <CalendarDays
 // //                   size={17}
-// //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // //                 />
 
 // //               </div>
@@ -4184,14 +4184,14 @@
 
 // //             {/* EMPLOYEE */}
 
-// //             <div className="flex items-center gap-2">
+// //             <div className="flex items-center gap-2 font-[Urbanist]">
 
-// //               <span className="text-sm font-medium text-gray-700">
+// //               <span className="text-sm font-medium text-gray-700 font-[Urbanist]">
 // //                 Employee
 // //               </span>
 
 
-// //               <div className="relative">
+// //               <div className="relative font-[Urbanist]">
 
 // //                 <select
 // //                   value={
@@ -4208,7 +4208,7 @@
 // //                   disabled={
 // //                     employeesLoading
 // //                   }
-// //                   className="h-10 w-[220px] appearance-none truncate rounded-md border border-gray-200 bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+// //                   className="h-10 w-[220px] appearance-none truncate rounded-md border border-black bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-black disabled:cursor-not-allowed disabled:opacity-60 font-[Urbanist]"
 // //                 >
 
 // //                   <option value="">
@@ -4225,7 +4225,7 @@
 
 // //                 <ChevronDown
 // //                   size={16}
-// //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// //                   className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // //                 />
 
 // //               </div>
@@ -4244,7 +4244,7 @@
 // //                 isLoading ||
 // //                 !selectedEmployeeId
 // //               }
-// //               className="flex h-10 items-center gap-2 rounded-md bg-[#1597e5] px-5 text-sm font-semibold text-white hover:bg-[#0788d2] disabled:cursor-not-allowed disabled:opacity-60"
+// //               className="flex h-10 items-center gap-2 rounded-md bg-[#1597e5] px-5 text-sm font-semibold text-white hover:bg-[#0788d2] disabled:cursor-not-allowed disabled:opacity-60 font-[Urbanist]"
 // //             >
 
 // //               <Bookmark
@@ -4267,7 +4267,7 @@
 // //                 isLoading ||
 // //                 employeesLoading
 // //               }
-// //               className="rounded-full p-2 text-gray-400 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+// //               className="rounded-full p-2 text-gray-400 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 font-[Urbanist]"
 // //             >
 
 // //               <RefreshCw
@@ -4297,7 +4297,7 @@
 // //         error ||
 // //         saveError) && (
 
-// //         <div className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+// //         <div className="mx-4 mt-3 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
 
 // //           {employeesError ||
 // //             error ||
@@ -4312,20 +4312,20 @@
 // //           MOBILE FILTERS
 // //       =================================================== */}
 
-// //       <div className="block border-b border-gray-200 bg-white p-3 xl:hidden">
+// //       <div className="block border-b border-black bg-white p-3 xl:hidden font-[Urbanist]">
 
-// //         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+// //         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 font-[Urbanist]">
 
 // //           {/* DATE */}
 
 // //           <div>
 
-// //             <label className="mb-1 block text-xs font-medium text-gray-600">
+// //             <label className="mb-1 block text-xs font-medium text-gray-600 font-[Urbanist]">
 // //               Date
 // //             </label>
 
 
-// //             <div className="relative">
+// //             <div className="relative font-[Urbanist]">
 
 // //               <input
 // //                 type="date"
@@ -4340,13 +4340,13 @@
 // //                       .value,
 // //                   )
 // //                 }
-// //                 className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400"
+// //                 className="h-10 w-full rounded-md border border-black bg-white px-3 pr-9 text-sm text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // //               />
 
 
 // //               <CalendarDays
 // //                 size={17}
-// //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // //               />
 
 // //             </div>
@@ -4358,12 +4358,12 @@
 
 // //           <div>
 
-// //             <label className="mb-1 block text-xs font-medium text-gray-600">
+// //             <label className="mb-1 block text-xs font-medium text-gray-600 font-[Urbanist]">
 // //               Employee
 // //             </label>
 
 
-// //             <div className="relative">
+// //             <div className="relative font-[Urbanist]">
 
 // //               <select
 // //                 value={
@@ -4380,7 +4380,7 @@
 // //                 disabled={
 // //                   employeesLoading
 // //                 }
-// //                 className="h-10 w-full appearance-none truncate rounded-md border border-gray-200 bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-blue-400"
+// //                 className="h-10 w-full appearance-none truncate rounded-md border border-black bg-gray-50 px-3 pr-9 text-sm font-medium text-gray-700 outline-none focus:border-black font-[Urbanist]"
 // //               >
 
 // //                 <option value="">
@@ -4397,7 +4397,7 @@
 
 // //               <ChevronDown
 // //                 size={16}
-// //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+// //                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // //               />
 
 // //             </div>
@@ -4407,14 +4407,14 @@
 // //         </div>
 
 
-// //         <div className="mt-3 flex justify-end gap-2">
+// //         <div className="mt-3 flex justify-end gap-2 font-[Urbanist]">
 
 // //           <button
 // //             type="button"
 // //             onClick={
 // //               handleRefresh
 // //             }
-// //             className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700"
+// //             className="flex items-center gap-2 rounded-md border border-black bg-white px-4 py-2 text-sm text-gray-700 font-[Urbanist]"
 // //           >
 
 // //             <RefreshCw
@@ -4440,7 +4440,7 @@
 // //             disabled={
 // //               !selectedEmployeeId
 // //             }
-// //             className="flex items-center gap-2 rounded-md bg-[#1597e5] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
+// //             className="flex items-center gap-2 rounded-md bg-[#1597e5] px-5 py-2 text-sm font-semibold text-white disabled:opacity-50 font-[Urbanist]"
 // //           >
 
 // //             <Bookmark
@@ -4460,41 +4460,41 @@
 // //           MAIN CONTENT
 // //       =================================================== */}
 
-// //       <div className="p-4">
+// //       <div className="p-4 font-[Urbanist]">
 
-// //         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[36%_64%]">
+// //         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[36%_64%] font-[Urbanist]">
 
 // //           {/* =================================================
 // //               LEFT SIDE
 // //           ================================================= */}
 
-// //           <div className="space-y-3">
+// //           <div className="space-y-3 font-[Urbanist]">
 
 // //             {/* EMPLOYEE PROFILE */}
 
-// //             <div className="rounded-xl border border-gray-200 bg-white">
+// //             <div className="rounded-xl border border-black bg-white font-[Urbanist]">
 
 // //               {isLoading &&
 // //               !profile ? (
 
-// //                 <div className="flex min-h-[180px] items-center justify-center text-sm text-gray-400">
+// //                 <div className="flex min-h-[180px] items-center justify-center text-sm text-gray-400 font-[Urbanist]">
 // //                   Loading employee details...
 // //                 </div>
 
 // //               ) : profile ? (
 
-// //                 <div className="p-4">
+// //                 <div className="p-4 font-[Urbanist]">
 
-// //                   <div className="text-center">
+// //                   <div className="text-center font-[Urbanist]">
 
-// //                     <h1 className="text-[23px] font-semibold text-[#1597e5]">
+// //                     <h1 className="text-[23px] font-semibold text-[#1597e5] font-[Urbanist]">
 // //                       {
 // //                         profile.employeeName
 // //                       }
 // //                     </h1>
 
 
-// //                     <div className="mt-1 inline-block rounded-sm bg-[#ddd4ff] px-2 py-1 text-[15px] font-semibold text-gray-800">
+// //                     <div className="mt-1 inline-block rounded-sm bg-[#ddd4ff] px-2 py-1 text-[15px] font-semibold text-gray-800 font-[Urbanist]">
 // //                       {
 // //                         profile.employeeId
 // //                       }
@@ -4503,14 +4503,14 @@
 // //                   </div>
 
 
-// //                   <div className="mt-2 flex items-center justify-center gap-2">
+// //                   <div className="mt-2 flex items-center justify-center gap-2 font-[Urbanist]">
 
-// //                     <span className="rounded-md border border-gray-300 bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700">
+// //                     <span className="rounded-md border border-black bg-gray-100 px-2 py-1 text-sm font-semibold text-gray-700 font-[Urbanist]">
 // //                       R.A
 // //                     </span>
 
 
-// //                     <span className="truncate text-sm font-medium text-gray-600">
+// //                     <span className="truncate text-sm font-medium text-gray-600 font-[Urbanist]">
 // //                       {
 // //                         profile.reportingAuthorityName ||
 // //                         "Reporting Authority"
@@ -4520,18 +4520,18 @@
 // //                   </div>
 
 
-// //                   <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+// //                   <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 font-[Urbanist]">
 
 // //                     <div>
 
-// //                       <h3 className="border-b border-gray-200 pb-2 text-[15px] font-semibold text-[#1597e5]">
+// //                       <h3 className="border-b border-black pb-2 text-[15px] font-semibold text-[#1597e5] font-[Urbanist]">
 // //                         Policy Details
 // //                       </h3>
 
 
-// //                       <div className="mt-2 space-y-1">
+// //                       <div className="mt-2 space-y-1 font-[Urbanist]">
 
-// //                         <p className="text-sm text-gray-500">
+// //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // //                           {
 // //                             profile.policyName ||
 // //                             "General Policy"
@@ -4539,7 +4539,7 @@
 // //                         </p>
 
 
-// //                         <p className="text-sm text-gray-500">
+// //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // //                           {
 // //                             profile.doublePunchPolicy ||
 // //                             "Double Punch"
@@ -4553,14 +4553,14 @@
 
 // //                     <div>
 
-// //                       <h3 className="border-b border-gray-200 pb-2 text-[15px] font-semibold text-[#1597e5]">
+// //                       <h3 className="border-b border-black pb-2 text-[15px] font-semibold text-[#1597e5] font-[Urbanist]">
 // //                         Shift Details
 // //                       </h3>
 
 
-// //                       <div className="mt-2 space-y-1">
+// //                       <div className="mt-2 space-y-1 font-[Urbanist]">
 
-// //                         <p className="text-sm text-gray-500">
+// //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // //                           {
 // //                             profile.shiftName ||
 // //                             "General Shift (GS)"
@@ -4568,7 +4568,7 @@
 // //                         </p>
 
 
-// //                         <p className="text-sm text-gray-500">
+// //                         <p className="text-sm text-gray-500 font-[Urbanist]">
 // //                           {
 // //                             profile.shiftTiming ||
 // //                             "10:00 TO 19:00"
@@ -4585,7 +4585,7 @@
 
 // //               ) : (
 
-// //                 <div className="p-6 text-center text-sm text-gray-400">
+// //                 <div className="p-6 text-center text-sm text-gray-400 font-[Urbanist]">
 
 // //                   {employeesLoading
 // //                     ? "Loading employees..."
@@ -4604,16 +4604,16 @@
 // //                 MONTH / WEEK FILTER
 // //             ================================================= */}
 
-// //             <div className="rounded-xl border border-gray-200 bg-white p-3">
+// //             <div className="rounded-xl border border-black bg-white p-3 font-[Urbanist]">
 
-// //               <p className="mb-3 text-sm font-medium text-gray-700">
+// //               <p className="mb-3 text-sm font-medium text-gray-700 font-[Urbanist]">
 // //                 Select a month or week to see absences for that period
 // //               </p>
 
 
-// //               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+// //               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 font-[Urbanist]">
 
-// //                 <div className="relative">
+// //                 <div className="relative font-[Urbanist]">
 
 // //                   <select
 // //                     value={
@@ -4629,7 +4629,7 @@
 // //                           | "Custom Week",
 // //                       )
 // //                     }
-// //                     className="h-10 w-full appearance-none rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-700 outline-none"
+// //                     className="h-10 w-full appearance-none rounded-md border border-black bg-white px-3 pr-8 text-sm text-gray-700 outline-none font-[Urbanist]"
 // //                   >
 
 // //                     <option value="Custom Month">
@@ -4645,7 +4645,7 @@
 
 // //                   <ChevronDown
 // //                     size={16}
-// //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+// //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // //                   />
 
 // //                 </div>
@@ -4665,11 +4665,11 @@
 // //                         .value,
 // //                     )
 // //                   }
-// //                   className="h-10 rounded-md border border-gray-200 px-3 text-sm outline-none"
+// //                   className="h-10 rounded-md border border-black px-3 text-sm outline-none font-[Urbanist]"
 // //                 />
 
 
-// //                 <div className="relative">
+// //                 <div className="relative font-[Urbanist]">
 
 // //                   <select
 // //                     value={
@@ -4683,7 +4683,7 @@
 // //                           .value,
 // //                       )
 // //                     }
-// //                     className="h-10 w-full appearance-none rounded-md border border-gray-200 bg-white px-3 pr-8 text-sm text-gray-700 outline-none"
+// //                     className="h-10 w-full appearance-none rounded-md border border-black bg-white px-3 pr-8 text-sm text-gray-700 outline-none font-[Urbanist]"
 // //                   >
 
 // //                     <option value="Select Leave">
@@ -4699,7 +4699,7 @@
 
 // //                   <ChevronDown
 // //                     size={16}
-// //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+// //                     className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 font-[Urbanist]"
 // //                   />
 
 // //                 </div>
@@ -4713,33 +4713,33 @@
 // //                 ATTENDANCE TABLE
 // //             ================================================= */}
 
-// //             <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+// //             <div className="overflow-hidden rounded-xl border border-black bg-white font-[Urbanist]">
 
-// //               <div className="overflow-x-auto">
+// //               <div className="overflow-x-auto font-[Urbanist]">
 
-// //                 <table className="w-full min-w-[520px]">
+// //                 <table className="w-full min-w-[520px] font-[Urbanist]">
 
 // //                   <thead>
 
-// //                     <tr className="bg-[#d4e9f7]">
+// //                     <tr className="bg-[#d4e9f7] font-[Urbanist]">
 
-// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // //                         Date
 // //                       </th>
 
-// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // //                         Shift
 // //                       </th>
 
-// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // //                         First Half
 // //                       </th>
 
-// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // //                         Second Half
 // //                       </th>
 
-// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800">
+// //                       <th className="px-3 py-4 text-left text-sm font-semibold text-gray-800 font-[Urbanist]">
 // //                         Day Status
 // //                       </th>
 
@@ -4756,7 +4756,7 @@
 
 // //                         <td
 // //                           colSpan={5}
-// //                           className="px-4 py-8 text-center text-sm text-gray-400"
+// //                           className="px-4 py-8 text-center text-sm text-gray-400 font-[Urbanist]"
 // //                         >
 // //                           Loading attendance...
 // //                         </td>
@@ -4770,7 +4770,7 @@
 
 // //                         <td
 // //                           colSpan={5}
-// //                           className="px-4 py-8 text-center text-sm text-gray-400"
+// //                           className="px-4 py-8 text-center text-sm text-gray-400 font-[Urbanist]"
 // //                         >
 // //                           No attendance data found.
 // //                         </td>
@@ -4787,10 +4787,10 @@
 
 // //                           <tr
 // //                             key={`${row.date}-${index}`}
-// //                             className="border-t border-gray-100 bg-white"
+// //                             className="border-t border-black bg-white font-[Urbanist]"
 // //                           >
 
-// //                             <td className="px-3 py-4 text-sm text-gray-700">
+// //                             <td className="px-3 py-4 text-sm text-gray-700 font-[Urbanist]">
 // //                               {
 // //                                 formatDisplayDate(
 // //                                   row.date,
@@ -4799,16 +4799,16 @@
 // //                             </td>
 
 
-// //                             <td className="px-3 py-4 text-sm text-gray-700">
+// //                             <td className="px-3 py-4 text-sm text-gray-700 font-[Urbanist]">
 // //                               {
 // //                                 row.shift
 // //                               }
 // //                             </td>
 
 
-// //                             <td className="px-3 py-4">
+// //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// //                               <span className="inline-flex rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+// //                               <span className="inline-flex rounded-md border border-black bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 font-[Urbanist]">
 // //                                 {
 // //                                   row.firstHalf
 // //                                 }
@@ -4817,9 +4817,9 @@
 // //                             </td>
 
 
-// //                             <td className="px-3 py-4">
+// //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// //                               <span className="inline-flex rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+// //                               <span className="inline-flex rounded-md border border-black bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 font-[Urbanist]">
 // //                                 {
 // //                                   row.secondHalf
 // //                                 }
@@ -4828,9 +4828,9 @@
 // //                             </td>
 
 
-// //                             <td className="px-3 py-4">
+// //                             <td className="px-3 py-4 font-[Urbanist]">
 
-// //                               <span className="inline-flex rounded-md border border-green-300 bg-green-50 px-2 py-1 text-xs font-semibold text-green-600">
+// //                               <span className="inline-flex rounded-md border border-black bg-green-50 px-2 py-1 text-xs font-semibold text-green-600 font-[Urbanist]">
 // //                                 {
 // //                                   row.dayStatus
 // //                                 }
@@ -4860,30 +4860,30 @@
 // //               RIGHT SIDE
 // //           ================================================= */}
 
-// //           <div className="rounded-xl border border-gray-200 bg-white">
+// //           <div className="rounded-xl border border-black bg-white font-[Urbanist]">
 
 // //             {/* HEADER */}
 
-// //             <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d3e8f5] px-4 py-3">
+// //             <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d3e8f5] px-4 py-3 font-[Urbanist]">
 
 // //               <div>
 
-// //                 <h2 className="text-base font-semibold text-gray-800">
+// //                 <h2 className="text-base font-semibold text-gray-800 font-[Urbanist]">
 // //                   Punch Records
 // //                 </h2>
 
-// //                 <p className="text-xs text-gray-500">
+// //                 <p className="text-xs text-gray-500 font-[Urbanist]">
 // //                   Review, correct and add punch times
 // //                 </p>
 
 // //               </div>
 
 
-// //               <div className="flex flex-wrap items-center gap-2">
+// //               <div className="flex flex-wrap items-center gap-2 font-[Urbanist]">
 
 // //                 <button
 // //                   type="button"
-// //                   className="rounded-full bg-[#b8d9e9] px-4 py-2 text-sm font-semibold text-[#1597e5]"
+// //                   className="rounded-full bg-[#b8d9e9] px-4 py-2 text-sm font-semibold text-[#1597e5] font-[Urbanist]"
 // //                 >
 // //                   Show All
 // //                 </button>
@@ -4891,7 +4891,7 @@
 
 // //                 <button
 // //                   type="button"
-// //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white"
+// //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white font-[Urbanist]"
 // //                 >
 
 // //                   <Plus
@@ -4905,7 +4905,7 @@
 
 // //                 <button
 // //                   type="button"
-// //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white"
+// //                   className="flex items-center gap-2 rounded-md bg-[#1597e5] px-4 py-2 text-sm font-semibold text-white font-[Urbanist]"
 // //                 >
 
 // //                   <Plus
@@ -4923,24 +4923,24 @@
 
 // //             {/* PUNCH RECORDS */}
 
-// //             <div className="p-4">
+// //             <div className="p-4 font-[Urbanist]">
 
 // //               {isLoading ? (
 
-// //                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+// //                 <div className="rounded-xl border border-black bg-white p-12 text-center text-sm text-gray-400 font-[Urbanist]">
 // //                   Loading punch records...
 // //                 </div>
 
 // //               ) : punchRecords.length ===
 // //                 0 ? (
 
-// //                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center text-sm text-gray-400">
+// //                 <div className="rounded-xl border border-black bg-white p-12 text-center text-sm text-gray-400 font-[Urbanist]">
 // //                   No punch records found.
 // //                 </div>
 
 // //               ) : (
 
-// //                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+// //                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 font-[Urbanist]">
 
 // //                   {punchRecords.map(
 // //                     (
@@ -4961,7 +4961,7 @@
 // //                           key={
 // //                             record.punchId
 // //                           }
-// //                           className="min-w-0"
+// //                           className="min-w-0 font-[Urbanist]"
 // //                         >
 
 // //                           <PunchRecordCard
@@ -5689,24 +5689,24 @@
 //   ======================================================= */
 
 //   return (
-//     <div className="min-h-screen bg-[#f4f6fb] p-2 sm:p-4">
+//     <div className="min-h-screen bg-[#f4f6fb] p-2 sm:p-4 font-[Urbanist]">
 
 //       {/* ===================================================
 //           TOP NAVIGATION
 //       =================================================== */}
 
-//       <div className="mb-3 flex items-center gap-6 overflow-x-auto rounded-md bg-white px-4 py-4">
+//       <div className="mb-3 flex items-center gap-6 overflow-x-auto rounded-md bg-white px-4 py-4 font-[Urbanist]">
 
 //         <button
 //           type="button"
-//           className="whitespace-nowrap border-b-2 border-[#1498dc] pb-2 text-sm font-semibold text-[#17365d]"
+//           className="whitespace-nowrap border-b-2 border-[#1498dc] pb-2 text-sm font-semibold text-[#17365d] font-[Urbanist]"
 //         >
 //           Punch
 //         </button>
 
 //         <button
 //           type="button"
-//           className="whitespace-nowrap text-sm font-medium text-[#17365d]"
+//           className="whitespace-nowrap text-sm font-medium text-[#17365d] font-[Urbanist]"
 //           onClick={() =>
 //             navigate(
 //               "../MissedPunch",
@@ -5718,14 +5718,14 @@
 
 //         <button
 //           type="button"
-//           className="whitespace-nowrap text-sm font-medium text-[#8b93a7]"
+//           className="whitespace-nowrap text-sm font-medium text-[#8b93a7] font-[Urbanist]"
 //         >
 //           Attendance
 //         </button>
 
 //         <button
 //           type="button"
-//           className="whitespace-nowrap text-sm font-medium text-[#8b93a7]"
+//           className="whitespace-nowrap text-sm font-medium text-[#8b93a7] font-[Urbanist]"
 //         >
 //           TA Insights
 //         </button>
@@ -5738,7 +5738,7 @@
 //       =================================================== */}
 
 //       {errorMessage && (
-//         <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+//         <div className="mb-3 rounded-md border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
 //           {errorMessage}
 //         </div>
 //       )}
@@ -5748,21 +5748,21 @@
 //           FILTER SECTION
 //       =================================================== */}
 
-//       <div className="rounded-md bg-white p-3 shadow-sm">
+//       <div className="rounded-md bg-white p-3 shadow-sm font-[Urbanist]">
 
-//         <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr_auto_auto]">
+//         <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr_auto_auto] font-[Urbanist]">
 
 //           {/* DATE */}
 
 //           <div>
 //             <label
 //               htmlFor="punch-date"
-//               className="mb-1 block text-xs font-medium text-[#263b5a]"
+//               className="mb-1 block text-xs font-medium text-[#263b5a] font-[Urbanist]"
 //             >
 //               Date
 //             </label>
 
-//             <div className="relative">
+//             <div className="relative font-[Urbanist]">
 
 //               <input
 //                 id="punch-date"
@@ -5773,12 +5773,12 @@
 //                 onChange={
 //                   handleDateChange
 //                 }
-//                 className="h-10 w-full rounded-md border border-[#d9e0ea] bg-white px-3 pr-10 text-sm text-[#344563] outline-none focus:border-[#1598dc]"
+//                 className="h-10 w-full rounded-md border border-[#d9e0ea] bg-white px-3 pr-10 text-sm text-[#344563] outline-none focus:border-[#1598dc] font-[Urbanist]"
 //               />
 
 //               <CalendarDays
 //                 size={16}
-//                 className="pointer-events-none absolute right-3 top-3 text-[#66758c]"
+//                 className="pointer-events-none absolute right-3 top-3 text-[#66758c] font-[Urbanist]"
 //               />
 
 //             </div>
@@ -5790,12 +5790,12 @@
 //           <div>
 //             <label
 //               htmlFor="punch-employee"
-//               className="mb-1 block text-xs font-medium text-[#263b5a]"
+//               className="mb-1 block text-xs font-medium text-[#263b5a] font-[Urbanist]"
 //             >
 //               Employee
 //             </label>
 
-//             <div className="relative">
+//             <div className="relative font-[Urbanist]">
 
 //               <select
 //                 id="punch-employee"
@@ -5808,7 +5808,7 @@
 //                 disabled={
 //                   employeesLoading
 //                 }
-//                 className="h-10 w-full appearance-none rounded-md border border-[#d9e0ea] bg-white px-3 pr-10 text-sm text-[#344563] outline-none focus:border-[#1598dc] disabled:bg-gray-100"
+//                 className="h-10 w-full appearance-none rounded-md border border-[#d9e0ea] bg-white px-3 pr-10 text-sm text-[#344563] outline-none focus:border-[#1598dc] disabled:bg-gray-100 font-[Urbanist]"
 //               >
 
 //                 <option value="">
@@ -5858,7 +5858,7 @@
 
 //               <ChevronDown
 //                 size={16}
-//                 className="pointer-events-none absolute right-3 top-3 text-[#66758c]"
+//                 className="pointer-events-none absolute right-3 top-3 text-[#66758c] font-[Urbanist]"
 //               />
 
 //             </div>
@@ -5867,7 +5867,7 @@
 
 //           {/* REFRESH */}
 
-//           <div className="flex items-end">
+//           <div className="flex items-end font-[Urbanist]">
 
 //             <button
 //               type="button"
@@ -5878,7 +5878,7 @@
 //                 employeesLoading ||
 //                 dashboardLoading
 //               }
-//               className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d6dce6] bg-white px-4 text-sm font-medium text-[#42526b] hover:bg-gray-50 disabled:opacity-60 md:w-auto"
+//               className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d6dce6] bg-white px-4 text-sm font-medium text-[#42526b] hover:bg-gray-50 disabled:opacity-60 md:w-auto font-[Urbanist]"
 //             >
 
 //               <RefreshCw
@@ -5899,7 +5899,7 @@
 
 //           {/* UPDATE */}
 
-//           <div className="flex items-end">
+//           <div className="flex items-end font-[Urbanist]">
 
 //             <button
 //               type="button"
@@ -5910,7 +5910,7 @@
 //                 !selectedEmployeeId ||
 //                 dashboardLoading
 //               }
-//               className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#1598dc] px-5 text-sm font-semibold text-white hover:bg-[#1088c5] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
+//               className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#1598dc] px-5 text-sm font-semibold text-white hover:bg-[#1088c5] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto font-[Urbanist]"
 //             >
 
 //               <RefreshCw
@@ -5937,24 +5937,24 @@
 //           EMPLOYEE PROFILE
 //       =================================================== */}
 
-//       <div className="mt-3 rounded-md bg-white p-4 shadow-sm">
+//       <div className="mt-3 rounded-md bg-white p-4 shadow-sm font-[Urbanist]">
 
 //         {dashboardLoading ? (
 
-//           <div className="py-6 text-center text-sm text-[#929bb0]">
+//           <div className="py-6 text-center text-sm text-[#929bb0] font-[Urbanist]">
 //             Loading employee details...
 //           </div>
 
 //         ) : profile ? (
 
-//           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+//           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 font-[Urbanist]">
 
 //             <div>
-//               <div className="text-xs text-[#8792a7]">
+//               <div className="text-xs text-[#8792a7] font-[Urbanist]">
 //                 Employee
 //               </div>
 
-//               <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//               <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                 {String(
 //                   profile.EmployeeCode ??
 //                   profile.employeeId ??
@@ -5971,11 +5971,11 @@
 
 
 //             <div>
-//               <div className="text-xs text-[#8792a7]">
+//               <div className="text-xs text-[#8792a7] font-[Urbanist]">
 //                 Reporting Authority
 //               </div>
 
-//               <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//               <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                 {String(
 //                   profile.ReportingAuthority ??
 //                   profile.reportingAuthorityName ??
@@ -5986,11 +5986,11 @@
 
 
 //             <div>
-//               <div className="text-xs text-[#8792a7]">
+//               <div className="text-xs text-[#8792a7] font-[Urbanist]">
 //                 Policy
 //               </div>
 
-//               <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//               <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                 {String(
 //                   profile.PolicyName ??
 //                   profile.policyName ??
@@ -6001,11 +6001,11 @@
 
 
 //             <div>
-//               <div className="text-xs text-[#8792a7]">
+//               <div className="text-xs text-[#8792a7] font-[Urbanist]">
 //                 Shift
 //               </div>
 
-//               <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//               <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                 {String(
 //                   profile.CurrentShiftName ??
 //                   profile.shiftName ??
@@ -6014,7 +6014,7 @@
 
 //                 {" "}
 
-//                 <span className="font-normal text-[#8792a7]">
+//                 <span className="font-normal text-[#8792a7] font-[Urbanist]">
 //                   {String(
 //                     profile.ShiftTiming ??
 //                     profile.shiftTiming ??
@@ -6028,7 +6028,7 @@
 
 //         ) : (
 
-//           <div className="py-6 text-center text-sm text-[#929bb0]">
+//           <div className="py-6 text-center text-sm text-[#929bb0] font-[Urbanist]">
 //             Select an employee to view details.
 //           </div>
 
@@ -6041,16 +6041,16 @@
 //           ATTENDANCE FILTERS
 //       =================================================== */}
 
-//       <div className="mt-3 rounded-md bg-white p-3 shadow-sm">
+//       <div className="mt-3 rounded-md bg-white p-3 shadow-sm font-[Urbanist]">
 
-//         <div className="mb-3 text-sm font-semibold text-[#263b5a]">
+//         <div className="mb-3 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //           Select a month or week to see absences for that period
 //         </div>
 
-//         <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+//         <div className="grid grid-cols-1 gap-2 md:grid-cols-3 font-[Urbanist]">
 
 //           <select
-//             className="h-10 rounded-md border border-[#d9e0ea] bg-white px-3 text-sm text-[#344563] outline-none"
+//             className="h-10 rounded-md border border-[#d9e0ea] bg-white px-3 text-sm text-[#344563] outline-none font-[Urbanist]"
 //             defaultValue="Custom Month"
 //           >
 //             <option>
@@ -6071,12 +6071,12 @@
 //           <input
 //             type="text"
 //             defaultValue="1"
-//             className="h-10 rounded-md border border-[#d9e0ea] px-3 text-sm text-[#344563] outline-none"
+//             className="h-10 rounded-md border border-[#d9e0ea] px-3 text-sm text-[#344563] outline-none font-[Urbanist]"
 //           />
 
 
 //           <select
-//             className="h-10 rounded-md border border-[#d9e0ea] bg-white px-3 text-sm text-[#344563] outline-none"
+//             className="h-10 rounded-md border border-[#d9e0ea] bg-white px-3 text-sm text-[#344563] outline-none font-[Urbanist]"
 //             defaultValue=""
 //           >
 //             <option value="">
@@ -6106,33 +6106,33 @@
 //           ATTENDANCE SUMMARY
 //       =================================================== */}
 
-//       <div className="mt-3 overflow-hidden rounded-md bg-white shadow-sm">
+//       <div className="mt-3 overflow-hidden rounded-md bg-white shadow-sm font-[Urbanist]">
 
-//         <div className="overflow-x-auto">
+//         <div className="overflow-x-auto font-[Urbanist]">
 
-//           <table className="w-full min-w-[650px] text-left">
+//           <table className="w-full min-w-[650px] text-left font-[Urbanist]">
 
-//             <thead className="bg-[#d6ebf8]">
+//             <thead className="bg-[#d6ebf8] font-[Urbanist]">
 
 //               <tr>
 
-//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d]">
+//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d] font-[Urbanist]">
 //                   Date
 //                 </th>
 
-//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d]">
+//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d] font-[Urbanist]">
 //                   Shift
 //                 </th>
 
-//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d]">
+//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d] font-[Urbanist]">
 //                   First Half
 //                 </th>
 
-//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d]">
+//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d] font-[Urbanist]">
 //                   Second Half
 //                 </th>
 
-//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d]">
+//                 <th className="px-4 py-3 text-xs font-semibold text-[#17365d] font-[Urbanist]">
 //                   Day Status
 //                 </th>
 
@@ -6149,7 +6149,7 @@
 
 //                   <td
 //                     colSpan={5}
-//                     className="px-4 py-8 text-center text-sm text-[#929bb0]"
+//                     className="px-4 py-8 text-center text-sm text-[#929bb0] font-[Urbanist]"
 //                   >
 //                     Loading attendance data...
 //                   </td>
@@ -6162,7 +6162,7 @@
 
 //                   <td
 //                     colSpan={5}
-//                     className="px-4 py-8 text-center text-sm text-[#929bb0]"
+//                     className="px-4 py-8 text-center text-sm text-[#929bb0] font-[Urbanist]"
 //                   >
 //                     No attendance data found.
 //                   </td>
@@ -6181,34 +6181,34 @@
 //                       key={
 //                         `${getAttendanceDate(row)}-${index}`
 //                       }
-//                       className="border-t border-[#edf0f5]"
+//                       className="border-t border-[#edf0f5] font-[Urbanist]"
 //                     >
 
-//                       <td className="px-4 py-3 text-sm text-[#344563]">
+//                       <td className="px-4 py-3 text-sm text-[#344563] font-[Urbanist]">
 //                         {getAttendanceDate(
 //                           row,
 //                         )}
 //                       </td>
 
-//                       <td className="px-4 py-3 text-sm text-[#344563]">
+//                       <td className="px-4 py-3 text-sm text-[#344563] font-[Urbanist]">
 //                         {getShift(
 //                           row,
 //                         )}
 //                       </td>
 
-//                       <td className="px-4 py-3 text-sm text-[#344563]">
+//                       <td className="px-4 py-3 text-sm text-[#344563] font-[Urbanist]">
 //                         {getFirstHalf(
 //                           row,
 //                         )}
 //                       </td>
 
-//                       <td className="px-4 py-3 text-sm text-[#344563]">
+//                       <td className="px-4 py-3 text-sm text-[#344563] font-[Urbanist]">
 //                         {getSecondHalf(
 //                           row,
 //                         )}
 //                       </td>
 
-//                       <td className="px-4 py-3 text-sm font-medium text-[#344563]">
+//                       <td className="px-4 py-3 text-sm font-medium text-[#344563] font-[Urbanist]">
 //                         {getDayStatus(
 //                           row,
 //                         )}
@@ -6234,30 +6234,30 @@
 //           PUNCH RECORDS
 //       =================================================== */}
 
-//       <div className="mt-3 overflow-hidden rounded-md bg-white shadow-sm">
+//       <div className="mt-3 overflow-hidden rounded-md bg-white shadow-sm font-[Urbanist]">
 
 //         {/* HEADER */}
 
-//         <div className="flex flex-col gap-3 bg-[#d2e9f7] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+//         <div className="flex flex-col gap-3 bg-[#d2e9f7] px-4 py-3 sm:flex-row sm:items-center sm:justify-between font-[Urbanist]">
 
 //           <div>
 
-//             <div className="text-sm font-semibold text-[#17365d]">
+//             <div className="text-sm font-semibold text-[#17365d] font-[Urbanist]">
 //               Punch Records
 //             </div>
 
-//             <div className="text-xs text-[#6e8199]">
+//             <div className="text-xs text-[#6e8199] font-[Urbanist]">
 //               Review, correct and add punch times
 //             </div>
 
 //           </div>
 
 
-//           <div className="flex flex-wrap items-center gap-2">
+//           <div className="flex flex-wrap items-center gap-2 font-[Urbanist]">
 
 //             <button
 //               type="button"
-//               className="rounded-full bg-[#b7def1] px-4 py-2 text-xs font-semibold text-[#1776a6]"
+//               className="rounded-full bg-[#b7def1] px-4 py-2 text-xs font-semibold text-[#1776a6] font-[Urbanist]"
 //             >
 //               Show All
 //             </button>
@@ -6265,7 +6265,7 @@
 
 //             <button
 //               type="button"
-//               className="flex items-center gap-1 rounded-md bg-[#1598dc] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1088c5]"
+//               className="flex items-center gap-1 rounded-md bg-[#1598dc] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1088c5] font-[Urbanist]"
 //             >
 
 //               <Plus
@@ -6279,7 +6279,7 @@
 
 //             <button
 //               type="button"
-//               className="flex items-center gap-1 rounded-md bg-[#1598dc] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1088c5]"
+//               className="flex items-center gap-1 rounded-md bg-[#1598dc] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1088c5] font-[Urbanist]"
 //             >
 
 //               <Plus
@@ -6297,23 +6297,23 @@
 
 //         {/* RECORDS */}
 
-//         <div className="p-3">
+//         <div className="p-3 font-[Urbanist]">
 
 //           {dashboardLoading ? (
 
-//             <div className="rounded-md border border-[#e1e5eb] py-12 text-center text-sm text-[#929bb0]">
+//             <div className="rounded-md border border-[#e1e5eb] py-12 text-center text-sm text-[#929bb0] font-[Urbanist]">
 //               Loading punch records...
 //             </div>
 
 //           ) : punchRecords.length === 0 ? (
 
-//             <div className="rounded-md border border-[#e1e5eb] py-12 text-center text-sm text-[#929bb0]">
+//             <div className="rounded-md border border-[#e1e5eb] py-12 text-center text-sm text-[#929bb0] font-[Urbanist]">
 //               No punch records found.
 //             </div>
 
 //           ) : (
 
-//             <div className="space-y-3">
+//             <div className="space-y-3 font-[Urbanist]">
 
 //               {punchRecords.map(
 //                 (
@@ -6337,20 +6337,20 @@
 //                       key={
 //                         `${punchId}-${index}`
 //                       }
-//                       className="rounded-md border border-[#e1e5eb] bg-white p-4"
+//                       className="rounded-md border border-[#e1e5eb] bg-white p-4 font-[Urbanist]"
 //                     >
 
-//                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+//                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 font-[Urbanist]">
 
 //                         {/* PUNCH ID */}
 
 //                         <div>
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Punch ID
 //                           </div>
 
-//                           <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//                           <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                             {punchId ||
 //                               "-"}
 //                           </div>
@@ -6362,11 +6362,11 @@
 
 //                         <div>
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Direction
 //                           </div>
 
-//                           <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//                           <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                             {direction}
 //                           </div>
 
@@ -6377,11 +6377,11 @@
 
 //                         <div>
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Original Time
 //                           </div>
 
-//                           <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//                           <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                             {getOriginalTime(
 //                               record,
 //                             )}
@@ -6394,11 +6394,11 @@
 
 //                         <div>
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Corrected Time
 //                           </div>
 
-//                           <div className="mt-1 text-sm font-semibold text-[#263b5a]">
+//                           <div className="mt-1 text-sm font-semibold text-[#263b5a] font-[Urbanist]">
 //                             {getCorrectedTime(
 //                               record,
 //                             )}
@@ -6409,13 +6409,13 @@
 
 //                         {/* LOCATION */}
 
-//                         <div className="md:col-span-2 lg:col-span-3">
+//                         <div className="md:col-span-2 lg:col-span-3 font-[Urbanist]">
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Location
 //                           </div>
 
-//                           <div className="mt-1 break-words text-sm text-[#344563]">
+//                           <div className="mt-1 break-words text-sm text-[#344563] font-[Urbanist]">
 //                             {getLocation(
 //                               record,
 //                             )}
@@ -6428,11 +6428,11 @@
 
 //                         <div>
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Device
 //                           </div>
 
-//                           <div className="mt-1 text-sm text-[#344563]">
+//                           <div className="mt-1 text-sm text-[#344563] font-[Urbanist]">
 //                             {getDevice(
 //                               record,
 //                             )}
@@ -6443,13 +6443,13 @@
 
 //                         {/* REMARKS */}
 
-//                         <div className="md:col-span-2 lg:col-span-4">
+//                         <div className="md:col-span-2 lg:col-span-4 font-[Urbanist]">
 
-//                           <div className="text-xs text-[#8b96a8]">
+//                           <div className="text-xs text-[#8b96a8] font-[Urbanist]">
 //                             Remarks
 //                           </div>
 
-//                           <div className="mt-1 text-sm text-[#344563]">
+//                           <div className="mt-1 text-sm text-[#344563] font-[Urbanist]">
 //                             {getRemarks(
 //                               record,
 //                             ) || "-"}
@@ -6462,14 +6462,14 @@
 
 //                       {/* RECORD FOOTER */}
 
-//                       <div className="mt-4 flex items-center gap-2 border-t border-[#edf0f5] pt-3">
+//                       <div className="mt-4 flex items-center gap-2 border-t border-[#edf0f5] pt-3 font-[Urbanist]">
 
 //                         <Bookmark
 //                           size={15}
-//                           className="text-[#1598dc]"
+//                           className="text-[#1598dc] font-[Urbanist]"
 //                         />
 
-//                         <span className="text-xs text-[#7b8799]">
+//                         <span className="text-xs text-[#7b8799] font-[Urbanist]">
 //                           Verification:{" "}
 //                           {String(
 //                             record.VerificationStatus ??
@@ -6984,21 +6984,21 @@ export default function PunchPage({
 
   return (
 
-    <div className="min-h-screen bg-[#f4f5f9]">
+    <div className="min-h-screen bg-[#f4f5f9] font-[Urbanist]">
 
       {/* ===================================================
           TOP PUNCH TOOLBAR
       =================================================== */}
 
-      <div className="border-b border-[#e5e8ee] bg-white">
+      <div className="border-b border-[#e5e8ee] bg-white font-[Urbanist]">
 
-        <div className="flex min-h-[72px] items-center justify-between gap-4 px-4">
+        <div className="flex min-h-[72px] items-center justify-between gap-4 px-4 font-[Urbanist]">
 
           {/* =================================================
               TABS
           ================================================= */}
 
-          <div className="flex min-w-0 items-center gap-8 overflow-x-auto">
+          <div className="flex min-w-0 items-center gap-8 overflow-x-auto font-[Urbanist]">
 
             {/* PUNCH */}
 
@@ -7070,13 +7070,13 @@ export default function PunchPage({
               RIGHT SIDE FILTERS
           ================================================= */}
 
-          <div className="hidden shrink-0 items-center gap-4 xl:flex">
+          <div className="hidden shrink-0 items-center gap-4 xl:flex font-[Urbanist]">
 
             {/* DATE */}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 font-[Urbanist]">
 
-              <span className="text-sm font-medium text-[#303c50]">
+              <span className="text-sm font-medium text-[#303c50] font-[Urbanist]">
                 Date
               </span>
 
@@ -7087,13 +7087,13 @@ export default function PunchPage({
 
             {/* EMPLOYEE */}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 font-[Urbanist]">
 
-              <span className="text-sm font-medium text-[#303c50]">
+              <span className="text-sm font-medium text-[#303c50] font-[Urbanist]">
                 Employee
               </span>
 
-              <div className="relative">
+              <div className="relative font-[Urbanist]">
 
                 <select
                   value={
@@ -7126,7 +7126,7 @@ export default function PunchPage({
                     outline-none
                     focus:border-[#1597e5]
                     disabled:opacity-60
-                  "
+                   font-[Urbanist]"
                 >
 
                   <option value="">
@@ -7181,7 +7181,7 @@ export default function PunchPage({
 
                 <ChevronDown
                   size={16}
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8792a3]"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8792a3] font-[Urbanist]"
                 />
 
               </div>
@@ -7215,7 +7215,7 @@ export default function PunchPage({
                 hover:bg-[#0788d2]
                 disabled:cursor-not-allowed
                 disabled:opacity-60
-              "
+               font-[Urbanist]"
             >
 
               <Bookmark
@@ -7240,7 +7240,7 @@ export default function PunchPage({
                 text-[#9aa4b2]
                 transition
                 hover:bg-[#f1f3f6]
-              "
+               font-[Urbanist]"
               title="Refresh"
             >
 
@@ -7265,13 +7265,13 @@ export default function PunchPage({
             RESPONSIVE FILTER ROW
         ================================================= */}
 
-        <div className="grid grid-cols-1 gap-3 border-t border-[#edf0f4] p-3 xl:hidden">
+        <div className="grid grid-cols-1 gap-3 border-t border-[#edf0f4] p-3 xl:hidden font-[Urbanist]">
 
           {/* DATE */}
 
           <div>
 
-            <label className="mb-1 block text-xs font-medium text-[#596579]">
+            <label className="mb-1 block text-xs font-medium text-[#596579] font-[Urbanist]">
               Date
             </label>
 
@@ -7284,11 +7284,11 @@ export default function PunchPage({
 
           <div>
 
-            <label className="mb-1 block text-xs font-medium text-[#596579]">
+            <label className="mb-1 block text-xs font-medium text-[#596579] font-[Urbanist]">
               Employee
             </label>
 
-            <div className="relative">
+            <div className="relative font-[Urbanist]">
 
               <select
                 value={
@@ -7314,7 +7314,7 @@ export default function PunchPage({
                   text-sm
                   text-[#344054]
                   outline-none
-                "
+                 font-[Urbanist]"
               >
 
                 <option value="">
@@ -7363,7 +7363,7 @@ export default function PunchPage({
 
               <ChevronDown
                 size={16}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8792a3]"
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8792a3] font-[Urbanist]"
               />
 
             </div>
@@ -7373,14 +7373,14 @@ export default function PunchPage({
 
           {/* BUTTONS */}
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 font-[Urbanist]">
 
             <button
               type="button"
               onClick={() => {
                 void refetch();
               }}
-              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-[#1597e5] text-sm font-semibold text-white"
+              className="flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-[#1597e5] text-sm font-semibold text-white font-[Urbanist]"
             >
 
               <Bookmark
@@ -7396,7 +7396,7 @@ export default function PunchPage({
               onClick={
                 handleRefresh
               }
-              className="flex h-10 w-12 items-center justify-center rounded-md border border-[#dfe4ec] bg-white text-[#8792a3]"
+              className="flex h-10 w-12 items-center justify-center rounded-md border border-[#dfe4ec] bg-white text-[#8792a3] font-[Urbanist]"
             >
 
               <RefreshCw
@@ -7420,7 +7420,7 @@ export default function PunchPage({
         error ||
         saveError) && (
 
-        <div className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="mx-4 mt-3 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
 
           {employeesError ||
             error ||
@@ -7435,33 +7435,33 @@ export default function PunchPage({
           MAIN CONTENT
       =================================================== */}
 
-      <div className="p-4">
+      <div className="p-4 font-[Urbanist]">
 
         <div className="
           grid
           grid-cols-1
           gap-4
           xl:grid-cols-[34%_66%]
-        ">
+         font-[Urbanist]">
 
 
           {/* =================================================
               LEFT COLUMN
           ================================================= */}
 
-          <div className="space-y-3">
+          <div className="space-y-3 font-[Urbanist]">
 
 
             {/* =================================================
                 EMPLOYEE PROFILE CARD
             ================================================= */}
 
-            <div className="rounded-xl border border-[#e2e6ed] bg-white">
+            <div className="rounded-xl border border-[#e2e6ed] bg-white font-[Urbanist]">
 
               {isLoading &&
               !profile ? (
 
-                <div className="flex min-h-[180px] items-center justify-center text-sm text-[#98a2b3]">
+                <div className="flex min-h-[180px] items-center justify-center text-sm text-[#98a2b3] font-[Urbanist]">
 
                   Loading employee details...
 
@@ -7469,20 +7469,20 @@ export default function PunchPage({
 
               ) : profile ? (
 
-                <div className="p-4">
+                <div className="p-4 font-[Urbanist]">
 
 
                   {/* EMPLOYEE */}
 
-                  <div className="text-center">
+                  <div className="text-center font-[Urbanist]">
 
-                    <h1 className="text-[23px] font-semibold text-[#1597e5]">
+                    <h1 className="text-[23px] font-semibold text-[#1597e5] font-[Urbanist]">
 
                       {profile.employeeName}
 
                     </h1>
 
-                    <div className="mt-1 inline-block rounded-sm bg-[#ddd5ff] px-2 py-1 text-[15px] font-semibold text-[#344054]">
+                    <div className="mt-1 inline-block rounded-sm bg-[#ddd5ff] px-2 py-1 text-[15px] font-semibold text-[#344054] font-[Urbanist]">
 
                       {profile.employeeId}
 
@@ -7493,7 +7493,7 @@ export default function PunchPage({
 
                   {/* REPORTING AUTHORITY */}
 
-                  <div className="mt-2 flex items-center justify-center gap-2">
+                  <div className="mt-2 flex items-center justify-center gap-2 font-[Urbanist]">
 
                     <span className="
                       rounded-md
@@ -7505,7 +7505,7 @@ export default function PunchPage({
                       text-sm
                       font-semibold
                       text-[#475467]
-                    ">
+                     font-[Urbanist]">
                       R.A
                     </span>
 
@@ -7515,7 +7515,7 @@ export default function PunchPage({
                       text-sm
                       font-medium
                       text-[#667085]
-                    ">
+                     font-[Urbanist]">
 
                       {profile.reportingAuthorityName ||
                         profile.ReportingAuthority ||
@@ -7528,7 +7528,7 @@ export default function PunchPage({
 
                   {/* DETAILS */}
 
-                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 font-[Urbanist]">
 
 
                     {/* POLICY */}
@@ -7542,13 +7542,13 @@ export default function PunchPage({
                         text-[15px]
                         font-semibold
                         text-[#1597e5]
-                      ">
+                       font-[Urbanist]">
                         Policy Details
                       </h3>
 
-                      <div className="mt-2 space-y-1">
+                      <div className="mt-2 space-y-1 font-[Urbanist]">
 
-                        <p className="text-sm text-[#667085]">
+                        <p className="text-sm text-[#667085] font-[Urbanist]">
 
                           {profile.policyName ||
                             profile.PolicyName ||
@@ -7556,7 +7556,7 @@ export default function PunchPage({
 
                         </p>
 
-                        <p className="text-sm text-[#667085]">
+                        <p className="text-sm text-[#667085] font-[Urbanist]">
 
                           {profile.doublePunchPolicy ||
                             profile.PunchTypeRule ||
@@ -7580,13 +7580,13 @@ export default function PunchPage({
                         text-[15px]
                         font-semibold
                         text-[#1597e5]
-                      ">
+                       font-[Urbanist]">
                         Shift Details
                       </h3>
 
-                      <div className="mt-2 space-y-1">
+                      <div className="mt-2 space-y-1 font-[Urbanist]">
 
-                        <p className="text-sm text-[#667085]">
+                        <p className="text-sm text-[#667085] font-[Urbanist]">
 
                           {profile.shiftName ||
                             profile.CurrentShiftName ||
@@ -7594,7 +7594,7 @@ export default function PunchPage({
 
                         </p>
 
-                        <p className="text-sm text-[#667085]">
+                        <p className="text-sm text-[#667085] font-[Urbanist]">
 
                           {profile.shiftTiming ||
                             profile.ShiftTiming ||
@@ -7612,7 +7612,7 @@ export default function PunchPage({
 
               ) : (
 
-                <div className="p-6 text-center text-sm text-[#98a2b3]">
+                <div className="p-6 text-center text-sm text-[#98a2b3] font-[Urbanist]">
 
                   Select an employee to view details.
 
@@ -7627,21 +7627,21 @@ export default function PunchPage({
                 MONTH / WEEK FILTER
             ================================================= */}
 
-            <div className="rounded-xl border border-[#e2e6ed] bg-white p-2">
+            <div className="rounded-xl border border-[#e2e6ed] bg-white p-2 font-[Urbanist]">
 
-              <p className="mb-3 text-sm font-medium text-[#344054]">
+              <p className="mb-3 text-sm font-medium text-[#344054] font-[Urbanist]">
 
                 Select a month or week to see absences for that period
 
               </p>
 
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 font-[Urbanist]">
 
 
                 {/* PERIOD */}
 
-                <div className="relative">
+                <div className="relative font-[Urbanist]">
 
                   <select
                     value={
@@ -7669,7 +7669,7 @@ export default function PunchPage({
                       text-sm
                       text-[#344054]
                       outline-none
-                    "
+                     font-[Urbanist]"
                   >
 
                     <option>
@@ -7691,7 +7691,7 @@ export default function PunchPage({
                       top-1/2
                       -translate-y-1/2
                       text-[#8792a3]
-                    "
+                     font-[Urbanist]"
                   />
 
                 </div>
@@ -7721,13 +7721,13 @@ export default function PunchPage({
                     text-sm
                     text-[#344054]
                     outline-none
-                  "
+                   font-[Urbanist]"
                 />
 
 
                 {/* LEAVE */}
 
-                <div className="relative">
+                <div className="relative font-[Urbanist]">
 
                   <select
                     value={
@@ -7753,7 +7753,7 @@ export default function PunchPage({
                       text-sm
                       text-[#344054]
                       outline-none
-                    "
+                     font-[Urbanist]"
                   >
 
                     <option>
@@ -7775,7 +7775,7 @@ export default function PunchPage({
                       top-1/2
                       -translate-y-1/2
                       text-[#8792a3]
-                    "
+                     font-[Urbanist]"
                   />
 
                 </div>
@@ -7795,18 +7795,18 @@ export default function PunchPage({
               border
               border-[#e2e6ed]
               bg-white
-            ">
+             font-[Urbanist]">
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto font-[Urbanist]">
 
-                <table className="w-full min-w-[520px]">
+                <table className="w-full min-w-[520px] font-[Urbanist]">
 
 
                   {/* HEADER */}
 
                   <thead>
 
-                    <tr className="bg-[#d4e9f7]">
+                    <tr className="bg-[#d4e9f7] font-[Urbanist]">
 
                       <th className="
                         px-3
@@ -7815,7 +7815,7 @@ export default function PunchPage({
                         text-sm
                         font-semibold
                         text-[#344054]
-                      ">
+                       font-[Urbanist]">
                         Date
                       </th>
 
@@ -7826,7 +7826,7 @@ export default function PunchPage({
                         text-sm
                         font-semibold
                         text-[#344054]
-                      ">
+                       font-[Urbanist]">
                         Shift
                       </th>
 
@@ -7837,7 +7837,7 @@ export default function PunchPage({
                         text-sm
                         font-semibold
                         text-[#344054]
-                      ">
+                       font-[Urbanist]">
                         First Half
                       </th>
 
@@ -7848,7 +7848,7 @@ export default function PunchPage({
                         text-sm
                         font-semibold
                         text-[#344054]
-                      ">
+                       font-[Urbanist]">
                         Second Half
                       </th>
 
@@ -7859,7 +7859,7 @@ export default function PunchPage({
                         text-sm
                         font-semibold
                         text-[#344054]
-                      ">
+                       font-[Urbanist]">
                         Day Status
                       </th>
 
@@ -7884,7 +7884,7 @@ export default function PunchPage({
                             text-center
                             text-sm
                             text-[#98a2b3]
-                          "
+                           font-[Urbanist]"
                         >
                           Loading attendance...
                         </td>
@@ -7904,7 +7904,7 @@ export default function PunchPage({
                             text-center
                             text-sm
                             text-[#98a2b3]
-                          "
+                           font-[Urbanist]"
                         >
                           No attendance data found.
                         </td>
@@ -7925,7 +7925,7 @@ export default function PunchPage({
                               border-t
                               border-[#f0f2f5]
                               bg-white
-                            "
+                             font-[Urbanist]"
                           >
 
                             {/* DATE */}
@@ -7935,7 +7935,7 @@ export default function PunchPage({
                               py-4
                               text-sm
                               text-[#344054]
-                            ">
+                             font-[Urbanist]">
 
                               {formatDisplayDate(
                                 row.date,
@@ -7951,7 +7951,7 @@ export default function PunchPage({
                               py-4
                               text-sm
                               text-[#344054]
-                            ">
+                             font-[Urbanist]">
 
                               {row.shift}
 
@@ -7960,7 +7960,7 @@ export default function PunchPage({
 
                             {/* FIRST HALF */}
 
-                            <td className="px-3 py-4">
+                            <td className="px-3 py-4 font-[Urbanist]">
 
                               <span className="
                                 inline-flex
@@ -7976,7 +7976,7 @@ export default function PunchPage({
                                 text-xs
                                 font-semibold
                                 text-[#2388d3]
-                              ">
+                               font-[Urbanist]">
 
                                 {row.firstHalf}
 
@@ -7987,7 +7987,7 @@ export default function PunchPage({
 
                             {/* SECOND HALF */}
 
-                            <td className="px-3 py-4">
+                            <td className="px-3 py-4 font-[Urbanist]">
 
                               <span className="
                                 inline-flex
@@ -8003,7 +8003,7 @@ export default function PunchPage({
                                 text-xs
                                 font-semibold
                                 text-[#2388d3]
-                              ">
+                               font-[Urbanist]">
 
                                 {row.secondHalf}
 
@@ -8014,7 +8014,7 @@ export default function PunchPage({
 
                             {/* DAY STATUS */}
 
-                            <td className="px-3 py-4">
+                            <td className="px-3 py-4 font-[Urbanist]">
 
                               <span className="
                                 inline-flex
@@ -8030,7 +8030,7 @@ export default function PunchPage({
                                 text-xs
                                 font-semibold
                                 text-[#12a66a]
-                              ">
+                               font-[Urbanist]">
 
                                 {row.dayStatus}
 
@@ -8067,7 +8067,7 @@ export default function PunchPage({
             border
             border-[#e2e6ed]
             bg-white
-          ">
+           font-[Urbanist]">
 
 
             {/* =================================================
@@ -8084,7 +8084,7 @@ export default function PunchPage({
               bg-[#d3e8f5]
               px-4
               py-3
-            ">
+             font-[Urbanist]">
 
               <div>
 
@@ -8092,14 +8092,14 @@ export default function PunchPage({
                   text-base
                   font-semibold
                   text-[#344054]
-                ">
+                 font-[Urbanist]">
                   Punch Records
                 </h2>
 
                 <p className="
                   text-xs
                   text-[#667085]
-                ">
+                 font-[Urbanist]">
                   Review, correct and add punch times
                 </p>
 
@@ -8108,7 +8108,7 @@ export default function PunchPage({
 
               {/* ACTIONS */}
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 font-[Urbanist]">
 
                 {/* SHOW ALL */}
 
@@ -8122,7 +8122,7 @@ export default function PunchPage({
                     text-sm
                     font-semibold
                     text-[#1597e5]
-                  "
+                   font-[Urbanist]"
                 >
                   Show All
                 </button>
@@ -8144,7 +8144,7 @@ export default function PunchPage({
                     font-semibold
                     text-white
                     hover:bg-[#0788d2]
-                  "
+                   font-[Urbanist]"
                 >
 
                   <Plus
@@ -8172,7 +8172,7 @@ export default function PunchPage({
                     font-semibold
                     text-white
                     hover:bg-[#0788d2]
-                  "
+                   font-[Urbanist]"
                 >
 
                   <Plus
@@ -8192,7 +8192,7 @@ export default function PunchPage({
                 PUNCH RECORDS
             ================================================= */}
 
-            <div className="p-4">
+            <div className="p-4 font-[Urbanist]">
 
               {isLoading ? (
 
@@ -8205,7 +8205,7 @@ export default function PunchPage({
                   text-center
                   text-sm
                   text-[#98a2b3]
-                ">
+                 font-[Urbanist]">
                   Loading punch records...
                 </div>
 
@@ -8221,7 +8221,7 @@ export default function PunchPage({
                   text-center
                   text-sm
                   text-[#98a2b3]
-                ">
+                 font-[Urbanist]">
                   No punch records found.
                 </div>
 
@@ -8232,7 +8232,7 @@ export default function PunchPage({
                   grid-cols-1
                   gap-4
                   lg:grid-cols-2
-                ">
+                 font-[Urbanist]">
 
                   {punchRecords.map(
                     (
@@ -8253,7 +8253,7 @@ export default function PunchPage({
                           key={
                             record.punchId
                           }
-                          className="min-w-0"
+                          className="min-w-0 font-[Urbanist]"
                         >
 
                           <PunchRecordCard

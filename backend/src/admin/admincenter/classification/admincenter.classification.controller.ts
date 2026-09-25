@@ -26,13 +26,11 @@ import { CreateDesignationDto } from './dto/create-designation.dto';
 import { UpdateDesignationDto } from './dto/update-designation.dto';
 import { UpdateDesignationStatusDto } from './dto/update-designation-status.dto';
 
-import { BankInfoDto } from './dto/bank-info.dto';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import type { Response } from 'express';
-
 
 @Controller('admin/classification')
 @UseGuards(JwtAuthGuard)
@@ -41,16 +39,18 @@ export class AdmincenterClassificationController {
     private readonly classificationService: AdmincenterClassificationService,
   ) {}
 
-  @Get('summary')
+  @Post('summary')
   getClassificationSummary(@Req() req) {
     return this.classificationService.getClassificationSummary(
       req.user.companyId,
     );
   }
 
-   @Post('details')
-   getClassificationDetails(
-    @Req() req, @Body('classificationId') classificationId: number,) {
+  @Post('details')
+  getClassificationDetails(
+    @Req() req,
+    @Body('classificationId') classificationId: number,
+  ) {
     return this.classificationService.getClassificationDetails(
       req.user.companyId,
       classificationId,
@@ -58,22 +58,13 @@ export class AdmincenterClassificationController {
   }
 
   @Post('leave-policy')
-  async addLeavePolicy(
-    @Body() dto: CreateLeavePolicyDto,
-    @Req() req,
-  ) {
-     console.log(req.user);
-    return this.classificationService.addLeavePolicy(
-      dto,
-      req.user.createdBy,
-    );
+  async addLeavePolicy(@Body() dto: CreateLeavePolicyDto, @Req() req) {
+    console.log(req.user);
+    return this.classificationService.addLeavePolicy(dto, req.user.createdBy);
   }
 
   @Put('leave-policy')
-  async updateLeavePolicy(
-    @Body() dto: UpdateLeavePolicyDto,
-    @Req() req,
-  ) {
+  async updateLeavePolicy(@Body() dto: UpdateLeavePolicyDto, @Req() req) {
     return this.classificationService.updateLeavePolicy(
       dto,
       req.user.createdBy,
@@ -102,33 +93,20 @@ export class AdmincenterClassificationController {
     );
   }
 
-
-  
   // Branch Management Endpoints
 
-  @Post('branch')
-  createBranch(
-    @Req() req,
-    @Body() dto: CreateBranchDto,
-  ) {
-    return this.classificationService.createBranch(
-      req.user.createdBy,
-      dto,
-    );
-  }
-
   @Put('branch')
-  updateBranch(
+  createOrUpdateBranch(
     @Req() req,
-    @Body() dto: UpdateBranchDto,
+    @Body() dto: CreateBranchDto | UpdateBranchDto,
   ) {
-    return this.classificationService.updateBranch(
-      req.user.createdBy,
-      dto,
-    );
+    if ('branchId' in dto) {
+      return this.classificationService.updateBranch(req.user.createdBy, dto);
+    }
+    return this.classificationService.createBranch(req.user.createdBy, dto);
   }
 
-  @Put('branch/status')
+  @Post('branch/status')
   updateBranchStatus(
     @Req() req,
     @Body() dto: UpdateBranchStatusDto,
@@ -139,34 +117,21 @@ export class AdmincenterClassificationController {
     );
   }
 
-
   // Designation Management Endpoints
 
-  @Post('designation')
-  createDesignation(
-    @Req() req,
-    @Body() dto: CreateDesignationDto,
-  ) {
-    return this.classificationService.createDesignation(
-      req.user.createdBy,
-      dto,
-    );
-  }
-
-
   @Put('designation')
-  updateDesignation(
+  createOrUpdateDesignation(
     @Req() req,
-    @Body() dto: UpdateDesignationDto,
+    @Body() dto: CreateDesignationDto | UpdateDesignationDto,
   ) {
-    return this.classificationService.updateDesignation(
-      req.user.createdBy,
-      dto,
-    );
+    if ('id' in dto) {
+      return this.classificationService.updateDesignation(req.user.createdBy, dto);
+    }
+    return this.classificationService.createDesignation(req.user.createdBy, dto);
   }
 
 
-  @Put('designation/status')
+  @Post('designation/status')
   updateDesignationStatus(
     @Req() req,
     @Body() dto: UpdateDesignationStatusDto,
@@ -178,27 +143,20 @@ export class AdmincenterClassificationController {
   }
 
 
-  @Post('bank/info')
+  @Get('bank/info')
   async getBankInfo(
-    @Body() dto: BankInfoDto,
     @Req() req: any,
   ) {
-    console.log('User:', req.user);
-  console.log('userId:', req.user.userId);
-  console.log('typeof:', typeof req.user.userId);
     return this.classificationService.getBankInfo(
-      dto.ifsc,
+      req.query.ifsc,
       req.user.createdBy,
     );
   }
 
-
   //Additional Classification is Pending, will be added in future
 
-
-
   //Import /Export Endpoints
-  @Get('import/template/:type')
+  @Post('import/template/:type')
   downloadTemplate(
     @Param('type') type: string,
     @Res() res: Response,
@@ -215,20 +173,12 @@ export class AdmincenterClassificationController {
       storage: diskStorage({
         destination: './src/admin/admincenter/classification/uploads',
         filename: (req, file, cb) => {
-          cb(
-            null,
-            Date.now() + extname(file.originalname),
-          );
+          cb(null, Date.now() + extname(file.originalname));
         },
       }),
       fileFilter: (req, file, cb) => {
-        if (
-          !file.originalname.match(/\.(xlsx|xls)$/)
-        ) {
-          return cb(
-            new Error('Only Excel files are allowed'),
-            false,
-          );
+        if (!file.originalname.match(/\.(xlsx|xls)$/)) {
+          return cb(new Error('Only Excel files are allowed'), false);
         }
         cb(null, true);
       },
@@ -238,10 +188,6 @@ export class AdmincenterClassificationController {
     @UploadedFile() file: Express.Multer.File,
     @Body('templateType') templateType: string,
   ) {
-    return this.classificationService.uploadImportFile(
-      file,
-      templateType,
-    );
+    return this.classificationService.uploadImportFile(file, templateType);
   }
-
 }

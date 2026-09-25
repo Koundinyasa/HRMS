@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 import * as sql from 'mssql';
 import * as bcrypt from 'bcrypt';
@@ -14,9 +11,7 @@ import { UpdateEmployeeStatusDto } from './dto/update-employee-status.dto';
 
 @Injectable()
 export class EmployeesService {
-  constructor(
-    private readonly dbService: DatabaseService,
-  ) { }
+  constructor(private readonly dbService: DatabaseService) {}
 
   // ============================================================
   // GET EMPLOYEE LIST
@@ -27,59 +22,17 @@ export class EmployeesService {
 
       const result = await pool
         .request()
-        .input(
-          'Action',
-          sql.VarChar(50),
-          'GET_LIST',
-        )
-        .input(
-          'EmployeeId',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'UserId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'RoleId',
-          sql.Int,
-          dto.roleId ?? null,
-        )
-        .input(
-          'Username',
-          sql.NVarChar(100),
-          null,
-        )
-        .input(
-          'PasswordHash',
-          sql.NVarChar(500),
-          null,
-        )
-        .input(
-          'StatusFilter',
-          sql.VarChar(50),
-          dto.statusFilter ?? null,
-        )
-        .input(
-          'SecurityAction',
-          sql.VarChar(20),
-          null,
-        )
-        .input(
-          'SearchTerm',
-          sql.VarChar(100),
-          dto.search ?? null,
-        )
-        .input(
-          'UpdatedBy',
-          sql.VarChar(100),
-          null,
-        )
-        .execute(
-          'USP_EmployeeUserManager',
-        );
+        .input('Action', sql.VarChar(50), 'GET_LIST')
+        .input('EmployeeId', sql.VarChar(50), null)
+        .input('UserId', sql.Int, null)
+        .input('RoleId', sql.Int, dto.roleId ?? null)
+        .input('Username', sql.NVarChar(100), null)
+        .input('PasswordHash', sql.NVarChar(500), null)
+        .input('StatusFilter', sql.VarChar(50), dto.statusFilter ?? null)
+        .input('SecurityAction', sql.VarChar(20), null)
+        .input('SearchTerm', sql.VarChar(100), dto.search ?? null)
+        .input('UpdatedBy', sql.VarChar(100), null)
+        .execute('USP_EmployeeUserManager');
 
       const records = result.recordset ?? [];
 
@@ -99,15 +52,10 @@ export class EmployeesService {
         },
       };
     } catch (error) {
-      console.error(
-        'getEmployees failed:',
-        error,
-      );
+      console.error('getEmployees failed:', error);
 
       throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to fetch employees.',
+        error instanceof Error ? error.message : 'Failed to fetch employees.',
       );
     }
   }
@@ -115,67 +63,23 @@ export class EmployeesService {
   // ============================================================
   // GET SINGLE EMPLOYEE DETAILS
   // ============================================================
-  async getEmployeeDetails(
-    employeeId: string,
-  ) {
+  async getEmployeeDetails(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'Action',
-          sql.VarChar(50),
-          'GET_DETAILS',
-        )
-        .input(
-          'EmployeeId',
-          sql.VarChar(50),
-          employeeId,
-        )
-        .input(
-          'UserId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'RoleId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'Username',
-          sql.NVarChar(100),
-          null,
-        )
-        .input(
-          'PasswordHash',
-          sql.NVarChar(500),
-          null,
-        )
-        .input(
-          'StatusFilter',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'SecurityAction',
-          sql.VarChar(20),
-          null,
-        )
-        .input(
-          'SearchTerm',
-          sql.VarChar(100),
-          null,
-        )
-        .input(
-          'UpdatedBy',
-          sql.VarChar(100),
-          null,
-        )
-        .execute(
-          'USP_EmployeeUserManager',
-        );
+        .input('Action', sql.VarChar(50), 'GET_DETAILS')
+        .input('EmployeeId', sql.VarChar(50), employeeId)
+        .input('UserId', sql.Int, null)
+        .input('RoleId', sql.Int, null)
+        .input('Username', sql.NVarChar(100), null)
+        .input('PasswordHash', sql.NVarChar(500), null)
+        .input('StatusFilter', sql.VarChar(50), null)
+        .input('SecurityAction', sql.VarChar(20), null)
+        .input('SearchTerm', sql.VarChar(100), null)
+        .input('UpdatedBy', sql.VarChar(100), null)
+        .execute('USP_EmployeeUserManager');
 
       return {
         success: true,
@@ -184,10 +88,7 @@ export class EmployeesService {
         data: result.recordset?.[0] ?? null,
       };
     } catch (error) {
-      console.error(
-        'getEmployeeDetails failed:',
-        error,
-      );
+      console.error('getEmployeeDetails failed:', error);
 
       throw new BadRequestException(
         error instanceof Error
@@ -206,59 +107,17 @@ export class EmployeesService {
 
       const result = await pool
         .request()
-        .input(
-          'Action',
-          sql.VarChar(50),
-          'GET_LOOKUPS',
-        )
-        .input(
-          'EmployeeId',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'UserId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'RoleId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'Username',
-          sql.NVarChar(100),
-          null,
-        )
-        .input(
-          'PasswordHash',
-          sql.NVarChar(500),
-          null,
-        )
-        .input(
-          'StatusFilter',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'SecurityAction',
-          sql.VarChar(20),
-          null,
-        )
-        .input(
-          'SearchTerm',
-          sql.VarChar(100),
-          null,
-        )
-        .input(
-          'UpdatedBy',
-          sql.VarChar(100),
-          null,
-        )
-        .execute(
-          'USP_EmployeeUserManager',
-        );
+        .input('Action', sql.VarChar(50), 'GET_LOOKUPS')
+        .input('EmployeeId', sql.VarChar(50), null)
+        .input('UserId', sql.Int, null)
+        .input('RoleId', sql.Int, null)
+        .input('Username', sql.NVarChar(100), null)
+        .input('PasswordHash', sql.NVarChar(500), null)
+        .input('StatusFilter', sql.VarChar(50), null)
+        .input('SecurityAction', sql.VarChar(20), null)
+        .input('SearchTerm', sql.VarChar(100), null)
+        .input('UpdatedBy', sql.VarChar(100), null)
+        .execute('USP_EmployeeUserManager');
 
       return {
         success: true,
@@ -271,10 +130,7 @@ export class EmployeesService {
         },
       };
     } catch (error) {
-      console.error(
-        'getLookups failed:',
-        error,
-      );
+      console.error('getLookups failed:', error);
 
       throw new BadRequestException(
         error instanceof Error
@@ -287,68 +143,23 @@ export class EmployeesService {
   // ============================================================
   // CREATE / UPDATE USER
   // ============================================================
-  async updateEmployee(
-    dto: UpdateEmployeeDto,
-    modifiedBy: number,
-  ) {
+  async updateEmployee(dto: UpdateEmployeeDto, modifiedBy: number) {
     try {
       const pool = await this.dbService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'Action',
-          sql.VarChar(50),
-          'UPSERT_USER',
-        )
-        .input(
-          'EmployeeId',
-          sql.VarChar(50),
-          dto.employeeId,
-        )
-        .input(
-          'UserId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'RoleId',
-          sql.Int,
-          dto.roleId,
-        )
-        .input(
-          'Username',
-          sql.NVarChar(100),
-          dto.username,
-        )
-        .input(
-          'PasswordHash',
-          sql.NVarChar(500),
-          dto.passwordHash ?? null,
-        )
-        .input(
-          'StatusFilter',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'SecurityAction',
-          sql.VarChar(20),
-          null,
-        )
-        .input(
-          'SearchTerm',
-          sql.VarChar(100),
-          null,
-        )
-        .input(
-          'UpdatedBy',
-          sql.VarChar(100),
-          String(modifiedBy),
-        )
-        .execute(
-          'USP_EmployeeUserManager',
-        );
+        .input('Action', sql.VarChar(50), 'UPSERT_USER')
+        .input('EmployeeId', sql.VarChar(50), dto.employeeId)
+        .input('UserId', sql.Int, null)
+        .input('RoleId', sql.Int, dto.roleId)
+        .input('Username', sql.NVarChar(100), dto.username)
+        .input('PasswordHash', sql.NVarChar(500), dto.passwordHash ?? null)
+        .input('StatusFilter', sql.VarChar(50), null)
+        .input('SecurityAction', sql.VarChar(20), null)
+        .input('SearchTerm', sql.VarChar(100), null)
+        .input('UpdatedBy', sql.VarChar(100), String(modifiedBy))
+        .execute('USP_EmployeeUserManager');
 
       return {
         success: true,
@@ -357,10 +168,7 @@ export class EmployeesService {
         data: result.recordset?.[0] ?? null,
       };
     } catch (error) {
-      console.error(
-        'updateEmployee failed:',
-        error,
-      );
+      console.error('updateEmployee failed:', error);
 
       throw new BadRequestException(
         error instanceof Error
@@ -373,10 +181,7 @@ export class EmployeesService {
   // ============================================================
   // LOCK / UNLOCK / RESET PASSWORD
   // ============================================================
-  async manageSecurity(
-    dto: UpdateEmployeeStatusDto,
-    modifiedBy: number,
-  ) {
+  async manageSecurity(dto: UpdateEmployeeStatusDto, modifiedBy: number) {
     try {
       const pool = await this.dbService.connect();
 
@@ -394,56 +199,16 @@ export class EmployeesService {
 
       const result = await pool
         .request()
-        .input(
-          'Action',
-          sql.VarChar(50),
-          'MANAGE_SECURITY',
-        )
-        .input(
-          'EmployeeId',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'UserId',
-          sql.Int,
-          dto.userId,
-        )
-        .input(
-          'RoleId',
-          sql.Int,
-          null,
-        )
-        .input(
-          'Username',
-          sql.NVarChar(100),
-          null,
-        )
-        .input(
-          'PasswordHash',
-          sql.NVarChar(500),
-          passwordHash,
-        )
-        .input(
-          'StatusFilter',
-          sql.VarChar(50),
-          null,
-        )
-        .input(
-          'SecurityAction',
-          sql.VarChar(20),
-          dto.securityAction,
-        )
-        .input(
-          'SearchTerm',
-          sql.VarChar(100),
-          null,
-        )
-        .input(
-          'UpdatedBy',
-          sql.VarChar(100),
-          String(modifiedBy),
-        )
+        .input('Action', sql.VarChar(50), 'MANAGE_SECURITY')
+        .input('EmployeeId', sql.VarChar(50), null)
+        .input('UserId', sql.Int, dto.userId)
+        .input('RoleId', sql.Int, null)
+        .input('Username', sql.NVarChar(100), null)
+        .input('PasswordHash', sql.NVarChar(500), passwordHash)
+        .input('StatusFilter', sql.VarChar(50), null)
+        .input('SecurityAction', sql.VarChar(20), dto.securityAction)
+        .input('SearchTerm', sql.VarChar(100), null)
+        .input('UpdatedBy', sql.VarChar(100), String(modifiedBy))
         .execute('USP_EmployeeUserManager');
 
       return {

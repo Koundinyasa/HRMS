@@ -17,9 +17,7 @@ import { UpdatePolicyDto } from './dto/update-policy.dto';
 
 @Controller('admin/ess/policy')
 export class AdmincenterEssPolicyController {
-  constructor(
-    private readonly policyService: AdmincenterEssPolicyService,
-  ) {}
+  constructor(private readonly policyService: AdmincenterEssPolicyService) {}
 
   // Create Policy
   @Post()
@@ -55,9 +53,7 @@ export class AdmincenterEssPolicyController {
 
   // Get Policy By ID
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.policyService.findOne(id);
   }
 

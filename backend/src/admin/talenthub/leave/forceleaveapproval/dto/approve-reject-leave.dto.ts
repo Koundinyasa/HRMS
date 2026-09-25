@@ -1,8 +1,4 @@
-import {
-  IsArray,
-  IsInt,
-  ArrayNotEmpty,
-} from 'class-validator';
+import { IsArray, IsInt, ArrayNotEmpty } from 'class-validator';
 
 export class ApproveRejectLeaveDto {
   @IsArray()

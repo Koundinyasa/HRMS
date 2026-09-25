@@ -42,7 +42,7 @@ export interface IntentCtx {
   } | null;
   directory: { id: string; name: string; designation: string }[];
 }
- 
+
 // Shared shape for every "if user says X, reply with Y" entry, used by every
 // domain service's getIntents() and the orchestrator's own core intents.
 export interface IntentDefinition {

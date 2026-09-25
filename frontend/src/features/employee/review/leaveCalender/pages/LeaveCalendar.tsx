@@ -81,17 +81,17 @@ const LeaveCalendar = () => {
     setCurrentPage(1);
   };
   return (
-    <div className="h-full min-h-0 w-full overflow-hidden bg-gray-50 p-2 sm:p-3 md:p-4">
-      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4">
+    <div className="h-full min-h-0 w-full overflow-hidden bg-gray-50 p-2 sm:p-3 md:p-4 font-[Urbanist]">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:p-4 font-[Urbanist]">
         {/* Header */}
-        <div className="shrink-0">
+        <div className="shrink-0 font-[Urbanist]">
           <LeaveCalendarHeader
             selectedMonth={selectedMonth}
             setSelectedMonth={setSelectedMonth}
           />
         </div>
         {/* Search */}
-        <div className="shrink-0">
+        <div className="shrink-0 font-[Urbanist]">
           <LeaveCalendarSearch
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -99,27 +99,27 @@ const LeaveCalendar = () => {
         </div>
         {/* Loading */}
         {isLoading && (
-          <div className="shrink-0 py-6 text-center text-gray-500">
+          <div className="shrink-0 py-6 text-center text-gray-500 font-[Urbanist]">
             Loading monthly leave calendar...
           </div>
         )}
         {/* Error */}
         {isError && (
-          <div className="shrink-0 py-6 text-center text-red-500">
+          <div className="shrink-0 py-6 text-center text-red-500 font-[Urbanist]">
             <p>Failed to load monthly leave calendar.</p>
-            <pre className="mt-2 max-h-40 overflow-auto text-left text-xs">
+            <pre className="mt-2 max-h-40 overflow-auto text-left text-xs font-[Urbanist]">
               {JSON.stringify(error, null, 2)}
             </pre>
           </div>
         )}
         {/* Calendar table area */}
         {!isLoading && !isError && (
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden font-[Urbanist]">
             <LeaveCalendarTable employees={paginatedEmployees} days={days} />
           </div>
         )}
         {/* Footer */}
-        <div className="shrink-0">
+        <div className="shrink-0 font-[Urbanist]">
           <LeaveCalendarFooter
             totalItems={totalItems}
             currentPage={safePage}

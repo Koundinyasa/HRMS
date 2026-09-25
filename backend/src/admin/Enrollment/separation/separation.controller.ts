@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Body,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
 import { SeparationService } from './separation.service';
 
 @Controller('separation')
@@ -32,10 +25,7 @@ export class SeparationController {
   }
 
   @Put('exit-module/employees/:employeeId')
-  updateEmployee(
-    @Param('employeeId') employeeId: string,
-    @Body() body: any,
-  ) {
+  updateEmployee(@Param('employeeId') employeeId: string, @Body() body: any) {
     return this.separationService.updateEmployee(employeeId, body);
   }
 
@@ -55,10 +45,7 @@ export class SeparationController {
   }
 
   @Put('exit-module/settings/:policyId')
-  updatePolicy(
-    @Param('policyId') policyId: string,
-    @Body() body: any,
-  ) {
+  updatePolicy(@Param('policyId') policyId: string, @Body() body: any) {
     return this.separationService.updatePolicy(policyId, body);
   }
 

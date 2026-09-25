@@ -29,81 +29,75 @@ import { TaInsightsDetailsDto } from './dto/ta-insights-details.dto';
 @Controller('admin/timeattendance/timeoffice/punchprocess')
 @UseGuards(JwtAuthGuard)
 export class PunchProcessController {
-  constructor(
-    private readonly punchProcessService: PunchProcessService,
-  ) {}
+  constructor(private readonly punchProcessService: PunchProcessService) {}
 
-// =====================================================
-// DASHBOARD
-// =====================================================
+  // =====================================================
+  // DASHBOARD
+  // =====================================================
 
-// Dashboard Summary
+  // Dashboard Summary
 
-@Get('dashboard/summary')
-async getDashboardSummary() {
-  return this.punchProcessService.getDashboardSummary();
-}
+  @Get('dashboard/summary')
+  async getDashboardSummary() {
+    return this.punchProcessService.getDashboardSummary();
+  }
 
-// Employees by status
-// ON_LEAVE / EARLY_IN / ABSENT / EARLY_OUT
+  // Employees by status
+  // ON_LEAVE / EARLY_IN / ABSENT / EARLY_OUT
 
-@Get('dashboard/employees')
-async getDashboardEmployees(
-  @Query('status') status: string,
-) {
-  return this.punchProcessService.getDashboardEmployees(
-    status,
-  );
-}
+  @Get('dashboard/employees')
+  async getDashboardEmployees(@Query('status') status: string) {
+    return this.punchProcessService.getDashboardEmployees(status);
+  }
 
-// Attendance Overview Chart
+  // Attendance Overview Chart
 
-@Get('dashboard/attendanceoverview')
-async getAttendanceOverviewChart() {
-  return this.punchProcessService.getAttendanceOverviewChart();
-}
+  @Get('dashboard/attendanceoverview')
+  async getAttendanceOverviewChart() {
+    return this.punchProcessService.getAttendanceOverviewChart();
+  }
 
-// Punch Mode Distribution
+  // Punch Mode Distribution
 
-@Get('dashboard/punchmodedistribution')
-async getPunchModeDistribution() {
-  return this.punchProcessService.getPunchModeDistribution();
-}
+  @Get('dashboard/punchmodedistribution')
+  async getPunchModeDistribution() {
+    return this.punchProcessService.getPunchModeDistribution();
+  }
 
-// Attendance Irregularities
+  // Attendance Irregularities
 
-@Get('dashboard/irregularities')
-async getAttendanceIrregularities() {
-  return this.punchProcessService.getAttendanceIrregularities();
-}
+  @Get('dashboard/irregularities')
+  async getAttendanceIrregularities() {
+    return this.punchProcessService.getAttendanceIrregularities();
+  }
 
-// Average Working Hours
+  // Average Working Hours
 
-@Get('dashboard/averageworkinghours')
-async getAverageWorkingHours() {
-  return this.punchProcessService.getAverageWorkingHours();
-}
+  @Get('dashboard/averageworkinghours')
+  async getAverageWorkingHours() {
+    return this.punchProcessService.getAverageWorkingHours();
+  }
 
-// Average OT Hours
+  // Average OT Hours
 
-@Get('dashboard/averageothours')
-async getAverageOtHours() {
-  return this.punchProcessService.getAverageOtHours();
-}
+  @Get('dashboard/averageothours')
+  async getAverageOtHours() {
+    return this.punchProcessService.getAverageOtHours();
+  }
 
-// Policies / Shifts
+  // Policies / Shifts
 
-@Get('dashboard/policies')
-async getDashboardPolicies() {
-  return this.punchProcessService.getDashboardPolicies();
-}
+  @Get('dashboard/policies')
+  async getDashboardPolicies() {
+    return this.punchProcessService.getDashboardPolicies();
+  }
 
-// Pending Requests
+  // Pending Requests
 
-@Get('dashboard/pendingrequests')
-async getPendingRequests() {
-  return this.punchProcessService.getPendingRequests();
-}
+  @Get('dashboard/pendingrequests')
+  async getPendingRequests() {
+    return this.punchProcessService.getPendingRequests();
+  }
 
   // =====================================================
   // PROCESS
@@ -112,89 +106,57 @@ async getPendingRequests() {
   // Process Summary
 
   @Get('process/summary')
-  async getProcessSummary(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getProcessSummary(
-      dto,
-    );
+  async getProcessSummary(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getProcessSummary(dto);
   }
 
   // Process button
 
   @Post('process')
-  async processAttendance(
-    @Body() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.processAttendance(
-      dto,
-    );
+  async processAttendance(@Body() dto: ProcessDto) {
+    return this.punchProcessService.processAttendance(dto);
   }
 
   // Missed Punch
 
   @Get('process/missedpunch')
-  async getMissedPunch(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getMissedPunch(
-      dto,
-    );
+  async getMissedPunch(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getMissedPunch(dto);
   }
 
   // Shift Unassigned
 
   @Get('process/shiftunassigned')
-  async getShiftUnassigned(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getShiftUnassigned(
-      dto,
-    );
+  async getShiftUnassigned(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getShiftUnassigned(dto);
   }
 
   // Yet To Process
 
   @Get('process/yettoprocess')
-  async getYetToProcess(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getYetToProcess(
-      dto,
-    );
+  async getYetToProcess(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getYetToProcess(dto);
   }
 
   // Processed
 
   @Get('process/processed')
-  async getProcessed(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getProcessed(
-      dto,
-    );
+  async getProcessed(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getProcessed(dto);
   }
 
   // Re-Process Effective Date
 
   @Get('process/reprocesseffectivedate')
-  async getReprocessEffectiveDate(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getReprocessEffectiveDate(
-      dto,
-    );
+  async getReprocessEffectiveDate(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getReprocessEffectiveDate(dto);
   }
 
   // All Re-Process
 
   @Get('process/allreprocess')
-  async getAllReprocess(
-    @Query() dto: ProcessDto,
-  ) {
-    return this.punchProcessService.getAllReprocess(
-      dto,
-    );
+  async getAllReprocess(@Query() dto: ProcessDto) {
+    return this.punchProcessService.getAllReprocess(dto);
   }
 
   // Punch Requests
@@ -216,106 +178,68 @@ async getPendingRequests() {
   // =====================================================
 
   @Get('punch')
-  async getPunchDetails(
-    @Query() dto: PunchDto,
-  ) {
-    return this.punchProcessService.getPunchDetails(
-      dto,
-    );
+  async getPunchDetails(@Query() dto: PunchDto) {
+    return this.punchProcessService.getPunchDetails(dto);
   }
 
- // =====================================================
-// ATTENDANCE OVERVIEW
-// =====================================================
+  // =====================================================
+  // ATTENDANCE OVERVIEW
+  // =====================================================
 
-// Employee search/list
+  // Employee search/list
 
-@Get('attendanceoverview/employees')
-async getAttendanceEmployees(
-  @Query('search') search?: string,
-) {
-  return this.punchProcessService.getAttendanceEmployees(
-    search,
-  );
-}
+  @Get('attendanceoverview/employees')
+  async getAttendanceEmployees(@Query('search') search?: string) {
+    return this.punchProcessService.getAttendanceEmployees(search);
+  }
 
+  // Daily Attendance Grid
 
-// Daily Attendance Grid
+  @Get('attendanceoverview')
+  async getAttendanceOverview(@Query() dto: AttendanceOverviewDto) {
+    return this.punchProcessService.getAttendanceOverview(dto);
+  }
 
-@Get('attendanceoverview')
-async getAttendanceOverview(
-  @Query() dto: AttendanceOverviewDto,
-) {
-  return this.punchProcessService.getAttendanceOverview(
-    dto,
-  );
-}
+  // Monthly Overview / Summary
 
+  @Get('attendanceoverview/monthlysummary')
+  async getAttendanceMonthlySummary(@Query() dto: AttendanceMonthlySummaryDto) {
+    return this.punchProcessService.getAttendanceMonthlySummary(dto);
+  }
 
-// Monthly Overview / Summary
+  // Punch Details
 
-@Get('attendanceoverview/monthlysummary')
-async getAttendanceMonthlySummary(
-  @Query() dto: AttendanceMonthlySummaryDto,
-) {
-  return this.punchProcessService.getAttendanceMonthlySummary(
-    dto,
-  );
-}
+  @Get('attendanceoverview/punchdetails')
+  async getAttendancePunchDetails(@Query() dto: AttendancePunchDetailsDto) {
+    return this.punchProcessService.getAttendancePunchDetails(dto);
+  }
 
+  // Request Status
 
-// Punch Details
-
-@Get('attendanceoverview/punchdetails')
-async getAttendancePunchDetails(
-  @Query() dto: AttendancePunchDetailsDto,
-) {
-  return this.punchProcessService.getAttendancePunchDetails(
-    dto,
-  );
-}
-
-
-// Request Status
-
-@Get('attendanceoverview/requeststatus')
-async getAttendanceRequestStatus(
-  @Query() dto: AttendanceRequestStatusDto,
-) {
-  return this.punchProcessService.getAttendanceRequestStatus(
-    dto,
-  );
-}
-//====================================================
-    // TA INSIGHTS
-    //=============================================
-//
+  @Get('attendanceoverview/requeststatus')
+  async getAttendanceRequestStatus(@Query() dto: AttendanceRequestStatusDto) {
+    return this.punchProcessService.getAttendanceRequestStatus(dto);
+  }
+  //====================================================
+  // TA INSIGHTS
+  //=============================================
+  //
   @Get('tainsights')
-async getTaInsights(
-  @Query() dto: TaInsightsDto,
-) {
-  return this.punchProcessService.getTaInsights(dto);
-}
-//
-@Get('tainsights/details')
-async getTaInsightsDetails(
-  @Query() dto: TaInsightsDetailsDto,
-) {
-  return this.punchProcessService.getTaInsightsDetails(dto);
-}
+  async getTaInsights(@Query() dto: TaInsightsDto) {
+    return this.punchProcessService.getTaInsights(dto);
+  }
+  //
+  @Get('tainsights/details')
+  async getTaInsightsDetails(@Query() dto: TaInsightsDetailsDto) {
+    return this.punchProcessService.getTaInsightsDetails(dto);
+  }
   // =====================================================
   // IMPORT
   // =====================================================
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadPunchFile(
-    @UploadedFile() file: any,
-  ) {
-    return this.punchProcessService.uploadPunchFile(
-      file,
-    );
+  async uploadPunchFile(@UploadedFile() file: any) {
+    return this.punchProcessService.uploadPunchFile(file);
   }
-
-  
 }

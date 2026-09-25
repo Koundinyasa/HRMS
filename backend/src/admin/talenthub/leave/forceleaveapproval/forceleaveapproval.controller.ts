@@ -23,9 +23,7 @@ export class ForceLeaveApprovalController {
   // ==========================================
 
   @Post('approve')
-  async approveLeave(
-    @Body() dto: ApproveRejectLeaveDto,
-  ) {
+  async approveLeave(@Body() dto: ApproveRejectLeaveDto) {
     return this.forceLeaveApprovalService.approveLeave(dto);
   }
 
@@ -34,19 +32,17 @@ export class ForceLeaveApprovalController {
   // ==========================================
 
   @Post('reject')
-  async rejectLeave(
-    @Body() dto: ApproveRejectLeaveDto,
-  ) {
+  async rejectLeave(@Body() dto: ApproveRejectLeaveDto) {
     return this.forceLeaveApprovalService.rejectLeave(dto);
   }
 
-
   // Starting from here actual SPs
-  
- @Get()
+
+  @Get()
   async getLeaveApproval(
     @Req() req: any,
-    @Body() body: {
+    @Body()
+    body: {
       approverId?: string;
       fromDate?: string;
       toDate?: string;

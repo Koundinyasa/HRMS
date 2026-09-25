@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 
 import { CreateAttendanceConfigurationDto } from './dto/create-attendance-configuration.dto';
 import { ConfigurationService } from './configuration.service';
@@ -14,9 +7,7 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 @Controller('admin/ta/attendance/configurations')
 @UseGuards(JwtAuthGuard)
 export class ConfigurationController {
-  constructor(
-    private readonly configurationService: ConfigurationService,
-  ) {}
+  constructor(private readonly configurationService: ConfigurationService) {}
 
   // ==========================================
   // Attendance Configuration
@@ -26,7 +17,7 @@ export class ConfigurationController {
   async getAttendanceConfiguration() {
     return this.configurationService.getAttendanceConfiguration();
   }
-// ==========================================
+  // ==========================================
   // Salary Calendar Days
   // ==========================================
 
@@ -45,19 +36,18 @@ export class ConfigurationController {
   }
 
   // ==========================================
-// Create Attendance Configuration
-// ==========================================
+  // Create Attendance Configuration
+  // ==========================================
 
-@Post('save')
-async createAttendanceConfiguration(
-  @Req() req,
-  @Body()
-  dto: CreateAttendanceConfigurationDto,
-) {
-  return this.configurationService.createAttendanceConfiguration(
-    req.user.employeeId,
-    dto,
-  );
-}
-
+  @Post('save')
+  async createAttendanceConfiguration(
+    @Req() req,
+    @Body()
+    dto: CreateAttendanceConfigurationDto,
+  ) {
+    return this.configurationService.createAttendanceConfiguration(
+      req.user.employeeId,
+      dto,
+    );
+  }
 }

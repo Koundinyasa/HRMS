@@ -88,26 +88,26 @@ export default function AttendanceOverview() {
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-800">
-      <div className="mx-auto max-w-[1600px] space-y-4">
-        <div className="flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4">
-          <div className="flex min-w-max items-center gap-8">
+    <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-800 font-[Urbanist]">
+      <div className="mx-auto max-w-[1600px] space-y-4 font-[Urbanist]">
+        <div className="flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4 font-[Urbanist]">
+          <div className="flex min-w-max items-center gap-8 font-[Urbanist]">
           <NavLink
             to={`/${domain}/employee/TA/attendanceoverview`}
-            className="whitespace-nowrap border-b-2 border-[#1997e8] px-1 py-5 text-[15px] font-semibold text-[#1997e8]"
+            className="whitespace-nowrap border-b-2 border-[#1997e8] px-1 py-5 text-[15px] font-semibold text-[#1997e8] font-[Urbanist]"
           >
             Attendance Overview
           </NavLink>
           </div>
-          <div className="flex min-w-max items-center gap-2">
+          <div className="flex min-w-max items-center gap-2 font-[Urbanist]">
             <button type="button" title="List view" onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 text-slate-500"}`}>
               <List size={16} />
             </button>
             <button type="button" title="Calendar view" onClick={() => setView("calendar")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "calendar" ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 text-slate-500"}`}>
               <CalendarDays size={16} />
             </button>
-            <div className="w-[120px]">
-              <MonthPicker value={selectedMonth} onChange={setSelectedMonth} className="h-9 rounded-lg border-slate-200 bg-white text-xs" />
+            <div className="w-[120px] font-[Urbanist]">
+              <MonthPicker value={selectedMonth} onChange={setSelectedMonth} className="h-9 rounded-lg border-black bg-white text-xs font-[Urbanist]" />
             </div>
             <select
               aria-label="Select employee"
@@ -122,7 +122,7 @@ export default function AttendanceOverview() {
                 }
               }}
               disabled={reportingEmployeesLoading || employees.length === 0}
-              className="h-9 w-[180px] rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-600"
+              className="h-9 w-[180px] rounded-lg border border-black bg-white px-2 text-xs text-slate-600 font-[Urbanist]"
             >
               <option value="">
                 {reportingEmployeesLoading ? "Loading employees..." : "Select employee"}
@@ -131,13 +131,13 @@ export default function AttendanceOverview() {
                 <option key={employee.id} value={employee.id}>{employee.id} {employee.name}</option>
               ))}
             </select>
-            <button type="button" title="Grid view" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeGridClick"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500">
+            <button type="button" title="Grid view" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeGridClick"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-slate-500 font-[Urbanist]">
               <Grid2X2 size={16} />
             </button>
-            <button type="button" title="Export" onClick={handleExport} className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-200 text-emerald-600">
+            <button type="button" title="Export" onClick={handleExport} className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-emerald-600 font-[Urbanist]">
               <FileSpreadsheet size={16} />
             </button>
-            <button type="button" title="History" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeHistory"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500">
+            <button type="button" title="History" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeHistory"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-slate-500 font-[Urbanist]">
               <History size={16} />
             </button>
           </div>
@@ -184,15 +184,15 @@ export default function AttendanceOverview() {
         {showAttendanceDetails && (
           <>
             {loading && (
-              <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-medium text-sky-700">
+              <div className="rounded-lg border border-black bg-sky-50 px-4 py-2 text-xs font-medium text-sky-700 font-[Urbanist]">
                 Loading attendance for {selectedEmployee?.name ?? "employee"}...
               </div>
             )}
 
             {error && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700">
+              <div className="rounded-lg border border-black bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700 font-[Urbanist]">
                 Attendance API could not be loaded.
-                <span className="ml-1">{error}</span>
+                <span className="ml-1 font-[Urbanist]">{error}</span>
               </div>
             )}
 
@@ -206,7 +206,7 @@ export default function AttendanceOverview() {
               }}
             />
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 font-[Urbanist]">
           {/* Monthly Overview */}
 
           <MonthlyOverview

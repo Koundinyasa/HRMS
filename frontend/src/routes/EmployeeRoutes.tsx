@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Layout from "@/features/employee/components/Layout";
 import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage";
-
+ 
 // Profile Module
 import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
 import PersonalInformationPage from "@/features/employee/profile/pages/PersonalInformationPage";
@@ -36,10 +36,9 @@ import WithdrawPage from "@/features/employee/separation/pages/WithdrawPage";
 import RaiseTicket from "@/features/employee/helpdesk/pages/RaiseTicket";
 import TicketStatus from "@/features/employee/helpdesk/pages/TicketStatus";
 import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
-
+ 
 //Review Module
 import PunchPage from "@/features/employee/review/timeOffice/punch/pages/PunchPage";
- 
 import MissedPunchPage from "@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage";
 import TAInsightsPage from "@/features/employee/review/timeOffice/taInsights/pages/TAInsightsPage";
 import AttendanceOverview from "@/features/employee/review/Attandance overview/timeOffice/pages/AttendanceOverview";
@@ -47,10 +46,10 @@ import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendan
 import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
 import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
 import RequisitionPage from "@/features/employee/review/requisition/pages/RequisitionPage";
-
+ 
 // Attendance Module — NEW
 import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
-
+ 
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {
   const { domain } = useParams();
@@ -88,12 +87,12 @@ export default function EmployeeRoutes() {
           <Route index element={<Navigate to="apply" replace />} />
  
           <Route path="apply" element={<LeaveApply />} />
-
+ 
           <Route
             path="apply-for-employee"
             element={<ApplyLeaveForEmployee />}
           />
-
+ 
           <Route path="status" element={<LeaveStatus />} />
  
           <Route path="balance" element={<LeaveBalance />} />
@@ -103,7 +102,7 @@ export default function EmployeeRoutes() {
           <Route path="cancel" element={<LeaveCancellation />} />
  
           <Route path="holidaylist" element={<HolidayListPage />} />
-
+ 
           {/* Menu URL redirects to the existing Apply Leave page */}
           <Route
             path="Applyleaveemployee"
@@ -132,52 +131,57 @@ export default function EmployeeRoutes() {
         <Route path="helpdesk/status" element={<TicketStatus />} />
         <Route path="helpdesk/kb" element={<KnowledgeBase />} />
 
+        <Route
+          path="review/requisition"
+          element={<Navigate to="appliedleave" replace />}
+        />
+ 
         <Route path="review/requisition/appliedleave" element={<RequisitionPage />} />
-
+ 
         <Route path="Punch" element={<PunchPage />} />
-
+ 
         <Route path="MissedPunch" element={<MissedPunchPage />} />
-
+ 
         <Route path="Regularization/Punch" element={<PunchPage />} />
-
+ 
         <Route
           path="Regularization/MissedPunch"
           element={<MissedPunchPage />}
         />
-
+ 
         <Route path="Regularization/TAInsights" element={<TAInsightsPage />} />
-
+ 
         <Route
           path="Regularization/Attendance"
           element={<TimeOfficeLeaveCalendar />}
         />
-
+ 
         <Route path="TAInsights" element={<TAInsightsPage />} />
-
+ 
         <Route
           path="time-office/regularization/attendance"
           element={<TimeOfficeLeaveCalendar />}
         />
-
+ 
         {/* Review Module */}
-
+ 
         {/* Apply Leave for Employee */}
         <Route
           path="Applyleaveemployee"
           element={<ApplyLeaveForEmployeeRedirect />}
         />
-
+ 
         <Route path="Leavecalender" element={<LeaveCalendar />} />
-
+ 
         <Route
           path="review/leave-calendar/history"
           element={<LeaveCalendarHistory />}
         />
-
+ 
         <Route path="TA/attendanceoverview" element={<AttendanceOverview />} />
-
+ 
         <Route path="attendanceoverview" element={<AttendanceOverview />} />
-
+ 
         {/* Attendance Management — NEW */}
         <Route
           path="attendance/face-registration"

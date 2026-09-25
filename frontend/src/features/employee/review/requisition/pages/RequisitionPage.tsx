@@ -55,8 +55,8 @@ export default function RequisitionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f4f9] p-4 sm:p-5 md:p-[26px]">
-      <div className="mx-auto w-full space-y-3">
+    <div className="min-h-screen bg-[#f3f4f9] p-4 sm:p-5 md:p-[26px] font-[Urbanist]">
+      <div className="mx-auto w-full space-y-3 font-[Urbanist]">
         {/* Navbar */}
         <RequisitionNavbar />
 
@@ -81,7 +81,7 @@ export default function RequisitionPage() {
         {error && (
           <div
             role="alert"
-            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+            className="rounded-md border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]"
           >
             {error}
           </div>
@@ -90,7 +90,7 @@ export default function RequisitionPage() {
         {actionError && (
           <div
             role="alert"
-            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+            className="rounded-md border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]"
           >
             {actionError}
           </div>
@@ -99,7 +99,7 @@ export default function RequisitionPage() {
         {approved && (
           <div
             role="status"
-            className="rounded-md border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700"
+            className="rounded-md border border-black bg-green-50 p-4 text-sm font-medium text-green-700 font-[Urbanist]"
           >
             REQUEST IS APPROVED SUCCESSFULLY
           </div>
@@ -107,20 +107,20 @@ export default function RequisitionPage() {
 
         {/* Loading */}
         {loading && (
-          <div className="rounded-md bg-white p-5 text-center text-sm text-slate-500">
+          <div className="rounded-md bg-white p-5 text-center text-sm text-slate-500 font-[Urbanist]">
             Loading leave requisitions...
           </div>
         )}
 
         {/* History */}
         {showHistory && (
-          <div className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600">
+          <div className="rounded-md border border-black bg-white p-4 text-sm text-slate-600 font-[Urbanist]">
             Leave history
 
             <button
               type="button"
               onClick={() => setShowHistory(false)}
-              className="ml-3 text-sky-600"
+              className="ml-3 text-sky-600 font-[Urbanist]"
             >
               Close
             </button>

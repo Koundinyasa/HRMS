@@ -1,4 +1,4 @@
-import ProfileSection from "../components/ProfileSection";
+import ProfileTable from "../components/ProfileTable";
 
 import { useProfile } from "../hooks/useProfile";
 
@@ -25,18 +25,17 @@ export default function BankInformationPage() {
     (section) => section.title === "Bank Details"
   );
 
-  if (!bankSection) {
+  if (!bankSection || !bankSection.fields?.length) {
     return (
-      <div className="p-4 sm:p-6 text-slate-500">
-        No bank information available.
+      <div className="flex min-h-[240px] -translate-y-16 items-center justify-center p-4 text-center text-slate-500 sm:p-6">
+        No records found.
       </div>
     );
   }
 
- return (
-    <div className="w-full min-w-0 space-y-4 sm:space-y-6">
-      
-      <ProfileSection section={bankSection} />
+  return (
+    <div className="w-full min-w-0">
+      <ProfileTable section={bankSection} />
     </div>
   );
 }

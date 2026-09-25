@@ -2,20 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { HrmsDbService } from '../../db/hrms-db.service';
 import { DraftService } from './draft.service';
 import { IntentDefinition, TeamListItem } from '../types';
- 
+
 const isPrivileged = (role: string) => role === 'admin' || role === 'hr';
- 
+
 @Injectable()
 export class TeamService {
   constructor(
     private readonly hrmsDbService: HrmsDbService,
     private readonly draftService: DraftService,
   ) {}
- 
+
   private formatTeamList(teams: TeamListItem[]): string {
     return teams.map((t, i) => `${i + 1}. ${t.name}`).join('\n');
   }
- 
+
   getIntents(): IntentDefinition[] {
     return [
       {
@@ -65,7 +65,7 @@ export class TeamService {
           return `Which team would you like to look at?\n${this.formatTeamList(teams)}`;
         },
       },
- 
+
       {
         name: 'teamPick',
         test: (ctx) => {
@@ -97,7 +97,7 @@ export class TeamService {
           return `${team.name} — would you like to View the team, or Download the data?`;
         },
       },
- 
+
       {
         name: 'teamAction',
         test: (ctx) => {
@@ -113,7 +113,7 @@ export class TeamService {
             this.draftService.teamDrafts,
             ctx.employeeId,
           )!;
- 
+
           if (ctx.msg === 'view') {
             const members = await this.hrmsDbService.getTeamMembers(
               draft.teamId!,
@@ -126,13 +126,13 @@ export class TeamService {
               ctx.employeeId,
               draft,
             );
- 
+
             if (!members.length) {
               return `${draft.teamName} has no members on record right now.\n\nWould you like to Download this anyway, or Cancel?`;
             }
             return `${draft.teamName} (${members.length} member${members.length === 1 ? '' : 's'}) \u2014 view the roster below.\n\nWould you like to Download this data, or Cancel?`;
           }
- 
+
           // download, chosen directly without viewing first
           draft.action = 'download';
           draft.step = 'awaiting_format';
@@ -144,7 +144,7 @@ export class TeamService {
           return `Download ${draft.teamName}'s data as PDF or Excel?`;
         },
       },
- 
+
       {
         name: 'teamViewFollowup',
         test: (ctx) => {
@@ -177,7 +177,7 @@ export class TeamService {
           return `Download ${draft.teamName}'s data as PDF or Excel?`;
         },
       },
- 
+
       {
         name: 'teamFormat',
         test: (ctx) => {
@@ -206,4 +206,3 @@ export class TeamService {
     ];
   }
 }
- 

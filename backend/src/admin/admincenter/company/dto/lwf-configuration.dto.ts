@@ -1,9 +1,4 @@
-import {
-  IsBoolean,
-  IsDateString,
-  IsInt,
-  IsNumber,
-} from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsNumber } from 'class-validator';
 
 export class LWFGroupDto {
   id!: number;

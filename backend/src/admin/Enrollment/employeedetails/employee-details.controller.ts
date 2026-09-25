@@ -12,7 +12,7 @@
 // import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 // import { PermissionGuard } from '../../../common/guards/permission.guard';
 // import { AdmincentercompanyService} from './admincenter.company.service';
- 
+
 // import { CompanyConfigurationDto } from './dto/company-configuration.dto';
 // import { PFConfigurationDto, PFDefaultConfigurationDto } from './dto/pf-configuration.dto';
 // import { ESIConfigurationDto, ESIDefaultConfigurationDto } from './dto/esi-configuration.dto';
@@ -22,16 +22,16 @@
 // import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/file.interceptor';
 // import { diskStorage } from 'multer';
 // import { Permission } from '../../../common/decorators/permission.decorator';
- 
+
 // const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
- 
+
 // @Controller('admin/configuration')
 // @UseGuards(JwtAuthGuard, PermissionGuard)
 // export class AdmincentercompanyController {
 //   constructor(
 //     private readonly admincenterService: AdmincentercompanyService,
 //   ) {}
- 
+
 //   @Get('company')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
 //   getCompanyConfiguration(
@@ -41,7 +41,7 @@
 //       req.user.companyId,
 //     );
 //   }
- 
+
 //   @Get('pf')
 //   getPFConfiguration(
 //     @Req() req,
@@ -50,7 +50,7 @@
 //       req.user.companyId,
 //     );
 //   }
- 
+
 //   @Get('esi')
 //   getESIConfiguration(
 //     @Req() req,
@@ -59,7 +59,7 @@
 //       req.user.companyId,
 //     );
 //   }
- 
+
 //   // @Get('pt')
 //   // getPTConfiguration(
 //   //   @Req() req,
@@ -68,7 +68,7 @@
 //   //     req.user.companyId,
 //   //   );
 //   // }
- 
+
 //   @Get('pt')
 //   getPTConfiguration(
 //     @Req() req,
@@ -77,7 +77,7 @@
 //       req.user.companyId,
 //     );
 //   }
- 
+
 //   @Get('lwf')
 //   getLWFConfiguration(
 //     @Req() req,
@@ -86,7 +86,7 @@
 //       req.user.companyId,
 //     );
 //   }
- 
+
 //   @Get('establishment')
 //   getEstablishmentConfiguration(
 //     @Req() req,
@@ -95,23 +95,21 @@
 //       req.user.companyId,
 //     );
 //   }
- 
- 
- 
+
 // @Put('company')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   updateCompanyConfiguration(
 //     @Req() req,
 //     @Body() dto: CompanyConfigurationDto,
 //   ): Promise<void> {
- 
+
 //     return this.admincenterService.updateCompanyConfiguration(
 //       req.user.companyId,
 //       req.user.createdBy,
 //       dto,
 //     );
 //   }
- 
+
 //   // @Put('pf')
 //   // @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   // updatePFConfiguration(
@@ -124,25 +122,21 @@
 //   //     dto,
 //   //   );
 //   //
- 
- 
- 
- 
- 
+
 //    @Put('pf')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   updatePFConfiguration(
 //     @Req() req,
 //     @Body() dto: PFDefaultConfigurationDto,
 //   ): Promise<any> {
- 
+
 //     return this.admincenterService.updatePFConfiguration(
 //       req.user.companyId,
 //       req.user.createdBy,
 //       dto,
 //     );
 //   }
- 
+
 //   @Put('esi')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   updateESIConfiguration(
@@ -155,8 +149,7 @@
 //       dto,
 //     );
 //   }
- 
- 
+
 //   @Put('lwf')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   updateLWFConfiguration(
@@ -169,7 +162,7 @@
 //       dto,
 //     );
 //   }
- 
+
 //   // @Put('pt')
 //   // @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   // updatePTConfiguration(
@@ -182,10 +175,7 @@
 //   //     dto,
 //   //   );
 //   // }
- 
- 
- 
- 
+
 //    @Put('pt')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   updatePTConfiguration(
@@ -198,8 +188,7 @@
 //       dto,
 //     );
 //   }
-     
- 
+
 //   @Put('establishment')
 //   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
 //   updateEstablishmentConfiguration(
@@ -212,8 +201,7 @@
 //       dto,
 //     );
 //   }
- 
- 
+
 //   @Post('documents/upload')
 //   @UseInterceptors(
 //     FileInterceptor('file', {
@@ -230,8 +218,7 @@
 //     return this.admincenterService.uploadDocument(file);
 //   }
 // }
- 
- 
+
 import {
   BadRequestException,
   Body,
@@ -242,80 +229,70 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
- 
+
 import { EmployeeDetailsService } from './employee-details.service';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { OrganizationChartDto } from './dto/organization-chart.dto';
 import { UpdateEmployeeGeneralDetailsDto } from './dto/update-employee-general-details.dto';
- 
+
 @Controller('admin/employee-details')
 @UseGuards(JwtAuthGuard)
 export class EmployeeDetailsController {
   constructor(
     private readonly employeeDetailsService: EmployeeDetailsService,
-  ) { }
- 
+  ) {}
+
   // ==========================================
   // Employees By Company
   // ==========================================
- 
+
   @Get('employees')
   async getEmployeesByCompanyId(@Req() req: any) {
     const companyId = req.user?.companyId;
- 
+
     if (!companyId) {
-      throw new BadRequestException(
-        'CompanyId not found in JWT',
-      );
+      throw new BadRequestException('CompanyId not found in JWT');
     }
- 
+
     return this.employeeDetailsService.getEmployeesByCompanyId(
       Number(companyId),
     );
   }
- 
+
   // ==========================================
   // Get Employee Details
   // ==========================================
- 
+
   @Get(':employeeId')
-  async getEmployeeDetails(
-    @Param('employeeId') employeeId: string,
-  ) {
-    return this.employeeDetailsService.getEmployeeDetails(
-      employeeId,
-    );
+  async getEmployeeDetails(@Param('employeeId') employeeId: string) {
+    return this.employeeDetailsService.getEmployeeDetails(employeeId);
   }
- 
+
   // ==========================================
   // Organization Chart
   // ==========================================
- 
+
   @Post('organization-chart')
   async getOrganizationChart(
     @Body() dto: OrganizationChartDto,
     @Req() req: any,
   ) {
     const companyId = req.user.companyId;
- 
-    return this.employeeDetailsService.getOrganizationChart(
-      dto,
-      companyId,
-    );
+
+    return this.employeeDetailsService.getOrganizationChart(dto, companyId);
   }
- 
+
   // ==========================================
   // Update General Details
   // ==========================================
- 
+
   @Post('general-details/update')
   async updateEmployeeGeneralDetails(
     @Body() dto: UpdateEmployeeGeneralDetailsDto,
     @Req() req: any,
   ) {
     const modifiedBy = Number(req.user?.createdBy);
- 
- 
+
     return this.employeeDetailsService.updateEmployeeGeneralDetails(
       dto,
       modifiedBy,

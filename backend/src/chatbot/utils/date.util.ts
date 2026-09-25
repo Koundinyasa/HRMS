@@ -2,7 +2,7 @@ export function extractIsoDate(message: string): string | null {
   const m = String(message || '').match(/(\d{4})-(\d{2})-(\d{2})/);
   return m ? m[0] : null;
 }
- 
+
 export function parseLeaveDate(text: string): string | null {
   const normalized = String(text || '').toLowerCase();
   const months: Record<string, string> = {
@@ -32,15 +32,15 @@ export function parseLeaveDate(text: string): string | null {
   if (match) return `${match[1]}-${match[2]}-${match[3]}`;
   return null;
 }
- 
+
 export function formatLeaveRange(startDate: string, endDate: string): string {
   return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
 }
- 
+
 export function formatDayCount(duration: number): string {
   return duration === 1 ? '1 day' : `${duration} days`;
 }
- 
+
 export function getTodayInfo(): string {
   const now = new Date();
   const dateText = now.toLocaleDateString('en-IN', {

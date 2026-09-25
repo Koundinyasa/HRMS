@@ -9,13 +9,13 @@ import {
   Delete,
   UploadedFile,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { MastersService } from './masters.service';
-import {FileInterceptor,} from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { AttendancePolicyDto } from './dto/attendance-policy.dto';
 import { AttendanceIpDto } from './dto/attendance-ip.dto';
@@ -33,9 +33,7 @@ import { GeoLocationDto } from './dto/geo-location.dto';
 @Controller('admin/timeattendance/timeoffice/masters')
 @UseGuards(JwtAuthGuard)
 export class MastersController {
-  constructor(
-    private readonly mastersService: MastersService,
-  ) {}
+  constructor(private readonly mastersService: MastersService) {}
 
   // =========================================================
   // POLICY - ATTENDANCE
@@ -47,16 +45,12 @@ export class MastersController {
   }
 
   @Put('policy/attendance')
-  async updateAttendancePolicy(
-    @Body() dto: AttendancePolicyDto,
-  ) {
+  async updateAttendancePolicy(@Body() dto: AttendancePolicyDto) {
     return this.mastersService.updateAttendancePolicy(dto);
   }
 
   @Post('policy/attendance/ip')
-  async addAttendanceIp(
-    @Body() dto: AttendanceIpDto,
-  ) {
+  async addAttendanceIp(@Body() dto: AttendanceIpDto) {
     return this.mastersService.addAttendanceIp(dto);
   }
 
@@ -70,9 +64,7 @@ export class MastersController {
   }
 
   @Put('policy/workhours')
-  async updateWorkHoursPolicy(
-    @Body() dto: WorkHoursPolicyDto,
-  ) {
+  async updateWorkHoursPolicy(@Body() dto: WorkHoursPolicyDto) {
     return this.mastersService.updateWorkHoursPolicy(dto);
   }
 
@@ -86,9 +78,7 @@ export class MastersController {
   }
 
   @Put('policy/latein')
-  async updateLateInPolicy(
-    @Body() dto: LateInPolicyDto,
-  ) {
+  async updateLateInPolicy(@Body() dto: LateInPolicyDto) {
     return this.mastersService.updateLateInPolicy(dto);
   }
 
@@ -102,9 +92,7 @@ export class MastersController {
   }
 
   @Put('policy/earlyout')
-  async updateEarlyOutPolicy(
-    @Body() dto: EarlyOutPolicyDto,
-  ) {
+  async updateEarlyOutPolicy(@Body() dto: EarlyOutPolicyDto) {
     return this.mastersService.updateEarlyOutPolicy(dto);
   }
 
@@ -118,9 +106,7 @@ export class MastersController {
   }
 
   @Put('policy/onduty')
-  async updateOnDutyPolicy(
-    @Body() dto: OnDutyPolicyDto,
-  ) {
+  async updateOnDutyPolicy(@Body() dto: OnDutyPolicyDto) {
     return this.mastersService.updateOnDutyPolicy(dto);
   }
 
@@ -134,9 +120,7 @@ export class MastersController {
   }
 
   @Put('policy/workfromhome')
-  async updateWorkFromHomePolicy(
-    @Body() dto: WorkFromHomePolicyDto,
-  ) {
+  async updateWorkFromHomePolicy(@Body() dto: WorkFromHomePolicyDto) {
     return this.mastersService.updateWorkFromHomePolicy(dto);
   }
 
@@ -150,9 +134,7 @@ export class MastersController {
   }
 
   @Put('policy/permissions')
-  async updatePermissionsPolicy(
-    @Body() dto: PermissionsPolicyDto,
-  ) {
+  async updatePermissionsPolicy(@Body() dto: PermissionsPolicyDto) {
     return this.mastersService.updatePermissionsPolicy(dto);
   }
 
@@ -166,178 +148,136 @@ export class MastersController {
   }
 
   @Put('policy/advanced')
-  async updateAdvancedPolicy(
-    @Body() dto: AdvancedPolicyDto,
-  ) {
+  async updateAdvancedPolicy(@Body() dto: AdvancedPolicyDto) {
     return this.mastersService.updateAdvancedPolicy(dto);
   }
   // =========================================================
-// SHIFT PATTERN
-// =========================================================
+  // SHIFT PATTERN
+  // =========================================================
 
-// 18. Get Shift Pattern List
+  // 18. Get Shift Pattern List
 
-@Get('shiftpattern')
-async getShiftPatterns() {
-  return this.mastersService.getShiftPatterns();
-}
+  @Get('shiftpattern')
+  async getShiftPatterns() {
+    return this.mastersService.getShiftPatterns();
+  }
 
-// 19. Get Shift Pattern Details
+  // 19. Get Shift Pattern Details
 
-@Get('shiftpattern/:shiftPatternId')
-async getShiftPatternDetails(
-  @Param('shiftPatternId') shiftPatternId: string,
-) {
-  return this.mastersService.getShiftPatternDetails(
-    shiftPatternId,
-  );
-}
+  @Get('shiftpattern/:shiftPatternId')
+  async getShiftPatternDetails(
+    @Param('shiftPatternId') shiftPatternId: string,
+  ) {
+    return this.mastersService.getShiftPatternDetails(shiftPatternId);
+  }
 
-// 20. Add Shift Pattern
+  // 20. Add Shift Pattern
 
-@Post('shiftpattern')
-async addShiftPattern(
-  @Body() dto: ShiftPatternDto,
-) {
-  return this.mastersService.addShiftPattern(dto);
-}
+  @Post('shiftpattern')
+  async addShiftPattern(@Body() dto: ShiftPatternDto) {
+    return this.mastersService.addShiftPattern(dto);
+  }
 
-// 21. Update Shift Pattern
+  // 21. Update Shift Pattern
 
-@Put('shiftpattern/:shiftPatternId')
-async updateShiftPattern(
-  @Param('shiftPatternId') shiftPatternId: string,
-  @Body() dto: ShiftPatternDto,
-) {
-  return this.mastersService.updateShiftPattern(
-    shiftPatternId,
-    dto,
-  );
-}
-// =========================================================
-// SHIFT MASTER
-// =========================================================
+  @Put('shiftpattern/:shiftPatternId')
+  async updateShiftPattern(
+    @Param('shiftPatternId') shiftPatternId: string,
+    @Body() dto: ShiftPatternDto,
+  ) {
+    return this.mastersService.updateShiftPattern(shiftPatternId, dto);
+  }
+  // =========================================================
+  // SHIFT MASTER
+  // =========================================================
 
-// 22. Get Shift Master List
+  // 22. Get Shift Master List
 
-@Get('shiftmaster')
-async getShiftMasters() {
-  return this.mastersService.getShiftMasters();
-}
+  @Get('shiftmaster')
+  async getShiftMasters() {
+    return this.mastersService.getShiftMasters();
+  }
 
-// 23. Get Shift Master Details
+  // 23. Get Shift Master Details
 
-@Get('shiftmaster/:shiftId')
-async getShiftMasterDetails(
-  @Param('shiftId') shiftId: string,
-) {
-  return this.mastersService.getShiftMasterDetails(
-    shiftId,
-  );
-}
+  @Get('shiftmaster/:shiftId')
+  async getShiftMasterDetails(@Param('shiftId') shiftId: string) {
+    return this.mastersService.getShiftMasterDetails(shiftId);
+  }
 
-// 24. Add Shift Master
+  // 24. Add Shift Master
 
-@Post('shiftmaster')
-async addShiftMaster(
-  @Body() dto: ShiftMasterDto,
-) {
-  return this.mastersService.addShiftMaster(dto);
-}
+  @Post('shiftmaster')
+  async addShiftMaster(@Body() dto: ShiftMasterDto) {
+    return this.mastersService.addShiftMaster(dto);
+  }
 
-// 25. Update Shift Master
+  // 25. Update Shift Master
 
-@Put('shiftmaster/:shiftId')
-async updateShiftMaster(
-  @Param('shiftId') shiftId: string,
-  @Body() dto: ShiftMasterDto,
-) {
-  return this.mastersService.updateShiftMaster(
-    shiftId,
-    dto,
-  );
-}
+  @Put('shiftmaster/:shiftId')
+  async updateShiftMaster(
+    @Param('shiftId') shiftId: string,
+    @Body() dto: ShiftMasterDto,
+  ) {
+    return this.mastersService.updateShiftMaster(shiftId, dto);
+  }
 
-// 26. Delete Shift Master
+  // 26. Delete Shift Master
 
-@Delete('shiftmaster/:shiftId')
-async deleteShiftMaster(
-  @Param('shiftId') shiftId: string,
-) {
-  return this.mastersService.deleteShiftMaster(
-    shiftId,
-  );
-}
-// =========================================================
-// GEO LOCATION
-// =========================================================
+  @Delete('shiftmaster/:shiftId')
+  async deleteShiftMaster(@Param('shiftId') shiftId: string) {
+    return this.mastersService.deleteShiftMaster(shiftId);
+  }
+  // =========================================================
+  // GEO LOCATION
+  // =========================================================
 
-// 27. Get Geo Location List
+  // 27. Get Geo Location List
 
-@Get('geolocation')
-async getGeoLocations() {
-  return this.mastersService.getGeoLocations();
-}
+  @Get('geolocation')
+  async getGeoLocations() {
+    return this.mastersService.getGeoLocations();
+  }
 
-// 28. Get Geo Location Details
+  // 28. Get Geo Location Details
 
-@Get('geolocation/:locationId')
-async getGeoLocationDetails(
-  @Param('locationId') locationId: string,
-) {
-  return this.mastersService.getGeoLocationDetails(
-    locationId,
-  );
-}
+  @Get('geolocation/:locationId')
+  async getGeoLocationDetails(@Param('locationId') locationId: string) {
+    return this.mastersService.getGeoLocationDetails(locationId);
+  }
 
-// 29. Add Geo Location
+  // 29. Add Geo Location
 
-@Post('geolocation')
-async addGeoLocation(
-  @Body() dto: GeoLocationDto,
-) {
-  return this.mastersService.addGeoLocation(dto);
-}
+  @Post('geolocation')
+  async addGeoLocation(@Body() dto: GeoLocationDto) {
+    return this.mastersService.addGeoLocation(dto);
+  }
 
-// 30. Update Geo Location
+  // 30. Update Geo Location
 
-@Put('geolocation/:locationId')
-async updateGeoLocation(
-  @Param('locationId') locationId: string,
-  @Body() dto: GeoLocationDto,
-) {
-  return this.mastersService.updateGeoLocation(
-    locationId,
-    dto,
-  );
-}
+  @Put('geolocation/:locationId')
+  async updateGeoLocation(
+    @Param('locationId') locationId: string,
+    @Body() dto: GeoLocationDto,
+  ) {
+    return this.mastersService.updateGeoLocation(locationId, dto);
+  }
 
-// 31. Delete Geo Location
+  // 31. Delete Geo Location
 
-@Delete('geolocation/:locationId')
-async deleteGeoLocation(
-  @Param('locationId') locationId: string,
-) {
-  return this.mastersService.deleteGeoLocation(
-    locationId,
-  );
-}
-// =========================================================
-// IMPORT
-// =========================================================
+  @Delete('geolocation/:locationId')
+  async deleteGeoLocation(@Param('locationId') locationId: string) {
+    return this.mastersService.deleteGeoLocation(locationId);
+  }
+  // =========================================================
+  // IMPORT
+  // =========================================================
 
+  // 32. Import Master Data
 
-// 32. Import Master Data
-
-@Post('import')
-@UseInterceptors(
-  FileInterceptor('file'),
-)
-async importMasterData(
-  @UploadedFile() file: any,
-) {
-  return this.mastersService.importMasterData(
-    file,
-  );
-}
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importMasterData(@UploadedFile() file: any) {
+    return this.mastersService.importMasterData(file);
+  }
 }

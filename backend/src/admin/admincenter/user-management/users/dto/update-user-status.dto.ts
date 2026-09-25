@@ -1,9 +1,6 @@
 import { IsBoolean } from 'class-validator';
 
-
 export class UpdateUserStatusDto {
-
-@IsBoolean()
-isActive!:boolean;
-
+  @IsBoolean()
+  isActive!: boolean;
 }

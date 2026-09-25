@@ -10,6 +10,9 @@ import type {
 
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // =========================
+    // Employee Profile
+    // =========================
     getProfile: builder.query<ProfileResponse, void>({
       query: () => ({
         url: "/employee/dashboard/profile",
@@ -17,15 +20,19 @@ export const dashboardApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getHolidayList: builder.query<
-      HolidayResponse,
-      void>({
-        query: () => ({
-          url: "/employee/dashboard/list",
-          method: "GET",
-        }),
+    // =========================
+    // Holiday List
+    // =========================
+    getHolidayList: builder.query<HolidayResponse, void>({
+      query: () => ({
+        url: "/employee/dashboard/list",
+        method: "GET",
       }),
+    }),
 
+    // =========================
+    // Employee Menus
+    // =========================
     getMenus: builder.query<MenuResponse, void>({
       query: () => ({
         url: "/employee/dashboard/menus",

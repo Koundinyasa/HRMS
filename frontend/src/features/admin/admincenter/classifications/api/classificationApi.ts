@@ -19,6 +19,8 @@ import type {
   SalaryComponentListResponse,
   SalaryComponentType,
   CreateSalaryComponentResponse,
+  ClassificationDetailsResponse,
+  ClassificationSummaryResponse,
 } from "../types/classificationTypes";
 
 function throwIfApiError<T extends { StatusCode?: number; Message?: string }>(response: T): T {
@@ -30,6 +32,19 @@ function throwIfApiError<T extends { StatusCode?: number; Message?: string }>(re
 
 export const classificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getClassificationSummary: builder.query<ClassificationSummaryResponse, void>({
+      query: () => ({ url: "/admin/classification/summary", method: "POST" }),
+      providesTags: ["ClassificationSummary"],
+    }),
+
+    getClassificationDetails: builder.query<ClassificationDetailsResponse, number>({
+      query: (classificationId) => ({
+        url: "/admin/classification/details",
+        method: "POST",
+        body: { classificationId },
+      }),
+    }),
+
     // ===============================
     // ADDITIONAL CLASSIFICATION
     // ===============================
@@ -83,7 +98,7 @@ export const classificationApi = baseApi.injectEndpoints({
       CreateBranchResponse,
       { branchName: string; address: string; state: string }
     >({
-      query: (body) => ({ url: "/classifications/branch", method: "POST", body }),
+      query: (body) => ({ url: "/admin/classification/branch", method: "PUT", body }),
       transformResponse: throwIfApiError<CreateBranchResponse>,
       invalidatesTags: ["Branches"],
     }),
@@ -92,7 +107,17 @@ export const classificationApi = baseApi.injectEndpoints({
       ApiMessageResponse,
       { id: number; branchName: string; address: string; state: string; isActive: 0 | 1 }
     >({
-      query: (body) => ({ url: "/classifications/branch", method: "PUT", body }),
+      query: (body) => ({ url: "/admin/classification/branch", method: "PUT", body }),
+      transformResponse: throwIfApiError<ApiMessageResponse>,
+      invalidatesTags: ["Branches"],
+    }),
+
+    updateBranchStatus: builder.mutation<ApiMessageResponse, { id: number; active: 0 | 1 }>({
+      query: (body) => ({
+        url: "/admin/classification/branch/status",
+        method: "POST",
+        body,
+      }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["Branches"],
     }),
@@ -118,15 +143,33 @@ export const classificationApi = baseApi.injectEndpoints({
     }),
 
     createDesignation: builder.mutation<CreateDesignationResponse, { designationName: string }>({
-      query: (body) => ({ url: "/classifications/designation", method: "POST", body }),
+      query: (body) => ({ url: "/admin/classification/designation", method: "PUT", body }),
       transformResponse: throwIfApiError<CreateDesignationResponse>,
       invalidatesTags: ["Designations"],
     }),
 
     updateDesignation: builder.mutation<ApiMessageResponse, { id: number; designationName: string }>({
-      query: (body) => ({ url: "/classifications/designation", method: "PUT", body }),
+      query: (body) => ({ url: "/admin/classification/designation", method: "PUT", body }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["Designations"],
+    }),
+
+    updateDesignationStatus: builder.mutation<ApiMessageResponse, { id: number; active: 0 | 1 }>({
+      query: (body) => ({
+        url: "/admin/classification/designation/status",
+        method: "POST",
+        body,
+      }),
+      transformResponse: throwIfApiError<ApiMessageResponse>,
+      invalidatesTags: ["Designations"],
+    }),
+
+    getBankInfo: builder.query<unknown, string>({
+      query: (ifsc) => ({
+        url: "/admin/classification/bank/info",
+        method: "GET",
+        params: { ifsc },
+      }),
     }),
 
     deleteDesignation: builder.mutation<ApiMessageResponse, { id: number }>({
@@ -243,9 +286,8 @@ export const classificationApi = baseApi.injectEndpoints({
 
     downloadImportTemplate: builder.query<Blob, ImportTemplateType>({
       query: (type) => ({
-        url: "/classifications/import/template",
-        method: "GET",
-        params: { type },
+        url: `/admin/classification/import/template/${encodeURIComponent(type)}`,
+        method: "POST",
         responseHandler: (response: Response) => response.blob(),
         cache: "no-store" as RequestCache,
       }),
@@ -255,8 +297,8 @@ export const classificationApi = baseApi.injectEndpoints({
       query: ({ type, file }) => {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("type", type);
-        return { url: "/classifications/import", method: "POST", body: formData };
+        formData.append("templateType", type);
+        return { url: "/admin/classification/import/upload", method: "POST", body: formData };
       },
       transformResponse: throwIfApiError<ImportUploadResponse>,
       invalidatesTags: ["Branches", "Designations", "Banks", "AdditionalClassifications"],
@@ -266,18 +308,23 @@ export const classificationApi = baseApi.injectEndpoints({
 
 export const {
   useGetAdditionalClassificationsQuery,
+  useGetClassificationSummaryQuery,
+  useGetClassificationDetailsQuery,
   useCreateAdditionalClassificationMutation,
   useUpdateAdditionalClassificationMutation,
   useDeleteAdditionalClassificationMutation,
   useGetBranchesQuery,
   useCreateBranchMutation,
   useUpdateBranchMutation,
+  useUpdateBranchStatusMutation,
   useDeleteBranchMutation,
   useGetDesignationsQuery,
   useCreateDesignationMutation,
   useUpdateDesignationMutation,
+  useUpdateDesignationStatusMutation,
   useDeleteDesignationMutation,
   useGetBanksQuery,
+  useGetBankInfoQuery,
   useCreateBankMutation,
   useUpdateBankMutation,
   useDeleteBankMutation,

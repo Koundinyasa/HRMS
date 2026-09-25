@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { DatabaseService } from '../../../../database/database.service';
 
@@ -10,9 +7,7 @@ import { UpdatePolicyDto } from './dto/update-policy.dto';
 
 @Injectable()
 export class AssignService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // =========================================================
   // GEO-LOCATION
@@ -25,16 +20,11 @@ export class AssignService {
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Assign_GeoLocation_Get',
-        );
+        .execute('USP_TimeOffice_Assign_GeoLocation_Get');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error fetching geo-location list:',
-        error,
-      );
+      console.error('Error fetching geo-location list:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch geo-location list.',
@@ -49,46 +39,29 @@ export class AssignService {
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Assign_GeoLocation_Locations_Get',
-        );
+        .execute('USP_TimeOffice_Assign_GeoLocation_Locations_Get');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error fetching locations:',
-        error,
-      );
+      console.error('Error fetching locations:', error);
 
-      throw new InternalServerErrorException(
-        'Unable to fetch locations.',
-      );
+      throw new InternalServerErrorException('Unable to fetch locations.');
     }
   }
 
   // 3. Get Employee Geo-Location Details
-  async getGeoLocationDetails(
-    employeeId: string,
-  ) {
+  async getGeoLocationDetails(employeeId: string) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'EmployeeId',
-          employeeId,
-        )
-        .execute(
-          'USP_TimeOffice_Assign_GeoLocation_Details_Get',
-        );
+        .input('EmployeeId', employeeId)
+        .execute('USP_TimeOffice_Assign_GeoLocation_Details_Get');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error fetching geo-location details:',
-        error,
-      );
+      console.error('Error fetching geo-location details:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch geo-location details.',
@@ -97,40 +70,22 @@ export class AssignService {
   }
 
   // 4. Update Employee Geo-Location
-  async updateGeoLocation(
-    dto: UpdateGeoLocationDto,
-  ) {
+  async updateGeoLocation(dto: UpdateGeoLocationDto) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'EmployeeIds',
-          dto.employeeIds.join(','),
-        )
-        .input(
-          'LocationId',
-          dto.locationId,
-        )
-        .input(
-          'EffectiveDate',
-          dto.effectiveDate,
-        )
-        .execute(
-          'USP_TimeOffice_Assign_GeoLocation_Update',
-        );
+        .input('EmployeeIds', dto.employeeIds.join(','))
+        .input('LocationId', dto.locationId)
+        .input('EffectiveDate', dto.effectiveDate)
+        .execute('USP_TimeOffice_Assign_GeoLocation_Update');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error updating geo-location:',
-        error,
-      );
+      console.error('Error updating geo-location:', error);
 
-      throw new InternalServerErrorException(
-        'Unable to update geo-location.',
-      );
+      throw new InternalServerErrorException('Unable to update geo-location.');
     }
   }
 
@@ -145,16 +100,11 @@ export class AssignService {
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Assign_PolicyUpdate_Get',
-        );
+        .execute('USP_TimeOffice_Assign_PolicyUpdate_Get');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error fetching policy update list:',
-        error,
-      );
+      console.error('Error fetching policy update list:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch policy update list.',
@@ -169,66 +119,35 @@ export class AssignService {
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Assign_Policies_Get',
-        );
+        .execute('USP_TimeOffice_Assign_Policies_Get');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error fetching policies:',
-        error,
-      );
+      console.error('Error fetching policies:', error);
 
-      throw new InternalServerErrorException(
-        'Unable to fetch policies.',
-      );
+      throw new InternalServerErrorException('Unable to fetch policies.');
     }
   }
 
   // 7. Update Employee Policy
-  async updatePolicy(
-    dto: UpdatePolicyDto,
-  ) {
+  async updatePolicy(dto: UpdatePolicyDto) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'EmployeeIds',
-          dto.employeeIds.join(','),
-        )
-        .input(
-          'FromPolicyId',
-          dto.fromPolicyId,
-        )
-        .input(
-          'ToPolicyId',
-          dto.toPolicyId,
-        )
-        .input(
-          'EffectiveDate',
-          dto.effectiveDate,
-        )
-        .input(
-          'Temporary',
-          dto.temporary,
-        )
-        .execute(
-          'USP_TimeOffice_Assign_PolicyUpdate',
-        );
+        .input('EmployeeIds', dto.employeeIds.join(','))
+        .input('FromPolicyId', dto.fromPolicyId)
+        .input('ToPolicyId', dto.toPolicyId)
+        .input('EffectiveDate', dto.effectiveDate)
+        .input('Temporary', dto.temporary)
+        .execute('USP_TimeOffice_Assign_PolicyUpdate');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error updating policy:',
-        error,
-      );
+      console.error('Error updating policy:', error);
 
-      throw new InternalServerErrorException(
-        'Unable to update policy.',
-      );
+      throw new InternalServerErrorException('Unable to update policy.');
     }
   }
 }

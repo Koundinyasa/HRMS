@@ -1,9 +1,4 @@
-import {
-  IsArray,
-  IsInt,
-  ValidateNested,
-  ArrayMinSize
-} from 'class-validator';
+import { IsArray, IsInt, ValidateNested, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ReconcileLeaveEmployeeDto {

@@ -1,15 +1,10 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { DatabaseService } from '../../../../database/database.service';
 
 @Injectable()
 export class ForceApprovalService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // =====================================================
   // PUNCH
@@ -17,21 +12,15 @@ export class ForceApprovalService {
 
   async getPunchApproval() {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute(
-          'USP_ForceApproval_Punch_Get',
-        );
+        .execute('USP_ForceApproval_Punch_Get');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Error while fetching punch approval records:',
-        error,
-      );
+      console.error('Error while fetching punch approval records:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch punch approval records.',
@@ -45,14 +34,11 @@ export class ForceApprovalService {
 
   async getFaceTemplateApproval() {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute(
-          'USP_ForceApproval_FaceTemplate_Get',
-        );
+        .execute('USP_ForceApproval_FaceTemplate_Get');
 
       return result.recordset;
     } catch (error) {

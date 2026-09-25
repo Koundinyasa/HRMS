@@ -1595,6 +1595,80 @@ function getLocalIsoDate(daysFromToday = 0): string {
   return `${year}-${month}-${day}`;
 }
 
+function formatIsoDateLabel(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return iso;
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const monthIndex = Number(match[2]) - 1;
+  return `${months[monthIndex] ?? match[2]} ${Number(match[3])}, ${match[1]}`;
+}
+
+type CalendarLeave = NonNullable<ChatWidget["leaveDates"]>[number];
+
+const LEAVE_COLOR_CLASSES = {
+  orange: {
+    marker: "bg-orange-500",
+    background: "bg-orange-200",
+    text: "text-orange-800",
+  },
+  green: {
+    marker: "bg-emerald-500",
+    background: "bg-emerald-200",
+    text: "text-emerald-800",
+  },
+  red: {
+    marker: "bg-red-500",
+    background: "bg-red-200",
+    text: "text-red-800",
+  },
+  gray: {
+    marker: "bg-gray-500",
+    background: "bg-gray-200",
+    text: "text-gray-700",
+  },
+} as const;
+
+type LeaveColor = keyof typeof LEAVE_COLOR_CLASSES;
+
+type LeaveStatus = "pending" | "approved" | "withdrawn" | "rejected" | "other";
+
+function getLeaveStatus(status: string): LeaveStatus {
+  const normalized = status.trim().toLowerCase();
+  if (normalized.includes("pending")) return "pending";
+  if (normalized.includes("approved")) return "approved";
+  if (normalized.includes("withdrawn")) return "withdrawn";
+  if (normalized.includes("rejected")) return "rejected";
+  return "other";
+}
+
+function getLeaveStatusColor(status: string): LeaveColor {
+  switch (getLeaveStatus(status)) {
+    case "pending":
+      return "orange";
+    case "approved":
+      return "green";
+    case "rejected":
+      return "red";
+    case "withdrawn":
+    case "other":
+      return "gray";
+  }
+}
+
 function ChatWidgetRenderer({
   widget,
   disabled,
@@ -1604,6 +1678,7 @@ function ChatWidgetRenderer({
   onOpenTeamPreview,
 }: ChatWidgetRendererProps) {
   const [dateValue, setDateValue] = useState("");
+  const [selectedLeave, setSelectedLeave] = useState<CalendarLeave | null>(null);
   const [dateError, setDateError] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -1669,6 +1744,16 @@ function ChatWidgetRenderer({
         holiday.name ?? "Holiday",
       ]),
     );
+    const leaveDates = new Map<string, CalendarLeave[]>();
+    for (const leave of widget.leaveDates ?? []) {
+      const date = leave.date.slice(0, 10);
+      const dateLeaves = leaveDates.get(date) ?? [];
+      dateLeaves.push(leave);
+      leaveDates.set(date, dateLeaves);
+    }
+    const leaveStatuses = Array.from(
+      new Set((widget.leaveDates ?? []).map((leave) => getLeaveStatus(leave.status))),
+    );
     const isWeekend = (iso: string) => {
       const day = new Date(`${iso}T00:00:00Z`).getUTCDay();
       return day === 0 || day === 6;
@@ -1706,9 +1791,6 @@ function ChatWidgetRenderer({
       calendarMonth.getMonth() + 1,
       1,
     );
-    const canGoPrevious =
-      previousMonth >= new Date(`${minimumDate.slice(0, 7)}-01T00:00:00`);
-    const canGoNext = nextMonth.getFullYear() <= currentYear;
     const handleDateChange = (value: string) => {
       const formattedValue = formatDateInput(value);
       const isoValue = displayDateToIso(formattedValue);
@@ -1781,7 +1863,6 @@ function ChatWidgetRenderer({
               <div className="mb-2 flex items-center justify-between">
                 <button
                   type="button"
-                  disabled={!canGoPrevious}
                   onClick={() => setCalendarMonth(previousMonth)}
                   className="h-7 w-7 rounded-md border-none bg-transparent text-lg text-[#1f2430] disabled:opacity-25"
                 >
@@ -1792,7 +1873,6 @@ function ChatWidgetRenderer({
                 </span>
                 <button
                   type="button"
-                  disabled={!canGoNext}
                   onClick={() => setCalendarMonth(nextMonth)}
                   className="h-7 w-7 rounded-md border-none bg-transparent text-lg text-[#1f2430] disabled:opacity-25"
                 >
@@ -1813,6 +1893,11 @@ function ChatWidgetRenderer({
                     day.getMonth() !== calendarMonth.getMonth();
                   const weekend = isWeekend(iso);
                   const holiday = isHoliday(iso);
+                  const leaves = leaveDates.get(iso) ?? [];
+                  const leave = leaves[0];
+                  const leaveColors = leaves.map((item) =>
+                    LEAVE_COLOR_CLASSES[getLeaveStatusColor(item.status)],
+                  );
                   const selected =
                     iso === dateValue.split("-").reverse().join("-");
                   const startDateReference = widget.minDate === iso;
@@ -1823,7 +1908,9 @@ function ChatWidgetRenderer({
                       type="button"
                       disabled={!selectable}
                       title={
-                        holiday
+                        leave
+                          ? `${leaves.map((item) => `${item.leaveType} (${item.status})`).join("\n")}\n${formatIsoDateLabel(iso)}`
+                          : holiday
                           ? holidayDates.get(iso)
                           : weekend
                           ? "Weekend"
@@ -1831,7 +1918,8 @@ function ChatWidgetRenderer({
                       }
                       onClick={() => {
                         handleDateChange(isoToDisplayDate(iso));
-                        setShowCalendar(false);
+                        setSelectedLeave(leave ?? null);
+                        setShowCalendar(leaves.length > 0);
                       }}
                       className={`mx-auto my-0.5 flex h-7 w-7 items-center justify-center rounded-full border-none text-[12px] ${
                         outsideMonth ? "text-[#b7bdc9]" : "text-[#1f2430]"
@@ -1842,6 +1930,10 @@ function ChatWidgetRenderer({
                           ? "bg-[#dbeafe] text-[#1d4ed8]"
                           : ""
                       } ${
+                        leave && !holiday && !weekend
+                          ? `${leaveColors[0].background} ${leaveColors[0].text}`
+                          : ""
+                      } ${
                         selected ? "ring-2 ring-[#1f5bd8] ring-offset-1" : ""
                       } ${
                         selectable
@@ -1849,20 +1941,62 @@ function ChatWidgetRenderer({
                           : "cursor-not-allowed opacity-75"
                       }`}
                     >
-                      {day.getDate()}
+                      <span className="relative">
+                        {day.getDate()}
+                      </span>
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-2 flex items-center justify-center gap-4 border-t border-[#eceef5] pt-2 text-[10px] text-[#526079]">
-                <span>
-                  <i className="mr-1 inline-block h-2 w-2 rounded-full bg-[#e33b49]" />
-                  Weekend
+              {selectedLeave && (
+                <div className="mt-2 rounded-lg border border-[#f6d08a] bg-[#fffaf0] px-3 py-2 text-[11px] text-[#526079]">
+                  <div className="font-semibold text-[#b45309]">My Leave</div>
+                  <div className="mt-1 font-medium text-[#1f2430]">
+                    {formatIsoDateLabel(selectedLeave.date)}
+                  </div>
+                  <div className="mt-1">
+                    Leave Type: <span className="font-medium text-[#1f2430]">{selectedLeave.leaveType}</span>
+                  </div>
+                  <div>
+                    Status: <span className="font-medium text-[#1f2430]">{selectedLeave.status}</span>
+                  </div>
+                </div>
+              )}
+              <div className="mt-2 grid grid-cols-3 items-start gap-x-2 gap-y-2 border-t border-[#eceef5] pt-2 text-[10px] leading-[1.15] text-[#526079]">
+                <span className="flex min-w-0 flex-col items-center text-center">
+                  <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-[#e33b49]" />
+                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">Weekend</span>
                 </span>
-                <span>
-                  <i className="mr-1 inline-block h-2 w-2 rounded-full bg-[#2f68df]" />
-                  Holiday
+                <span className="flex min-w-0 flex-col items-center text-center">
+                  <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-[#2f68df]" />
+                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">Holiday</span>
                 </span>
+                {leaveStatuses.map((status) => {
+                  const statusColors = LEAVE_COLOR_CLASSES[
+                    getLeaveStatusColor(status)
+                  ];
+                  const label =
+                    status === "pending"
+                      ? "Pending Leave"
+                      : status === "approved"
+                      ? "Approved Leave"
+                      : status === "withdrawn"
+                      ? "Withdrawn Leave"
+                      : status === "rejected"
+                      ? "Rejected Leave"
+                      : "Other Leave";
+                  return (
+                    <span
+                      key={status}
+                      className="flex min-w-0 flex-col items-center text-center"
+                    >
+                      <i className={`mb-1 h-2 w-2 shrink-0 rounded-full ${statusColors.marker}`} />
+                      <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
+                        {label}
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <button
@@ -1870,6 +2004,7 @@ function ChatWidgetRenderer({
                   onClick={() => {
                     setDateValue("");
                     setDateError(false);
+                    setSelectedLeave(null);
                     setShowCalendar(false);
                   }}
                   className="border-none bg-transparent px-1 text-[12px] font-medium text-[#1677d2] cursor-pointer hover:text-[#125eaa]"
@@ -1880,8 +2015,10 @@ function ChatWidgetRenderer({
                   type="button"
                   disabled={!isSelectable(getLocalIsoDate())}
                   onClick={() => {
-                    handleDateChange(isoToDisplayDate(getLocalIsoDate()));
-                    setCalendarMonth(isoToMonthStart(getLocalIsoDate()));
+                    const today = getLocalIsoDate();
+                    handleDateChange(isoToDisplayDate(today));
+                    setSelectedLeave(leaveDates.get(today)?.[0] ?? null);
+                    setCalendarMonth(isoToMonthStart(today));
                     setShowCalendar(false);
                   }}
                   className="border-none bg-transparent px-1 text-[12px] font-medium text-[#1677d2] cursor-pointer hover:text-[#125eaa] disabled:cursor-not-allowed disabled:opacity-40"

@@ -388,6 +388,10 @@ export default function Sidebar({
   // ====================================================
  
   const getRoute = (menu: MenuItem) => {
+    if (menu.menuName === "Applied Leave") {
+      return `/${domain}/employee/review/requisition`;
+    }
+
     let route =
       menu.routeUrl?.replace(/^\/Employee/i, `/${domain}/employee`) ?? "";
  

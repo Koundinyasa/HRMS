@@ -61,9 +61,9 @@ export default function TaskCard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3
-          className="text-xl font-semibold"
+          className="dashboard-subheading text-xl"
           style={{
-            color: "var(--primary-color)",
+            color: "var(--dashboard-subheading)",
           }}
         >
           Tasks
@@ -145,10 +145,10 @@ export default function TaskCard() {
               />
             </div>
             <div className="min-w-0">
-              <h4 className="font-medium text-sm sm:text-base text-slate-800 break-words">
+              <h4 className="dashboard-label font-medium text-sm sm:text-base break-words">
                 {task.title}
               </h4>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="dashboard-muted text-sm mt-1">
                 {task.time}
               </p>
             </div>

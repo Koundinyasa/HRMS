@@ -9,8 +9,6 @@ export type PermissionAction =
   | 'CanDelete'
   | 'CanApprove';
 
-
-  
 export interface PermissionMeta {
   menuId: number;
   action: PermissionAction;
@@ -18,4 +16,3 @@ export interface PermissionMeta {
 
 export const Permission = (menuId: number, action: PermissionAction) =>
   SetMetadata<string, PermissionMeta>(PERMISSION_KEY, { menuId, action });
-

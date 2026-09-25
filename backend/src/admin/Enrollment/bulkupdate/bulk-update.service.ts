@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-
 @Injectable()
 export class BulkUpdateService {
-
   getRoles() {
     return {
       success: true,

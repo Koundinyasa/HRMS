@@ -11,21 +11,21 @@
 // import { FileInterceptor } from '@nestjs/platform-express';
 // import { MyprofileService } from './myprofile.service';
 // import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
- 
+
 // @Controller('employee/myprofile')
 // @UseGuards(JwtAuthGuard)
 // export class MyprofileController {
 //   constructor(
 //     private readonly myprofileService: MyprofileService,
 //   ) {}
- 
+
 //   @Get('info')
 //   async getMyProfile(@Req() req: any) {
 //     return await this.myprofileService.getEmployeeInfo(
 //       req.user.employeeId,
 //     );
 //   }
- 
+
 //   @Post('documents/upload')
 //   @UseInterceptors(FileInterceptor('file'))
 //   async uploadDocument(
@@ -39,7 +39,7 @@
 //       file,
 //     );
 //   }
- 
+
 //   @Get('test')
 //   test() {
 //     return {
@@ -47,8 +47,6 @@
 //     };
 //   }
 // }
-
-
 
 import {
   Controller,
@@ -63,21 +61,17 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MyprofileService } from './myprofile.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
- 
+
 @Controller('employee/myprofile')
 @UseGuards(JwtAuthGuard)
 export class MyprofileController {
-  constructor(
-    private readonly myprofileService: MyprofileService,
-  ) {}
- 
+  constructor(private readonly myprofileService: MyprofileService) {}
+
   @Get('info')
   async getMyProfile(@Req() req: any) {
-    return await this.myprofileService.getEmployeeInfo(
-      req.user.employeeId,
-    );
+    return await this.myprofileService.getEmployeeInfo(req.user.employeeId);
   }
- 
+
   @Post('documents/upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadDocument(
@@ -91,7 +85,7 @@ export class MyprofileController {
       file,
     );
   }
- 
+
   @Get('test')
   test() {
     return {

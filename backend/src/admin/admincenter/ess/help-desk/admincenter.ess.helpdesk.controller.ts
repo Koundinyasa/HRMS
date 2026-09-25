@@ -1,19 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 
 import { HelpDeskService } from './admincenter.ess.helpdesk.service';
 import { CreateHelpdeskCategoryDto } from './dto/create-helpdesk-category.dto';
 
 @Controller('ess/helpdesk')
 export class HelpDeskController {
-  constructor(
-    private readonly helpDeskService: HelpDeskService,
-  ) {}
+  constructor(private readonly helpDeskService: HelpDeskService) {}
 
   // Get Category Types
   @Get('category-types')
@@ -29,10 +21,7 @@ export class HelpDeskController {
   ) {
     const createdBy = req.user?.userId;
 
-    return this.helpDeskService.createCategory(
-      dto,
-      createdBy,
-    );
+    return this.helpDeskService.createCategory(dto, createdBy);
   }
 
   // Get Categories

@@ -4,27 +4,19 @@ import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
 
 @Injectable()
 export class ForceLeaveApprovalService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // ==========================================
   // Approve Leave
   // ==========================================
 
-  async approveLeave(
-    dto: ApproveRejectLeaveDto,
-  ) {
+  async approveLeave(dto: ApproveRejectLeaveDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'LeaveIds',
-          JSON.stringify(dto.leaveIds),
-        )
+        .input('LeaveIds', JSON.stringify(dto.leaveIds))
         .execute('USP_ForceLeaveApproval_Approve');
 
       return {
@@ -33,10 +25,7 @@ export class ForceLeaveApprovalService {
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error approving leave:',
-        error,
-      );
+      console.error('Error approving leave:', error);
 
       return {
         success: false,
@@ -49,19 +38,13 @@ export class ForceLeaveApprovalService {
   // Reject Leave
   // ==========================================
 
-  async rejectLeave(
-    dto: ApproveRejectLeaveDto,
-  ) {
+  async rejectLeave(dto: ApproveRejectLeaveDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'LeaveIds',
-          JSON.stringify(dto.leaveIds),
-        )
+        .input('LeaveIds', JSON.stringify(dto.leaveIds))
         .execute('USP_ForceLeaveApproval_Reject');
 
       return {
@@ -70,10 +53,7 @@ export class ForceLeaveApprovalService {
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error rejecting leave:',
-        error,
-      );
+      console.error('Error rejecting leave:', error);
 
       return {
         success: false,
@@ -95,8 +75,7 @@ export class ForceLeaveApprovalService {
     isCurrentMonth: boolean = true,
   ) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
@@ -112,10 +91,7 @@ export class ForceLeaveApprovalService {
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error fetching leave approval records:',
-        error,
-      );
+      console.error('Error fetching leave approval records:', error);
 
       return {
         success: false,

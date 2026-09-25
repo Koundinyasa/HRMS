@@ -60,51 +60,51 @@ export default function LeaveCalendarHistory() {
     saveAs(data, "AttendanceHistory.xlsx");
   };
   return (
-    <div className="h-full w-full overflow-hidden bg-slate-100 p-2 sm:p-3 md:p-4">
-      <div className="flex h-full w-full max-w-full flex-col overflow-hidden rounded-lg bg-white shadow">
+    <div className="h-full w-full overflow-hidden bg-slate-100 p-2 sm:p-3 md:p-4 font-[Urbanist]">
+      <div className="flex h-full w-full max-w-full flex-col overflow-hidden rounded-lg bg-white shadow font-[Urbanist]">
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-3 py-3 sm:px-4 sm:py-4">
-          <h2 className="text-sm font-semibold text-blue-600 sm:text-base md:text-xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-black px-3 py-3 sm:px-4 sm:py-4 font-[Urbanist]">
+          <h2 className="text-sm font-semibold text-blue-600 sm:text-base md:text-xl font-[Urbanist]">
             Attendance History
           </h2>
           <button
             onClick={exportToExcel}
             disabled={employees.length === 0}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-9"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-9 font-[Urbanist]"
             title="Export Excel"
             type="button"
           >
-            <FaFileExcel size={22} className="text-green-600 sm:size-[26px]" />
+            <FaFileExcel size={22} className="text-green-600 sm:size-[26px] font-[Urbanist]" />
           </button>
         </div>
         {/* Loading State */}
         {isLoading && (
-          <div className="shrink-0 px-4 py-3 text-center text-sm text-gray-500">
+          <div className="shrink-0 px-4 py-3 text-center text-sm text-gray-500 font-[Urbanist]">
             Loading attendance history...
           </div>
         )}
         {/* Error State */}
         {isError && (
-          <div className="shrink-0 px-4 py-6 text-center text-sm text-red-500">
+          <div className="shrink-0 px-4 py-6 text-center text-sm text-red-500 font-[Urbanist]">
             Failed to load attendance history.
           </div>
         )}
         {/* Table */}
         {!isLoading && !isError && (
-          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto">
-            <table className="w-full min-w-[600px] table-fixed border-collapse">
-              <thead className="sticky top-0 z-10 bg-blue-50">
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto font-[Urbanist]">
+            <table className="w-full min-w-[600px] table-fixed border-collapse font-[Urbanist]">
+              <thead className="sticky top-0 z-10 bg-blue-50 font-[Urbanist]">
                 <tr>
-                  <th className="w-[25%] border border-gray-200 bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                  <th className="w-[25%] border border-black bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                     Employee ID
                   </th>
-                  <th className="w-[30%] border border-gray-200 bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                  <th className="w-[30%] border border-black bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                     Employee Name
                   </th>
-                  <th className="w-[22.5%] border border-gray-200 bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                  <th className="w-[22.5%] border border-black bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                     Present Days
                   </th>
-                  <th className="w-[22.5%] border border-gray-200 bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                  <th className="w-[22.5%] border border-black bg-blue-50 px-1 py-2 text-[10px] font-semibold leading-tight sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                     Absent Days
                   </th>
                 </tr>
@@ -114,7 +114,7 @@ export default function LeaveCalendarHistory() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="border border-gray-200 px-3 py-6 text-center text-sm text-gray-500"
+                      className="border border-black px-3 py-6 text-center text-sm text-gray-500 font-[Urbanist]"
                     >
                       No attendance history found.
                     </td>
@@ -122,19 +122,19 @@ export default function LeaveCalendarHistory() {
                 ) : (
                   employees.map((employee, index) => (
                     <tr key={employee.employeeId || `employee-${index}`}>
-                      <td className="break-all border border-gray-200 px-1 py-3 text-[10px] leading-tight text-gray-700 sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                      <td className="break-all border border-black px-1 py-3 text-[10px] leading-tight text-gray-700 sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                         {employee.employeeId || "-"}
                       </td>
 
-                      <td className="break-words border border-gray-200 px-1 py-3 text-[10px] leading-tight text-gray-700 sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                      <td className="break-words border border-black px-1 py-3 text-[10px] leading-tight text-gray-700 sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                         {employee.employeeName || "-"}
                       </td>
 
-                      <td className="border border-gray-200 px-1 py-3 text-center text-[11px] font-semibold text-green-600 sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                      <td className="border border-black px-1 py-3 text-center text-[11px] font-semibold text-green-600 sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                         {employee.present}
                       </td>
 
-                      <td className="border border-gray-200 px-1 py-3 text-center text-[11px] font-semibold text-red-600 sm:px-2 sm:py-3 sm:text-xs md:text-sm">
+                      <td className="border border-black px-1 py-3 text-center text-[11px] font-semibold text-red-600 sm:px-2 sm:py-3 sm:text-xs md:text-sm font-[Urbanist]">
                         {employee.absent}
                       </td>
                     </tr>

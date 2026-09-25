@@ -3,12 +3,10 @@ import {
   IsInt,
   IsNotEmpty,
   IsString,
-  MaxLength
+  MaxLength,
 } from 'class-validator';
 
 export class CreateAttendanceConfigurationDto {
-
-
   @MaxLength(100)
   attendanceName!: string;
 

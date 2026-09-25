@@ -2,7 +2,7 @@ export interface Stamped<T> {
   data: T;
   savedAt: number;
 }
- 
+
 export interface ChatResult {
   success: boolean;
   userMessage: string;

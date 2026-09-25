@@ -9,9 +9,7 @@ export class EstablishmentConfigurationResponseDto {
   natureOfBusiness!: string | null;
 }
 
-
 export class EstablishmentConfigurationDto {
-
   @IsString()
   establishmentName!: string;
 
@@ -29,7 +27,6 @@ export class EstablishmentConfigurationDto {
 
   @IsString()
   principalEmployerAddress!: string;
-
 
   // CHANGE START
   @IsOptional()
@@ -49,11 +46,9 @@ export class EstablishmentConfigurationDto {
   managerAddress?: string;
   // CHANGE END
 
-
   @IsOptional()
   @IsString()
   natureOfBusiness?: string;
-
 
   @IsOptional()
   @IsBoolean()

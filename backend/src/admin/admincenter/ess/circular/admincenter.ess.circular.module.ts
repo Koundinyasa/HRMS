@@ -3,8 +3,8 @@ import { AdmincenterEssCircularController } from './admincenter.ess.circular.con
 import { AdmincenterEssCircularService } from './admincenter.ess.circular.service';
 
 @Module({
-    controllers: [AdmincenterEssCircularController],
-    providers: [AdmincenterEssCircularService],
-    exports: [AdmincenterEssCircularService],
+  controllers: [AdmincenterEssCircularController],
+  providers: [AdmincenterEssCircularService],
+  exports: [AdmincenterEssCircularService],
 })
 export class AdmincenterEssCircularModule {}

@@ -40,35 +40,35 @@ export default function MonthlyOverview({
   const iconFor = (label: string) => {
     switch (label) {
       case "Present Days":
-        return <CheckCircle2 className="h-4 w-4" />;
+        return <CheckCircle2 className="h-4 w-4 font-[Urbanist]" />;
       case "Absent Days":
-        return <XCircle className="h-4 w-4" />;
+        return <XCircle className="h-4 w-4 font-[Urbanist]" />;
       case "Early In":
       case "Late In":
-        return <ArrowRight className="h-4 w-4" />;
+        return <ArrowRight className="h-4 w-4 font-[Urbanist]" />;
       case "Early Out":
-        return <ArrowLeft className="h-4 w-4" />;
+        return <ArrowLeft className="h-4 w-4 font-[Urbanist]" />;
       default:
-        return <History className="h-4 w-4" />;
+        return <History className="h-4 w-4 font-[Urbanist]" />;
     }
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700">
+    <div className="rounded-xl border border-black bg-white p-5 shadow-sm font-[Urbanist]">
+      <div className="mb-3 flex items-center justify-between font-[Urbanist]">
+        <h3 className="text-sm font-semibold text-slate-700 font-[Urbanist]">
           Monthly Overview
         </h3>
 
-        <span className="flex items-center gap-1 text-xs font-medium text-sky-700">
-          <Calendar className="h-3.5 w-3.5" />
+        <span className="flex items-center gap-1 text-xs font-medium text-sky-700 font-[Urbanist]">
+          <Calendar className="h-3.5 w-3.5 font-[Urbanist]" />
           {selectedMonth}
         </span>
       </div>
 
-      <div className="mb-2 flex divide-x divide-white/30 overflow-hidden rounded-lg bg-sky-600 text-white">
-        <div className="flex-1 px-3 py-3 text-center">
-          <div className="text-lg font-bold">
+      <div className="mb-2 flex divide-x divide-white/30 overflow-hidden rounded-lg bg-sky-600 text-white font-[Urbanist]">
+        <div className="flex-1 px-3 py-3 text-center font-[Urbanist]">
+          <div className="text-lg font-bold font-[Urbanist]">
             {readOverviewMetric(
               overview,
               "Total Hours",
@@ -82,13 +82,13 @@ export default function MonthlyOverview({
               "0.00",
             )}
           </div>
-          <div className="text-[11px] opacity-90">
+          <div className="text-[11px] opacity-90 font-[Urbanist]">
             Total Hours
           </div>
         </div>
 
-        <div className="flex-1 px-3 py-3 text-center">
-          <div className="text-lg font-bold">
+        <div className="flex-1 px-3 py-3 text-center font-[Urbanist]">
+          <div className="text-lg font-bold font-[Urbanist]">
             {readOverviewMetric(
               overview,
               "Avg Hours Per Day",
@@ -102,13 +102,13 @@ export default function MonthlyOverview({
               "00:00",
             )}
           </div>
-          <div className="text-[11px] opacity-90">
+          <div className="text-[11px] opacity-90 font-[Urbanist]">
             Avg Hours
           </div>
         </div>
 
-        <div className="flex-1 px-3 py-3 text-center">
-          <div className="text-lg font-bold">
+        <div className="flex-1 px-3 py-3 text-center font-[Urbanist]">
+          <div className="text-lg font-bold font-[Urbanist]">
             {readOverviewMetric(
               overview,
               "OT Hours",
@@ -122,13 +122,13 @@ export default function MonthlyOverview({
               "00:00",
             )}
           </div>
-          <div className="text-[11px] opacity-90">
+          <div className="text-[11px] opacity-90 font-[Urbanist]">
             OT Hours
           </div>
         </div>
       </div>
 
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-slate-100 font-[Urbanist]">
         {overviewStats.map((stat) => (
           <div
             key={stat.label}
@@ -169,17 +169,17 @@ export default function MonthlyOverview({
                 if (key) onOpenDetail(key);
               }
             }}
-            className="-mx-2 grid cursor-pointer grid-cols-[minmax(0,1fr)_190px] items-center gap-2 rounded-md px-2 py-3 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-200"
+            className="-mx-2 grid cursor-pointer grid-cols-[minmax(0,1fr)_190px] items-center gap-2 rounded-md px-2 py-3 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-200 font-[Urbanist]"
           >
-            <div className="flex min-w-0 items-center gap-2 text-slate-700">
+            <div className="flex min-w-0 items-center gap-2 text-slate-700 font-[Urbanist]">
               {iconFor(stat.label)}
-              <span className="truncate text-sm">
+              <span className="truncate text-sm font-[Urbanist]">
                 {stat.label}
               </span>
             </div>
 
-            <div className="grid grid-cols-[100px_82px] items-center gap-2">
-              <div className="h-1.5 w-[100px] overflow-hidden rounded-full bg-slate-200">
+            <div className="grid grid-cols-[100px_82px] items-center gap-2 font-[Urbanist]">
+              <div className="h-1.5 w-[100px] overflow-hidden rounded-full bg-slate-200 font-[Urbanist]">
                 <div
                   className={`h-full rounded-full ${stat.barColor}`}
                   style={{

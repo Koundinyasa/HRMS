@@ -1,26 +1,17 @@
- 
-import { useEffect, useRef, useState } from "react";
+ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react";
- 
+import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
- 
 import { Button } from "@/components/ui/button";
- 
 import { Label } from "@/components/ui/label";
- 
 import DateField from "../components/DateField";
- 
 import LeaveBalanceCard from "../components/LeaveBalanceCard";
- 
 import { useLeave } from "../hooks/useLeave";
 import { useApplyLeave } from "../hooks/useApplyLeave";
- 
 import { leaveApplySchema } from "../validation/leaveValidation";
 import { minFromDateIso, maxApplyDateIso } from "../constants/leave.constants";
- 
 import type { LeaveApplyForm } from "../types/leave.types";
  
 const DEFAULT_VALUES: LeaveApplyForm = {
@@ -449,4 +440,3 @@ export default function LeaveApply() {
     </div>
   );
 }
- 

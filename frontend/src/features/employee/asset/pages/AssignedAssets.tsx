@@ -1,9 +1,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import AssetNavbar from "../components/AssetNavbar";
 import { useAssetManagement } from "../hooks/useAssetManagement";
@@ -19,12 +16,6 @@ export default function AssignedAssets() {
       <AssetNavbar />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Assigned Assets</CardTitle>
-          <CardDescription>
-            Assets that have been approved and allocated to you.
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           {records.length === 0 ? (
             <div className="py-10 text-center">

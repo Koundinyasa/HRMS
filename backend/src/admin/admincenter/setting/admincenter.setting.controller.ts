@@ -1,4 +1,14 @@
-import { Controller, Body, Get, Put, Req, UseGuards, ParseIntPipe, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Body,
+  Get,
+  Put,
+  Req,
+  UseGuards,
+  ParseIntPipe,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { AdmincenterSettingService } from './admincenter.setting.service';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UpdatePayrollConfigurationDto } from './dto/update-payroll-configuration.dto';
@@ -19,7 +29,7 @@ export class AdmincenterSettingController {
     );
   }
 
- @Get('payroll/masters')
+  @Get('payroll/masters')
   getPayrollMasters() {
     return this.admincenterSettingService.getPayrollMasters();
   }
@@ -36,7 +46,6 @@ export class AdmincenterSettingController {
     );
   }
 
-  
   @Get('reminder')
   getReminderEmailConfiguration(@Req() req: any) {
     return this.admincenterSettingService.getReminderEmailConfiguration(
@@ -56,16 +65,9 @@ export class AdmincenterSettingController {
   }
 
   @Post('reminder')
-  addReminder(
-    @Body() dto: AddReminderDto,
-    @Req() req: any,
-  ) {
-    return this.admincenterSettingService.addReminder(
-      dto,
-      req.user.createdBy,
-    );
+  addReminder(@Body() dto: AddReminderDto, @Req() req: any) {
+    return this.admincenterSettingService.addReminder(dto, req.user.createdBy);
   }
-
 
   @Put('reminder/status')
   async updateReminderStatus(
@@ -74,17 +76,13 @@ export class AdmincenterSettingController {
   ) {
     const modifiedBy = req.user.createdBy;
 
-    return this.admincenterSettingService.updateReminderStatus(
-      dto,
-      modifiedBy,
-    );
+    return this.admincenterSettingService.updateReminderStatus(dto, modifiedBy);
   }
 
-//   1. Email Settings 
-// We'll first find the real Email-related SPs, then implement only the operations supported by the screen.
+  //   1. Email Settings
+  // We'll first find the real Email-related SPs, then implement only the operations supported by the screen.
 
-// 2. Tenant Settings 
-// After Email, we'll do Tenant Settings, including any configuration such as 
-// IP/company-logo functionality if those belong to this screen.
-
+  // 2. Tenant Settings
+  // After Email, we'll do Tenant Settings, including any configuration such as
+  // IP/company-logo functionality if those belong to this screen.
 }

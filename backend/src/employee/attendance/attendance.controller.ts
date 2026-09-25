@@ -33,6 +33,8 @@ interface PunchLocationBody {
   latitude?: string;
   longitude?: string;
   accuracy?: string;
+  punchMode?: string; // NEW — sent as a stringified Mst_Status.ID (69/70/71/72),
+                       // not a text label — see PUNCH_MODE_ID in useAttendance.ts
 }
 
 // Small, dependency-free parse — just enough to produce a friendly
@@ -48,13 +50,15 @@ function parseDeviceLabel(userAgent: string | undefined): string {
   if (userAgent.includes('Edg/')) browser = 'Edge';
   else if (userAgent.includes('Chrome/')) browser = 'Chrome';
   else if (userAgent.includes('Firefox/')) browser = 'Firefox';
-  else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) browser = 'Safari';
+  else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/'))
+    browser = 'Safari';
 
   let os = 'Unknown OS';
   if (userAgent.includes('Windows')) os = 'Windows';
   else if (userAgent.includes('Mac OS X')) os = 'macOS';
   else if (userAgent.includes('Android')) os = 'Android';
-  else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
+  else if (userAgent.includes('iPhone') || userAgent.includes('iPad'))
+    os = 'iOS';
   else if (userAgent.includes('Linux')) os = 'Linux';
 
   return `${browser}, ${os}`;
@@ -86,7 +90,9 @@ export class AttendanceController {
     @Body() body: PunchLocationBody,
   ) {
     if (!frames || frames.length === 0) {
-      throw new BadRequestException('At least one frame is required to punch in or out.');
+      throw new BadRequestException(
+        'At least one frame is required to punch in or out.',
+      );
     }
     const employeeId = req.user.employeeId;
 
@@ -97,18 +103,33 @@ export class AttendanceController {
     // (NaN/malformed → undefined) rather than throwing at this layer —
     // the service is where that's actually enforced, and its rejection
     // message is what the frontend surfaces to the employee.
-    const latitude = body.latitude !== undefined ? Number(body.latitude) : undefined;
-    const longitude = body.longitude !== undefined ? Number(body.longitude) : undefined;
+    const latitude =
+      body.latitude !== undefined ? Number(body.latitude) : undefined;
+    const longitude =
+      body.longitude !== undefined ? Number(body.longitude) : undefined;
     const hasValidCoords =
-      latitude !== undefined && longitude !== undefined && !Number.isNaN(latitude) && !Number.isNaN(longitude);
+      latitude !== undefined &&
+      longitude !== undefined &&
+      !Number.isNaN(latitude) &&
+      !Number.isNaN(longitude);
 
     // NEW — accuracy (meters). Same defensive parse as lat/long: malformed
     // or absent just becomes undefined, never blocks the request at this
     // layer. attendance.service.ts's punch() only logs a warning on a poor
     // fix right now (ACCURACY_CHECK_REQUIRED is still false), so there's
     // nothing to enforce here either — this is pure pass-through.
-    const accuracy = body.accuracy !== undefined ? Number(body.accuracy) : undefined;
+    const accuracy =
+      body.accuracy !== undefined ? Number(body.accuracy) : undefined;
     const hasValidAccuracy = accuracy !== undefined && !Number.isNaN(accuracy);
+
+
+
+    // NEW — punchMode is the numeric Mst_Status.ID, same defensive
+    // parse pattern as everything else in this body: malformed/absent
+    // just becomes undefined, never throws at this layer.
+    const punchMode = body.punchMode !== undefined ? Number(body.punchMode) : undefined;
+    const hasValidPunchMode = punchMode !== undefined && !Number.isNaN(punchMode);
+
 
     const device = parseDeviceLabel(req.headers['user-agent']);
 
@@ -119,6 +140,7 @@ export class AttendanceController {
       hasValidCoords ? longitude : undefined,
       device,
       hasValidAccuracy ? accuracy : undefined,
+      hasValidPunchMode ? punchMode : undefined,
     );
   }
 
@@ -127,7 +149,7 @@ export class AttendanceController {
   // full attendance report.
   @UseGuards(JwtAuthGuard)
   @Get('recent')
-async recentPunches(@Req() req: any) {
+  async recentPunches(@Req() req: any) {
     const employeeId = req.user.employeeId;
     return this.attendanceService.getRecentPunches(employeeId);
   }
@@ -165,9 +187,14 @@ async recentPunches(@Req() req: any) {
   @UseGuards(JwtAuthGuard)
   @Post('enroll')
   @UseInterceptors(FilesInterceptor('frames', 30))
-  async enroll(@Req() req: any, @UploadedFiles() frames: Express.Multer.File[]) {
+  async enroll(
+    @Req() req: any,
+    @UploadedFiles() frames: Express.Multer.File[],
+  ) {
     if (!frames || frames.length === 0) {
-      throw new BadRequestException('At least one photo is required to register your face.');
+      throw new BadRequestException(
+        'At least one photo is required to register your face.',
+      );
     }
     const employeeId = req.user.employeeId;
     return this.attendanceService.enrollFace(employeeId, frames);

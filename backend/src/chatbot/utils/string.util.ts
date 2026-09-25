@@ -1,6 +1,6 @@
 import { TYPO_MAP } from '../constants/typo.constants';
 import { levenshteinDistance } from './fuzzy.util';
- 
+
 export function normalizeText(raw: string): string {
   let text = String(raw || '')
     .toLowerCase()
@@ -13,7 +13,7 @@ export function normalizeText(raw: string): string {
   }
   return text;
 }
- 
+
 export function normalizeMessage(text: string): string {
   let normalized = String(text || '')
     .toLowerCase()
@@ -21,7 +21,7 @@ export function normalizeMessage(text: string): string {
   for (const [bad, good] of Object.entries(TYPO_MAP)) {
     normalized = normalized.replace(new RegExp(`\\b${bad}\\b`, 'g'), good);
   }
- 
+
   const dictionary = [
     ...new Set([
       ...Object.values(TYPO_MAP),
@@ -68,32 +68,32 @@ export function normalizeMessage(text: string): string {
       'session',
     ]),
   ];
- 
+
   const tokens = normalized.split(/\s+/).map((token) => {
     if (!token || dictionary.includes(token)) return token;
- 
+
     // Do not fuzzy-match very short words.
     // Short words like "ai", "hr", "me", "my", etc.
     // can incorrectly match unrelated dictionary words.
     if (token.length <= 2) return token;
- 
+
     let best = { word: token, distance: Infinity };
- 
+
     for (const word of dictionary) {
       // Only compare words of similar length.
       if (Math.abs(word.length - token.length) > 2) continue;
- 
+
       const d = levenshteinDistance(token, word);
- 
+
       if (d < best.distance) {
         best = { word, distance: d };
       }
     }
- 
+
     return best.distance <= 2 ? best.word : token;
   });
   return tokens.join(' ').replace(/\s+/g, ' ').trim();
 }
- 
+
 // Generic "numbered steps + optional footer" formatter used by several
 // guide-style replies (salary, Form16, profile, document access, etc.)

@@ -1,19 +1,16 @@
-
-
-
- 
 import { useEffect, useRef } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
  
 import { Input } from "./input";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
+
 export interface DatePickerCell {
-    iso: string;
-    day: number;
-    inMonth: boolean;
-    disabled: boolean;
-    selected: boolean;
+  iso: string;
+  day: number;
+  inMonth: boolean;
+  disabled: boolean;
+  selected: boolean;
 }
  
 export interface DatePickerProps {
@@ -39,23 +36,23 @@ export interface DatePickerProps {
 }
  
 export function DatePicker({
-    id,
-    text,
-    onTextChange,
-    onBlur,
-    isInvalid,
-    placeholder = "dd-mm-yyyy",
-    inputClassName,
-    open,
-    onOpenChange,
-    monthLabel,
-    weekdayLabels,
-    cells,
-    onSelectDay,
-    onPrevMonth,
-    onNextMonth,
-    onClear,
-    onToday,
+  id,
+  text,
+  onTextChange,
+  onBlur,
+  isInvalid,
+  placeholder = "dd-mm-yyyy",
+  inputClassName,
+  open,
+  onOpenChange,
+  monthLabel,
+  weekdayLabels,
+  cells,
+  onSelectDay,
+  onPrevMonth,
+  onNextMonth,
+  onClear,
+  onToday,
 }: DatePickerProps) {
     const wrapperRef = useRef<HTMLDivElement>(null);
  
@@ -128,7 +125,7 @@ export function DatePicker({
                     backgroundColor: open ? "rgba(124,58,237,0.1)" : "transparent",
                 }}
             >
-                <CalendarDays className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
  
             {open && (
@@ -275,7 +272,9 @@ export function DatePicker({
                 </div>
             )}
         </div>
-    );
+    
+  );
+  
 }
  
 export default DatePicker;
