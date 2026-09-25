@@ -5,6 +5,7 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { logout } from "@/features/auth/authSlice";
 import { useLogoutMutation } from "@/features/auth/api/authApi";
+import ChangePasswordModal from "../../employee/components/ChangePasswordModal";
 
 interface UserMenuProps {
   fullName?: string;
@@ -12,8 +13,13 @@ interface UserMenuProps {
   profilePhoto?: string | null;
 }
 
-export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProps) {
+export default function UserMenu({
+  fullName,
+  email,
+  profilePhoto,
+}: UserMenuProps) {
   const [open, setOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -92,7 +98,9 @@ export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProp
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
+              <p className="text-sm font-semibold text-slate-800 truncate">
+                {displayName}
+              </p>
               <p className="text-xs text-slate-400 truncate">{displayEmail}</p>
             </div>
           </div>
@@ -102,13 +110,26 @@ export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProp
           {/* Menu items */}
           <div className="py-2">
             <button
+              type="button"
               onClick={() => {
                 setOpen(false);
-                navigate(`/${domain}/reset-password`);
+                setChangePasswordOpen(true);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+              className="
+    w-full
+    flex
+    items-center
+    gap-3
+    px-4
+    py-2.5
+    text-sm
+    text-[#1E3A5F]
+    hover:bg-[#EAF5FE]
+    hover:text-[#1E3A5F]
+    transition-colors
+  "
             >
-              <KeyRound size={17} className="text-slate-500" />
+              <KeyRound size={16} strokeWidth={2} className="text-[#1E3A5F]" />
               Change Password
             </button>
             <button
@@ -129,6 +150,11 @@ export default function UserMenu({ fullName, email, profilePhoto }: UserMenuProp
           </div>
         </div>
       )}
+
+      <ChangePasswordModal
+        open={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+      />
     </div>
   );
 }
