@@ -19,14 +19,17 @@ export default function WithdrawDialog({
 }: WithdrawDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-24px)]
+      <DialogContent
+        className="w-[calc(100%-24px)]
           max-w-lg
           rounded-2xl
           border
           border-slate-200
           bg-white
           p-0
-          overflow-hidden">
+          overflow-hidden"
+        style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
+      >
         <DialogHeader className="px-6
             pt-6
             pb-4

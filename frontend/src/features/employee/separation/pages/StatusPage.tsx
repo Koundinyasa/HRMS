@@ -20,7 +20,10 @@ export default function StatusPage() {
   } = useSeparationManagement();
 
   return (
-    <div className="w-full min-h-screen bg-[#f3f7fb]">
+    <div
+      className="w-full min-h-screen bg-[#f3f7fb]"
+      style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
+    >
       <SeparationNavbar />
       
 

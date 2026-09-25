@@ -39,12 +39,17 @@ import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
 
 //Review Module
 import PunchPage from "@/features/employee/review/timeOffice/punch/pages/PunchPage";
+ 
 import MissedPunchPage from "@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage";
 import TAInsightsPage from "@/features/employee/review/timeOffice/taInsights/pages/TAInsightsPage";
 import AttendanceOverview from "@/features/employee/review/Attandance overview/timeOffice/pages/AttendanceOverview";
 import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendance/components/LeaveCalendarHistory";
 import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
 import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
+ 
+// Attendance Module — NEW
+import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
+ 
 import RequisitionPage from "@/features/employee/review/requisition/pages/RequisitionPage";
 
 // Attendance Module — NEW

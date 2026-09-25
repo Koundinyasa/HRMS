@@ -1,7 +1,3 @@
-
-
-
- 
 import { useEffect, useRef } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
  

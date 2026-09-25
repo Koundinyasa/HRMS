@@ -100,7 +100,10 @@ export default function WithdrawPage() {
    */
   if (!separationStatus || !canWithdraw) {
     return (
-      <div className="w-full">
+      <div
+        className="w-full"
+        style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
+      >
         <SeparationNavbar />
 
         <div className="mt-8 px-8">
@@ -134,7 +137,10 @@ export default function WithdrawPage() {
 
   return (
     <>
-      <div className="w-full">
+      <div
+        className="w-full"
+        style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
+      >
         <SeparationNavbar />
 
         <div className="mt-8 px-8">
