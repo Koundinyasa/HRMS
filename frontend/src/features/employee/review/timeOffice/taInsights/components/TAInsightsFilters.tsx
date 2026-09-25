@@ -15,10 +15,10 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
   onClose,
 }) => {
   return (
-    <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="mb-4 rounded-xl border border-black bg-white p-4 shadow-sm font-[Urbanist]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 font-[Urbanist]">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-slate-700 font-[Urbanist]">
             Employee ID
           </label>
 
@@ -31,13 +31,13 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
                 employeeId: e.target.value,
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+            className="w-full rounded-lg border border-black px-3 py-2 text-sm outline-none focus:border-black font-[Urbanist]"
             placeholder="Employee ID"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-slate-700 font-[Urbanist]">
             From Date
           </label>
 
@@ -48,7 +48,7 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-slate-700 font-[Urbanist]">
             To Date
           </label>
 
@@ -59,7 +59,7 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-slate-700 font-[Urbanist]">
             Search
           </label>
 
@@ -72,13 +72,13 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
                 search: e.target.value,
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+            className="w-full rounded-lg border border-black px-3 py-2 text-sm outline-none focus:border-black font-[Urbanist]"
             placeholder="Search employee"
           />
         </div>
       </div>
 
-      <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex justify-end font-[Urbanist]">
         <Button
           type="button"
           variant="outline"

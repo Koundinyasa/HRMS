@@ -10,9 +10,9 @@ export default function MissedPunchTable({
   onAction,
 }: MissedPunchTableProps) {
   return (
-    <div className="mt-3 overflow-x-auto">
-      <div className="min-w-0 space-y-3">
-        <div className="grid grid-cols-2 items-center gap-2 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554] sm:grid-cols-4 sm:gap-4 sm:py-5">
+    <div className="mt-3 overflow-x-auto font-[Urbanist]">
+      <div className="min-w-0 space-y-3 font-[Urbanist]">
+        <div className="grid grid-cols-2 items-center gap-2 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554] sm:grid-cols-4 sm:gap-4 sm:py-5 font-[Urbanist]">
           <div>Employee ID</div>
           <div>Employee Name</div>
           <div>Punch Date</div>
@@ -20,11 +20,11 @@ export default function MissedPunchTable({
         </div>
 
         {isLoading ? (
-          <div className="rounded-lg bg-white px-3 py-8 text-center text-sm text-[#68758a] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <div className="rounded-lg bg-white px-3 py-8 text-center text-sm text-[#68758a] shadow-[0_2px_8px_rgba(0,0,0,0.04)] font-[Urbanist]">
             Loading...
           </div>
         ) : employees.length === 0 ? (
-          <div className="rounded-lg bg-white px-3 py-8 text-center text-sm text-[#68758a] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+          <div className="rounded-lg bg-white px-3 py-8 text-center text-sm text-[#68758a] shadow-[0_2px_8px_rgba(0,0,0,0.04)] font-[Urbanist]">
             No missed punches found
           </div>
         ) : (

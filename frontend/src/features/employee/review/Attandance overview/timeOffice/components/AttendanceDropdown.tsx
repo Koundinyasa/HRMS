@@ -37,7 +37,7 @@ export function AttendanceDropdownItem({
       {children}
 
       {active && (
-        <Check className="h-3.5 w-3.5" />
+        <Check className="h-3.5 w-3.5 font-[Urbanist]" />
       )}
     </button>
   );
@@ -186,7 +186,7 @@ export default function AttendanceDropdown({
   return (
     <div
       ref={triggerRef}
-      className="relative shrink-0"
+      className="relative shrink-0 font-[Urbanist]"
     >
       {trigger(
         open,

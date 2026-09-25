@@ -30,8 +30,8 @@ export default function MissedPunchNavbar(
     }`;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-[#e0e5ec] bg-white p-3 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex min-w-max items-center gap-8 overflow-x-auto px-1">
+    <div className="flex flex-col gap-3 rounded-xl border border-[#e0e5ec] bg-white p-3 lg:flex-row lg:items-center lg:justify-between font-[Urbanist]">
+      <div className="flex min-w-max items-center gap-8 overflow-x-auto px-1 font-[Urbanist]">
 
         {/* PUNCH */}
 
@@ -79,13 +79,13 @@ export default function MissedPunchNavbar(
 
       </div>
 
-      <div className="flex flex-wrap items-stretch gap-2 sm:items-center sm:gap-3">
-        <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-medium text-[#1f2937] sm:flex-row sm:items-center sm:gap-2">
+      <div className="flex flex-wrap items-stretch gap-2 sm:items-center sm:gap-3 font-[Urbanist]">
+        <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-medium text-[#1f2937] sm:flex-row sm:items-center sm:gap-2 font-[Urbanist]">
           From
           <DateField value={filters.fromDate} onChange={onFromDateChange} />
         </label>
 
-        <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-medium text-[#1f2937] sm:flex-row sm:items-center sm:gap-2">
+        <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-medium text-[#1f2937] sm:flex-row sm:items-center sm:gap-2 font-[Urbanist]">
           To
           <DateField value={filters.toDate} onChange={onToDateChange} />
         </label>
@@ -96,7 +96,7 @@ export default function MissedPunchNavbar(
           size="icon"
           title="Refresh"
           onClick={onRefresh}
-          className="text-[#7f94b5] hover:bg-[#f3f6fa]"
+          className="text-[#7f94b5] hover:bg-[#f3f6fa] font-[Urbanist]"
         >
           <RefreshCw size={20} />
         </Button>

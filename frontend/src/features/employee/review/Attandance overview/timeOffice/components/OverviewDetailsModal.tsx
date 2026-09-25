@@ -17,13 +17,13 @@
 // //       : "text-slate-600";
 
 // //   return (
-// //     <span className="font-medium">
+// //     <span className="font-medium font-[Urbanist]">
 // //       {parts.map((part, index) => (
 // //         <span key={`${part}-${index}`} className={colorFor(part)}>
 // //           {part}
 
 // //           {index < parts.length - 1 && (
-// //             <span className="text-slate-400">+</span>
+// //             <span className="text-slate-400 font-[Urbanist]">+</span>
 // //           )}
 // //         </span>
 // //       ))}
@@ -70,16 +70,16 @@
 // //   });
 // //   return createPortal(
 // //     <div
-// //       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4"
+// //       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 font-[Urbanist]"
 // //       role="dialog"
 // //       aria-modal="true"
 // //       aria-labelledby="overview-details-title"
 // //     >
-// //       <div className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl">
-// //         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+// //       <div className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl font-[Urbanist]">
+// //         <div className="flex items-center justify-between border-b border-black bg-slate-50 px-5 py-4 font-[Urbanist]">
 // //           <h2
 // //             id="overview-details-title"
-// //             className="text-base font-bold text-slate-800"
+// //             className="text-base font-bold text-slate-800 font-[Urbanist]"
 // //           >
 // //             {config.title}
 // //           </h2>
@@ -87,21 +87,21 @@
 // //           <button
 // //             type="button"
 // //             onClick={onClose}
-// //             className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+// //             className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 font-[Urbanist]"
 // //             aria-label="Close"
 // //           >
-// //             <X className="h-4 w-4" />
+// //             <X className="h-4 w-4 font-[Urbanist]" />
 // //           </button>
 // //         </div>
 
-// //         <div className="max-h-[55vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-// //           <table className="w-full min-w-[360px] text-left text-sm">
-// //             <thead className="sticky top-0 z-10 bg-sky-100">
+// //         <div className="max-h-[55vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden font-[Urbanist]">
+// //           <table className="w-full min-w-[360px] text-left text-sm font-[Urbanist]">
+// //             <thead className="sticky top-0 z-10 bg-sky-100 font-[Urbanist]">
 // //               <tr>
 // //                 {config.columns.map((column) => (
 // //                   <th
 // //                     key={column}
-// //                     className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-700"
+// //                     className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-700 font-[Urbanist]"
 // //                   >
 // //                     {column}
 // //                   </th>
@@ -109,16 +109,16 @@
 // //               </tr>
 // //             </thead>
 
-// //             <tbody className="divide-y divide-slate-100">
+// //             <tbody className="divide-y divide-slate-100 font-[Urbanist]">
 // //               {detailKey === "present" &&
 // //                 presentDaysDetails.map((row) => (
 // //                   <tr
 // //                     key={`${row.slNo}-${row.date}`}
-// //                     className="hover:bg-slate-50"
+// //                     className="hover:bg-slate-50 font-[Urbanist]"
 // //                   >
-// //                     <td className="px-4 py-2.5 text-slate-600">{row.slNo}</td>
-// //                     <td className="px-4 py-2.5 text-slate-600">{row.date}</td>
-// //                     <td className="px-4 py-2.5">
+// //                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.slNo}</td>
+// //                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.date}</td>
+// //                     <td className="px-4 py-2.5 font-[Urbanist]">
 // //                       <StatusPill status={row.status} />
 // //                     </td>
 // //                   </tr>
@@ -128,14 +128,14 @@
 // //                 absentDaysDetails.map((row) => (
 // //                   <tr
 // //                     key={`${row.slNo}-${row.date}`}
-// //                     className="hover:bg-slate-50"
+// //                     className="hover:bg-slate-50 font-[Urbanist]"
 // //                   >
-// //                     <td className="px-4 py-2.5 text-slate-600">{row.slNo}</td>
-// //                     <td className="px-4 py-2.5 text-slate-600">{row.date}</td>
-// //                     <td className="px-4 py-2.5">
+// //                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.slNo}</td>
+// //                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.date}</td>
+// //                     <td className="px-4 py-2.5 font-[Urbanist]">
 // //                       <StatusPill status={row.status} />
 // //                     </td>
-// //                     <td className="min-w-[190px] px-4 py-2.5 text-sky-700">
+// //                     <td className="min-w-[190px] px-4 py-2.5 text-sky-700 font-[Urbanist]">
 // //                       {row.remarks}
 // //                     </td>
 // //                   </tr>
@@ -146,24 +146,24 @@
 // //                 timeRows.map((row) => (
 // //                   <tr
 // //                     key={`${row.slNo}-${row.date}`}
-// //                     className="hover:bg-slate-50"
+// //                     className="hover:bg-slate-50 font-[Urbanist]"
 // //                   >
-// //                     <td className="px-4 py-2.5 text-slate-600">{row.slNo}</td>
-// //                     <td className="px-4 py-2.5 text-slate-600">{row.date}</td>
-// //                     <td className="px-4 py-2.5 text-sky-700">{row.time}</td>
+// //                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.slNo}</td>
+// //                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.date}</td>
+// //                     <td className="px-4 py-2.5 text-sky-700 font-[Urbanist]">{row.time}</td>
 // //                   </tr>
 // //                 ))}
 // //             </tbody>
 // //           </table>
 // //         </div>
 
-// //         <div className="flex justify-end border-t border-slate-200 px-5 py-3">
+// //         <div className="flex justify-end border-t border-black px-5 py-3 font-[Urbanist]">
 // //           <button
 // //             type="button"
 // //             onClick={onClose}
-// //             className="flex items-center gap-1.5 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+// //             className="flex items-center gap-1.5 rounded-md border border-black px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 font-[Urbanist]"
 // //           >
-// //             <X className="h-3.5 w-3.5" />
+// //             <X className="h-3.5 w-3.5 font-[Urbanist]" />
 // //             Cancel
 // //           </button>
 // //         </div>
@@ -193,13 +193,13 @@
 //       : "text-slate-600";
 
 //   return (
-//     <span className="font-medium">
+//     <span className="font-medium font-[Urbanist]">
 //       {parts.map((part, index) => (
 //         <span key={`${part}-${index}`} className={colorFor(part)}>
 //           {part}
 
 //           {index < parts.length - 1 && (
-//             <span className="text-slate-400">+</span>
+//             <span className="text-slate-400 font-[Urbanist]">+</span>
 //           )}
 //         </span>
 //       ))}
@@ -294,16 +294,16 @@
 
 //   return createPortal(
 //     <div
-//       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4"
+//       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 font-[Urbanist]"
 //       role="dialog"
 //       aria-modal="true"
 //       aria-labelledby="overview-details-title"
 //     >
-//       <div className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl">
-//         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+//       <div className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl font-[Urbanist]">
+//         <div className="flex items-center justify-between border-b border-black bg-slate-50 px-5 py-4 font-[Urbanist]">
 //           <h2
 //             id="overview-details-title"
-//             className="text-base font-bold text-slate-800"
+//             className="text-base font-bold text-slate-800 font-[Urbanist]"
 //           >
 //             {config.title}
 //           </h2>
@@ -311,21 +311,21 @@
 //           <button
 //             type="button"
 //             onClick={onClose}
-//             className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+//             className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 font-[Urbanist]"
 //             aria-label="Close"
 //           >
-//             <X className="h-4 w-4" />
+//             <X className="h-4 w-4 font-[Urbanist]" />
 //           </button>
 //         </div>
 
-//         <div className="max-h-[55vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-//           <table className="w-full min-w-[360px] text-left text-sm">
-//             <thead className="sticky top-0 z-10 bg-sky-100">
+//         <div className="max-h-[55vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden font-[Urbanist]">
+//           <table className="w-full min-w-[360px] text-left text-sm font-[Urbanist]">
+//             <thead className="sticky top-0 z-10 bg-sky-100 font-[Urbanist]">
 //               <tr>
 //                 {config.columns.map((column) => (
 //                   <th
 //                     key={column}
-//                     className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-700"
+//                     className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-700 font-[Urbanist]"
 //                   >
 //                     {column}
 //                   </th>
@@ -333,16 +333,16 @@
 //               </tr>
 //             </thead>
 
-//             <tbody className="divide-y divide-slate-100">
+//             <tbody className="divide-y divide-slate-100 font-[Urbanist]">
 //               {detailKey === "present" &&
 //                 presentDaysDetails.map((row) => (
 //                   <tr
 //                     key={`${row.slNo}-${row.date}`}
-//                     className="hover:bg-slate-50"
+//                     className="hover:bg-slate-50 font-[Urbanist]"
 //                   >
-//                     <td className="px-4 py-2.5 text-slate-600">{row.slNo}</td>
-//                     <td className="px-4 py-2.5 text-slate-600">{row.date}</td>
-//                     <td className="px-4 py-2.5">
+//                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.slNo}</td>
+//                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.date}</td>
+//                     <td className="px-4 py-2.5 font-[Urbanist]">
 //                       <StatusPill status={row.status} />
 //                     </td>
 //                   </tr>
@@ -352,14 +352,14 @@
 //                 absentDaysDetails.map((row) => (
 //                   <tr
 //                     key={`${row.slNo}-${row.date}`}
-//                     className="hover:bg-slate-50"
+//                     className="hover:bg-slate-50 font-[Urbanist]"
 //                   >
-//                     <td className="px-4 py-2.5 text-slate-600">{row.slNo}</td>
-//                     <td className="px-4 py-2.5 text-slate-600">{row.date}</td>
-//                     <td className="px-4 py-2.5">
+//                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.slNo}</td>
+//                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.date}</td>
+//                     <td className="px-4 py-2.5 font-[Urbanist]">
 //                       <StatusPill status={row.status} />
 //                     </td>
-//                     <td className="min-w-[190px] px-4 py-2.5 text-sky-700">
+//                     <td className="min-w-[190px] px-4 py-2.5 text-sky-700 font-[Urbanist]">
 //                       {row.remarks}
 //                     </td>
 //                   </tr>
@@ -370,24 +370,24 @@
 //                 timeRows.map((row) => (
 //                   <tr
 //                     key={`${row.slNo}-${row.date}`}
-//                     className="hover:bg-slate-50"
+//                     className="hover:bg-slate-50 font-[Urbanist]"
 //                   >
-//                     <td className="px-4 py-2.5 text-slate-600">{row.slNo}</td>
-//                     <td className="px-4 py-2.5 text-slate-600">{row.date}</td>
-//                     <td className="px-4 py-2.5 text-sky-700">{row.time}</td>
+//                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.slNo}</td>
+//                     <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">{row.date}</td>
+//                     <td className="px-4 py-2.5 text-sky-700 font-[Urbanist]">{row.time}</td>
 //                   </tr>
 //                 ))}
 //             </tbody>
 //           </table>
 //         </div>
 
-//         <div className="flex justify-end border-t border-slate-200 px-5 py-3">
+//         <div className="flex justify-end border-t border-black px-5 py-3 font-[Urbanist]">
 //           <button
 //             type="button"
 //             onClick={onClose}
-//             className="flex items-center gap-1.5 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+//             className="flex items-center gap-1.5 rounded-md border border-black px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 font-[Urbanist]"
 //           >
-//             <X className="h-3.5 w-3.5" />
+//             <X className="h-3.5 w-3.5 font-[Urbanist]" />
 //             Cancel
 //           </button>
 //         </div>
@@ -420,7 +420,7 @@ function StatusPill({
       : "text-slate-600";
 
   return (
-    <span className="font-medium">
+    <span className="font-medium font-[Urbanist]">
       {parts.map((part, index) => (
         <span
           key={`${part}-${index}`}
@@ -429,7 +429,7 @@ function StatusPill({
           {part}
 
           {index < parts.length - 1 && (
-            <span className="text-slate-400">
+            <span className="text-slate-400 font-[Urbanist]">
               +
             </span>
           )}
@@ -636,21 +636,21 @@ export default function OverviewDetailsModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 font-[Urbanist]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="overview-details-title"
     >
-      <div className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl">
+      <div className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-xl bg-white shadow-2xl font-[Urbanist]">
 
         {/* ==================================================
             HEADER
         ================================================== */}
 
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-black bg-slate-50 px-5 py-4 font-[Urbanist]">
           <h2
             id="overview-details-title"
-            className="text-base font-bold text-slate-800"
+            className="text-base font-bold text-slate-800 font-[Urbanist]"
           >
             {config.title}
           </h2>
@@ -658,10 +658,10 @@ export default function OverviewDetailsModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 font-[Urbanist]"
             aria-label="Close"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 font-[Urbanist]" />
           </button>
         </div>
 
@@ -669,20 +669,20 @@ export default function OverviewDetailsModal({
             TABLE
         ================================================== */}
 
-        <div className="max-h-[55vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <table className="w-full min-w-[360px] text-left text-sm">
+        <div className="max-h-[55vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden font-[Urbanist]">
+          <table className="w-full min-w-[360px] text-left text-sm font-[Urbanist]">
 
             {/* ==================================================
                 TABLE HEADER
             ================================================== */}
 
-            <thead className="sticky top-0 z-10 bg-sky-100">
+            <thead className="sticky top-0 z-10 bg-sky-100 font-[Urbanist]">
               <tr>
                 {config.columns.map(
                   (column) => (
                     <th
                       key={column}
-                      className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-700"
+                      className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-slate-700 font-[Urbanist]"
                     >
                       {column}
                     </th>
@@ -695,7 +695,7 @@ export default function OverviewDetailsModal({
                 TABLE BODY
             ================================================== */}
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 font-[Urbanist]">
 
               {/* ==================================================
                   PRESENT
@@ -707,17 +707,17 @@ export default function OverviewDetailsModal({
                   (row) => (
                     <tr
                       key={`${row.slNo}-${row.date}`}
-                      className="hover:bg-slate-50"
+                      className="hover:bg-slate-50 font-[Urbanist]"
                     >
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">
                         {row.slNo}
                       </td>
 
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">
                         {row.date}
                       </td>
 
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-2.5 font-[Urbanist]">
                         <StatusPill
                           status={
                             row.status
@@ -738,17 +738,17 @@ export default function OverviewDetailsModal({
                   (row) => (
                     <tr
                       key={`${row.slNo}-${row.date}`}
-                      className="hover:bg-slate-50"
+                      className="hover:bg-slate-50 font-[Urbanist]"
                     >
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">
                         {row.slNo}
                       </td>
 
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">
                         {row.date}
                       </td>
 
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-2.5 font-[Urbanist]">
                         <StatusPill
                           status={
                             row.status
@@ -756,7 +756,7 @@ export default function OverviewDetailsModal({
                         />
                       </td>
 
-                      <td className="min-w-[190px] px-4 py-2.5 text-sky-700">
+                      <td className="min-w-[190px] px-4 py-2.5 text-sky-700 font-[Urbanist]">
                         {
                           row.remarks
                         }
@@ -778,17 +778,17 @@ export default function OverviewDetailsModal({
                   (row) => (
                     <tr
                       key={`${row.slNo}-${row.date}`}
-                      className="hover:bg-slate-50"
+                      className="hover:bg-slate-50 font-[Urbanist]"
                     >
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">
                         {row.slNo}
                       </td>
 
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600 font-[Urbanist]">
                         {row.date}
                       </td>
 
-                      <td className="px-4 py-2.5 text-sky-700">
+                      <td className="px-4 py-2.5 text-sky-700 font-[Urbanist]">
                         {row.time}
                       </td>
                     </tr>
@@ -807,7 +807,7 @@ export default function OverviewDetailsModal({
                       config.columns
                         .length
                     }
-                    className="px-4 py-8 text-center text-sm text-slate-400"
+                    className="px-4 py-8 text-center text-sm text-slate-400 font-[Urbanist]"
                   >
                     No data found
                   </td>
@@ -822,13 +822,13 @@ export default function OverviewDetailsModal({
             FOOTER
         ================================================== */}
 
-        <div className="flex justify-end border-t border-slate-200 px-5 py-3">
+        <div className="flex justify-end border-t border-black px-5 py-3 font-[Urbanist]">
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center gap-1.5 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            className="flex items-center gap-1.5 rounded-md border border-black px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 font-[Urbanist]"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5 font-[Urbanist]" />
             Cancel
           </button>
         </div>

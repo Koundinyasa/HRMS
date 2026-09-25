@@ -75,7 +75,7 @@ export default function MissedPunchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 font-[Urbanist]">
       {/* Header / Navigation */}
       <MissedPunchNavbar
         filters={filters}
@@ -93,7 +93,7 @@ export default function MissedPunchPage() {
 
       {/* Error */}
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="mt-4 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
           {error}
         </div>
       )}

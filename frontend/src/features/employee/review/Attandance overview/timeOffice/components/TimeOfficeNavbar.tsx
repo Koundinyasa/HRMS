@@ -137,7 +137,7 @@ export default function TimeOfficeNavbar() {
   // ============================================================
 
   return (
-    <div className="w-full">
+    <div className="w-full font-[Urbanist]">
 
       {/* ========================================================
           TIME OFFICE NAVBAR
@@ -154,11 +154,11 @@ export default function TimeOfficeNavbar() {
           gap-4
           rounded-xl
           border
-          border-slate-200
+          border-black
           bg-white
           px-4
           shadow-sm
-        "
+         font-[Urbanist]"
       >
 
         {/* ======================================================
@@ -173,7 +173,7 @@ export default function TimeOfficeNavbar() {
             items-center
             gap-7
             overflow-x-auto
-          "
+           font-[Urbanist]"
         >
           {tabs.map((tab: MenuItem) => (
             <NavLink
@@ -225,7 +225,7 @@ export default function TimeOfficeNavbar() {
             shrink-0
             items-center
             gap-2
-          "
+           font-[Urbanist]"
         >
 
           {/* ====================================================
@@ -294,16 +294,16 @@ export default function TimeOfficeNavbar() {
               MONTH PICKER
           ===================================================== */}
 
-          <div className="w-[120px]">
+          <div className="w-[120px] font-[Urbanist]">
             <MonthPicker
               value={selectedMonth}
               onChange={setSelectedMonth}
               className="
                 h-9
                 rounded-lg
-                border-slate-300
+                border-black
                 bg-white
-              "
+               font-[Urbanist]"
             />
           </div>
 
@@ -311,7 +311,7 @@ export default function TimeOfficeNavbar() {
               EMPLOYEE DROPDOWN
           ===================================================== */}
 
-          <div className="relative">
+          <div className="relative font-[Urbanist]">
             <select
               value={selectedEmployee}
               onChange={(event) =>
@@ -323,7 +323,7 @@ export default function TimeOfficeNavbar() {
                 appearance-none
                 rounded-lg
                 border
-                border-slate-300
+                border-black
                 bg-white
                 px-3
                 pr-8
@@ -331,8 +331,8 @@ export default function TimeOfficeNavbar() {
                 font-medium
                 text-slate-700
                 outline-none
-                focus:border-sky-500
-              "
+                focus:border-black
+               font-[Urbanist]"
             >
               <option value="294112">
                 294112 Bhagyaraj...
@@ -347,7 +347,7 @@ export default function TimeOfficeNavbar() {
                 top-1/2
                 -translate-y-1/2
                 text-slate-500
-              "
+               font-[Urbanist]"
             >
               ▾
             </span>
@@ -369,12 +369,12 @@ export default function TimeOfficeNavbar() {
               justify-center
               rounded-lg
               border
-              border-slate-300
+              border-black
               bg-white
               text-slate-600
               transition-colors
               hover:bg-slate-50
-            "
+             font-[Urbanist]"
           >
             <Grid2X2
               size={17}
@@ -398,12 +398,12 @@ export default function TimeOfficeNavbar() {
               justify-center
               rounded-lg
               border
-              border-emerald-300
+              border-black
               bg-emerald-50
               text-emerald-600
               transition-colors
               hover:bg-emerald-100
-            "
+             font-[Urbanist]"
           >
             <FileSpreadsheet
               size={18}
@@ -427,12 +427,12 @@ export default function TimeOfficeNavbar() {
               justify-center
               rounded-lg
               border
-              border-slate-300
+              border-black
               bg-white
               text-slate-600
               transition-colors
               hover:bg-slate-50
-            "
+             font-[Urbanist]"
           >
             <History
               size={17}
@@ -446,7 +446,7 @@ export default function TimeOfficeNavbar() {
           CHILD PAGE
       ========================================================= */}
 
-      <div className="w-full pt-3">
+      <div className="w-full pt-3 font-[Urbanist]">
         <Outlet />
       </div>
     </div>

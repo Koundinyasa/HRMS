@@ -43,8 +43,8 @@ function InsightCard({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-3">
+    <div className="rounded-xl border border-black bg-white p-4 shadow-sm font-[Urbanist]">
+      <div className="flex items-center gap-3 font-[Urbanist]">
         <span
           className={`flex h-9 w-9 items-center justify-center rounded-lg ${toneMap[tone]}`}
         >
@@ -52,17 +52,17 @@ function InsightCard({
         </span>
 
         <div>
-          <p className="text-xs font-medium text-slate-500">
+          <p className="text-xs font-medium text-slate-500 font-[Urbanist]">
             {label}
           </p>
 
-          <p className="text-lg font-bold text-slate-800">
+          <p className="text-lg font-bold text-slate-800 font-[Urbanist]">
             {value}
           </p>
         </div>
       </div>
 
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-slate-400 font-[Urbanist]">
         {sub}
       </p>
     </div>
@@ -88,11 +88,11 @@ export default function TAInsights({
     );
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4 font-[Urbanist]">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 font-[Urbanist]">
         <InsightCard
           icon={
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="h-4 w-4 font-[Urbanist]" />
           }
           label="Attendance rate"
           value="62%"
@@ -102,7 +102,7 @@ export default function TAInsights({
 
         <InsightCard
           icon={
-            <Timer className="h-4 w-4" />
+            <Timer className="h-4 w-4 font-[Urbanist]" />
           }
           label="Avg hours / day"
           value="08h 12m"
@@ -112,7 +112,7 @@ export default function TAInsights({
 
         <InsightCard
           icon={
-            <CalendarX2 className="h-4 w-4" />
+            <CalendarX2 className="h-4 w-4 font-[Urbanist]" />
           }
           label="Absent days"
           value="7.5"
@@ -122,7 +122,7 @@ export default function TAInsights({
 
         <InsightCard
           icon={
-            <AlarmClockCheck className="h-4 w-4" />
+            <AlarmClockCheck className="h-4 w-4 font-[Urbanist]" />
           }
           label="Late-in incidents"
           value="1"
@@ -131,32 +131,32 @@ export default function TAInsights({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-700">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 font-[Urbanist]">
+        <div className="rounded-xl border border-black bg-white p-5 shadow-sm lg:col-span-2 font-[Urbanist]">
+          <div className="mb-4 flex items-center justify-between font-[Urbanist]">
+            <h3 className="text-sm font-semibold text-slate-700 font-[Urbanist]">
               Weekly work hours
             </h3>
 
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-400 font-[Urbanist]">
               {month}
             </span>
           </div>
 
-          <div className="flex h-44 items-end gap-4">
+          <div className="flex h-44 items-end gap-4 font-[Urbanist]">
             {weeklyHours.map(
               (week) => (
                 <div
                   key={week.label}
-                  className="flex flex-1 flex-col items-center gap-2"
+                  className="flex flex-1 flex-col items-center gap-2 font-[Urbanist]"
                 >
-                  <span className="text-xs font-semibold text-slate-600">
+                  <span className="text-xs font-semibold text-slate-600 font-[Urbanist]">
                     {week.hours}h
                   </span>
 
-                  <div className="flex w-full items-end justify-center">
+                  <div className="flex w-full items-end justify-center font-[Urbanist]">
                     <div
-                      className="w-8 rounded-t-md bg-sky-500"
+                      className="w-8 rounded-t-md bg-sky-500 font-[Urbanist]"
                       style={{
                         height: `${Math.max(
                           (week.hours /
@@ -168,7 +168,7 @@ export default function TAInsights({
                     />
                   </div>
 
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-400 font-[Urbanist]">
                     {week.label}
                   </span>
                 </div>
@@ -177,12 +177,12 @@ export default function TAInsights({
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="mb-4 text-sm font-semibold text-slate-700">
+        <div className="rounded-xl border border-black bg-white p-5 shadow-sm font-[Urbanist]">
+          <h3 className="mb-4 text-sm font-semibold text-slate-700 font-[Urbanist]">
             Status breakdown
           </h3>
 
-          <div className="mb-4 flex h-3 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mb-4 flex h-3 w-full overflow-hidden rounded-full bg-slate-100 font-[Urbanist]">
             {insightBreakdown.map(
               (item) => (
                 <div
@@ -203,21 +203,21 @@ export default function TAInsights({
             )}
           </div>
 
-          <ul className="space-y-2.5">
+          <ul className="space-y-2.5 font-[Urbanist]">
             {insightBreakdown.map(
               (item) => (
                 <li
                   key={item.label}
-                  className="flex items-center justify-between text-sm"
+                  className="flex items-center justify-between text-sm font-[Urbanist]"
                 >
-                  <span className="flex items-center gap-2 text-slate-600">
+                  <span className="flex items-center gap-2 text-slate-600 font-[Urbanist]">
                     <span
                       className={`h-2.5 w-2.5 rounded-full ${item.color}`}
                     />
                     {item.label}
                   </span>
 
-                  <span className="font-semibold text-slate-800">
+                  <span className="font-semibold text-slate-800 font-[Urbanist]">
                     {item.value} days
                   </span>
                 </li>

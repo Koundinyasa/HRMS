@@ -12,8 +12,8 @@ const TAInsightCards: React.FC<TAInsightCardsProps> = ({
   onCardClick,
 }) => {
   return (
-    <div className="rounded-[8px] bg-white p-5 shadow-sm">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="rounded-[8px] bg-white p-5 shadow-sm font-[Urbanist]">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 font-[Urbanist]">
         {cards.map((card) => (
           <TAInsightCard
             key={card.key}

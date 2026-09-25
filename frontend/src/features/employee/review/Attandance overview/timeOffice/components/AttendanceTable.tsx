@@ -26,7 +26,7 @@
 // }) {
 //   if (record.isWeekOff) {
 //     return (
-//       <span className="text-xs font-medium text-slate-400">
+//       <span className="text-xs font-medium text-slate-400 font-[Urbanist]">
 //         WO
 //       </span>
 //     );
@@ -34,14 +34,14 @@
 
 //   if (record.isHoliday) {
 //     return (
-//       <span className="text-xs font-medium text-pink-600">
+//       <span className="text-xs font-medium text-pink-600 font-[Urbanist]">
 //         GH
 //       </span>
 //     );
 //   }
 
 //   return (
-//     <div className="flex flex-col items-center leading-tight">
+//     <div className="flex flex-col items-center leading-tight font-[Urbanist]">
 //       <span
 //         className={`text-xs font-medium ${
 //           statusStyles[record.status] ??
@@ -73,7 +73,7 @@
 // }) {
 //   if (record.isWeekOff) {
 //     return (
-//       <span className="text-xs font-semibold text-slate-400">
+//       <span className="text-xs font-semibold text-slate-400 font-[Urbanist]">
 //         WO
 //       </span>
 //     );
@@ -81,14 +81,14 @@
 
 //   if (record.isHoliday) {
 //     return (
-//       <span className="text-xs font-semibold text-pink-600">
+//       <span className="text-xs font-semibold text-pink-600 font-[Urbanist]">
 //         GH
 //       </span>
 //     );
 //   }
 
 //   return (
-//     <span className="text-xs font-semibold text-violet-700">
+//     <span className="text-xs font-semibold text-violet-700 font-[Urbanist]">
 //       {record.shift}
 //     </span>
 //   );
@@ -110,7 +110,7 @@
 //   {
 //     label: "Check In",
 //     render: (record: AttendanceDay) => (
-//       <span className="text-xs text-slate-700">
+//       <span className="text-xs text-slate-700 font-[Urbanist]">
 //         {record.checkIn ?? ""}
 //       </span>
 //     ),
@@ -118,7 +118,7 @@
 //   {
 //     label: "Check Out",
 //     render: (record: AttendanceDay) => (
-//       <span className="text-xs text-slate-700">
+//       <span className="text-xs text-slate-700 font-[Urbanist]">
 //         {record.checkOut ?? ""}
 //       </span>
 //     ),
@@ -126,7 +126,7 @@
 //   {
 //     label: "Over Time",
 //     render: (record: AttendanceDay) => (
-//       <span className="text-xs text-slate-700">
+//       <span className="text-xs text-slate-700 font-[Urbanist]">
 //         {record.overtime ?? ""}
 //       </span>
 //     ),
@@ -134,7 +134,7 @@
 //   {
 //     label: "Gross Work hours",
 //     render: (record: AttendanceDay) => (
-//       <span className="text-xs text-slate-700">
+//       <span className="text-xs text-slate-700 font-[Urbanist]">
 //         {record.grossWorkHours ?? ""}
 //       </span>
 //     ),
@@ -142,7 +142,7 @@
 //   {
 //     label: "Work Hours",
 //     render: (record: AttendanceDay) => (
-//       <span className="text-xs text-slate-700">
+//       <span className="text-xs text-slate-700 font-[Urbanist]">
 //         {record.workHours ?? ""}
 //       </span>
 //     ),
@@ -150,7 +150,7 @@
 //   {
 //     label: "Break Hours",
 //     render: (record: AttendanceDay) => (
-//       <span className="text-xs text-slate-700">
+//       <span className="text-xs text-slate-700 font-[Urbanist]">
 //         {record.breakHours ?? ""}
 //       </span>
 //     ),
@@ -166,14 +166,14 @@
 // }: AttendanceTableProps) {
 //   if (view === "calendar") {
 //     return (
-//       <div className="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-//         <CalendarDays className="mx-auto h-10 w-10 text-sky-500" />
+//       <div className="rounded-xl border border-black bg-white p-10 text-center shadow-sm font-[Urbanist]">
+//         <CalendarDays className="mx-auto h-10 w-10 text-sky-500 font-[Urbanist]" />
 
-//         <h3 className="mt-3 text-sm font-semibold text-slate-700">
+//         <h3 className="mt-3 text-sm font-semibold text-slate-700 font-[Urbanist]">
 //           Calendar View
 //         </h3>
 
-//         <p className="mt-1 text-xs text-slate-400">
+//         <p className="mt-1 text-xs text-slate-400 font-[Urbanist]">
 //           Calendar view is available for attendance planning.
 //         </p>
 //       </div>
@@ -181,14 +181,14 @@
 //   }
 
 //   return (
-//     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-//       <table className="w-full border-collapse text-center">
+//     <div className="overflow-x-auto rounded-xl border border-black bg-white shadow-sm font-[Urbanist]">
+//       <table className="w-full border-collapse text-center font-[Urbanist]">
 //         <thead>
 //           <tr>
-//             <th className="sticky left-0 z-10 min-w-[160px] bg-white px-4 py-3 text-left text-xs font-semibold text-slate-600">
-//               <div className="flex items-center gap-1 text-slate-600">
+//             <th className="sticky left-0 z-10 min-w-[160px] bg-white px-4 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
+//               <div className="flex items-center gap-1 text-slate-600 font-[Urbanist]">
 //                 Attendance
-//                 <span className="h-2 w-2 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500" />
+//                 <span className="h-2 w-2 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 font-[Urbanist]" />
 //               </div>
 
 //               <button
@@ -198,10 +198,10 @@
 //                     "Legend / extra rows are a placeholder in this demo",
 //                   )
 //                 }
-//                 className="mt-0.5 flex items-center gap-1 text-[11px] text-sky-700 hover:underline"
+//                 className="mt-0.5 flex items-center gap-1 text-[11px] text-sky-700 hover:underline font-[Urbanist]"
 //               >
 //                 View More
-//                 <ChevronDown className="h-3 w-3" />
+//                 <ChevronDown className="h-3 w-3 font-[Urbanist]" />
 //               </button>
 //             </th>
 
@@ -221,10 +221,10 @@
 //                     : "bg-sky-100 hover:bg-sky-200"
 //                 }`}
 //               >
-//                 <div className="text-slate-800">
+//                 <div className="text-slate-800 font-[Urbanist]">
 //                   {day.date}
 //                 </div>
-//                 <div className="text-[10px] text-slate-500">
+//                 <div className="text-[10px] text-slate-500 font-[Urbanist]">
 //                   {day.day}
 //                 </div>
 //               </th>
@@ -236,9 +236,9 @@
 //           {rows.map((row) => (
 //             <tr
 //               key={row.label}
-//               className="border-t border-slate-100"
+//               className="border-t border-black font-[Urbanist]"
 //             >
-//               <td className="sticky left-0 z-10 min-w-[160px] bg-white px-4 py-3 text-left text-xs font-medium text-slate-600">
+//               <td className="sticky left-0 z-10 min-w-[160px] bg-white px-4 py-3 text-left text-xs font-medium text-slate-600 font-[Urbanist]">
 //                 {row.label}
 //               </td>
 
@@ -445,7 +445,7 @@ function StatusCell({
       .toUpperCase() === "WO"
   ) {
     return (
-      <span className="text-xs font-medium text-slate-400">
+      <span className="text-xs font-medium text-slate-400 font-[Urbanist]">
         WO
       </span>
     );
@@ -453,14 +453,14 @@ function StatusCell({
 
   if (isHolidayDay(record)) {
     return (
-      <span className="text-xs font-medium text-pink-600">
+      <span className="text-xs font-medium text-pink-600 font-[Urbanist]">
         GH
       </span>
     );
   }
 
   return (
-    <div className="flex flex-col items-center leading-tight">
+    <div className="flex flex-col items-center leading-tight font-[Urbanist]">
       <span
         className={`text-xs font-medium ${
           statusStyles[
@@ -501,7 +501,7 @@ function ShiftCell({
       .toUpperCase() === "WO"
   ) {
     return (
-      <span className="text-xs font-semibold text-slate-400">
+      <span className="text-xs font-semibold text-slate-400 font-[Urbanist]">
         WO
       </span>
     );
@@ -509,14 +509,14 @@ function ShiftCell({
 
   if (isHolidayDay(record)) {
     return (
-      <span className="text-xs font-semibold text-pink-600">
+      <span className="text-xs font-semibold text-pink-600 font-[Urbanist]">
         GH
       </span>
     );
   }
 
   return (
-    <span className="text-xs font-semibold text-violet-700">
+    <span className="text-xs font-semibold text-violet-700 font-[Urbanist]">
       {record.shift}
     </span>
   );
@@ -557,7 +557,7 @@ const rows = [
     render: (
       record: AttendanceDay,
     ) => (
-      <span className="text-xs text-slate-700">
+      <span className="text-xs text-slate-700 font-[Urbanist]">
         {record.checkIn ??
           ""}
       </span>
@@ -570,7 +570,7 @@ const rows = [
     render: (
       record: AttendanceDay,
     ) => (
-      <span className="text-xs text-slate-700">
+      <span className="text-xs text-slate-700 font-[Urbanist]">
         {record.checkOut ??
           ""}
       </span>
@@ -583,7 +583,7 @@ const rows = [
     render: (
       record: AttendanceDay,
     ) => (
-      <span className="text-xs text-slate-700">
+      <span className="text-xs text-slate-700 font-[Urbanist]">
         {record.overtime ??
           record.overTime ??
           ""}
@@ -597,7 +597,7 @@ const rows = [
     render: (
       record: AttendanceDay,
     ) => (
-      <span className="text-xs text-slate-700">
+      <span className="text-xs text-slate-700 font-[Urbanist]">
         {record.grossWorkHours ??
           ""}
       </span>
@@ -610,7 +610,7 @@ const rows = [
     render: (
       record: AttendanceDay,
     ) => (
-      <span className="text-xs text-slate-700">
+      <span className="text-xs text-slate-700 font-[Urbanist]">
         {record.workHours ??
           ""}
       </span>
@@ -623,7 +623,7 @@ const rows = [
     render: (
       record: AttendanceDay,
     ) => (
-      <span className="text-xs text-slate-700">
+      <span className="text-xs text-slate-700 font-[Urbanist]">
         {record.breakHours ??
           ""}
       </span>
@@ -648,14 +648,14 @@ export default function AttendanceTable({
 
   if (view === "calendar") {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-        <CalendarDays className="mx-auto h-10 w-10 text-sky-500" />
+      <div className="rounded-xl border border-black bg-white p-10 text-center shadow-sm font-[Urbanist]">
+        <CalendarDays className="mx-auto h-10 w-10 text-sky-500 font-[Urbanist]" />
 
-        <h3 className="mt-3 text-sm font-semibold text-slate-700">
+        <h3 className="mt-3 text-sm font-semibold text-slate-700 font-[Urbanist]">
           Calendar View
         </h3>
 
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-400 font-[Urbanist]">
           Calendar view is available for attendance planning.
         </p>
       </div>
@@ -667,8 +667,8 @@ export default function AttendanceTable({
   // ==========================================================
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-      <table className="w-full border-collapse text-center">
+    <div className="overflow-x-auto rounded-xl border border-black bg-white shadow-sm font-[Urbanist]">
+      <table className="w-full border-collapse text-center font-[Urbanist]">
 
         {/* ====================================================
             HEADER
@@ -679,11 +679,11 @@ export default function AttendanceTable({
 
             {/* ATTENDANCE LABEL */}
 
-            <th className="sticky left-0 z-20 min-w-[160px] border-r border-slate-100 bg-white px-4 py-3 text-left text-xs font-semibold text-slate-600">
-              <div className="flex items-center gap-1 text-slate-600">
+            <th className="sticky left-0 z-20 min-w-[160px] border-r border-black bg-white px-4 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
+              <div className="flex items-center gap-1 text-slate-600 font-[Urbanist]">
                 Attendance
 
-                <span className="h-2 w-2 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500" />
+                <span className="h-2 w-2 rounded-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 font-[Urbanist]" />
               </div>
 
               <button
@@ -693,11 +693,11 @@ export default function AttendanceTable({
                     "Legend / extra rows are a placeholder in this demo",
                   )
                 }
-                className="mt-0.5 flex items-center gap-1 text-[11px] text-sky-700 hover:underline"
+                className="mt-0.5 flex items-center gap-1 text-[11px] text-sky-700 hover:underline font-[Urbanist]"
               >
                 View More
 
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-3 w-3 font-[Urbanist]" />
               </button>
             </th>
 
@@ -728,11 +728,11 @@ export default function AttendanceTable({
                     )}
                   `}
                 >
-                  <div className="text-slate-800">
+                  <div className="text-slate-800 font-[Urbanist]">
                     {day.date}
                   </div>
 
-                  <div className="text-[10px] text-slate-500">
+                  <div className="text-[10px] text-slate-500 font-[Urbanist]">
                     {day.day}
                   </div>
                 </th>
@@ -750,12 +750,12 @@ export default function AttendanceTable({
             (row) => (
               <tr
                 key={row.label}
-                className="border-t border-slate-100"
+                className="border-t border-black font-[Urbanist]"
               >
 
                 {/* ROW LABEL */}
 
-                <td className="sticky left-0 z-10 min-w-[160px] border-r border-slate-100 bg-white px-4 py-3 text-left text-xs font-medium text-slate-600">
+                <td className="sticky left-0 z-10 min-w-[160px] border-r border-black bg-white px-4 py-3 text-left text-xs font-medium text-slate-600 font-[Urbanist]">
                   {row.label}
                 </td>
 

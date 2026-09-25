@@ -190,7 +190,7 @@
 //         justify-center
 //         bg-black/50
 //         p-4
-//       "
+//        font-[Urbanist]"
 //       onMouseDown={(event) => {
 //         if (
 //           event.target === event.currentTarget &&
@@ -212,7 +212,7 @@
 //           rounded-xl
 //           bg-white
 //           shadow-2xl
-//         "
+//          font-[Urbanist]"
 //         onMouseDown={(event) => {
 //           event.stopPropagation();
 //         }}
@@ -227,12 +227,12 @@
 //             items-center
 //             justify-between
 //             border-b
-//             border-slate-200
+//             border-black
 //             px-5
 //             py-4
-//           "
+//            font-[Urbanist]"
 //         >
-//           <div className="flex items-center gap-3">
+//           <div className="flex items-center gap-3 font-[Urbanist]">
 //             <div
 //               className="
 //                 flex
@@ -243,7 +243,7 @@
 //                 rounded-full
 //                 bg-blue-50
 //                 text-blue-600
-//               "
+//                font-[Urbanist]"
 //             >
 //               <KeyRound
 //                 size={20}
@@ -257,7 +257,7 @@
 //                   text-lg
 //                   font-semibold
 //                   text-[#1E3A5F]
-//                 "
+//                  font-[Urbanist]"
 //               >
 //                 Change Password
 //               </h2>
@@ -266,7 +266,7 @@
 //                 className="
 //                   text-xs
 //                   text-slate-500
-//                 "
+//                  font-[Urbanist]"
 //               >
 //                 Update your account password
 //               </p>
@@ -286,7 +286,7 @@
 //               hover:text-slate-700
 //               disabled:cursor-not-allowed
 //               disabled:opacity-50
-//             "
+//              font-[Urbanist]"
 //             aria-label="Close"
 //           >
 //             <X size={20} />
@@ -299,7 +299,7 @@
 
 //         <form
 //           onSubmit={handleSubmit}
-//           className="space-y-5 p-5"
+//           className="space-y-5 p-5 font-[Urbanist]"
 //         >
 //           {/* =========================
 //               Current Password
@@ -314,15 +314,15 @@
 //                 text-sm
 //                 font-medium
 //                 text-slate-700
-//               "
+//                font-[Urbanist]"
 //             >
 //               Current Password
-//               <span className="ml-1 text-red-500">
+//               <span className="ml-1 text-red-500 font-[Urbanist]">
 //                 *
 //               </span>
 //             </label>
 
-//             <div className="relative">
+//             <div className="relative font-[Urbanist]">
 //               <input
 //                 id="currentPassword"
 //                 name="currentPassword"
@@ -345,7 +345,7 @@
 //                   w-full
 //                   rounded-md
 //                   border
-//                   border-slate-300
+//                   border-black
 //                   bg-white
 //                   px-3
 //                   pr-11
@@ -354,12 +354,12 @@
 //                   outline-none
 //                   transition
 //                   placeholder:text-slate-400
-//                   focus:border-blue-500
+//                   focus:border-black
 //                   focus:ring-2
 //                   focus:ring-blue-100
 //                   disabled:cursor-not-allowed
 //                   disabled:bg-slate-50
-//                 "
+//                  font-[Urbanist]"
 //               />
 
 //               <button
@@ -381,7 +381,7 @@
 //                   justify-center
 //                   text-slate-400
 //                   hover:text-slate-600
-//                 "
+//                  font-[Urbanist]"
 //                 aria-label={
 //                   showCurrentPassword
 //                     ? "Hide current password"
@@ -410,15 +410,15 @@
 //                 text-sm
 //                 font-medium
 //                 text-slate-700
-//               "
+//                font-[Urbanist]"
 //             >
 //               New Password
-//               <span className="ml-1 text-red-500">
+//               <span className="ml-1 text-red-500 font-[Urbanist]">
 //                 *
 //               </span>
 //             </label>
 
-//             <div className="relative">
+//             <div className="relative font-[Urbanist]">
 //               <input
 //                 id="newPassword"
 //                 name="newPassword"
@@ -441,7 +441,7 @@
 //                   w-full
 //                   rounded-md
 //                   border
-//                   border-slate-300
+//                   border-black
 //                   bg-white
 //                   px-3
 //                   pr-11
@@ -450,12 +450,12 @@
 //                   outline-none
 //                   transition
 //                   placeholder:text-slate-400
-//                   focus:border-blue-500
+//                   focus:border-black
 //                   focus:ring-2
 //                   focus:ring-blue-100
 //                   disabled:cursor-not-allowed
 //                   disabled:bg-slate-50
-//                 "
+//                  font-[Urbanist]"
 //               />
 
 //               <button
@@ -477,7 +477,7 @@
 //                   justify-center
 //                   text-slate-400
 //                   hover:text-slate-600
-//                 "
+//                  font-[Urbanist]"
 //                 aria-label={
 //                   showNewPassword
 //                     ? "Hide new password"
@@ -506,15 +506,15 @@
 //                 text-sm
 //                 font-medium
 //                 text-slate-700
-//               "
+//                font-[Urbanist]"
 //             >
 //               Confirm Password
-//               <span className="ml-1 text-red-500">
+//               <span className="ml-1 text-red-500 font-[Urbanist]">
 //                 *
 //               </span>
 //             </label>
 
-//             <div className="relative">
+//             <div className="relative font-[Urbanist]">
 //               <input
 //                 id="confirmPassword"
 //                 name="confirmPassword"
@@ -537,7 +537,7 @@
 //                   w-full
 //                   rounded-md
 //                   border
-//                   border-slate-300
+//                   border-black
 //                   bg-white
 //                   px-3
 //                   pr-11
@@ -546,12 +546,12 @@
 //                   outline-none
 //                   transition
 //                   placeholder:text-slate-400
-//                   focus:border-blue-500
+//                   focus:border-black
 //                   focus:ring-2
 //                   focus:ring-blue-100
 //                   disabled:cursor-not-allowed
 //                   disabled:bg-slate-50
-//                 "
+//                  font-[Urbanist]"
 //               />
 
 //               <button
@@ -573,7 +573,7 @@
 //                   justify-center
 //                   text-slate-400
 //                   hover:text-slate-600
-//                 "
+//                  font-[Urbanist]"
 //                 aria-label={
 //                   showConfirmPassword
 //                     ? "Hide confirm password"
@@ -595,14 +595,14 @@
 
 //           {confirmPassword.length > 0 &&
 //             newPassword !== confirmPassword && (
-//               <p className="text-xs text-red-500">
+//               <p className="text-xs text-red-500 font-[Urbanist]">
 //                 Passwords do not match.
 //               </p>
 //             )}
 
 //           {confirmPassword.length > 0 &&
 //             newPassword === confirmPassword && (
-//               <p className="text-xs text-green-600">
+//               <p className="text-xs text-green-600 font-[Urbanist]">
 //                 Passwords match.
 //               </p>
 //             )}
@@ -619,7 +619,7 @@
 //               pt-2
 //               sm:flex-row
 //               sm:justify-end
-//             "
+//              font-[Urbanist]"
 //           >
 //             <button
 //               type="button"
@@ -628,7 +628,7 @@
 //               className="
 //                 rounded-md
 //                 border
-//                 border-slate-300
+//                 border-black
 //                 px-5
 //                 py-2.5
 //                 text-sm
@@ -638,7 +638,7 @@
 //                 hover:bg-slate-50
 //                 disabled:cursor-not-allowed
 //                 disabled:opacity-50
-//               "
+//                font-[Urbanist]"
 //             >
 //               Cancel
 //             </button>
@@ -658,7 +658,7 @@
 //                 hover:bg-blue-700
 //                 disabled:cursor-not-allowed
 //                 disabled:opacity-50
-//               "
+//                font-[Urbanist]"
 //             >
 //               {isLoading
 //                 ? "Changing Password..."
@@ -783,7 +783,7 @@ export default function DailyLogModal({
         justify-center
         bg-black/50
         p-4
-      "
+       font-[Urbanist]"
       onMouseDown={(event) => {
         if (
           event.target ===
@@ -809,7 +809,7 @@ export default function DailyLogModal({
           rounded-xl
           bg-white
           shadow-2xl
-        "
+         font-[Urbanist]"
         onMouseDown={(event) => {
           event.stopPropagation();
         }}
@@ -818,16 +818,16 @@ export default function DailyLogModal({
             HEADER
         ===================================================== */}
 
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-black px-6 py-4 font-[Urbanist]">
           <div>
-            <h2 className="text-lg font-semibold text-slate-800">
+            <h2 className="text-lg font-semibold text-slate-800 font-[Urbanist]">
               Daily Log of{" "}
               {employeeName || "-"}{" "}
               on {date}
             </h2>
 
             {employeeId && (
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-slate-400 font-[Urbanist]">
                 Employee ID:{" "}
                 {employeeId}
               </p>
@@ -837,7 +837,7 @@ export default function DailyLogModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-md p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 font-[Urbanist]"
             aria-label="Close"
           >
             <X size={20} />
@@ -848,20 +848,20 @@ export default function DailyLogModal({
             BODY
         ===================================================== */}
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 font-[Urbanist]">
 
           {/* =================================================
               ACTION BUTTONS
           ================================================= */}
 
-          <div className="mb-4 flex flex-wrap gap-3">
+          <div className="mb-4 flex flex-wrap gap-3 font-[Urbanist]">
 
             <button
               type="button"
               onClick={
                 onCorrectStatus
               }
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 font-[Urbanist]"
             >
               <CalendarClock
                 size={16}
@@ -875,7 +875,7 @@ export default function DailyLogModal({
               onClick={
                 onApplyLeave
               }
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 font-[Urbanist]"
             >
               <Plane size={16} />
 
@@ -887,7 +887,7 @@ export default function DailyLogModal({
               onClick={
                 onAssignShift
               }
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 font-[Urbanist]"
             >
               <CalendarCheck2
                 size={16}
@@ -901,7 +901,7 @@ export default function DailyLogModal({
               onClick={
                 onAddPermission
               }
-              className="ml-auto inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              className="ml-auto inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 font-[Urbanist]"
             >
               <Plus size={16} />
 
@@ -911,7 +911,7 @@ export default function DailyLogModal({
             <button
               type="button"
               onClick={onAddPunch}
-              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 font-[Urbanist]"
             >
               <Fingerprint
                 size={16}
@@ -925,15 +925,15 @@ export default function DailyLogModal({
               FH / SH
           ================================================= */}
 
-          <div className="mb-4 flex gap-2">
+          <div className="mb-4 flex gap-2 font-[Urbanist]">
 
-            <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span className="rounded-md border border-black bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 font-[Urbanist]">
               FH:{" "}
               {firstHalfStatus ||
                 "-"}
             </span>
 
-            <span className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span className="rounded-md border border-black bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 font-[Urbanist]">
               SH:{" "}
               {secondHalfStatus ||
                 "-"}
@@ -944,7 +944,7 @@ export default function DailyLogModal({
               MAIN CONTENT
           ================================================= */}
 
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[395px_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[395px_minmax(0,1fr)] font-[Urbanist]">
 
             {/* ===============================================
                 LEFT SIDE
@@ -956,81 +956,81 @@ export default function DailyLogModal({
                   STAT BOXES
               ============================================= */}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 font-[Urbanist]">
 
                 {/* Late In */}
 
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 shadow-sm">
+                <div className="flex items-center justify-between rounded-lg border border-black px-4 py-3 shadow-sm font-[Urbanist]">
                   <div>
-                    <div className="text-sm font-semibold text-red-500">
+                    <div className="text-sm font-semibold text-red-500 font-[Urbanist]">
                       {lateIn}
                     </div>
 
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 font-[Urbanist]">
                       Late In
                     </div>
                   </div>
 
                   <Clock
                     size={18}
-                    className="text-red-400"
+                    className="text-red-400 font-[Urbanist]"
                   />
                 </div>
 
                 {/* Early Out */}
 
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 shadow-sm">
+                <div className="flex items-center justify-between rounded-lg border border-black px-4 py-3 shadow-sm font-[Urbanist]">
                   <div>
-                    <div className="text-sm font-semibold text-red-500">
+                    <div className="text-sm font-semibold text-red-500 font-[Urbanist]">
                       {earlyOut}
                     </div>
 
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 font-[Urbanist]">
                       Early Out
                     </div>
                   </div>
 
                   <Clock
                     size={18}
-                    className="text-red-400"
+                    className="text-red-400 font-[Urbanist]"
                   />
                 </div>
 
                 {/* Total Hours */}
 
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 shadow-sm">
+                <div className="flex items-center justify-between rounded-lg border border-black px-4 py-3 shadow-sm font-[Urbanist]">
                   <div>
-                    <div className="text-sm font-semibold text-blue-600">
+                    <div className="text-sm font-semibold text-blue-600 font-[Urbanist]">
                       {totalHours}
                     </div>
 
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 font-[Urbanist]">
                       Total Hours
                     </div>
                   </div>
 
                   <Clock
                     size={18}
-                    className="text-blue-500"
+                    className="text-blue-500 font-[Urbanist]"
                   />
                 </div>
 
                 {/* OT */}
 
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3 shadow-sm">
+                <div className="flex items-center justify-between rounded-lg border border-black px-4 py-3 shadow-sm font-[Urbanist]">
                   <div>
-                    <div className="text-sm font-semibold text-blue-600">
+                    <div className="text-sm font-semibold text-blue-600 font-[Urbanist]">
                       {overtime}
                     </div>
 
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 font-[Urbanist]">
                       OT
                     </div>
                   </div>
 
                   <Timer
                     size={18}
-                    className="text-blue-500"
+                    className="text-blue-500 font-[Urbanist]"
                   />
                 </div>
               </div>
@@ -1039,9 +1039,9 @@ export default function DailyLogModal({
                   PERMISSIONS
               ============================================= */}
 
-              <div className="mt-3 rounded-lg border border-slate-200 px-4 py-3 shadow-sm">
+              <div className="mt-3 rounded-lg border border-black px-4 py-3 shadow-sm font-[Urbanist]">
 
-                <div className="mb-1 text-sm font-semibold text-slate-700">
+                <div className="mb-1 text-sm font-semibold text-slate-700 font-[Urbanist]">
                   Permissions
                 </div>
 
@@ -1052,12 +1052,12 @@ export default function DailyLogModal({
                     onClick={
                       onAddPermission
                     }
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm text-blue-600 hover:underline font-[Urbanist]"
                   >
                     Permissions Not Found
                   </button>
                 ) : (
-                  <ul className="list-disc pl-5 text-sm text-slate-600">
+                  <ul className="list-disc pl-5 text-sm text-slate-600 font-[Urbanist]">
                     {permissions.map(
                       (
                         permission,
@@ -1081,37 +1081,37 @@ export default function DailyLogModal({
                 RIGHT SIDE - PUNCH TABLE
             =============================================== */}
 
-            <div className="overflow-hidden rounded-lg border border-slate-200">
+            <div className="overflow-hidden rounded-lg border border-black font-[Urbanist]">
 
-              <table className="w-full table-fixed border-collapse text-sm">
+              <table className="w-full table-fixed border-collapse text-sm font-[Urbanist]">
 
                 {/* TABLE HEADER */}
 
-                <thead className="bg-blue-100">
+                <thead className="bg-blue-100 font-[Urbanist]">
 
                   <tr>
 
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
                       Punch Type
                     </th>
 
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
                       Punch Time
                     </th>
 
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
                       Entry Type
                     </th>
 
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
                       Location
                     </th>
 
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
                       Selfie
                     </th>
 
-                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600">
+                    <th className="px-3 py-3 text-left text-xs font-semibold text-slate-600 font-[Urbanist]">
                       Action
                     </th>
 
@@ -1129,7 +1129,7 @@ export default function DailyLogModal({
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-4 py-10 text-center text-sm text-slate-400"
+                        className="px-4 py-10 text-center text-sm text-slate-400 font-[Urbanist]"
                       >
                         Loading punches...
                       </td>
@@ -1142,7 +1142,7 @@ export default function DailyLogModal({
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-4 py-10 text-center text-sm text-slate-400"
+                        className="px-4 py-10 text-center text-sm text-slate-400 font-[Urbanist]"
                       >
                         No punches recorded
                         for this day.
@@ -1160,7 +1160,7 @@ export default function DailyLogModal({
                       ) => (
                         <tr
                           key={`${punch.time}-${index}`}
-                          className="border-t border-slate-200 odd:bg-white even:bg-slate-50"
+                          className="border-t border-black odd:bg-white even:bg-slate-50 font-[Urbanist]"
                         >
 
                           {/* Punch Type */}
@@ -1178,25 +1178,25 @@ export default function DailyLogModal({
 
                           {/* Punch Time */}
 
-                          <td className="px-3 py-3 text-slate-600">
+                          <td className="px-3 py-3 text-slate-600 font-[Urbanist]">
                             {punch.time}
                           </td>
 
                           {/* Entry Type */}
 
-                          <td className="px-3 py-3 text-slate-600">
+                          <td className="px-3 py-3 text-slate-600 font-[Urbanist]">
                             {punch.entryType ||
                               "-"}
                           </td>
 
                           {/* Location */}
 
-                          <td className="px-3 py-3 text-slate-500">
+                          <td className="px-3 py-3 text-slate-500 font-[Urbanist]">
 
                             {punch.location ? (
                               <MapPin
                                 size={16}
-                                className="text-slate-500"
+                                className="text-slate-500 font-[Urbanist]"
                               />
                             ) : (
                               "-"
@@ -1206,7 +1206,7 @@ export default function DailyLogModal({
 
                           {/* Selfie */}
 
-                          <td className="px-3 py-3 text-slate-500">
+                          <td className="px-3 py-3 text-slate-500 font-[Urbanist]">
 
                             {punch.hasSelfie ? (
                               <Camera
@@ -1220,7 +1220,7 @@ export default function DailyLogModal({
 
                           {/* Action */}
 
-                          <td className="px-3 py-3">
+                          <td className="px-3 py-3 font-[Urbanist]">
 
                             <button
                               type="button"
@@ -1229,7 +1229,7 @@ export default function DailyLogModal({
                                   index,
                                 )
                               }
-                              className="text-blue-500 transition hover:text-blue-700"
+                              className="text-blue-500 transition hover:text-blue-700 font-[Urbanist]"
                               aria-label="Edit punch"
                             >
                               <Pencil
@@ -1255,12 +1255,12 @@ export default function DailyLogModal({
             FOOTER
         ===================================================== */}
 
-        <div className="flex shrink-0 justify-end border-t border-slate-200 px-6 py-4">
+        <div className="flex shrink-0 justify-end border-t border-black px-6 py-4 font-[Urbanist]">
 
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-md border border-black px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 font-[Urbanist]"
           >
             <X size={16} />
 

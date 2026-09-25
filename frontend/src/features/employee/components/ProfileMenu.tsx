@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { HelpCircle, KeyRound, LogOut } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
+
 import { useLogoutMutation } from "@/features/auth/api/authApi";
+
 import { baseApi } from "@/app/baseApi";
+
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { logout } from "@/features/auth/authSlice";
+
+
 
 export default function ProfileMenu() {
   const [open, setOpen] = useState(false);
@@ -53,12 +59,58 @@ export default function ProfileMenu() {
   // Sign Out
   // =========================
 
+  // =========================
+  // Profile Menu Reference
+  // =========================
+
+
+  // =========================
+  // Close Menu On Outside Click
+  // =========================
+
+  useEffect(() => {
+    const handleOutsideClick = (
+      event: MouseEvent
+    ) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+    }
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+    };
+  }, [open]);
+
+  // =========================
+  // Sign Out
+  // =========================
+
   const handleSignOut = async () => {
     setOpen(false);
+
     try {
       await logoutUser().unwrap();
     } catch (err) {
-      console.error("Logout request failed:", err);
+      console.error(
+        "Logout request failed:",
+        err
+      );
     } finally {
       dispatch(logout());
       dispatch(baseApi.util.resetApiState());

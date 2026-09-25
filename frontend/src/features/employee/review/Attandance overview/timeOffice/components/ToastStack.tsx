@@ -9,7 +9,7 @@ export default function ToastStack({
   onDismiss,
 }: ToastStackProps) {
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col gap-2 font-[Urbanist]">
       {toasts.map((toast) => (
         <div
           key={toast.id}
@@ -19,7 +19,7 @@ export default function ToastStack({
               : "bg-slate-800"
           }`}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-4 w-4 font-[Urbanist]" />
 
           {toast.message}
 
@@ -28,10 +28,10 @@ export default function ToastStack({
             onClick={() =>
               onDismiss(toast.id)
             }
-            className="ml-2 opacity-70 hover:opacity-100"
+            className="ml-2 opacity-70 hover:opacity-100 font-[Urbanist]"
             aria-label="Dismiss"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5 font-[Urbanist]" />
           </button>
         </div>
       ))}

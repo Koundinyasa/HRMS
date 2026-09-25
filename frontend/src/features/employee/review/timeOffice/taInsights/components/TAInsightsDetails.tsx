@@ -55,18 +55,18 @@ const TAInsightsDetails: React.FC<TAInsightsDetailsProps> = ({
   }
 
   return (
-    <section className="mt-5 rounded-[20px] bg-[#d9f6ff] p-4 sm:p-7">
-      <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-        <h2 className="text-lg font-semibold text-slate-800 sm:text-[22px]">
+    <section className="mt-5 rounded-[20px] bg-[#d9f6ff] p-4 sm:p-7 font-[Urbanist]">
+      <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center font-[Urbanist]">
+        <h2 className="text-lg font-semibold text-slate-800 sm:text-[22px] font-[Urbanist]">
           {selectedCard.title} Details
         </h2>
 
-        <div className="flex items-center gap-2 sm:ml-auto">
+        <div className="flex items-center gap-2 sm:ml-auto font-[Urbanist]">
           <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="text-green-600"
+          className="text-green-600 font-[Urbanist]"
           title="Export to Excel"
           onClick={exportRows}
         >
@@ -79,7 +79,7 @@ const TAInsightsDetails: React.FC<TAInsightsDetailsProps> = ({
             title="Close details"
             aria-label="Close details"
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-800"
+            className="text-slate-500 hover:text-slate-800 font-[Urbanist]"
           >
             <X size={20} />
           </Button>
@@ -87,7 +87,7 @@ const TAInsightsDetails: React.FC<TAInsightsDetailsProps> = ({
       </div>
 
       {loading ? (
-        <div className="rounded-lg bg-white p-10 text-center text-slate-500">
+        <div className="rounded-lg bg-white p-10 text-center text-slate-500 font-[Urbanist]">
           Loading employee details...
         </div>
       ) : (

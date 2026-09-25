@@ -330,6 +330,9 @@ export class ReviewService {
     userId: number,
   ) {
     try {
+      if (!userId || Number.isNaN(Number(userId))) {
+        return [];
+      }
       const pool =
         await this.databaseService.connect();
    
@@ -338,7 +341,7 @@ export class ReviewService {
         .input(
           'UserID',
           sql.Int,
-          userId,
+          Number(userId),
         )
         .execute(
           'USP_GetReportingManagerEmployeeList',

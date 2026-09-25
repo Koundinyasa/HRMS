@@ -1,4 +1,9 @@
 import type React from "react";
+
+// =========================
+// Employee Profile
+// =========================
+
 export interface EmployeeProfile {
   FullName: string;
   ShortName: string;
@@ -28,12 +33,27 @@ export interface AttendanceSummary {
   "On-TimeArrival": string;
   "AverageCheck-Out": string;
   CurrentSessionStartTime: string | null;
+
   TotalCompletedMinutesToday: number;
+
   CheckInTime: string | null;
+
   CheckOutTime: string | null;
-  LateOrEarlyInStatus: "Early" | "Late" | "OnTime" | null;
+
+  LateOrEarlyInStatus:
+    | "Early"
+    | "Late"
+    | "OnTime"
+    | null;
+
   LateOrEarlyInMinutes: number | null;
-  LateOrEarlyOutStatus: "Early" | "Late" | "OnTime" | null;
+
+  LateOrEarlyOutStatus:
+    | "Early"
+    | "Late"
+    | "OnTime"
+    | null;
+
   LateOrEarlyOutMinutes: number | null;
 }
 
@@ -46,6 +66,7 @@ export interface UpcomingEvent {
 
 export interface ProfileResponse {
   success: boolean;
+
   data: {
     profile: EmployeeProfile;
     attendanceSummary: AttendanceSummary;

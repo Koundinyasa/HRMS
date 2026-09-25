@@ -25,10 +25,10 @@ export default function BankInformationPage() {
     (section) => section.title === "Bank Details"
   );
 
-  if (!bankSection) {
+  if (!bankSection || !bankSection.fields?.length) {
     return (
-      <div className="p-4 sm:p-6 text-slate-500">
-        No bank information available.
+      <div className="flex min-h-[240px] -translate-y-16 items-center justify-center p-4 text-center text-slate-500 sm:p-6">
+        No records found.
       </div>
     );
   }

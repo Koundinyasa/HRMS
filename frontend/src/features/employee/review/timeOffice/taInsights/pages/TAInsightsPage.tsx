@@ -28,7 +28,7 @@ const TAInsightsPage: React.FC = () => {
   } = useTAInsights();
 
   return (
-    <div className="min-h-screen bg-[#f4f5fa] p-3 md:p-5">
+    <div className="min-h-screen bg-[#f4f5fa] p-3 md:p-5 font-[Urbanist]">
       <TAInsightsHeader
         onAddFilter={() => setShowFilters((prev) => !prev)}
         filters={filters}
@@ -51,13 +51,13 @@ const TAInsightsPage: React.FC = () => {
       )}
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="mb-4 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
           {error}
         </div>
       )}
 
       {countsLoading ? (
-        <div className="rounded-lg bg-white p-10 text-center text-slate-500 shadow-sm">
+        <div className="rounded-lg bg-white p-10 text-center text-slate-500 shadow-sm font-[Urbanist]">
           {TA_INSIGHTS_LOADING_MESSAGE}
         </div>
       ) : (

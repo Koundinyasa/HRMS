@@ -14,21 +14,21 @@ export default function MissedPunchFilters({
   onSearchChange,
 }: MissedPunchFiltersProps) {
   return (
-    <div className="mt-2 space-y-2">
+    <div className="mt-2 space-y-2 font-[Urbanist]">
 
       {/* =====================================================
           SEARCH / FILTER BAR
       ===================================================== */}
 
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e0e5ec] bg-white px-3 py-3 sm:px-4 xl:flex-nowrap xl:flex-row">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e0e5ec] bg-white px-3 py-3 sm:px-4 xl:flex-nowrap xl:flex-row font-[Urbanist]">
 
         {/* SEARCH */}
 
-        <div className="flex min-w-0 w-full flex-1 items-center gap-3 xl:w-auto">
+        <div className="flex min-w-0 w-full flex-1 items-center gap-3 xl:w-auto font-[Urbanist]">
 
           <Search
             size={20}
-            className="shrink-0 text-[#8ba2c5]"
+            className="shrink-0 text-[#8ba2c5] font-[Urbanist]"
           />
 
           <input
@@ -42,7 +42,7 @@ export default function MissedPunchFilters({
               )
             }
             placeholder="Start Typing..."
-            className="w-full bg-transparent text-sm text-[#374151] outline-none placeholder:text-[#9aa9bd]"
+            className="w-full bg-transparent text-sm text-[#374151] outline-none placeholder:text-[#9aa9bd] font-[Urbanist]"
           />
 
         </div>
@@ -51,7 +51,7 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="flex items-center gap-2 text-sm font-semibold text-[#68758a]"
+          className="flex items-center gap-2 text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           <SlidersHorizontal
             size={17}
@@ -63,7 +63,7 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#68758a]"
+          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           Query⌄
         </button>
@@ -72,7 +72,7 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#68758a]"
+          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           T&A Policy⌄
         </button>
@@ -81,7 +81,7 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#68758a]"
+          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           Pattern⌄
         </button>
@@ -90,7 +90,7 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#68758a]"
+          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           TA Supervisor⌄
         </button>
@@ -99,7 +99,7 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#68758a]"
+          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           Attendance⌄
         </button>
@@ -108,14 +108,14 @@ export default function MissedPunchFilters({
 
         <button
           type="button"
-          className="text-sm font-semibold text-[#68758a]"
+          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
         >
           Leave⌄
         </button>
 
         <MoreVertical
           size={20}
-          className="hidden shrink-0 text-[#7f94b5] xl:block"
+          className="hidden shrink-0 text-[#7f94b5] xl:block font-[Urbanist]"
         />
 
         <button
@@ -124,7 +124,7 @@ export default function MissedPunchFilters({
           onClick={() =>
             onSearchChange("")
           }
-          className="shrink-0 text-red-500 hover:text-red-600"
+          className="shrink-0 text-red-500 hover:text-red-600 font-[Urbanist]"
         >
           <X size={21} />
         </button>

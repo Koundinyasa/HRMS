@@ -199,7 +199,7 @@ export interface SalaryStructureDefinition {
 // IMPORT
 // ===============================
 
-export type ImportTemplateType = "Branch Details" | "Designation Details" | "Bank Details";
+export type ImportTemplateType = "Branch Details" | "Designation Details" | "Bank Detailswww";
 
 export interface ImportUploadResponse extends ApiMessageResponse {
   SuccessCount: number;

@@ -12,13 +12,13 @@ export default function RequisitionToolbar({
   approved = false,
 }: RequisitionToolbarProps) {
   return (
-    <div className="relative flex min-h-[74px] flex-col items-stretch justify-between gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 md:flex-row md:items-center">
-      <div className="hidden md:block md:w-1/3" />
+    <div className="relative flex min-h-[74px] flex-col items-stretch justify-between gap-3 rounded-md border border-black bg-white px-4 py-3 md:flex-row md:items-center font-[Urbanist]">
+      <div className="hidden md:block md:w-1/3 font-[Urbanist]" />
 
-      <div className="flex h-10 w-full items-center gap-3 rounded-md bg-[#e9eaec] px-4 md:absolute md:left-1/2 md:w-[300px] md:-translate-x-1/2">
+      <div className="flex h-10 w-full items-center gap-3 rounded-md bg-[#e9eaec] px-4 md:absolute md:left-1/2 md:w-[300px] md:-translate-x-1/2 font-[Urbanist]">
         <Search
           size={18}
-          className="shrink-0 text-[#91a6c7]"
+          className="shrink-0 text-[#91a6c7] font-[Urbanist]"
         />
 
         <input
@@ -28,11 +28,11 @@ export default function RequisitionToolbar({
             onSearchChange(event.target.value)
           }
           placeholder="Search employee"
-          className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+          className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 font-[Urbanist]"
         />
       </div>
 
-      <div className="flex items-center justify-end gap-2 md:ml-auto">
+      <div className="flex items-center justify-end gap-2 md:ml-auto font-[Urbanist]">
         <button
           type="button"
           onClick={onApprove}
@@ -66,7 +66,7 @@ export default function RequisitionToolbar({
           onClick={onHistory}
           title="Leave history"
           aria-label="Leave history"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-[#91a6c7] hover:bg-slate-100"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-[#91a6c7] hover:bg-slate-100 font-[Urbanist]"
         >
           <History size={23} strokeWidth={1.8} />
         </button>

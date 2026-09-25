@@ -84,7 +84,6 @@ export class ReviewController {
       dto.toDate,
     );
   }
-
   // 7. Employee Monthly Attendance Details
   @UseGuards(JwtAuthGuard)
   @Post('employeemonthlyattendancedetails')
@@ -100,7 +99,6 @@ export class ReviewController {
       dto.classificationId,
     );
   }
-
   // 8. Employee Attendance Overview
   @UseGuards(JwtAuthGuard)
   @Post('employeeattendanceoverview')
@@ -115,7 +113,6 @@ export class ReviewController {
       dto.month,
     );
   }
-
   // 9. Employee Dashboard Details
   @UseGuards(JwtAuthGuard)
   @Post('employeedashboarddetails')
@@ -134,8 +131,11 @@ export class ReviewController {
   @Get('reporting-employees')
   @UseGuards(JwtAuthGuard)
   async getReportingManagerEmployeeList(@Req() req) {
+    const reportingUserId = Number(
+      req.user?.createdBy ?? req.user?.userId ?? 0,
+    );
     return this.reviewService.getReportingManagerEmployeeList(
-      req.user.createdBy,
+      reportingUserId,
     );
   }
   // Approval / Rejection

@@ -22,16 +22,16 @@ const LeaveCalendarFooter = ({
   return (
     <>
       {/* Pagination */}
-      <div className="flex items-center justify-end gap-4 overflow-x-auto border-t border-gray-200 px-4 py-3 text-sm">
+      <div className="flex items-center justify-end gap-4 overflow-x-auto border-t border-black px-4 py-3 text-sm font-[Urbanist]">
         {/* Rows Per Page */}
-        <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
-          <span className="text-gray-600">Rows per page</span>
+        <div className="flex shrink-0 items-center gap-2 whitespace-nowrap font-[Urbanist]">
+          <span className="text-gray-600 font-[Urbanist]">Rows per page</span>
 
-          <div className="relative">
+          <div className="relative font-[Urbanist]">
             <select
               value={rowsPerPage}
               onChange={(e) => onRowsPerPageChange(Number(e.target.value))}
-              className="appearance-none rounded-md border border-gray-300 bg-white px-3 py-1 pr-8 text-sm outline-none"
+              className="appearance-none rounded-md border border-black bg-white px-3 py-1 pr-8 text-sm outline-none font-[Urbanist]"
             >
               {LEAVE_CALENDAR_CONSTANTS.ROWS_PER_PAGE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -41,12 +41,12 @@ const LeaveCalendarFooter = ({
             </select>
             <ChevronDown
               size={14}
-              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 font-[Urbanist]"
             />
           </div>
         </div>
         {/* Count */}
-        <span className="shrink-0 whitespace-nowrap text-gray-600">
+        <span className="shrink-0 whitespace-nowrap text-gray-600 font-[Urbanist]">
           {rangeStart}-{rangeEnd} of {totalItems}
         </span>
         {/* Previous */}
@@ -54,7 +54,7 @@ const LeaveCalendarFooter = ({
           type="button"
           onClick={onPrevPage}
           disabled={!canGoPrev}
-          className="shrink-0 rounded p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+          className="shrink-0 rounded p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 font-[Urbanist]"
         >
           <ChevronLeft size={18} />
         </button>
@@ -63,19 +63,19 @@ const LeaveCalendarFooter = ({
           type="button"
           onClick={onNextPage}
           disabled={!canGoNext}
-          className="shrink-0 rounded p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+          className="shrink-0 rounded p-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 font-[Urbanist]"
         >
           <ChevronRight size={18} />
         </button>
       </div>
-      <div className="flex gap-6 overflow-x-auto border-t border-gray-200 px-4 py-3 text-sm">
+      <div className="flex gap-6 overflow-x-auto border-t border-black px-4 py-3 text-sm font-[Urbanist]">
         {legendCodes.length === 0 ? (
-          <span className="shrink-0 text-gray-400">No status data yet</span>
+          <span className="shrink-0 text-gray-400 font-[Urbanist]">No status data yet</span>
         ) : (
           legendCodes.map((code) => {
             const { label, className } = getStatusConfig(code, configMap);
             return (
-              <div key={code} className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+              <div key={code} className="flex shrink-0 items-center gap-2 whitespace-nowrap font-[Urbanist]">
                 <span
                   className={`flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold ${className}`}
                 >
