@@ -10,7 +10,6 @@ export class RelieveEmployeeDto {
   @IsInt()
   resignationId!: number;
 
-
   @IsOptional()
   @IsBoolean()
   relievingLetterIssued?: boolean;

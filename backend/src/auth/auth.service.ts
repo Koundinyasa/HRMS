@@ -127,24 +127,24 @@
 //       throw error;
 //     }
 //   }
- 
+
 //   // ================= VERIFY COMPANY =================
 //  async verifyCompany(tenantCode: string) {
 //   try {
 //     const pool = await this.dbService.connect();
- 
+
 //     const result = await pool
 //       .request()
 //       .execute('USP_GetCompanyInfo');
- 
+
 //     const company = result.recordset.find(
 //       (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
 //     );
- 
+
 //     if (!company) {
 //       throw new NotFoundException('Company not found');
 //     }
- 
+
 //     return {
 //       exists: true,
 //       companyId: company.CompanyID,
@@ -155,8 +155,6 @@
 //     throw error;
 //   }
 // }
-
-
 
 //   // ================= RESET PASSWORD =================
 //   async resetPassword(userId: string, dto: ResetPasswordDto) {
@@ -245,7 +243,7 @@
 //       .map((b) => chars[b % chars.length])
 //       .join('');
 //   }
- 
+
 //   async sendTemporaryPassword(employeeId: string) {
 //     try {
 //       const pool = await this.dbService.connect();
@@ -283,22 +281,20 @@
 //       throw error;
 //     }
 //   }
- 
+
 //   async testMail() {
 //     return this.mailService.sendTempPassword(
 //       'test@gmail.com',
 //       'TEST1234',
 //     );
 //   }
- 
- 
+
 //   private generateOtp(): string {
 //     return Math.floor(
 //       100000 + Math.random() * 900000,
 //     ).toString();
 //   }
- 
- 
+
 //   async forgotPassword(userId: string) {
 //     try {
 //       const pool = await this.dbService.connect();
@@ -353,8 +349,6 @@
 //     }
 //   }
 
-
-
 //   async verifyOtp(
 //     employeeId: string,
 //     otp: string,
@@ -383,7 +377,6 @@
 //       throw error;
 //     }
 //   }
-
 
 //   async resetForgotPassword(dto: ResetForgotPasswordDto) {
 //     try {
@@ -446,51 +439,51 @@
 //   async changePassword(userId: string, dto: ChangePasswordDto) {
 //   try {
 //     const pool = await this.dbService.connect();
- 
+
 //     const result = await pool
 //       .request()
 //       .input('EmailID', userId.trim())
 //       .execute('USP_Validateuser');
- 
+
 //     const user = result.recordset?.[0];
- 
+
 //     if (!user) {
 //       throw new BadRequestException('User not found');
 //     }
- 
+
 //     const isMatch = await bcrypt.compare(
 //       dto.currentPassword,
 //       user.PasswordHash,
 //     );
- 
+
 //     if (!isMatch) {
 //       throw new BadRequestException(
 //         'Current password is incorrect',
 //       );
 //     }
- 
+
 //     if (dto.newPassword !== dto.confirmPassword) {
 //       throw new BadRequestException(
 //         'Passwords do not match',
 //       );
 //     }
- 
+
 //     const samePassword = await bcrypt.compare(
 //       dto.newPassword,
 //       user.PasswordHash,
 //     );
- 
+
 //     if (samePassword) {
 //       throw new BadRequestException(
 //         'New password must be different from current password',
 //       );
 //     }
- 
+
 //     const hashedPassword = await bcrypt.hash(
 //       dto.newPassword,
 //       10,
 //     );
- 
+
 //     await pool
 //       .request()
 //       .input('EmployeeID', user.EmployeeID)
@@ -498,7 +491,7 @@
 //       .input('Flag', 2)
 //       .input('ModifiedBy', user.EmployeeID)
 //       .execute('USP_UpdatePassword');
- 
+
 //     return {
 //       success: true,
 //       message: 'Password changed successfully',
@@ -509,8 +502,13 @@
 // }
 // }
 
-
-import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { DatabaseService } from '../database/database.service';
 import { JwtService } from '@nestjs/jwt';
@@ -522,7 +520,7 @@ import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
 import { randomBytes } from 'crypto';
 import { DraftService } from '../chatbot/services/draft.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
- 
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -531,7 +529,7 @@ export class AuthService {
     private readonly mailService: MailService,
     private readonly captchaService: CaptchaService,
     private readonly draftService: DraftService,
-  ) { }
+  ) {}
   // A login (or logout) is a hard session boundary. Any chatbot flow that
   // was left mid-way — most commonly "apply leave", the one multi-step flow
   // that can be abandoned partway — must not survive into a new session.
@@ -540,8 +538,14 @@ export class AuthService {
   // now-stale flow as if nothing happened.
   private clearChatbotState(employeeId: string): void {
     this.draftService.deleteDraft(this.draftService.leaveDrafts, employeeId);
-    this.draftService.deleteDraft(this.draftService.partialCancelDrafts, employeeId);
-    this.draftService.deleteDraft(this.draftService.cancelChoiceDrafts, employeeId);
+    this.draftService.deleteDraft(
+      this.draftService.partialCancelDrafts,
+      employeeId,
+    );
+    this.draftService.deleteDraft(
+      this.draftService.cancelChoiceDrafts,
+      employeeId,
+    );
     this.draftService.cancelList.delete(employeeId);
     this.draftService.cancelTarget.delete(employeeId);
   }
@@ -557,40 +561,43 @@ export class AuthService {
           'Invalid or expired captcha. Please refresh and try again.',
         );
       }
- 
+
       const pool = await this.dbService.connect();
- 
+
       const result = await pool
         .request()
         .input('EmailID', dto.userId)
         .execute('USP_Validateuser');
- 
+
       const user = result.recordset[0];
- 
+
       if (!user) {
         throw new UnauthorizedException('Invalid UserID or Password');
       }
- 
+
       if (user.IsAccountLocked === true || user.IsAccountLocked === 1) {
         throw new UnauthorizedException(
           'Account is locked. Contact administrator.',
         );
       }
- 
-      const isPasswordValid = await bcrypt.compare(dto.password, user.PasswordHash);
- 
+
+      const isPasswordValid = await bcrypt.compare(
+        dto.password,
+        user.PasswordHash,
+      );
+
       if (!isPasswordValid) {
         await pool
           .request()
           .input('EmployeeID', user.EmployeeID)
           .input('flag', 1)
           .execute('USP_UpdateLoginInfo');
- 
+
         throw new UnauthorizedException('Invalid UserID or Password');
       }
- 
+
       const isFirstLogin = user.LastLoginDateTime === null;
- 
+
       // update login ONLY after first login is completed
       if (!isFirstLogin) {
         await pool
@@ -607,11 +614,7 @@ export class AuthService {
         createdBy: user.Sessionuserid,
         name: user.FullName,
         role:
-          user.RoleID === 1
-            ? 'admin'
-            : user.RoleID === 2
-              ? 'hr'
-              : 'employee',
+          user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
       });
       let loginMessage = 'Login successful';
       if (user.RoleID === 1) {
@@ -619,11 +622,11 @@ export class AuthService {
       } else if (user.RoleID === 2) {
         loginMessage = 'HR Admin login successful';
       }
- 
+
       // Fresh session boundary — wipe any chatbot flow left over from a
       // previous session for this employee before returning the new token.
       this.clearChatbotState(String(user.EmployeeID));
- 
+
       return {
         success: true,
         message: loginMessage,
@@ -639,37 +642,33 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   // ================= VERIFY COMPANY =================
- async verifyCompany(tenantCode: string) {
-  try {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .execute('USP_GetCompanyInfo');
- 
-    const company = result.recordset.find(
-      (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
-    );
- 
-    if (!company) {
-      throw new NotFoundException('Company not found');
+  async verifyCompany(tenantCode: string) {
+    try {
+      const pool = await this.dbService.connect();
+
+      const result = await pool.request().execute('USP_GetCompanyInfo');
+
+      const company = result.recordset.find(
+        (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
+      );
+
+      if (!company) {
+        throw new NotFoundException('Company not found');
+      }
+
+      return {
+        exists: true,
+        companyId: company.CompanyID,
+        companyName: company.CompanyCode,
+        domain: company.DomainName,
+      };
+    } catch (error) {
+      throw error;
     }
- 
-    return {
-      exists: true,
-      companyId: company.CompanyID,
-      companyName: company.CompanyCode,
-      domain: company.DomainName,
-    };
-  } catch (error) {
-    throw error;
   }
-}
- 
- 
- 
+
   // ================= RESET PASSWORD =================
   async resetPassword(userId: string, dto: ResetPasswordDto) {
     try {
@@ -679,13 +678,13 @@ export class AuthService {
         .request()
         .input('EmailID', userId.trim())
         .execute('USP_Validateuser');
- 
+
       const user = result.recordset?.[0];
- 
+
       if (!user) {
         throw new BadRequestException('User not found');
       }
- 
+
       if (user.LastLoginDateTime !== null) {
         throw new ForbiddenException(
           'Password reset is allowed only on first login',
@@ -697,9 +696,7 @@ export class AuthService {
         user.PasswordHash,
       );
       if (!isMatch) {
-        throw new BadRequestException(
-          'Current password is incorrect',
-        );
+        throw new BadRequestException('Current password is incorrect');
       }
       // Prevent same password reuse
       const samePassword = await bcrypt.compare(
@@ -713,15 +710,10 @@ export class AuthService {
       }
       // Confirm password check
       if (dto.newPassword !== dto.confirmPassword) {
-        throw new BadRequestException(
-          'Passwords do not match',
-        );
+        throw new BadRequestException('Passwords do not match');
       }
       // Hash new password
-      const hashedPassword = await bcrypt.hash(
-        dto.newPassword,
-        10,
-      );
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
       // USP_UpdatePassword expects EmployeeID
       await pool
         .request()
@@ -746,9 +738,9 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   // ================= TEMP PASSWORD =================
- 
+
   private generateTempPassword(length = 10): string {
     const chars =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
@@ -757,7 +749,7 @@ export class AuthService {
       .map((b) => chars[b % chars.length])
       .join('');
   }
- 
+
   async sendTemporaryPassword(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
@@ -765,17 +757,17 @@ export class AuthService {
         .request()
         .input('EmployeeID', employeeId)
         .execute('USP_GetUserInfo');
- 
+
       const user = result.recordset[0];
- 
+
       if (!user) {
-      throw new NotFoundException('User not found');
+        throw new NotFoundException('User not found');
       }
- 
+
       const tempPassword = this.generateTempPassword();
- 
+
       const hashedPassword = await bcrypt.hash(tempPassword, 10);
- 
+
       await pool
         .request()
         .input('EmployeeID', employeeId)
@@ -783,10 +775,7 @@ export class AuthService {
         .input('flag', 1)
         .input('Modifiedby', 'SYSTEM')
         .execute('USP_UpdatePassword');
-      await this.mailService.sendTempPassword(
-        user.Email,
-        tempPassword,
-      );
+      await this.mailService.sendTempPassword(user.Email, tempPassword);
       return {
         success: true,
         message: 'Temporary password sent successfully',
@@ -795,22 +784,15 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   async testMail() {
-    return this.mailService.sendTempPassword(
-      'test@gmail.com',
-      'TEST1234',
-    );
+    return this.mailService.sendTempPassword('test@gmail.com', 'TEST1234');
   }
- 
- 
+
   private generateOtp(): string {
-    return Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
- 
- 
+
   async forgotPassword(userId: string) {
     try {
       const pool = await this.dbService.connect();
@@ -818,59 +800,45 @@ export class AuthService {
         .request()
         .input('EmailID', userId)
         .execute('USP_Validateuser');
- 
+
       const user = result.recordset?.[0];
- 
+
       if (!user) {
-      throw new NotFoundException('User not found');
-    }
- 
+        throw new NotFoundException('User not found');
+      }
+
       const otp = this.generateOtp();
- 
+
       console.log('========================================');
       console.log(`OTP for ${user.UserID}: ${otp}`);
       console.log('========================================');
- 
+
       const otpResult = await pool
         .request()
         .input('EmployeeID', user.EmployeeID)
         .input('UserID', user.UserID)
         .input('OTP', otp)
         .input('GeneratedOn', new Date())
-        .input(
-          'ExpiresOn',
-          new Date(Date.now() + 3 * 60 * 1000),
-        )
+        .input('ExpiresOn', new Date(Date.now() + 3 * 60 * 1000))
         .execute('USP_SaveGeneratedOTP');
- 
-      const otpResponse =
-        otpResult.recordset[0];
- 
-      await this.mailService.sendOtp(
-        user.Email,
-        otp,
-      );
+
+      const otpResponse = otpResult.recordset[0];
+
+      await this.mailService.sendOtp(user.Email, otp);
       return {
         success: true,
         message: 'OTP sent successfully',
         employeeId: user.EmployeeID,
         expiresOn: otpResponse.ExpiresOn,
-        remainingSeconds:
-          otpResponse.RemainingSeconds,
-        remainingMinutes:
-          otpResponse.RemainingMinutes,
+        remainingSeconds: otpResponse.RemainingSeconds,
+        remainingMinutes: otpResponse.RemainingMinutes,
       };
     } catch (error) {
       throw error;
     }
   }
- 
- 
- 
-  async verifyOtp(
-    employeeId: string,
-    otp: string,
-  ) {
+
+  async verifyOtp(employeeId: string, otp: string) {
     try {
       const pool = await this.dbService.connect();
       const result = await pool
@@ -878,14 +846,11 @@ export class AuthService {
         .input('EmployeeID', employeeId)
         .input('OTP', otp)
         .execute('USP_VerifyOTP');
- 
-      const response =
-        result.recordset[0];
- 
+
+      const response = result.recordset[0];
+
       if (response.StatusCode === 0) {
-        throw new BadRequestException(
-          response.Message,
-        );
+        throw new BadRequestException(response.Message);
       }
       return {
         success: true,
@@ -895,40 +860,39 @@ export class AuthService {
       throw error;
     }
   }
- 
- 
+
   async resetForgotPassword(dto: ResetForgotPasswordDto) {
     try {
       const pool = await this.dbService.connect();
- 
+
       const userResult = await pool
         .request()
         .input('EmailID', (dto.userId ?? dto.employeeId).trim())
         .execute('USP_Validateuser');
- 
+
       const user = userResult.recordset?.[0];
- 
+
       if (!user) {
         throw new BadRequestException('User not found');
       }
- 
+
       if (dto.newPassword !== dto.confirmPassword) {
         throw new BadRequestException('Passwords do not match');
       }
- 
+
       const samePassword = await bcrypt.compare(
         dto.newPassword,
         user.PasswordHash,
       );
- 
+
       if (samePassword) {
         throw new BadRequestException(
           'New password must be different from your previous password',
         );
       }
- 
+
       const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
- 
+
       await pool
         .request()
         .input('EmployeeID', dto.employeeId)
@@ -936,7 +900,7 @@ export class AuthService {
         .input('flag', 2)
         .input('Modifiedby', dto.employeeId)
         .execute('USP_UpdatePassword');
- 
+
       return {
         success: true,
         message: 'Password updated successfully',
@@ -945,7 +909,7 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   verifyAccessToken(token: string): Record<string, any> | null {
     try {
       return this.jwtService.verify(token);
@@ -953,20 +917,20 @@ export class AuthService {
       return null;
     }
   }
- 
+
   async logout(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
- 
+
       await pool
         .request()
         .input('EmployeeID', employeeId)
         .input('flag', 3)
         .execute('USP_UpdateLoginInfo');
- 
+
       // Defense in depth alongside the login-time clear above.
       this.clearChatbotState(String(employeeId));
- 
+
       return {
         success: true,
         message: 'Logout successful',
@@ -975,72 +939,63 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   // ================= CHANGE PASSWORD =================
   async changePassword(userId: string, dto: ChangePasswordDto) {
-  try {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .input('EmailID', userId.trim())
-      .execute('USP_Validateuser');
- 
-    const user = result.recordset?.[0];
- 
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
- 
-    const isMatch = await bcrypt.compare(
-      dto.currentPassword,
-      user.PasswordHash,
-    );
- 
-    if (!isMatch) {
-      throw new BadRequestException(
-        'Current password is incorrect',
+    try {
+      const pool = await this.dbService.connect();
+
+      const result = await pool
+        .request()
+        .input('EmailID', userId.trim())
+        .execute('USP_Validateuser');
+
+      const user = result.recordset?.[0];
+
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      const isMatch = await bcrypt.compare(
+        dto.currentPassword,
+        user.PasswordHash,
       );
-    }
- 
-    if (dto.newPassword !== dto.confirmPassword) {
-      throw new BadRequestException(
-        'Passwords do not match',
+
+      if (!isMatch) {
+        throw new BadRequestException('Current password is incorrect');
+      }
+
+      if (dto.newPassword !== dto.confirmPassword) {
+        throw new BadRequestException('Passwords do not match');
+      }
+
+      const samePassword = await bcrypt.compare(
+        dto.newPassword,
+        user.PasswordHash,
       );
+
+      if (samePassword) {
+        throw new BadRequestException(
+          'New password must be different from current password',
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+      await pool
+        .request()
+        .input('EmployeeID', user.EmployeeID)
+        .input('PasswordHash', hashedPassword)
+        .input('Flag', 2)
+        .input('ModifiedBy', user.EmployeeID)
+        .execute('USP_UpdatePassword');
+
+      return {
+        success: true,
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      throw error;
     }
- 
-    const samePassword = await bcrypt.compare(
-      dto.newPassword,
-      user.PasswordHash,
-    );
- 
-    if (samePassword) {
-      throw new BadRequestException(
-        'New password must be different from current password',
-      );
-    }
- 
-    const hashedPassword = await bcrypt.hash(
-      dto.newPassword,
-      10,
-    );
- 
-    await pool
-      .request()
-      .input('EmployeeID', user.EmployeeID)
-      .input('PasswordHash', hashedPassword)
-      .input('Flag', 2)
-      .input('ModifiedBy', user.EmployeeID)
-      .execute('USP_UpdatePassword');
- 
-    return {
-      success: true,
-      message: 'Password changed successfully',
-    };
-  } catch (error) {
-    throw error;
   }
 }
-}
- 
- 

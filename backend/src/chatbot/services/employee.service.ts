@@ -621,7 +621,10 @@ export class EmployeeService {
       {
         name: 'employeeDirectoryViewFollowup',
         test: (ctx) => {
-          if (ctx.msg !== 'download employees' && ctx.msg !== 'employees cancel')
+          if (
+            ctx.msg !== 'download employees' &&
+            ctx.msg !== 'employees cancel'
+          )
             return false;
           const draft = this.draftService.getDraft(
             this.draftService.employeeDirectoryDrafts,

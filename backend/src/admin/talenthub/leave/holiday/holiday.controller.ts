@@ -4,7 +4,8 @@ import {
   Param,
   UseGuards,
   Body,
-  Post,  UploadedFile,
+  Post,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
@@ -15,14 +16,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('admin/ta/leave/holidaysettings')
 @UseGuards(JwtAuthGuard)
 export class HolidayController {
-  constructor(
-    private readonly holidayService: HolidayService,
-  ) {}
+  constructor(private readonly holidayService: HolidayService) {}
 
   // ==========================================
-  // Holiday 
+  // Holiday
   // ==========================================
-   // -Months
+  // -Months
 
   @Get('months')
   async getHolidayMonths() {
@@ -31,40 +30,30 @@ export class HolidayController {
   // Holiday List
 
   @Get('months/:monthId')
-  async getHolidayList(
-    @Param('monthId') monthId: number,
-  ) {
-    return this.holidayService.getHolidayList(
-      monthId,
-    );
+  async getHolidayList(@Param('monthId') monthId: number) {
+    return this.holidayService.getHolidayList(monthId);
   }
 
-// Add Holiday
+  // Add Holiday
 
-@Post()
-async createHoliday(
-  @Body() dto: CreateHolidayDto,
-) {
-  return this.holidayService.createHoliday(dto);
-}
-// ==========================================
-// Weekly Off 
-// ==========================================
-// List
+  @Post()
+  async createHoliday(@Body() dto: CreateHolidayDto) {
+    return this.holidayService.createHoliday(dto);
+  }
+  // ==========================================
+  // Weekly Off
+  // ==========================================
+  // List
 
-@Get('weeklyoff')
-async getWeeklyOffList() {
-  return this.holidayService.getWeeklyOffList();
-}
+  @Get('weeklyoff')
+  async getWeeklyOffList() {
+    return this.holidayService.getWeeklyOffList();
+  }
 
-// Upload Holiday File
-@Post('import')
-@UseInterceptors(FileInterceptor('file'))
-async uploadHolidayFile(
-  @UploadedFile() file: any,
-) {
-  return this.holidayService.uploadHolidayFile(
-    file,
-  );
-}
+  // Upload Holiday File
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadHolidayFile(@UploadedFile() file: any) {
+    return this.holidayService.uploadHolidayFile(file);
+  }
 }

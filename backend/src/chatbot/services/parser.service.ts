@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { LeaveDraft } from '../types';
 import { parseLeaveDate } from '../utils/date.util';
- 
+
 @Injectable()
 export class ParserService {
   extractIsoDate(message: string): string | null {
     const m = String(message || '').match(/(\d{4})-(\d{2})-(\d{2})/);
     return m ? m[0] : null;
   }
- 
+
   extractLeaveTypeCode(
     message: string,
     leaveTypes: { code: string }[],
@@ -21,12 +21,12 @@ export class ParserService {
     );
     return match ? match.code.toUpperCase() : null;
   }
- 
+
   parseLeaveRequestCode(text: string): string | null {
     const match = String(text || '').match(/\b(?:LV|LR)-?\d{3,}\b/i);
     return match ? match[0].toUpperCase() : null;
   }
- 
+
   parseLeaveMessage(
     message: string,
   ): Omit<LeaveDraft, 'step' | 'isHalfDay' | 'session'> | null {
@@ -88,11 +88,11 @@ export class ParserService {
       reason: reasonMatch ? reasonMatch[1].trim() : '',
     };
   }
- 
+
   parseLeaveDate(text: string): string | null {
     return parseLeaveDate(text);
   }
- 
+
   resolveLeaveTypeId(
     code: string,
     leaveTypes: { id: number; code: string }[],
@@ -100,45 +100,45 @@ export class ParserService {
     const raw = String(code || '')
       .trim()
       .toUpperCase();
- 
+
     const aliases: Record<string, string> = {
       CASUAL: 'CL',
       'CASUAL LEAVE': 'CL',
- 
+
       SICK: 'SL',
       'SICK LEAVE': 'SL',
- 
+
       EARNED: 'EL',
       'EARNED LEAVE': 'EL',
- 
+
       'LOSS OF PAY': 'LOP',
       'LOP LEAVE': 'LOP',
- 
+
       'WORK FROM HOME': 'WFH',
       'WORK FROM HOME LEAVE': 'WFH',
     };
- 
+
     const norm = aliases[raw] ?? raw;
- 
+
     const match = leaveTypes.find(
       (t) =>
         String(t.code ?? '')
           .trim()
           .toUpperCase() === norm,
     );
- 
+
     return match ? match.id : null;
   }
- 
+
   sessionLabel(session: string): string {
     if (session === 'FirstHalf') {
       return 'First Half';
     }
- 
+
     if (session === 'SecondHalf') {
       return 'Second Half';
     }
- 
+
     return session;
   }
 }

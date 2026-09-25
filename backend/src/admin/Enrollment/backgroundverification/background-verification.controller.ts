@@ -1,9 +1,18 @@
-import {Body,Controller,Get,Param,Post,Put,Query,Req,UseGuards} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { BackgroundVerificationService } from './background-verification.service';
-import { InitiateBackgroundVerificationDto} from './dto/initiate-background-verification.dto';
+import { InitiateBackgroundVerificationDto } from './dto/initiate-background-verification.dto';
 import { SaveBackgroundVerificationSettingsDto } from './dto/save-background-verification-settings.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-
 
 @Controller('admin/background-verification')
 @UseGuards(JwtAuthGuard)
@@ -124,9 +133,7 @@ export class BackgroundVerificationController {
   async getSettings(@Req() req: any) {
     const companyId = req.user.companyId;
 
-    return this.backgroundVerificationService.getSettings(
-      companyId,
-    );
+    return this.backgroundVerificationService.getSettings(companyId);
   }
 
   // ==========================================
@@ -142,17 +149,17 @@ export class BackgroundVerificationController {
     const companyId = req.user.companyId;
     const userId = req.user.userId;
 
-  //   console.log('========== BGV SAVE SETTINGS ==========');
-  // console.log('JWT companyId:', req.user.companyId);
-  // console.log('JWT companyId type:', typeof req.user.companyId);
-  // console.log('Converted companyId:', companyId);
+    //   console.log('========== BGV SAVE SETTINGS ==========');
+    // console.log('JWT companyId:', req.user.companyId);
+    // console.log('JWT companyId type:', typeof req.user.companyId);
+    // console.log('Converted companyId:', companyId);
 
-  // console.log('JWT userId:', req.user.userId);
-  // console.log('JWT userId type:', typeof req.user.userId);
-  // console.log('Converted userId:', userId);
+    // console.log('JWT userId:', req.user.userId);
+    // console.log('JWT userId type:', typeof req.user.userId);
+    // console.log('Converted userId:', userId);
 
-  // console.log('DTO:', dto);
-  // console.log('========================================');
+    // console.log('DTO:', dto);
+    // console.log('========================================');
 
     return this.backgroundVerificationService.saveSettings(
       companyId,

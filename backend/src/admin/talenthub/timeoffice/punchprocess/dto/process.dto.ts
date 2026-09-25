@@ -1,7 +1,4 @@
-import {
-  IsDateString,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsDateString, IsNotEmpty } from 'class-validator';
 
 export class ProcessDto {
   @IsDateString()

@@ -1,23 +1,12 @@
-import {
-IsInt,
-IsEmail,
-IsString
-} from 'class-validator';
-
+import { IsInt, IsEmail, IsString } from 'class-validator';
 
 export class UpdateUserDto {
+  @IsInt()
+  roleId!: number;
 
+  @IsEmail()
+  email!: string;
 
-@IsInt()
-roleId!:number;
-
-
-@IsEmail()
-email!:string;
-
-
-@IsString()
-mobile!:string;
-
-
+  @IsString()
+  mobile!: string;
 }

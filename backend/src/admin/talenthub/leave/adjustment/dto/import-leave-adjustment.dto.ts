@@ -1,6 +1,4 @@
-import {
-  IsInt,
-} from 'class-validator';
+import { IsInt } from 'class-validator';
 
 export class ImportLeaveAdjustmentDto {
   @IsInt()

@@ -14,15 +14,15 @@ export interface TeamListItem {
 export interface TeamMember {
   employeeId: string;
   name: string;
-designation: string;
+  designation: string;
 }
 
 export interface TeamDraft {
   step: TeamStep;
-  teams: TeamListItem[];   // snapshot fetched once, so we don't re-query on every reply
+  teams: TeamListItem[]; // snapshot fetched once, so we don't re-query on every reply
   teamId: number | null;
   teamName: string;
   action: 'view' | 'download' | '';
   format: 'pdf' | 'excel' | '';
-  members: TeamMember[];   // populated when 'view' fetches data, reused by the preview widget
+  members: TeamMember[]; // populated when 'view' fetches data, reused by the preview widget
 }

@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { AssignService } from './assign.service';
@@ -16,9 +9,7 @@ import { UpdatePolicyDto } from './dto/update-policy.dto';
 @Controller('admin/timeattendance/timeoffice/assign')
 @UseGuards(JwtAuthGuard)
 export class AssignController {
-  constructor(
-    private readonly assignService: AssignService,
-  ) {}
+  constructor(private readonly assignService: AssignService) {}
 
   // =========================================================
   // GEO-LOCATION
@@ -38,19 +29,13 @@ export class AssignController {
 
   // 3. Get Employee Geo-Location Details
   @Get('geo-location/:employeeId')
-  async getGeoLocationDetails(
-    @Param('employeeId') employeeId: string,
-  ) {
-    return this.assignService.getGeoLocationDetails(
-      employeeId,
-    );
+  async getGeoLocationDetails(@Param('employeeId') employeeId: string) {
+    return this.assignService.getGeoLocationDetails(employeeId);
   }
 
   // 4. Update Employee Geo-Location
   @Put('geo-location')
-  async updateGeoLocation(
-    @Body() dto: UpdateGeoLocationDto,
-  ) {
+  async updateGeoLocation(@Body() dto: UpdateGeoLocationDto) {
     return this.assignService.updateGeoLocation(dto);
   }
 
@@ -72,9 +57,7 @@ export class AssignController {
 
   // 7. Update Employee Policy
   @Put('policy-update')
-  async updatePolicy(
-    @Body() dto: UpdatePolicyDto,
-  ) {
+  async updatePolicy(@Body() dto: UpdatePolicyDto) {
     return this.assignService.updatePolicy(dto);
   }
 }

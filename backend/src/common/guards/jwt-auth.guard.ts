@@ -6,8 +6,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-
-
 /**
  * Single source of truth for JWT auth.
  * Reads the token from the httpOnly cookie set at login.
@@ -20,7 +18,7 @@ export class JwtAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
 
-    const token = request.cookies?.access_token; 
+    const token = request.cookies?.access_token;
 
     if (!token) {
       throw new UnauthorizedException('Token missing or invalid');

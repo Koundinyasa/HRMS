@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException} from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import { CreateLeavePolicyDto } from './dto/create-leave-policy.dto';
 import * as sql from 'mssql';
@@ -43,52 +47,44 @@ export class AdmincenterClassificationService {
         data: summary,
       };
     } catch (error) {
-    throw new BadRequestException((error as Error).message);
+      throw new BadRequestException((error as Error).message);
     }
   }
 
-  // Get Classification Details 
-  async getClassificationDetails(
-  companyId: number,
-  classificationId: number,) {
+  // Get Classification Details
+  async getClassificationDetails(companyId: number, classificationId: number) {
     try {
-        const pool = await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
-        const result = await pool
+      const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .input('ClassificationID', sql.Int, classificationId)
         .execute('USP_GetClassificationDetails');
 
-        // If the SP returns StatusCode/StatusMessage
-        if (
-        result.recordset.length > 0 &&
-        result.recordset[0].StatusCode
-        ) {
+      // If the SP returns StatusCode/StatusMessage
+      if (result.recordset.length > 0 && result.recordset[0].StatusCode) {
         return {
-            statusCode: result.recordset[0].StatusCode,
-            statusMessage: result.recordset[0].StatusMessage,
-            data: [],
+          statusCode: result.recordset[0].StatusCode,
+          statusMessage: result.recordset[0].StatusMessage,
+          data: [],
         };
-        }
+      }
 
-        return {
+      return {
         statusCode: 200,
         statusMessage: 'Classification details retrieved successfully.',
         data: result.recordset,
-        };
+      };
     } catch (error) {
-        throw new BadRequestException(
+      throw new BadRequestException(
         error instanceof Error ? error.message : 'Internal Server Error',
-        );
+      );
     }
   }
 
   // Add Leave Policy
-  async addLeavePolicy(
-  dto: CreateLeavePolicyDto,
-  createdBy: number,
-  ) {
+  async addLeavePolicy(dto: CreateLeavePolicyDto, createdBy: number) {
     const pool = await this.databaseService.connect();
 
     const result = await pool
@@ -111,12 +107,8 @@ export class AdmincenterClassificationService {
     return result.recordset[0];
   }
 
-
   // Update Leave Policy
-  async updateLeavePolicy(
-    dto: UpdateLeavePolicyDto,
-    modifiedBy: number,
-    ) {
+  async updateLeavePolicy(dto: UpdateLeavePolicyDto, modifiedBy: number) {
     const pool = await this.databaseService.connect();
 
     const result = await pool
@@ -134,21 +126,9 @@ export class AdmincenterClassificationService {
         sql.VarChar(20),
         dto.leaveCreditFrequency ?? null,
       )
-      .input(
-        'LeaveCreditDay',
-        sql.Int,
-        dto.leaveCreditDay ?? null,
-      )
-      .input(
-        'ProrateOnJoining',
-        sql.Bit,
-        dto.prorateOnJoining ?? false,
-      )
-      .input(
-        'JoiningCutOffDay',
-        sql.Int,
-        dto.joiningCutOffDay ?? null,
-      )
+      .input('LeaveCreditDay', sql.Int, dto.leaveCreditDay ?? null)
+      .input('ProrateOnJoining', sql.Bit, dto.prorateOnJoining ?? false)
+      .input('JoiningCutOffDay', sql.Int, dto.joiningCutOffDay ?? null)
       .input(
         'JoiningCreditRule',
         sql.VarChar(20),
@@ -162,8 +142,8 @@ export class AdmincenterClassificationService {
 
   //Update Leave Policy Details
   async updateLeavePolicyDetails(
-  dto: UpdateLeavePolicyDetailsDto,
-  modifiedBy: number,
+    dto: UpdateLeavePolicyDetailsDto,
+    modifiedBy: number,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -188,11 +168,10 @@ export class AdmincenterClassificationService {
     return result.recordset[0];
   }
 
-
- // Add Leave Policy Details
+  // Add Leave Policy Details
   async addLeavePolicyDetails(
-  dto: CreateLeavePolicyDetailsDto,
-  createdBy: number,
+    dto: CreateLeavePolicyDetailsDto,
+    createdBy: number,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -203,82 +182,36 @@ export class AdmincenterClassificationService {
       .input('AnnualQuota', sql.Decimal(6, 2), dto.annualQuota)
       .input('MonthlyAccrual', sql.Decimal(6, 2), dto.monthlyAccrual)
       .input('CreditDay', sql.Int, dto.creditDay ?? null)
-      .input(
-        'CarryForwardLimit',
-        sql.Decimal(6, 2),
-        dto.carryForwardLimit,
-      )
-      .input(
-        'MaxBalance',
-        sql.Decimal(6, 2),
-        dto.maxBalance,
-      )
-      .input(
-        'EncashmentLimit',
-        sql.Decimal(6, 2),
-        dto.encashmentLimit,
-      )
-      .input(
-        'ProbationEligible',
-        sql.Bit,
-        dto.probationEligible,
-      )
-      .input(
-        'NoticePeriodEligible',
-        sql.Bit,
-        dto.noticePeriodEligible,
-      )
-      .input(
-        'SandwichApplicable',
-        sql.Bit,
-        dto.sandwichApplicable,
-      )
-      .input(
-        'IncludeHoliday',
-        sql.Bit,
-        dto.includeHoliday,
-      )
-      .input(
-        'IncludeWeekOff',
-        sql.Bit,
-        dto.includeWeekOff,
-      )
+      .input('CarryForwardLimit', sql.Decimal(6, 2), dto.carryForwardLimit)
+      .input('MaxBalance', sql.Decimal(6, 2), dto.maxBalance)
+      .input('EncashmentLimit', sql.Decimal(6, 2), dto.encashmentLimit)
+      .input('ProbationEligible', sql.Bit, dto.probationEligible)
+      .input('NoticePeriodEligible', sql.Bit, dto.noticePeriodEligible)
+      .input('SandwichApplicable', sql.Bit, dto.sandwichApplicable)
+      .input('IncludeHoliday', sql.Bit, dto.includeHoliday)
+      .input('IncludeWeekOff', sql.Bit, dto.includeWeekOff)
       .input('CreatedBy', sql.Int, createdBy)
       .execute('USP_AddLeavePolicyDetails');
 
     return result.recordset[0];
   }
 
-
   //2 Create Branch
-  async createBranch(
-    userId: number,
-    dto: CreateBranchDto,
-  ) {
+  async createBranch(userId: number, dto: CreateBranchDto) {
     return this.executeBranchProcedure(1, userId, dto);
   }
 
   // Update Branch
-  async updateBranch(
-    userId: number,
-    dto: UpdateBranchDto,
-  ) {
+  async updateBranch(userId: number, dto: UpdateBranchDto) {
     return this.executeBranchProcedure(2, userId, dto);
   }
 
   // Update Branch Status
-  async updateBranchStatus(
-    userId: number,
-    dto: UpdateBranchStatusDto,
-  ) {
+  async updateBranchStatus(userId: number, dto: UpdateBranchStatusDto) {
     return this.executeBranchProcedure(3, userId, dto);
   }
 
-  private async executeBranchProcedure(
-    flag: number,
-    userId: number,
-    dto: any,
-  ) {
+  private async executeBranchProcedure(flag: number, userId: number, dto: any) {
     try {
       const pool = await this.databaseService.connect();
 
@@ -303,130 +236,99 @@ export class AdmincenterClassificationService {
     } catch (error) {
       console.error('Branch API Error:', error);
 
-      throw new BadRequestException(
-        'Failed to process company branch.',
-      );
+      throw new BadRequestException('Failed to process company branch.');
     }
   }
-
 
   // Create Designation
-async createDesignation(
-  userId: number,
-  dto: CreateDesignationDto,
-) {
-  return this.executeDesignationProcedure(1, userId, dto);
-}
-
-
-// Update Designation
-async updateDesignation(
-  userId: number,
-  dto: UpdateDesignationDto,
-) {
-  return this.executeDesignationProcedure(2, userId, dto);
-}
-
-
-// Update Designation Status
-async updateDesignationStatus(
-  userId: number,
-  dto: UpdateDesignationStatusDto,
-) {
-  return this.executeDesignationProcedure(3, userId, dto);
-}
-
-
-// Common Designation Procedure
-private async executeDesignationProcedure(
-  flag: number,
-  userId: number,
-  dto: any,
-) {
-  try {
-    const pool = await this.databaseService.connect();
-
-    const result = await pool
-      .request()
-      .input('Flag', sql.Int, flag)
-      .input('UserID', sql.Int, userId)
-      .input('ID', sql.Int, dto.id ?? null)
-      .input('DeptID', sql.Int, dto.departmentId ?? null)
-      .input('Name', sql.VarChar(100), dto.name ?? null)
-      .input('IsActive', sql.Bit, dto.isActive ?? true)
-      .execute('USP_DesignationInsertUpdate');
-
-    return result.recordset?.[0];
-
-  } catch (error) {
-
-    console.error(
-      'Designation API Error:',
-      error,
-    );
-
-    throw new BadRequestException(
-      'Failed to process designation.',
-    );
+  async createDesignation(userId: number, dto: CreateDesignationDto) {
+    return this.executeDesignationProcedure(1, userId, dto);
   }
-}
 
-
-async getBankInfo(
-  ifsc: string,
-  createdBy: number,
-) {
-  try {
-    if (!ifsc) {
-      throw new BadRequestException(
-        'IFSC Code is required',
-      );
-    }
-
-    const response = await axios.get(
-      `https://ifsc.razorpay.com/${ifsc.trim().toUpperCase()}`,
-    );
-
-    const bank = response.data;
-
-    const pool = await this.databaseService.connect();
-
-    const result = await pool
-      .request()
-      .input('IFSC', sql.VarChar(15), bank.IFSC)
-      .input('BankCode', sql.VarChar(10), bank.BANKCODE ?? null)
-      .input('BankName', sql.VarChar(150), bank.BANK)
-      .input('BranchName', sql.VarChar(150), bank.BRANCH)
-      .input('Centre', sql.VarChar(100), bank.CENTRE)
-      .input('District', sql.VarChar(100), bank.DISTRICT)
-      .input('City', sql.VarChar(100), bank.CITY)
-      .input('State', sql.VarChar(100), bank.STATE)
-      .input('Address', sql.VarChar(500), bank.ADDRESS)
-      .input('Contact', sql.VarChar(20), bank.CONTACT)
-      .input('MICR', sql.VarChar(15), bank.MICR)
-      .input('SWIFT', sql.VarChar(15), bank.SWIFT ?? null)
-      .input('ISO3166', sql.VarChar(10), bank.ISO3166 ?? null)
-      .input('IMPS', sql.Bit, bank.IMPS)
-      .input('RTGS', sql.Bit, bank.RTGS)
-      .input('NEFT', sql.Bit, bank.NEFT)
-      .input('UPI', sql.Bit, bank.UPI)
-      .input('CreatedBy', sql.Int, createdBy)
-      .execute('USP_BankInfo_Insert');
-
-    return result.recordset[0];
-  } catch (error: any) {
-    throw new BadRequestException(
-      error?.response?.data || error.message,
-    );
+  // Update Designation
+  async updateDesignation(userId: number, dto: UpdateDesignationDto) {
+    return this.executeDesignationProcedure(2, userId, dto);
   }
-}
 
-
-// Import /Export Endpoints
-  downloadTemplate(
-    type: string,
-    res: Response,
+  // Update Designation Status
+  async updateDesignationStatus(
+    userId: number,
+    dto: UpdateDesignationStatusDto,
   ) {
+    return this.executeDesignationProcedure(3, userId, dto);
+  }
+
+  // Common Designation Procedure
+  private async executeDesignationProcedure(
+    flag: number,
+    userId: number,
+    dto: any,
+  ) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('Flag', sql.Int, flag)
+        .input('UserID', sql.Int, userId)
+        .input('ID', sql.Int, dto.id ?? null)
+        .input('DeptID', sql.Int, dto.departmentId ?? null)
+        .input('Name', sql.VarChar(100), dto.name ?? null)
+        .input('IsActive', sql.Bit, dto.isActive ?? true)
+        .execute('USP_DesignationInsertUpdate');
+
+      return result.recordset?.[0];
+    } catch (error) {
+      console.error('Designation API Error:', error);
+
+      throw new BadRequestException('Failed to process designation.');
+    }
+  }
+
+  async getBankInfo(ifsc: string, createdBy: number) {
+    try {
+      if (!ifsc) {
+        throw new BadRequestException('IFSC Code is required');
+      }
+
+      const response = await axios.get(
+        `https://ifsc.razorpay.com/${ifsc.trim().toUpperCase()}`,
+      );
+
+      const bank = response.data;
+
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('IFSC', sql.VarChar(15), bank.IFSC)
+        .input('BankCode', sql.VarChar(10), bank.BANKCODE ?? null)
+        .input('BankName', sql.VarChar(150), bank.BANK)
+        .input('BranchName', sql.VarChar(150), bank.BRANCH)
+        .input('Centre', sql.VarChar(100), bank.CENTRE)
+        .input('District', sql.VarChar(100), bank.DISTRICT)
+        .input('City', sql.VarChar(100), bank.CITY)
+        .input('State', sql.VarChar(100), bank.STATE)
+        .input('Address', sql.VarChar(500), bank.ADDRESS)
+        .input('Contact', sql.VarChar(20), bank.CONTACT)
+        .input('MICR', sql.VarChar(15), bank.MICR)
+        .input('SWIFT', sql.VarChar(15), bank.SWIFT ?? null)
+        .input('ISO3166', sql.VarChar(10), bank.ISO3166 ?? null)
+        .input('IMPS', sql.Bit, bank.IMPS)
+        .input('RTGS', sql.Bit, bank.RTGS)
+        .input('NEFT', sql.Bit, bank.NEFT)
+        .input('UPI', sql.Bit, bank.UPI)
+        .input('CreatedBy', sql.Int, createdBy)
+        .execute('USP_BankInfo_Insert');
+
+      return result.recordset[0];
+    } catch (error: any) {
+      throw new BadRequestException(error?.response?.data || error.message);
+    }
+  }
+
+  // Import /Export Endpoints
+  downloadTemplate(type: string, res: Response) {
     const filePath = path.join(
       process.cwd(),
       'src',
@@ -438,62 +340,44 @@ async getBankInfo(
     );
 
     if (!fs.existsSync(filePath)) {
-      throw new NotFoundException(
-        'Template not found.',
-      );
+      throw new NotFoundException('Template not found.');
     }
 
     return res.download(filePath);
   }
 
+  async uploadImportFile(file: Express.Multer.File, templateType: string) {
+    if (!file) {
+      throw new BadRequestException('Please upload an Excel file.');
+    }
 
-  async uploadImportFile(
-  file: Express.Multer.File,
-  templateType: string,
-) {
-  if (!file) {
-    throw new BadRequestException(
-      'Please upload an Excel file.',
-    );
+    if (
+      !['branch', 'designation', 'bank'].includes(templateType.toLowerCase())
+    ) {
+      throw new BadRequestException('Invalid template type.');
+    }
+
+    const workbook = XLSX.readFile(file.path);
+
+    if (workbook.SheetNames.length === 0) {
+      throw new BadRequestException('Excel file is empty.');
+    }
+
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    const data = XLSX.utils.sheet_to_json(worksheet);
+
+    if (data.length === 0) {
+      throw new BadRequestException('No records found in Excel file.');
+    }
+
+    console.log(data);
+
+    return {
+      success: true,
+      templateType,
+      totalRecords: data.length,
+      data,
+    };
   }
-
-  if (
-    !['branch', 'designation', 'bank'].includes(
-      templateType.toLowerCase(),
-    )
-  ) {
-    throw new BadRequestException(
-      'Invalid template type.',
-    );
-  }
-
-  const workbook = XLSX.readFile(file.path);
-
-  if (workbook.SheetNames.length === 0) {
-    throw new BadRequestException(
-      'Excel file is empty.',
-    );
-  }
-
-  const worksheet =
-    workbook.Sheets[workbook.SheetNames[0]];
-
-  const data = XLSX.utils.sheet_to_json(worksheet);
-
-  if (data.length === 0) {
-    throw new BadRequestException(
-      'No records found in Excel file.',
-    );
-  }
-
-  console.log(data);
-
-  return {
-    success: true,
-    templateType,
-    totalRecords: data.length,
-    data,
-  };
-}
-
 }

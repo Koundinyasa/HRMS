@@ -11,9 +11,7 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 
 @Injectable()
 export class AdmincenterEssNotificationService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // Create Notification
   async create(
@@ -29,11 +27,7 @@ export class AdmincenterEssNotificationService {
         .input('EventName', sql.VarChar(200), dto.eventName)
         .input('FromDate', sql.Date, dto.fromDate)
         .input('ToDate', sql.Date, dto.toDate ?? null)
-        .input(
-          'AttachmentPath',
-          sql.VarChar(500),
-          attachment?.path ?? null,
-        )
+        .input('AttachmentPath', sql.VarChar(500), attachment?.path ?? null)
         .input('CreatedBy', sql.Int, createdBy)
         .execute('USP_AdminESS_Notification_Insert');
 
@@ -60,8 +54,7 @@ export class AdmincenterEssNotificationService {
 
       return {
         statusCode: 200,
-        statusMessage:
-          'Notification list retrieved successfully.',
+        statusMessage: 'Notification list retrieved successfully.',
         data: result.recordset ?? [],
       };
     } catch (error) {
@@ -86,15 +79,12 @@ export class AdmincenterEssNotificationService {
         .execute('USP_AdminESS_Notification_GetById');
 
       if (!result.recordset?.length) {
-        throw new NotFoundException(
-          'Notification not found.',
-        );
+        throw new NotFoundException('Notification not found.');
       }
 
       return {
         statusCode: 200,
-        statusMessage:
-          'Notification retrieved successfully.',
+        statusMessage: 'Notification retrieved successfully.',
         data: result.recordset[0],
       };
     } catch (error) {
@@ -102,10 +92,7 @@ export class AdmincenterEssNotificationService {
         throw error;
       }
 
-      console.error(
-        'Notification Get By ID API Error:',
-        error,
-      );
+      console.error('Notification Get By ID API Error:', error);
 
       throw new BadRequestException(
         error instanceof Error
@@ -128,26 +115,10 @@ export class AdmincenterEssNotificationService {
       const result = await pool
         .request()
         .input('ID', sql.Int, id)
-        .input(
-          'EventName',
-          sql.VarChar(200),
-          dto.eventName ?? null,
-        )
-        .input(
-          'FromDate',
-          sql.Date,
-          dto.fromDate ?? null,
-        )
-        .input(
-          'ToDate',
-          sql.Date,
-          dto.toDate ?? null,
-        )
-        .input(
-          'AttachmentPath',
-          sql.VarChar(500),
-          attachment?.path ?? null,
-        )
+        .input('EventName', sql.VarChar(200), dto.eventName ?? null)
+        .input('FromDate', sql.Date, dto.fromDate ?? null)
+        .input('ToDate', sql.Date, dto.toDate ?? null)
+        .input('AttachmentPath', sql.VarChar(500), attachment?.path ?? null)
         .input('ModifiedBy', sql.Int, modifiedBy)
         .execute('USP_AdminESS_Notification_Update');
 

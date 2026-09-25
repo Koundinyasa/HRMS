@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../../../database/database.service';
 import * as sql from 'mssql';
@@ -10,9 +7,7 @@ import { CreateHelpdeskCategoryDto } from './dto/create-helpdesk-category.dto';
 
 @Injectable()
 export class HelpDeskService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // Get Category Types
   async getCategoryTypes() {
@@ -25,10 +20,7 @@ export class HelpDeskService {
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Help Desk Category Types API Error:',
-        error,
-      );
+      console.error('Help Desk Category Types API Error:', error);
 
       throw new BadRequestException(
         error instanceof Error
@@ -39,38 +31,20 @@ export class HelpDeskService {
   }
 
   // Create Category
-  async createCategory(
-    dto: CreateHelpdeskCategoryDto,
-    createdBy: number,
-  ) {
+  async createCategory(dto: CreateHelpdeskCategoryDto, createdBy: number) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'Category',
-          sql.VarChar(100),
-          dto.category,
-        )
-        .input(
-          'CategoryTypeID',
-          sql.Int,
-          dto.categoryTypeId,
-        )
-        .input(
-          'CreatedBy',
-          sql.Int,
-          createdBy,
-        )
+        .input('Category', sql.VarChar(100), dto.category)
+        .input('CategoryTypeID', sql.Int, dto.categoryTypeId)
+        .input('CreatedBy', sql.Int, createdBy)
         .execute('USP_HelpDeskCategoryInsert');
 
       return result.recordset?.[0];
     } catch (error) {
-      console.error(
-        'Help Desk Category API Error:',
-        error,
-      );
+      console.error('Help Desk Category API Error:', error);
 
       throw new BadRequestException(
         error instanceof Error
@@ -85,16 +59,11 @@ export class HelpDeskService {
     try {
       const pool = await this.databaseService.connect();
 
-      const result = await pool
-        .request()
-        .execute('USP_HelpDesk_GetCategories');
+      const result = await pool.request().execute('USP_HelpDesk_GetCategories');
 
       return result.recordset;
     } catch (error) {
-      console.error(
-        'Help Desk Categories API Error:',
-        error,
-      );
+      console.error('Help Desk Categories API Error:', error);
 
       throw new BadRequestException(
         error instanceof Error

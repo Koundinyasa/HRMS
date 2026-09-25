@@ -3,7 +3,6 @@ export default () => ({
   environment: process.env.NODE_ENV || 'development',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 
-  
   // SQL Server (mssql)
   database: {
     host: process.env.DB_HOST,
@@ -15,12 +14,10 @@ export default () => ({
     trustServerCertificate: process.env.DB_TRUST_SERVER_CERT !== 'false',
   },
 
-
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
   },
-
 
   mail: {
     user: process.env.EMAIL_USER,
@@ -29,6 +26,8 @@ export default () => ({
 
   // Custom in-memory captcha
   captcha: {
-    ttlMinutes: process.env.CAPTCHA_TTL_MINUTES ? parseInt(process.env.CAPTCHA_TTL_MINUTES, 10) : 5,
+    ttlMinutes: process.env.CAPTCHA_TTL_MINUTES
+      ? parseInt(process.env.CAPTCHA_TTL_MINUTES, 10)
+      : 5,
   },
 });

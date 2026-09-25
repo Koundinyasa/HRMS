@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Put,
-  Body,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Put, Body, UseGuards } from '@nestjs/common';
 
 import { WorkflowsService } from './workflows.service';
 
@@ -14,9 +7,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 @Controller('admin/admincenter/workflows')
 @UseGuards(JwtAuthGuard)
 export class WorkflowsController {
-  constructor(
-    private readonly workflowsService: WorkflowsService,
-  ) {}
+  constructor(private readonly workflowsService: WorkflowsService) {}
 
   // ==========================================
   // Employee Group
@@ -40,12 +31,8 @@ export class WorkflowsController {
 
   // Save Module Settings
   @Put('modulesettings')
-  async updateModuleSettings(
-    @Body() body: any,
-  ) {
-    return this.workflowsService.updateModuleSettings(
-      body,
-    );
+  async updateModuleSettings(@Body() body: any) {
+    return this.workflowsService.updateModuleSettings(body);
   }
 
   // ==========================================
@@ -53,17 +40,13 @@ export class WorkflowsController {
   // ==========================================
 
   // Get Workflow Configurations
-@Get('configurations')
-async getWorkflowConfigurations() {
-  return this.workflowsService.getWorkflowConfigurations();
-}
+  @Get('configurations')
+  async getWorkflowConfigurations() {
+    return this.workflowsService.getWorkflowConfigurations();
+  }
   // Get Workflow Details
   @Get(':workflowId')
-  async getWorkflowDetails(
-    @Param('workflowId') workflowId: string,
-  ) {
-    return this.workflowsService.getWorkflowDetails(
-      workflowId,
-    );
+  async getWorkflowDetails(@Param('workflowId') workflowId: string) {
+    return this.workflowsService.getWorkflowDetails(workflowId);
   }
 }

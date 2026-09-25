@@ -1,11 +1,9 @@
-import {Controller,Get,Post,Put,Param,Body} from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body } from '@nestjs/common';
 import { PreEnrollmentService } from './pre-enrollment.service';
 
 @Controller('pre-enrollment')
 export class PreEnrollmentController {
-  constructor(
-    private readonly preEnrollmentService: PreEnrollmentService,
-  ) {}
+  constructor(private readonly preEnrollmentService: PreEnrollmentService) {}
 
   // ================= Dashboard =================
 
@@ -54,10 +52,7 @@ export class PreEnrollmentController {
   }
 
   @Put('offboard/:candidateId')
-  updateOffboard(
-    @Param('candidateId') candidateId: string,
-    @Body() body: any,
-  ) {
+  updateOffboard(@Param('candidateId') candidateId: string, @Body() body: any) {
     return this.preEnrollmentService.updateOffboard(candidateId, body);
   }
 

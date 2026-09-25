@@ -149,7 +149,7 @@ export class ReviewController {
       body.approvalId,
       req.user.employeeId,
       body.actionStatusId,
-      body. remarks,
+      body.remarks,
     );
   }
 }

@@ -19,8 +19,6 @@ const dbResult: DashboardSummaryDto = {
   openPositionsChange: 0,
 };
 
-
-
 describe('AdminDashboardController', () => {
   let controller: AdminDashboardController;
   let service: AdminDashboardService;

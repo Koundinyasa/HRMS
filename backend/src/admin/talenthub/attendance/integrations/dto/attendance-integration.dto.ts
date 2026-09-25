@@ -1,4 +1,13 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, IsUrl, ValidateIf, MaxLength, IsNotEmpty } from 'class-validator';
+import {
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateIf,
+  MaxLength,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class AttendanceIntegrationDto {
   @IsString()

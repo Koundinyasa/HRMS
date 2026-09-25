@@ -43,9 +43,7 @@ export class AdmincenterEssCircularController {
 
   // Get Circular By ID
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.circularService.findOne(id);
   }
 

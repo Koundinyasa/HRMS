@@ -1,9 +1,4 @@
-import {
-  IsBoolean,
-  IsDateString,
-  IsInt,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsString } from 'class-validator';
 
 export class PayrollConfigurationDto {
   @IsInt()

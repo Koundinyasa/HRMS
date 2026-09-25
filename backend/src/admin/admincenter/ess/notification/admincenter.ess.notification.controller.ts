@@ -43,9 +43,7 @@ export class AdmincenterEssNotificationController {
 
   // Get Notification By ID
   @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.notificationService.findOne(id);
   }
 

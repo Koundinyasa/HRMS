@@ -22,9 +22,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @Controller('asset')
 @UseGuards(JwtAuthGuard)
 export class AssetController {
-  constructor(
-    private readonly assetService: AssetService,
-  ) {}
+  constructor(private readonly assetService: AssetService) {}
 
   // =====================================================
   // Asset Request
@@ -32,14 +30,8 @@ export class AssetController {
 
   // Create Asset Request
   @Post('request')
-  async createAssetRequest(
-    @Req() req,
-    @Body() dto: CreateAssetRequestDto,
-  ) {
-    return this.assetService.createAssetRequest(
-      req.user.employeeId,
-      dto,
-    );
+  async createAssetRequest(@Req() req, @Body() dto: CreateAssetRequestDto) {
+    return this.assetService.createAssetRequest(req.user.employeeId, dto);
   }
 
   // =====================================================
@@ -80,12 +72,8 @@ export class AssetController {
 
   // Get Asset Allocation History
   @Get('history')
-  async getAssetAllocationHistory(
-    @Req() req,
-  ) {
-    return this.assetService.getAssetAllocationHistory(
-      req.user.employeeId,
-    );
+  async getAssetAllocationHistory(@Req() req) {
+    return this.assetService.getAssetAllocationHistory(req.user.employeeId);
   }
 
   // =====================================================
@@ -94,12 +82,8 @@ export class AssetController {
 
   // Get Pending Asset Requests for Approver
   @Get('pendingrequests')
-  async getPendingAssetRequests(
-    @Req() req,
-  ) {
-    return this.assetService.getPendingAssetRequests(
-      req.user.employeeId,
-    );
+  async getPendingAssetRequests(@Req() req) {
+    return this.assetService.getPendingAssetRequests(req.user.employeeId);
   }
 
   // =====================================================
@@ -159,15 +143,10 @@ export class AssetController {
   async getAssetTypes() {
     return this.assetService.getAssetTypes();
   }
-  
-// Tracking for Employee
-  @Get('return')
-async getAssetRequestStatus(
-  @Req() req,
-) {
-  return this.assetService.getAssetRequestStatus(
-    req.user.employeeId,
-  );
-}
 
+  // Tracking for Employee
+  @Get('return')
+  async getAssetRequestStatus(@Req() req) {
+    return this.assetService.getAssetRequestStatus(req.user.employeeId);
+  }
 }

@@ -272,12 +272,24 @@ export class ResponseService {
     }
 
     if (draft.step === 'awaiting_start') {
-      return { actions: [], widget: { type: 'date', step: 'start' } };
+      return {
+        actions: [],
+        widget: {
+          type: 'date',
+          step: 'start',
+          leaveDates: await this.leaveService.getCalendarLeaveDates(user),
+        },
+      };
     }
     if (draft.step === 'awaiting_end') {
       return {
         actions: [],
-        widget: { type: 'date', step: 'end', minDate: draft.startDate },
+        widget: {
+          type: 'date',
+          step: 'end',
+          minDate: draft.startDate,
+          leaveDates: await this.leaveService.getCalendarLeaveDates(user),
+        },
       };
     }
     if (draft.step === 'awaiting_type') {

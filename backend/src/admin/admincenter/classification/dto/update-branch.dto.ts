@@ -1,8 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsInt,
-} from 'class-validator';
+import { IsString, IsOptional, IsInt } from 'class-validator';
 
 export class UpdateBranchDto {
   @IsInt()

@@ -1,11 +1,11 @@
 export class ClassificationItemDto {
-    label!: string;
-    employeeCount!: number;
-    colorHex!: string;
-    colorHexLight!: string;
+  label!: string;
+  employeeCount!: number;
+  colorHex!: string;
+  colorHexLight!: string;
 }
 
 export class ClassificationWiseCountDto {
-    classificationId!: number;
-    data!: ClassificationItemDto[];
+  classificationId!: number;
+  data!: ClassificationItemDto[];
 }

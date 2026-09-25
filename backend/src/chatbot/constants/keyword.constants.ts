@@ -5,7 +5,7 @@ export const PII_PATTERNS = [
   'personal identification',
   'passport',
 ];
- 
+
 export const PAYROLL_KEYWORDS = [
   'salary',
   'pay',
@@ -17,7 +17,7 @@ export const PAYROLL_KEYWORDS = [
   'salary slip',
   'tax',
 ];
- 
+
 export const PERSONAL_INFO_KEYWORDS = [
   'my details',
   'my profile',
@@ -29,7 +29,7 @@ export const PERSONAL_INFO_KEYWORDS = [
   'my credential',
   'my skill',
 ];
- 
+
 export const LEAVE_ACTION_TRIGGERS = [
   'leave',
   'cancel',

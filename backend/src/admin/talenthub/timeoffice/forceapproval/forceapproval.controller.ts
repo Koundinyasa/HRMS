@@ -1,8 +1,4 @@
-import {
-  Controller,
-  Get,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { ForceApprovalService } from './forceapproval.service';
@@ -10,9 +6,7 @@ import { ForceApprovalService } from './forceapproval.service';
 @Controller('admin/timeattendance/timeoffice/forceapproval')
 @UseGuards(JwtAuthGuard)
 export class ForceApprovalController {
-  constructor(
-    private readonly forceApprovalService: ForceApprovalService,
-  ) {}
+  constructor(private readonly forceApprovalService: ForceApprovalService) {}
 
   // =====================================================
   // PUNCH

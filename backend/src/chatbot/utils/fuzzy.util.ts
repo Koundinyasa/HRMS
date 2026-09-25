@@ -13,7 +13,7 @@ export function levenshteinDistance(a: string, b: string): number {
   }
   return matrix[b.length][a.length];
 }
- 
+
 export function fuzzyContains(text: string, keyword: string): boolean {
   if (text.includes(keyword)) return true;
   const threshold = keyword.length <= 4 ? 1 : 2;

@@ -11,9 +11,7 @@ import { UpdatePolicyDto } from './dto/update-policy.dto';
 
 @Injectable()
 export class AdmincenterEssPolicyService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // Create Policy
   async create(
@@ -40,11 +38,7 @@ export class AdmincenterEssPolicyService {
           sql.Bit,
           dto.disableAttachmentDownload ?? false,
         )
-        .input(
-          'AttachmentPath',
-          sql.VarChar(500),
-          attachment?.path ?? null,
-        )
+        .input('AttachmentPath', sql.VarChar(500), attachment?.path ?? null)
         .input('CreatedBy', sql.Int, createdBy)
         .execute('USP_AdminESS_Policy_Insert');
 
@@ -53,9 +47,7 @@ export class AdmincenterEssPolicyService {
       console.error('Policy Create API Error:', error);
 
       throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to create policy.',
+        error instanceof Error ? error.message : 'Failed to create policy.',
       );
     }
   }
@@ -112,9 +104,7 @@ export class AdmincenterEssPolicyService {
       console.error('Policy Get By ID API Error:', error);
 
       throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to retrieve policy.',
+        error instanceof Error ? error.message : 'Failed to retrieve policy.',
       );
     }
   }
@@ -132,16 +122,8 @@ export class AdmincenterEssPolicyService {
       const result = await pool
         .request()
         .input('ID', sql.Int, id)
-        .input(
-          'PolicyName',
-          sql.VarChar(200),
-          dto.policyName ?? null,
-        )
-        .input(
-          'Description',
-          sql.VarChar(1000),
-          dto.description ?? null,
-        )
+        .input('PolicyName', sql.VarChar(200), dto.policyName ?? null)
+        .input('Description', sql.VarChar(1000), dto.description ?? null)
         .input('FilterID', sql.Int, dto.filterId ?? null)
         .input('PolicyDate', sql.Date, dto.date ?? null)
         .input(
@@ -154,11 +136,7 @@ export class AdmincenterEssPolicyService {
           sql.Bit,
           dto.disableAttachmentDownload ?? false,
         )
-        .input(
-          'AttachmentPath',
-          sql.VarChar(500),
-          attachment?.path ?? null,
-        )
+        .input('AttachmentPath', sql.VarChar(500), attachment?.path ?? null)
         .input('ModifiedBy', sql.Int, modifiedBy)
         .execute('USP_AdminESS_Policy_Update');
 
@@ -167,9 +145,7 @@ export class AdmincenterEssPolicyService {
       console.error('Policy Update API Error:', error);
 
       throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update policy.',
+        error instanceof Error ? error.message : 'Failed to update policy.',
       );
     }
   }
@@ -210,15 +186,11 @@ export class AdmincenterEssPolicyService {
 
       return {
         statusCode: 200,
-        statusMessage:
-          'Acknowledgement types retrieved successfully.',
+        statusMessage: 'Acknowledgement types retrieved successfully.',
         data: result.recordset ?? [],
       };
     } catch (error) {
-      console.error(
-        'Policy Acknowledgement Types API Error:',
-        error,
-      );
+      console.error('Policy Acknowledgement Types API Error:', error);
 
       throw new BadRequestException(
         error instanceof Error

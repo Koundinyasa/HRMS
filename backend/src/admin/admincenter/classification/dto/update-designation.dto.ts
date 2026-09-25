@@ -1,11 +1,6 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsString,
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateDesignationDto {
-
   @IsInt()
   id!: number;
 
@@ -15,5 +10,4 @@ export class UpdateDesignationDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
-
 }

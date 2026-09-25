@@ -1,7 +1,4 @@
-import {
-  IsBoolean,
-  IsInt,
-} from 'class-validator';
+import { IsBoolean, IsInt } from 'class-validator';
 
 export class UpdateBranchStatusDto {
   @IsInt()

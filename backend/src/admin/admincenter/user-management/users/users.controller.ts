@@ -16,14 +16,12 @@
 // import { UpdateUserDto } from './dto/update-user.dto';
 // import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 
-
 // @Controller('admin/users')
 // export class UsersController {
 
 //   constructor(
 //     private readonly usersService: UsersService,
 //   ) {}
-
 
 //   // 1. Get Users List
 //   @Get()
@@ -37,8 +35,6 @@
 //       req.user.companyId,
 //     );
 //   }
-
-
 
 //   // 2. Add User
 //   @Post()
@@ -54,8 +50,6 @@
 //     );
 //   }
 
-
-
 //   // 3. Get User Details
 //   @Get(':id')
 //   async getUserDetails(
@@ -66,8 +60,6 @@
 //       id,
 //     );
 //   }
-
-
 
 //   // 4. Update User
 //   @Put(':id')
@@ -83,8 +75,6 @@
 //       req.user.userId,
 //     );
 //   }
-
-
 
 //   // 5. Update Status
 //   @Put(':id/status')

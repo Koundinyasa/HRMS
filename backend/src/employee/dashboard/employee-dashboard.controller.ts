@@ -1,4 +1,4 @@
-import { Controller, Get,Req, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Query } from '@nestjs/common';
 import { DashboardService } from './employee-dashboard.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -23,39 +23,27 @@ export class DashboardController {
     return this.dashboardService.getRoleMenus(user.employeeId);
   }
 
-   @UseGuards(JwtAuthGuard)
-    @Get('list')
-    async getHolidayList(@Req() req) {
-      return this.dashboardService.getHolidayList(
-          req.user.employeeId,
-      );
-  
-    }
+  @UseGuards(JwtAuthGuard)
+  @Get('list')
+  async getHolidayList(@Req() req) {
+    return this.dashboardService.getHolidayList(req.user.employeeId);
+  }
 
   @Get('test')
-    test() {
+  test() {
     return 'Dashboard works';
-}
+  }
 
-@Get('approval-summary')
-@UseGuards(JwtAuthGuard)
-async getApprovalSummary(@Req() req: any) {
-  return this.dashboardService.getApprovalSummary(
-    req.user.employeeId,
-  );
-}
-@Get('team-attendance')
-  async getTeamAttendance(
-    @Req() req: any,
-    @Query('date') date?: string,
-  ) {
+  @Get('approval-summary')
+  @UseGuards(JwtAuthGuard)
+  async getApprovalSummary(@Req() req: any) {
+    return this.dashboardService.getApprovalSummary(req.user.employeeId);
+  }
+  @Get('team-attendance')
+  async getTeamAttendance(@Req() req: any, @Query('date') date?: string) {
     const companyId = req.user.companyId;
     const employeeId = req.user.employeeId;
- 
-    return this.dashboardService.getTeamAttendance(
-      companyId,
-      employeeId,
-      date,
-    );
+
+    return this.dashboardService.getTeamAttendance(companyId, employeeId, date);
   }
 }

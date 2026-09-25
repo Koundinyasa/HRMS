@@ -9,7 +9,9 @@ describe('AdmincenterClassificationService', () => {
       providers: [AdmincenterClassificationService],
     }).compile();
 
-    service = module.get<AdmincenterClassificationService>(AdmincenterClassificationService);
+    service = module.get<AdmincenterClassificationService>(
+      AdmincenterClassificationService,
+    );
   });
 
   it('should be defined', () => {

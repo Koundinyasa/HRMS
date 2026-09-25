@@ -18,7 +18,7 @@
 // }
 
 import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
- 
+
 export class ResetForgotPasswordDto {
   @IsString()
   @IsNotEmpty()
@@ -32,8 +32,7 @@ export class ResetForgotPasswordDto {
       'Password must contain uppercase, lowercase, number and special character',
   })
   newPassword!: string;
- 
+
   @IsNotEmpty()
   confirmPassword!: string;
 }
- 

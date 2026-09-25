@@ -32,7 +32,6 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import type { Response } from 'express';
 
-
 @Controller('admin/classification')
 @UseGuards(JwtAuthGuard)
 export class AdmincenterClassificationController {
@@ -47,9 +46,11 @@ export class AdmincenterClassificationController {
     );
   }
 
-   @Post('details')
-   getClassificationDetails(
-    @Req() req, @Body('classificationId') classificationId: number,) {
+  @Post('details')
+  getClassificationDetails(
+    @Req() req,
+    @Body('classificationId') classificationId: number,
+  ) {
     return this.classificationService.getClassificationDetails(
       req.user.companyId,
       classificationId,
@@ -57,22 +58,13 @@ export class AdmincenterClassificationController {
   }
 
   @Post('leave-policy')
-  async addLeavePolicy(
-    @Body() dto: CreateLeavePolicyDto,
-    @Req() req,
-  ) {
-     console.log(req.user);
-    return this.classificationService.addLeavePolicy(
-      dto,
-      req.user.createdBy,
-    );
+  async addLeavePolicy(@Body() dto: CreateLeavePolicyDto, @Req() req) {
+    console.log(req.user);
+    return this.classificationService.addLeavePolicy(dto, req.user.createdBy);
   }
 
   @Put('leave-policy')
-  async updateLeavePolicy(
-    @Body() dto: UpdateLeavePolicyDto,
-    @Req() req,
-  ) {
+  async updateLeavePolicy(@Body() dto: UpdateLeavePolicyDto, @Req() req) {
     return this.classificationService.updateLeavePolicy(
       dto,
       req.user.createdBy,
@@ -101,8 +93,6 @@ export class AdmincenterClassificationController {
     );
   }
 
-
-  
   // Branch Management Endpoints
 
   @Put('branch')
@@ -126,7 +116,6 @@ export class AdmincenterClassificationController {
       dto,
     );
   }
-
 
   // Designation Management Endpoints
 
@@ -164,10 +153,7 @@ export class AdmincenterClassificationController {
     );
   }
 
-
   //Additional Classification is Pending, will be added in future
-
-
 
   //Import /Export Endpoints
   @Post('import/template/:type')
@@ -187,20 +173,12 @@ export class AdmincenterClassificationController {
       storage: diskStorage({
         destination: './src/admin/admincenter/classification/uploads',
         filename: (req, file, cb) => {
-          cb(
-            null,
-            Date.now() + extname(file.originalname),
-          );
+          cb(null, Date.now() + extname(file.originalname));
         },
       }),
       fileFilter: (req, file, cb) => {
-        if (
-          !file.originalname.match(/\.(xlsx|xls)$/)
-        ) {
-          return cb(
-            new Error('Only Excel files are allowed'),
-            false,
-          );
+        if (!file.originalname.match(/\.(xlsx|xls)$/)) {
+          return cb(new Error('Only Excel files are allowed'), false);
         }
         cb(null, true);
       },
@@ -210,10 +188,6 @@ export class AdmincenterClassificationController {
     @UploadedFile() file: Express.Multer.File,
     @Body('templateType') templateType: string,
   ) {
-    return this.classificationService.uploadImportFile(
-      file,
-      templateType,
-    );
+    return this.classificationService.uploadImportFile(file, templateType);
   }
-
 }

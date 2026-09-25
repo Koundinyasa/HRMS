@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { DatabaseService } from '../../../../database/database.service';
 
@@ -17,9 +14,7 @@ import { ReadPunchDataDto } from './dto/read-punch-data.dto';
 
 @Injectable()
 export class TimeOfficeSettingsService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   // =========================================================
   // GENERAL SETTINGS
@@ -29,24 +24,18 @@ export class TimeOfficeSettingsService {
 
   async getGeneralSettings() {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Settings_General_Get',
-        );
+        .execute('USP_TimeOffice_Settings_General_Get');
 
       return {
         success: true,
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error fetching general settings:',
-        error,
-      );
+      console.error('Error fetching general settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch general settings.',
@@ -56,86 +45,41 @@ export class TimeOfficeSettingsService {
 
   // 2. Update General Settings
 
-  async updateGeneralSettings(
-    dto: UpdateGeneralSettingsDto,
-  ) {
+  async updateGeneralSettings(dto: UpdateGeneralSettingsDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'OverTime',
-          dto.overTime,
-        )
-        .input(
-          'CompensatoryWork',
-          dto.compensatoryWork,
-        )
-        .input(
-          'WorkFromHome',
-          dto.workFromHome,
-        )
-        .input(
-          'EnableTASupervisor',
-          dto.enableTASupervisor,
-        )
-        .input(
-          'AutoShift',
-          dto.autoShift,
-        )
-        .input(
-          'TAProcessStartDate',
-          dto.taProcessStartDate || null,
-        )
+        .input('OverTime', dto.overTime)
+        .input('CompensatoryWork', dto.compensatoryWork)
+        .input('WorkFromHome', dto.workFromHome)
+        .input('EnableTASupervisor', dto.enableTASupervisor)
+        .input('AutoShift', dto.autoShift)
+        .input('TAProcessStartDate', dto.taProcessStartDate || null)
         .input(
           'DisplayAllScreensBasedOnProcessDate',
           dto.displayAllScreensBasedOnProcessDate,
         )
-        .input(
-          'PunchSecondsRoundOff',
-          dto.punchSecondsRoundOff || null,
-        )
-        .input(
-          'DuplicatePunchPeriod',
-          dto.duplicatePunchPeriod ?? null,
-        )
+        .input('PunchSecondsRoundOff', dto.punchSecondsRoundOff || null)
+        .input('DuplicatePunchPeriod', dto.duplicatePunchPeriod ?? null)
         .input(
           'MapGeoLocationToClassification',
           dto.mapGeoLocationToClassification || null,
         )
-        .input(
-          'ConsiderPunchDirection',
-          dto.considerPunchDirection,
-        )
-        .input(
-          'DoNotDisplayPunchDirection',
-          dto.doNotDisplayPunchDirection,
-        )
-        .input(
-          'MinimumEarlyInAllowed',
-          dto.minimumEarlyInAllowed || null,
-        )
-        .input(
-          'MaximumLateOutAllowed',
-          dto.maximumLateOutAllowed || null,
-        )
-        .execute(
-          'USP_TimeOffice_Settings_General_Save',
-        );
+        .input('ConsiderPunchDirection', dto.considerPunchDirection)
+        .input('DoNotDisplayPunchDirection', dto.doNotDisplayPunchDirection)
+        .input('MinimumEarlyInAllowed', dto.minimumEarlyInAllowed || null)
+        .input('MaximumLateOutAllowed', dto.maximumLateOutAllowed || null)
+        .execute('USP_TimeOffice_Settings_General_Save');
 
       return {
         success: true,
-        message:
-          'General settings updated successfully.',
+        message: 'General settings updated successfully.',
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error updating general settings:',
-        error,
-      );
+      console.error('Error updating general settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to update general settings.',
@@ -151,24 +95,18 @@ export class TimeOfficeSettingsService {
 
   async getAutoProcessSettings() {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Settings_AutoProcess_Get',
-        );
+        .execute('USP_TimeOffice_Settings_AutoProcess_Get');
 
       return {
         success: true,
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error fetching auto process settings:',
-        error,
-      );
+      console.error('Error fetching auto process settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch auto process settings.',
@@ -178,38 +116,23 @@ export class TimeOfficeSettingsService {
 
   // 4. Update Auto Process Settings
 
-  async updateAutoProcessSettings(
-    dto: UpdateAutoProcessDto,
-  ) {
+  async updateAutoProcessSettings(dto: UpdateAutoProcessDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'IntervalType',
-          dto.intervalType,
-        )
-        .input(
-          'IntervalValue',
-          dto.intervalValue,
-        )
-        .execute(
-          'USP_TimeOffice_Settings_AutoProcess_Save',
-        );
+        .input('IntervalType', dto.intervalType)
+        .input('IntervalValue', dto.intervalValue)
+        .execute('USP_TimeOffice_Settings_AutoProcess_Save');
 
       return {
         success: true,
-        message:
-          'Auto process settings updated successfully.',
+        message: 'Auto process settings updated successfully.',
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error updating auto process settings:',
-        error,
-      );
+      console.error('Error updating auto process settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to update auto process settings.',
@@ -225,24 +148,18 @@ export class TimeOfficeSettingsService {
 
   async getMailSchedulerSettings() {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Settings_MailScheduler_Get',
-        );
+        .execute('USP_TimeOffice_Settings_MailScheduler_Get');
 
       return {
         success: true,
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error fetching mail scheduler settings:',
-        error,
-      );
+      console.error('Error fetching mail scheduler settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch mail scheduler settings.',
@@ -252,58 +169,28 @@ export class TimeOfficeSettingsService {
 
   // 6. Update Mail Scheduler Settings
 
-  async updateMailSchedulerSettings(
-    dto: UpdateMailSchedulerDto,
-  ) {
+  async updateMailSchedulerSettings(dto: UpdateMailSchedulerDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'Active',
-          dto.active,
-        )
-        .input(
-          'ScheduleFor',
-          dto.scheduleFor || null,
-        )
-        .input(
-          'ReportingType',
-          dto.reportingType || null,
-        )
-        .input(
-          'ReportingFormat',
-          dto.reportingFormat || null,
-        )
-        .input(
-          'AutoMailTo',
-          dto.autoMailTo || null,
-        )
-        .input(
-          'MailBody',
-          dto.mailBody || null,
-        )
-        .input(
-          'MailSendingType',
-          dto.mailSendingType || null,
-        )
-        .execute(
-          'USP_TimeOffice_Settings_MailScheduler_Save',
-        );
+        .input('Active', dto.active)
+        .input('ScheduleFor', dto.scheduleFor || null)
+        .input('ReportingType', dto.reportingType || null)
+        .input('ReportingFormat', dto.reportingFormat || null)
+        .input('AutoMailTo', dto.autoMailTo || null)
+        .input('MailBody', dto.mailBody || null)
+        .input('MailSendingType', dto.mailSendingType || null)
+        .execute('USP_TimeOffice_Settings_MailScheduler_Save');
 
       return {
         success: true,
-        message:
-          'Mail scheduler settings updated successfully.',
+        message: 'Mail scheduler settings updated successfully.',
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error updating mail scheduler settings:',
-        error,
-      );
+      console.error('Error updating mail scheduler settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to update mail scheduler settings.',
@@ -319,24 +206,18 @@ export class TimeOfficeSettingsService {
 
   async getPunchIntegrationSettings() {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute(
-          'USP_TimeOffice_Settings_PunchIntegration_Get',
-        );
+        .execute('USP_TimeOffice_Settings_PunchIntegration_Get');
 
       return {
         success: true,
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error fetching punch integration settings:',
-        error,
-      );
+      console.error('Error fetching punch integration settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to fetch punch integration settings.',
@@ -346,78 +227,36 @@ export class TimeOfficeSettingsService {
 
   // 8. Update Punch Integration Settings
 
-  async updatePunchIntegrationSettings(
-    dto: UpdatePunchIntegrationDto,
-  ) {
+  async updatePunchIntegrationSettings(dto: UpdatePunchIntegrationDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'IntegrationId',
-          dto.integrationId || null,
-        )
-        .input(
-          'LocationId',
-          dto.locationId,
-        )
-        .input(
-          'InputType',
-          dto.inputType,
-        )
-        .input(
-          'Vendor',
-          dto.vendor,
-        )
-        .input(
-          'UserAccessEventApi',
-          dto.userAccessEventApi,
-        )
-        .input(
-          'Url',
-          dto.url || null,
-        )
-        .input(
-          'UserName',
-          dto.userName || null,
-        )
-        .input(
-          'Password',
-          dto.password || null,
-        )
-        .input(
-          'EmployeeIdMappedTo',
-          dto.employeeIdMappedTo || null,
-        )
-        .input(
-          'CustomField',
-          dto.customField || null,
-        )
-        .input(
-          'AutoPunchReadingIntervalType',
-          dto.autoPunchReadingIntervalType,
-        )
+        .input('IntegrationId', dto.integrationId || null)
+        .input('LocationId', dto.locationId)
+        .input('InputType', dto.inputType)
+        .input('Vendor', dto.vendor)
+        .input('UserAccessEventApi', dto.userAccessEventApi)
+        .input('Url', dto.url || null)
+        .input('UserName', dto.userName || null)
+        .input('Password', dto.password || null)
+        .input('EmployeeIdMappedTo', dto.employeeIdMappedTo || null)
+        .input('CustomField', dto.customField || null)
+        .input('AutoPunchReadingIntervalType', dto.autoPunchReadingIntervalType)
         .input(
           'AutoPunchReadingIntervalValue',
           dto.autoPunchReadingIntervalValue,
         )
-        .execute(
-          'USP_TimeOffice_Settings_PunchIntegration_Save',
-        );
+        .execute('USP_TimeOffice_Settings_PunchIntegration_Save');
 
       return {
         success: true,
-        message:
-          'Punch integration settings updated successfully.',
+        message: 'Punch integration settings updated successfully.',
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error updating punch integration settings:',
-        error,
-      );
+      console.error('Error updating punch integration settings:', error);
 
       throw new InternalServerErrorException(
         'Unable to update punch integration settings.',
@@ -425,49 +264,28 @@ export class TimeOfficeSettingsService {
     }
   }
 
-  
   // 9. Read Punch Data
 
-  async readPunchData(
-    dto: ReadPunchDataDto,
-  ) {
+  async readPunchData(dto: ReadPunchDataDto) {
     try {
-      const pool =
-        await this.databaseService.connect();
+      const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input(
-          'LocationId',
-          dto.locationId,
-        )
-        .input(
-          'FromDate',
-          dto.fromDate,
-        )
-        .input(
-          'ToDate',
-          dto.toDate,
-        )
-        .execute(
-          'USP_TimeOffice_Settings_PunchIntegration_ReadData',
-        );
+        .input('LocationId', dto.locationId)
+        .input('FromDate', dto.fromDate)
+        .input('ToDate', dto.toDate)
+        .execute('USP_TimeOffice_Settings_PunchIntegration_ReadData');
 
       return {
         success: true,
-        message:
-          'Punch data read successfully.',
+        message: 'Punch data read successfully.',
         data: result.recordset,
       };
     } catch (error) {
-      console.error(
-        'Error reading punch data:',
-        error,
-      );
+      console.error('Error reading punch data:', error);
 
-      throw new InternalServerErrorException(
-        'Unable to read punch data.',
-      );
+      throw new InternalServerErrorException('Unable to read punch data.');
     }
   }
 }

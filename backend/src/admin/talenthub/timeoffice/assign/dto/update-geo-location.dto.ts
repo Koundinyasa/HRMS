@@ -1,9 +1,4 @@
-import {
-  IsArray,
-  IsDateString,
-  IsNotEmpty,
-  IsString,
-} from 'class-validator';
+import { IsArray, IsDateString, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateGeoLocationDto {
   @IsArray()

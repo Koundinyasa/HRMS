@@ -11,15 +11,24 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../../common/guards/permission.guard';
-import { AdmincentercompanyService} from './admincenter.company.service';
+import { AdmincentercompanyService } from './admincenter.company.service';
 import { CompanyConfigurationDto } from './dto/company-configuration.dto';
-import { PFConfigurationDto, PFDefaultConfigurationDto } from './dto/pf-configuration.dto';
+import {
+  PFConfigurationDto,
+  PFDefaultConfigurationDto,
+} from './dto/pf-configuration.dto';
 import {
   ESIConfigurationDto,
   ESIDefaultConfigurationDto,
 } from './dto/esi-configuration.dto';
-import { PTConfigurationDto, PTConfigurationResponseDto } from './dto/pt-configuration.dto';
-import { LWFConfigurationDto, LWFDefaultConfigurationDto } from './dto/lwf-configuration.dto';
+import {
+  PTConfigurationDto,
+  PTConfigurationResponseDto,
+} from './dto/pt-configuration.dto';
+import {
+  LWFConfigurationDto,
+  LWFDefaultConfigurationDto,
+} from './dto/lwf-configuration.dto';
 import { EstablishmentConfigurationDto } from './dto/establishment-configuration.dto';
 import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/file.interceptor';
 import { diskStorage } from 'multer';
@@ -30,36 +39,22 @@ const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
 @Controller('admin/configuration')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class AdmincentercompanyController {
-  constructor(
-    private readonly admincenterService: AdmincentercompanyService,
-  ) {}
+  constructor(private readonly admincenterService: AdmincentercompanyService) {}
 
   @Get('company')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
-  getCompanyConfiguration(
-    @Req() req,
-  ): Promise<CompanyConfigurationDto> {
-    return this.admincenterService.getCompanyConfiguration(
-      req.user.companyId,
-    );
+  getCompanyConfiguration(@Req() req): Promise<CompanyConfigurationDto> {
+    return this.admincenterService.getCompanyConfiguration(req.user.companyId);
   }
 
   @Get('pf')
-  getPFConfiguration(
-    @Req() req,
-  ): Promise<PFConfigurationDto> {
-    return this.admincenterService.getPFConfiguration(
-      req.user.companyId,
-    );
+  getPFConfiguration(@Req() req): Promise<PFConfigurationDto> {
+    return this.admincenterService.getPFConfiguration(req.user.companyId);
   }
 
   @Get('esi')
-  getESIConfiguration(
-    @Req() req,
-  ): Promise<ESIConfigurationDto> {
-    return this.admincenterService.getESIConfiguration(
-      req.user.companyId,
-    );
+  getESIConfiguration(@Req() req): Promise<ESIConfigurationDto> {
+    return this.admincenterService.getESIConfiguration(req.user.companyId);
   }
 
   // @Get('pt')
@@ -72,21 +67,13 @@ export class AdmincentercompanyController {
   // }
 
   @Get('pt')
-  getPTConfiguration(
-    @Req() req,
-  ): Promise<PTConfigurationResponseDto> {
-    return this.admincenterService.getPTConfiguration(
-      req.user.companyId,
-    );
+  getPTConfiguration(@Req() req): Promise<PTConfigurationResponseDto> {
+    return this.admincenterService.getPTConfiguration(req.user.companyId);
   }
 
   @Get('lwf')
-  getLWFConfiguration(
-    @Req() req,
-  ): Promise<LWFConfigurationDto> {
-    return this.admincenterService.getLWFConfiguration(
-      req.user.companyId,
-    );
+  getLWFConfiguration(@Req() req): Promise<LWFConfigurationDto> {
+    return this.admincenterService.getLWFConfiguration(req.user.companyId);
   }
 
   @Get('establishment')
@@ -98,22 +85,19 @@ export class AdmincentercompanyController {
     );
   }
 
-
-
-@Put('company')
+  @Put('company')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
   updateCompanyConfiguration(
     @Req() req,
     @Body() dto: CompanyConfigurationDto,
   ): Promise<void> {
-
     return this.admincenterService.updateCompanyConfiguration(
       req.user.companyId,
       req.user.createdBy,
       dto,
     );
   }
- 
+
   @Put('pf')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
   updatePFConfiguration(
@@ -126,7 +110,7 @@ export class AdmincentercompanyController {
       dto,
     );
   }
- 
+
   @Put('esi')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
   updateESIConfiguration(
@@ -139,8 +123,7 @@ export class AdmincentercompanyController {
       dto,
     );
   }
- 
- 
+
   @Put('lwf')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
   updateLWFConfiguration(
@@ -153,7 +136,7 @@ export class AdmincentercompanyController {
       dto,
     );
   }
- 
+
   @Put('pt')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
   updatePTConfiguration(
@@ -166,8 +149,7 @@ export class AdmincentercompanyController {
       dto,
     );
   }
-     
- 
+
   @Put('establishment')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanEdit')
   updateEstablishmentConfiguration(
@@ -180,7 +162,6 @@ export class AdmincentercompanyController {
       dto,
     );
   }
- 
 
   @Post('documents/upload')
   @UseInterceptors(

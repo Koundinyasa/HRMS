@@ -7,15 +7,12 @@
 
 // import { DatabaseService } from '../../../database/database.service';
 
-
 // @Injectable()
 // export class UsersService {
 
 // constructor(
 //  private readonly dbService:DatabaseService,
 // ){}
-
-
 
 // // GET USERS
 
@@ -29,7 +26,6 @@
 // const pool =
 // await this.dbService.getConnection();
 
-
 // const request =
 // pool.request()
 // .input(
@@ -37,7 +33,6 @@
 //  sql.Int,
 //  companyId
 // );
-
 
 // if(dto.search){
 
@@ -49,13 +44,11 @@
 
 // }
 
-
 // request.input(
 //  'Page',
 //  sql.Int,
 //  dto.page || 1
 // );
-
 
 // request.input(
 //  'Limit',
@@ -63,14 +56,10 @@
 //  dto.limit || 10
 // );
 
-
-
 // const result =
 // await request.execute(
 //  'USP_GetUsers'
 // );
-
-
 
 // return {
 
@@ -81,7 +70,6 @@
 
 // };
 
-
 // }catch(error){
 
 // throw new BadRequestException(
@@ -91,8 +79,6 @@
 // }
 
 // }
-
-
 
 // // CREATE USER
 
@@ -106,7 +92,6 @@
 
 // const pool =
 // await this.dbService.getConnection();
-
 
 // const result =
 // await pool.request()
@@ -151,8 +136,6 @@
 // 'USP_AddUser'
 // );
 
-
-
 // return {
 
 // success:true,
@@ -160,7 +143,6 @@
 // message:'User created successfully'
 
 // };
-
 
 // }catch(error){
 
@@ -172,9 +154,6 @@
 
 // }
 
-
-
-
 // // GET USER DETAILS
 
 // async getUserDetails(
@@ -185,7 +164,6 @@
 
 // const pool =
 // await this.dbService.getConnection();
-
 
 // const result =
 // await pool.request()
@@ -200,8 +178,6 @@
 // 'USP_GetUserDetails'
 // );
 
-
-
 // return {
 
 // success:true,
@@ -209,7 +185,6 @@
 // data:result.recordset
 
 // };
-
 
 // }catch(error){
 
@@ -220,9 +195,6 @@
 // }
 
 // }
-
-
-
 
 // // UPDATE USER
 
@@ -236,7 +208,6 @@
 
 // const pool =
 // await this.dbService.getConnection();
-
 
 // await pool.request()
 
@@ -274,8 +245,6 @@
 // 'USP_UpdateUser'
 // );
 
-
-
 // return {
 
 // success:true,
@@ -283,7 +252,6 @@
 // message:'User updated successfully'
 
 // };
-
 
 // }catch(error){
 
@@ -294,10 +262,6 @@
 // }
 
 // }
-
-
-
-
 
 // // UPDATE STATUS
 
@@ -311,7 +275,6 @@
 
 // const pool =
 // await this.dbService.getConnection();
-
 
 // await pool.request()
 
@@ -337,8 +300,6 @@
 // 'USP_UpdateUserStatus'
 // );
 
-
-
 // return {
 
 // success:true,
@@ -346,7 +307,6 @@
 // message:'User status updated successfully'
 
 // };
-
 
 // }catch(error){
 
@@ -357,6 +317,5 @@
 // }
 
 // }
-
 
 // }
