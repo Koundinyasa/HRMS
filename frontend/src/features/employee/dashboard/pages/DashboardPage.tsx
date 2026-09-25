@@ -20,7 +20,7 @@ export default function DashboardPage() {
         dispatch(hidePageLoader());
     }, [dispatch]);
     return (
-        <div className="w-full min-w-0 space-y-6">
+        <div className="dashboard-shell w-full min-w-0 space-y-6">
             {/* Greeting */}
 
             <GreetingCard />

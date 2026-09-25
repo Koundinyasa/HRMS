@@ -10,9 +10,11 @@ export default function LeaveLayout() {
   );
  
   return (
-    <div className="mx-auto w-full max-w-[1600px] space-y-6">
+    <div className="module-shell mx-auto w-full max-w-[1600px] space-y-6 p-3 sm:p-4">
       {!hideNavbar && <LeaveNavbar />}
-      <Outlet />
+      <div className="module-content-shell p-3 sm:p-4">
+        <Outlet />
+      </div>
     </div>
   );
 }

@@ -72,10 +72,10 @@ export default function StatsLeaveCard() {
           >
             <Clock3 size={18} color="var(--primary-color)" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
+          <p className="dashboard-muted text-xs sm:text-sm mt-3 leading-tight">
             Average hours
           </p>
-          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
+          <h3 className="dashboard-heading text-2xl sm:text-3xl mt-1">
             {attendance?.AverageHours ?? "--"}
           </h3>
         </div>
@@ -94,10 +94,10 @@ export default function StatsLeaveCard() {
           >
             <ArrowUpRight size={18} color="#22C55E" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
+          <p className="dashboard-muted text-xs sm:text-sm mt-3 leading-tight">
             Average check-in
           </p>
-          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
+          <h3 className="dashboard-heading text-2xl sm:text-3xl mt-1">
             {attendance?.["AverageCheck-In"] ?? "--"}
           </h3>
         </div>
@@ -116,10 +116,10 @@ export default function StatsLeaveCard() {
           >
             <CircleCheck size={18} color="#3B82F6" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
+          <p className="dashboard-muted text-xs sm:text-sm mt-3 leading-tight">
             On-time arrival
           </p>
-          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
+          <h3 className="dashboard-heading text-2xl sm:text-3xl mt-1">
             {attendance?.["On-TimeArrival"] ?? "--"}
           </h3>
         </div>
@@ -138,10 +138,10 @@ export default function StatsLeaveCard() {
           >
             <ArrowDownLeft size={18} color="#EF4444" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-3 leading-tight">
+          <p className="dashboard-muted text-xs sm:text-sm mt-3 leading-tight">
             Average check-out
           </p>
-          <h3 className="text-2xl sm:text-3xl font-semibold mt-1 text-slate-800">
+          <h3 className="dashboard-heading text-2xl sm:text-3xl mt-1">
             {attendance?.["AverageCheck-Out"] ?? "--"}
           </h3>
         </div>
@@ -157,8 +157,8 @@ export default function StatsLeaveCard() {
       >
         <div className="flex items-center justify-between">
           <h3
-            className="text-base sm:text-lg font-medium"
-            style={{ color: "var(--primary-color)" }}
+            className="dashboard-subheading text-base sm:text-lg"
+            style={{ color: "var(--dashboard-subheading)" }}
           >
             My Leaves
           </h3>
@@ -207,11 +207,11 @@ export default function StatsLeaveCard() {
         >
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-red-300" />
-            <span className="text-sm sm:text-xl text-slate-700">
+            <span className="dashboard-label text-sm sm:text-xl">
               Restricted Holiday
             </span>
           </div>
-          <span className="text-xl sm:text-2xl font-medium text-slate-800">
+          <span className="dashboard-heading text-xl sm:text-2xl">
             {restrictedCount}
           </span>
         </div>

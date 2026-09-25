@@ -1,4 +1,4 @@
-import ProfileSection from "../components/ProfileSection";
+import ProfileTable from "../components/ProfileTable";
 
 import { useProfile } from "../hooks/useProfile";
 
@@ -33,10 +33,9 @@ export default function BankInformationPage() {
     );
   }
 
- return (
-    <div className="w-full min-w-0 space-y-4 sm:space-y-6">
-      
-      <ProfileSection section={bankSection} />
+  return (
+    <div className="w-full min-w-0">
+      <ProfileTable section={bankSection} />
     </div>
   );
 }

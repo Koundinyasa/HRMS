@@ -170,7 +170,7 @@ const handleDownload = async (
  
   if (!section.records?.length) {
     return (
-      <div className="w-full px-4 py-10 text-center text-slate-500">
+      <div className="w-full rounded-xl border border-[#1F2937] bg-white px-4 py-10 text-center text-slate-500">
         No records found.
       </div>
     );

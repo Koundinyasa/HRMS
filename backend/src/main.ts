@@ -33,8 +33,23 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
   // --- Swagger Setup End ---
 
+  const configuredFrontendUrl =
+    configService.get<string>('frontendUrl') ?? 'http://localhost:5173';
+  const allowedFrontendOrigins = new Set([
+    ...configuredFrontendUrl.split(',').map((origin) => origin.trim()).filter(Boolean),
+    'http://localhost:5173',
+    'http://localhost:5174',
+  ]);
+
   app.enableCors({
-    origin: configService.get<string>('frontendUrl'),
+    origin: (requestOrigin, callback) => {
+      if (!requestOrigin || allowedFrontendOrigins.has(requestOrigin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${requestOrigin} is not allowed by CORS`), false);
+    },
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],

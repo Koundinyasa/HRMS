@@ -46,10 +46,17 @@ export default function LeaveNavbar() {
         items-center
         
         overflow-x-auto
+<<<<<<< HEAD
+        rounded-2xl
+        border-2
+        border-[#D9CCFB]
+        p-2
+=======
         rounded-lg
         border
         border-[#b9a5ff]
         p-[0.3320625rem]
+>>>>>>> 3a23add3d72c2312ae9a5b995a6881f59795189f
       "
       // style={{
       //   borderColor: "var(--primary-border)",
@@ -134,4 +141,3 @@ export default function LeaveNavbar() {
     </div>
   );
 }
-

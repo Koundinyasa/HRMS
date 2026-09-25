@@ -13,30 +13,29 @@ import {
   Plus,
 } from "lucide-react";
 import ClassificationNavbar from "../components/ClassificationNavbar";
-import { LEAVE_POLICY_SEED_ROWS } from "../constants/leavePolicy.constants";
-import {
-  useGetBranchesQuery,
-  useGetBanksQuery,
-  useGetDesignationsQuery,
-} from "../api/classificationApi";
+import { useGetClassificationSummaryQuery } from "../api/classificationApi";
 
-// Rows without a dedicated backend endpoint yet keep a static `count`.
-// Wire these up to real queries (and give them a `to` route) as those
-// modules land — the shape matches the ones already backed by the API.
 export default function ClassificationSummaryPage() {
   const { domain } = useParams();
   const base = `/${domain}/admin/admin-center/classifications`;
 
-  const { data: branches } = useGetBranchesQuery();
-  const { data: banks } = useGetBanksQuery();
-  const { data: designationData } = useGetDesignationsQuery({ page: 1, pageSize: 10 });
+  const { data: summaryResponse, isLoading } = useGetClassificationSummaryQuery();
+  const summary = Array.isArray(summaryResponse?.data) ? summaryResponse.data : [];
+  const countFor = (name: string) => {
+    const item = summary.find((entry) =>
+      String(entry.ClassificationName ?? entry.classificationName ?? "")
+        .toLowerCase()
+        .includes(name.toLowerCase()),
+    );
+    return Number(item?.Count ?? item?.count ?? 0);
+  };
 
   const leftColumn = [
     {
       title: "Branch",
       to: `${base}/branch`,
       icon: Building2,
-      count: branches?.length ?? 0,
+      count: countFor("branch"),
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
     },
@@ -44,15 +43,15 @@ export default function ClassificationSummaryPage() {
       title: "Salary Structure",
       to: `${base}/salary-structure`,
       icon: Wallet,
-      count: 3,
+      count: countFor("salary"),
       iconBg: "bg-emerald-50",
       iconColor: "text-emerald-600",
     },
     {
       title: "Leave Policy",
-      to: `${base}/leave-policy/employee/${LEAVE_POLICY_SEED_ROWS.employee[0]?.code ?? ""}/settings/behavior`,
+      to: `${base}/leave-policy/employee/settings/behavior`,
       icon: CalendarDays,
-      count: 2,
+      count: countFor("leave"),
       iconBg: "bg-amber-50",
       iconColor: "text-amber-600",
     },
@@ -60,7 +59,7 @@ export default function ClassificationSummaryPage() {
       title: "Attendance",
       to: `${base}/attendance`,
       icon: Clock,
-      count: 1,
+      count: countFor("attendance"),
       iconBg: "bg-cyan-50",
       iconColor: "text-cyan-600",
     },
@@ -68,7 +67,7 @@ export default function ClassificationSummaryPage() {
       title: "Banks",
       to: `${base}/banks`,
       icon: Landmark,
-      count: banks?.length ?? 0,
+      count: countFor("bank"),
       iconBg: "bg-blue-50",
       iconColor: "text-blue-600",
     },
@@ -76,7 +75,7 @@ export default function ClassificationSummaryPage() {
       title: "Designation",
       to: `${base}/designation`,
       icon: BadgeCheck,
-      count: designationData?.TotalCount ?? 0,
+      count: countFor("designation"),
       iconBg: "bg-fuchsia-50",
       iconColor: "text-fuchsia-600",
     },
@@ -84,7 +83,7 @@ export default function ClassificationSummaryPage() {
       title: "Cost Center",
       to: `${base}/cost-center`,
       icon: CircleDollarSign,
-      count: 0,
+      count: countFor("cost center"),
       iconBg: "bg-rose-50",
       iconColor: "text-rose-600",
     },
@@ -95,7 +94,7 @@ export default function ClassificationSummaryPage() {
       title: "Department",
       to: `${base}/department`,
       icon: Building,
-      count: 0,
+      count: countFor("department"),
       iconBg: "bg-sky-50",
       iconColor: "text-sky-600",
     },
@@ -103,7 +102,7 @@ export default function ClassificationSummaryPage() {
       title: "Team",
       to: `${base}/team`,
       icon: Users,
-      count: 0,
+      count: countFor("team"),
       iconBg: "bg-green-50",
       iconColor: "text-green-600",
     },
@@ -146,6 +145,7 @@ export default function ClassificationSummaryPage() {
       <ClassificationNavbar />
 
       <div className="mt-6 px-4 sm:px-6 pb-8">
+        {isLoading && <p className="mb-4 text-sm text-gray-500">Loading classifications...</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl">
           <div className="flex flex-col gap-4">
             {leftColumn.map((row) => (

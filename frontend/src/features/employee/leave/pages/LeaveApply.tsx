@@ -176,6 +176,36 @@ export default function LeaveApply() {
  
                   <Controller
                     control={control}
+<<<<<<< HEAD
+                    name="reason"
+                    render={({ field }) => (
+                      <textarea
+                        id="reason"
+                        rows={3}
+                        value={field.value}
+                        disabled={isSubmitting}
+                        placeholder="Enter the reason for your leave..."
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className="
+w-full
+resize-none
+rounded-xl
+border
+border-slate-300
+bg-white
+px-4
+py-3
+text-sm
+transition
+focus:outline-none
+focus:border-slate-400
+focus:ring-0
+focus-visible:border-slate-400
+focus-visible:ring-0
+"
+                      />
+                    )}
+=======
                     name="leaveType"
                     render={({ field }) => {
                       const selectedName = leaveTypes.find(
@@ -229,6 +259,7 @@ export default function LeaveApply() {
                         </div>
                       );
                     }}
+>>>>>>> 3a23add3d72c2312ae9a5b995a6881f59795189f
                   />
  
                   {errors.leaveType && (

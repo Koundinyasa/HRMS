@@ -7,6 +7,28 @@ export interface ApiMessageResponse {
   Message: string;
 }
 
+export interface ClassificationSummaryItem {
+  ClassificationId?: number;
+  classificationId?: number;
+  ClassificationName?: string;
+  classificationName?: string;
+  Count?: number;
+  count?: number;
+  [key: string]: unknown;
+}
+
+export interface ClassificationSummaryResponse {
+  statusCode?: number;
+  statusMessage?: string;
+  data: ClassificationSummaryItem[];
+}
+
+export interface ClassificationDetailsResponse {
+  statusCode?: number;
+  statusMessage?: string;
+  data: Record<string, unknown>[];
+}
+
 // ===============================
 // ADDITIONAL CLASSIFICATION
 // ===============================

@@ -147,7 +147,13 @@ export default function ProfileSection({
   }
 
   return (
-    <Card className="w-full min-w-0 max-w-full rounded-xl border border-[#E2E8F0] bg-white shadow-sm sm:rounded-2xl">
+    <Card
+      className={`w-full min-w-0 max-w-full rounded-xl bg-white shadow-sm ring-0 sm:rounded-2xl ${
+        section.title === "Personal Information"
+          ? "border border-[#1F2937]"
+          : "border border-[#E2E8F0]"
+      }`}
+    >
       {content}
     </Card>
   );

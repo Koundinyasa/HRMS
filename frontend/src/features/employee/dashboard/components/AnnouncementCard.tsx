@@ -69,9 +69,9 @@ export default function AnnouncementCard() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h3
-          className="text-base sm:text-lg font-medium"
+          className="dashboard-subheading text-base sm:text-lg"
           style={{
-            color: "var(--primary-color)",
+            color: "var(--dashboard-subheading)",
           }}
         >
           Announcements
@@ -133,10 +133,10 @@ export default function AnnouncementCard() {
               </div>
               {/* Content */}
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-slate-700 break-words">
+                <p className="dashboard-label text-xs sm:text-sm break-words">
                   {item.title}
                 </p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
+                <p className="dashboard-muted text-[10px] sm:text-xs mt-1">
                   {item.time}
                 </p>
               </div>

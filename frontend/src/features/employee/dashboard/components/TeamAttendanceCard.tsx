@@ -66,7 +66,7 @@ export default function TeamAttendanceCard() {
       }}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-xl font-semibold" style={{ color: "var(--primary-color)" }}>
+        <h3 className="dashboard-subheading text-xl" style={{ color: "var(--dashboard-subheading)" }}>
           Team
         </h3>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs sm:text-sm">

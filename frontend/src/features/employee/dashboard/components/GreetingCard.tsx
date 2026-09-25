@@ -180,9 +180,10 @@ lg:w-auto
          <div className="min-w-0">
             <p
               className="
+                dashboard-subheading
                 text-xs sm:text-sm
-                font-medium
-                pr-8 sm:pr-10 lg:pr-0  "
+                pr-8 sm:pr-10 lg:pr-0
+              "
               style={{
                 color: "var(--primary-color)",
               }}
@@ -192,9 +193,8 @@ lg:w-auto
             </p>
            <h2
   className="
+    dashboard-heading
     text-lg sm:text-[22px]
-    font-semibold
-    text-slate-900
     mt-1 sm:mt-2
     break-words
     leading-tight
@@ -204,9 +204,9 @@ lg:w-auto
             </h2>
             <p
               className="
+                dashboard-muted
                 text-xs sm:text-sm
-text-slate-500
-mt-1 sm:mt-2
+                mt-1 sm:mt-2
               "
             >
               {formattedDate}

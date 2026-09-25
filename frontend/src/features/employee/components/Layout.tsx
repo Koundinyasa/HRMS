@@ -62,13 +62,19 @@ export default function Layout() {
     min-h-0
     overflow-y-auto
     overflow-x-hidden
+    bg-slate-100
     p-3
     sm:p-4
     lg:p-5
-    bg-slate-100
   "
         >
-          <Outlet />
+          {isDashboard ? (
+            <Outlet />
+          ) : (
+            <div className="module-shell p-3 sm:p-4 lg:p-5">
+              <Outlet />
+            </div>
+          )}
 
           {isDashboard && showBackToTop && (
             <button
