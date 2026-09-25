@@ -1,26 +1,17 @@
- 
-import { useEffect, useRef, useState } from "react";
+ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react";
- 
+import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
- 
 import { Button } from "@/components/ui/button";
- 
 import { Label } from "@/components/ui/label";
- 
 import DateField from "../components/DateField";
- 
 import LeaveBalanceCard from "../components/LeaveBalanceCard";
- 
 import { useLeave } from "../hooks/useLeave";
 import { useApplyLeave } from "../hooks/useApplyLeave";
- 
 import { leaveApplySchema } from "../validation/leaveValidation";
 import { minFromDateIso, maxApplyDateIso } from "../constants/leave.constants";
- 
 import type { LeaveApplyForm } from "../types/leave.types";
  
 const DEFAULT_VALUES: LeaveApplyForm = {
@@ -176,36 +167,6 @@ export default function LeaveApply() {
  
                   <Controller
                     control={control}
-<<<<<<< HEAD
-                    name="reason"
-                    render={({ field }) => (
-                      <textarea
-                        id="reason"
-                        rows={3}
-                        value={field.value}
-                        disabled={isSubmitting}
-                        placeholder="Enter the reason for your leave..."
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className="
-w-full
-resize-none
-rounded-xl
-border
-border-slate-300
-bg-white
-px-4
-py-3
-text-sm
-transition
-focus:outline-none
-focus:border-slate-400
-focus:ring-0
-focus-visible:border-slate-400
-focus-visible:ring-0
-"
-                      />
-                    )}
-=======
                     name="leaveType"
                     render={({ field }) => {
                       const selectedName = leaveTypes.find(
@@ -259,7 +220,6 @@ focus-visible:ring-0
                         </div>
                       );
                     }}
->>>>>>> 3a23add3d72c2312ae9a5b995a6881f59795189f
                   />
  
                   {errors.leaveType && (
@@ -480,4 +440,3 @@ focus-visible:ring-0
     </div>
   );
 }
- 

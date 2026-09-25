@@ -2,7 +2,6 @@ import { NavLink, useParams } from "react-router-dom";
 import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import type { MenuItem } from "../../dashboard/types/dashboard.types";
 import { FileText, ClipboardList, LogOut, type LucideIcon } from "lucide-react";
-import "@fontsource-variable/urbanist";
  
 const TAB_ICONS: Record<string, LucideIcon> = {
   "Resignation Request": FileText,
@@ -24,7 +23,7 @@ export default function SeparationNavbar() {
     <nav
       aria-label="Separation navigation"
       className="w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-orange-300 bg-orange-50/40 p-2.5"
-      style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
+      style={{ fontFamily: "Urbanist, sans-serif" }}
       // style={{ borderColor: "var(--primary-border)" }}
     >
       <div className="flex w-full min-w-0 max-w-full items-center justify-between gap-3">
