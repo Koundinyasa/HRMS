@@ -494,15 +494,16 @@ export default function ApplyLeaveForEmployee() {
                         <div className="flex gap-6">
                           <label className="flex cursor-pointer items-center gap-2">
                             <input
-                              type="radio"
-                              name="halfDay"
+                              type="checkbox"
                               value="First Half"
                               checked={field.value === "First Half"}
-                              onChange={() => {
-                                field.onChange("First Half");
-                                setValue("isHalfDay", true);
-                                setValue("sessionFrom", "First Half");
-                                setValue("sessionTo", "First Half");
+                              onChange={(event) => {
+                                const selected = event.target.checked;
+                                const session = selected ? "First Half" : "";
+                                field.onChange(session);
+                                setValue("isHalfDay", selected);
+                                setValue("sessionFrom", session);
+                                setValue("sessionTo", session);
                               }}
                             />
                             First Half
@@ -510,15 +511,16 @@ export default function ApplyLeaveForEmployee() {
 
                           <label className="flex cursor-pointer items-center gap-2">
                             <input
-                              type="radio"
-                              name="halfDay"
+                              type="checkbox"
                               value="Second Half"
                               checked={field.value === "Second Half"}
-                              onChange={() => {
-                                field.onChange("Second Half");
-                                setValue("isHalfDay", true);
-                                setValue("sessionFrom", "Second Half");
-                                setValue("sessionTo", "Second Half");
+                              onChange={(event) => {
+                                const selected = event.target.checked;
+                                const session = selected ? "Second Half" : "";
+                                field.onChange(session);
+                                setValue("isHalfDay", selected);
+                                setValue("sessionFrom", session);
+                                setValue("sessionTo", session);
                               }}
                             />
                             Second Half
