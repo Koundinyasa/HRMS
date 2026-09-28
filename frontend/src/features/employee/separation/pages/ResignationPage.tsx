@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, HelpCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -23,7 +24,6 @@ import SeparationNavbar from "../components/SeparationNavbar";
 import SubmitDialog from "../components/SubmitDialog";
 
 import DateField from "../../leave/components/DateField";
-import { MIN_LEAVE_DATE_ISO } from "../../leave/constants/leave.constants";
 
 import { useSeparationManagement } from "../hooks/useSeparationManagement";
 import { validateResignation } from "../validations/resignationvalidation";
@@ -35,11 +35,33 @@ export default function ResignationPage() {
   const { submitRequest, isSubmitting } = useSeparationManagement();
 
   const [requestedLastWorkingDate, setRequestedLastWorkingDate] = useState("");
-  const [dateInvalid, setDateInvalid] = useState(false);
 
   const [reason, setReason] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (!value) {
+      setRequestedLastWorkingDate("");
+      return;
+    }
+
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!datePattern.test(value)) {
+      return;
+    }
+
+    const year = value.substring(0, 4);
+
+    if (year.length !== 4) {
+      return;
+    }
+
+    setRequestedLastWorkingDate(value);
+  };
 
   /**
    * Validate before opening dialog
@@ -105,7 +127,6 @@ export default function ResignationPage() {
         overflow-x-hidden
         bg-slate-100
       "
-      style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
     >
       <SeparationNavbar />
 
@@ -136,21 +157,9 @@ export default function ResignationPage() {
               <DateField
                 id="lastWorkingDate"
                 value={requestedLastWorkingDate}
-                onChange={(value) => {
-                  setRequestedLastWorkingDate(value);
-                  setDateInvalid(false);
-                }}
-                onInvalid={() => setDateInvalid(true)}
-                isInvalid={dateInvalid}
-                min={MIN_LEAVE_DATE_ISO}
+                onChange={setRequestedLastWorkingDate}
                 inputClassName="h-11 w-full min-w-0 max-w-full rounded-lg text-sm sm:text-base border border-slate-300 focus-visible:border-slate-400 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none"
               />
-
-              {dateInvalid && (
-                <p className="text-xs font-medium text-red-500">
-                  Invalid Date
-                </p>
-              )}
             </div>
 
             {/* Reason */}

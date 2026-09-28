@@ -16,7 +16,7 @@ import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
 import { randomBytes } from 'crypto';
 import { DraftService } from '../chatbot/services/draft.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
-
+ 
 @Injectable()
 export class AuthService {
   constructor(
@@ -60,16 +60,16 @@ export class AuthService {
           'Invalid or expired captcha. Please refresh and try again.',
         );
       }
-
+ 
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('EmailID', dto.userId)
         .execute('USP_Validateuser');
-
+ 
       const user = result.recordset[0];
-
+ 
       if (!user) {
         throw new UnauthorizedException('Invalid UserID or Password');
       }
@@ -99,9 +99,9 @@ export class AuthService {
           'Invalid UserID or Password',
         );
       }
-
+ 
       const isFirstLogin = user.LastLoginDateTime === null;
-
+ 
       // update login ONLY after first login is completed
       if (!isFirstLogin) {
         await pool
@@ -119,7 +119,11 @@ export class AuthService {
         createdBy: user.Sessionuserid,
         name: user.FullName,
         role:
-          user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
+          user.RoleID === 1
+            ? 'admin'
+            : user.RoleID === 2
+              ? 'hr'
+              : 'employee',
       });
  
       let loginMessage = 'Login successful';
@@ -133,7 +137,7 @@ export class AuthService {
       // Fresh session boundary — wipe any chatbot flow left over
       // from a previous session for this employee.
       this.clearChatbotState(String(user.EmployeeID));
-
+ 
       return {
         success: true,
         message: loginMessage,
@@ -149,7 +153,7 @@ export class AuthService {
       throw error;
     }
   }
-
+ 
   // ================= VERIFY COMPANY =================
  
   async verifyCompany(tenantCode: string) {
@@ -195,13 +199,13 @@ export class AuthService {
         .request()
         .input('EmailID', userId.trim())
         .execute('USP_Validateuser');
-
+ 
       const user = result.recordset?.[0];
-
+ 
       if (!user) {
         throw new BadRequestException('User not found');
       }
-
+ 
       if (user.LastLoginDateTime !== null) {
         throw new ForbiddenException(
           'Password reset is allowed only on first login',
@@ -215,7 +219,9 @@ export class AuthService {
       );
  
       if (!isMatch) {
-        throw new BadRequestException('Current password is incorrect');
+        throw new BadRequestException(
+          'Current password is incorrect',
+        );
       }
  
       // Prevent same password reuse
@@ -232,7 +238,9 @@ export class AuthService {
  
       // Confirm password check
       if (dto.newPassword !== dto.confirmPassword) {
-        throw new BadRequestException('Passwords do not match');
+        throw new BadRequestException(
+          'Passwords do not match',
+        );
       }
  
       // Hash new password
@@ -267,9 +275,9 @@ export class AuthService {
       throw error;
     }
   }
-
+ 
   // ================= TEMP PASSWORD =================
-
+ 
   private generateTempPassword(length = 10): string {
     const chars =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
@@ -280,7 +288,7 @@ export class AuthService {
       .map((b) => chars[b % chars.length])
       .join('');
   }
-
+ 
   async sendTemporaryPassword(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
@@ -289,13 +297,13 @@ export class AuthService {
         .request()
         .input('EmployeeID', employeeId)
         .execute('USP_GetUserInfo');
-
+ 
       const user = result.recordset[0];
-
+ 
       if (!user) {
         throw new NotFoundException('User not found');
       }
-
+ 
       const tempPassword = this.generateTempPassword();
  
       const hashedPassword = await bcrypt.hash(
@@ -324,15 +332,20 @@ export class AuthService {
       throw error;
     }
   }
-
+ 
   async testMail() {
-    return this.mailService.sendTempPassword('test@gmail.com', 'TEST1234');
+    return this.mailService.sendTempPassword(
+      'test@gmail.com',
+      'TEST1234',
+    );
   }
  
   // ================= OTP =================
  
   private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
   }
  
   async forgotPassword(userId: string) {
@@ -343,26 +356,29 @@ export class AuthService {
         .request()
         .input('EmailID', userId)
         .execute('USP_Validateuser');
-
+ 
       const user = result.recordset?.[0];
-
+ 
       if (!user) {
         throw new NotFoundException('User not found');
       }
  
       const otp = this.generateOtp();
-
+ 
       console.log('========================================');
       console.log(`OTP for ${user.UserID}: ${otp}`);
       console.log('========================================');
-
+ 
       const otpResult = await pool
         .request()
         .input('EmployeeID', user.EmployeeID)
         .input('UserID', user.UserID)
         .input('OTP', otp)
         .input('GeneratedOn', new Date())
-        .input('ExpiresOn', new Date(Date.now() + 3 * 60 * 1000))
+        .input(
+          'ExpiresOn',
+          new Date(Date.now() + 3 * 60 * 1000),
+        )
         .execute('USP_SaveGeneratedOTP');
  
       const otpResponse = otpResult.recordset[0];
@@ -377,8 +393,10 @@ export class AuthService {
         message: 'OTP sent successfully',
         employeeId: user.EmployeeID,
         expiresOn: otpResponse.ExpiresOn,
-        remainingSeconds: otpResponse.RemainingSeconds,
-        remainingMinutes: otpResponse.RemainingMinutes,
+        remainingSeconds:
+          otpResponse.RemainingSeconds,
+        remainingMinutes:
+          otpResponse.RemainingMinutes,
       };
     } catch (error) {
       throw error;
@@ -402,7 +420,9 @@ export class AuthService {
       result.recordset[0];
  
       if (response.StatusCode === 0) {
-        throw new BadRequestException(response.Message);
+        throw new BadRequestException(
+          response.Message,
+        );
       }
  
       return {
@@ -421,7 +441,7 @@ export class AuthService {
   ) {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const userResult = await pool
         .request()
         .input(
@@ -429,9 +449,9 @@ export class AuthService {
           (dto.userId ?? dto.employeeId).trim(),
         )
         .execute('USP_Validateuser');
-
+ 
       const user = userResult.recordset?.[0];
-
+ 
       if (!user) {
         throw new BadRequestException(
           'User not found',
@@ -469,7 +489,7 @@ export class AuthService {
           dto.employeeId,
         )
         .execute('USP_UpdatePassword');
-
+ 
       return {
         success: true,
         message: 'Password updated successfully',
@@ -496,7 +516,7 @@ export class AuthService {
   async logout(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
-
+ 
       await pool
         .request()
         .input(
@@ -505,7 +525,7 @@ export class AuthService {
         )
         .input('flag', 3)
         .execute('USP_UpdateLoginInfo');
-
+ 
       // Defense in depth alongside the login-time clear above.
       this.clearChatbotState(
         String(employeeId),
@@ -519,7 +539,7 @@ export class AuthService {
       throw error;
     }
   }
-
+ 
   // ================= CHANGE PASSWORD =================
  
   async changePassword(
@@ -608,6 +628,3 @@ export class AuthService {
     }
   }
 }
- 
- 
- 
