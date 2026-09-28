@@ -29,7 +29,7 @@ export const assetApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: throwIfApiError<CreateAssetRequestResponse>,
+      
       invalidatesTags: ["AssetRequests"],
     }),
 

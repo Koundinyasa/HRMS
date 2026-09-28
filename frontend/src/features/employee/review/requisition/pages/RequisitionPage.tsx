@@ -3,10 +3,12 @@ import { useState } from "react";
 import RequisitionNavbar from "../components/RequisitionNavbar";
 import RequisitionToolbar from "../components/RequisitionToolbar";
 import RequisitionTable from "../components/RequisitionTable";
-import RequisitionRemarksPage from "../components/RequisitionRemarksPage";
+import RequisitionRemarksPage from "./RequisitionRemarksPage";
+
 import type { Requisition } from "../types/requisition.types";
 
 import { useRequisition } from "../hooks/useRequisition";
+
 export default function RequisitionPage() {
   const {
     requisitions,
@@ -22,12 +24,18 @@ export default function RequisitionPage() {
   } = useRequisition();
 
   const [showHistory, setShowHistory] = useState(false);
+
   const [approved, setApproved] = useState(false);
+
   const [rejectedRequests, setRejectedRequests] =
     useState<Requisition[]>([]);
 
+  // ---------------------------------------
+  // APPROVE
+  // ---------------------------------------
   const handleApprove = async () => {
-    const approvedRequests = await updateSelected("approved");
+    const approvedRequests =
+      await updateSelected("approved");
 
     if (approvedRequests.length > 0) {
       setApproved(true);
@@ -35,7 +43,10 @@ export default function RequisitionPage() {
     }
   };
 
-  const handleReject = async () => {
+  // ---------------------------------------
+  // REJECT
+  // ---------------------------------------
+  const handleReject = () => {
     const rejected = requisitions.filter((item) =>
       selectedIds.includes(item.id)
     );
@@ -44,14 +55,15 @@ export default function RequisitionPage() {
       return;
     }
 
+    /*
+     * Clicking Reject only opens the
+     * rejection remarks modal.
+     *
+     * Reject API is called only when
+     * Submit is clicked inside the modal.
+     */
     setRejectedRequests(rejected);
     setApproved(false);
-
-    try {
-      await updateSelected("rejected");
-    } catch (actionError) {
-      console.error("Unable to reject leave requests.", actionError);
-    }
   };
 
   return (
@@ -60,7 +72,9 @@ export default function RequisitionPage() {
         {/* Navbar */}
         <RequisitionNavbar />
 
-        {/* Toolbar */}
+        {/* ---------------------------------------
+            TOOLBAR
+           --------------------------------------- */}
         <RequisitionToolbar
           search={search}
           onSearchChange={setSearch}
@@ -68,7 +82,7 @@ export default function RequisitionPage() {
             void handleApprove();
           }}
           onReject={() => {
-            void handleReject();
+            handleReject();
           }}
           onHistory={() => {
             setShowHistory((previous) => !previous);
@@ -77,7 +91,9 @@ export default function RequisitionPage() {
           approved={approved}
         />
 
-        {/* Error */}
+        {/* ---------------------------------------
+            FETCH ERROR
+           --------------------------------------- */}
         {error && (
           <div
             role="alert"
@@ -87,6 +103,9 @@ export default function RequisitionPage() {
           </div>
         )}
 
+        {/* ---------------------------------------
+            ACTION ERROR
+           --------------------------------------- */}
         {actionError && (
           <div
             role="alert"
@@ -96,6 +115,9 @@ export default function RequisitionPage() {
           </div>
         )}
 
+        {/* ---------------------------------------
+            APPROVED MESSAGE
+           --------------------------------------- */}
         {approved && (
           <div
             role="status"
@@ -105,14 +127,18 @@ export default function RequisitionPage() {
           </div>
         )}
 
-        {/* Loading */}
+        {/* ---------------------------------------
+            LOADING
+           --------------------------------------- */}
         {loading && (
           <div className="rounded-md bg-white p-5 text-center text-sm text-slate-500 font-[Urbanist]">
             Loading leave requisitions...
           </div>
         )}
 
-        {/* History */}
+        {/* ---------------------------------------
+            HISTORY
+           --------------------------------------- */}
         {showHistory && (
           <div className="rounded-md border border-black bg-white p-4 text-sm text-slate-600 font-[Urbanist]">
             Leave history
@@ -127,16 +153,16 @@ export default function RequisitionPage() {
           </div>
         )}
 
-        {/* Rejected remarks */}
-        {!loading && rejectedRequests.length > 0 && (
-          <RequisitionRemarksPage
-            requisitions={rejectedRequests}
-            onBack={() => setRejectedRequests([])}
-          />
-        )}
+        {/* ---------------------------------------
+            MAIN TABLE
 
-        {/* Table */}
-        {!loading && rejectedRequests.length === 0 && (
+            IMPORTANT:
+            Do NOT check rejectedRequests here.
+
+            The table must remain visible while
+            the rejection modal is open.
+           --------------------------------------- */}
+        {!loading && (
           <RequisitionTable
             requisitions={requisitions}
             selectedIds={selectedIds}
@@ -145,6 +171,21 @@ export default function RequisitionPage() {
           />
         )}
 
+        {/* ---------------------------------------
+            REJECT REMARKS MODAL
+
+            Render this AFTER the table so that
+            it appears above the table.
+           --------------------------------------- */}
+        {!loading && rejectedRequests.length > 0 && (
+          <RequisitionRemarksPage
+            requisitions={rejectedRequests}
+            onBack={() => setRejectedRequests([])}
+            onSubmit={async () => {
+              await updateSelected("rejected");
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -160,7 +160,10 @@ export const leaveApi = baseApi.injectEndpoints({
     // ===============================
     // HR / Manager Apply Leave
     // ===============================
-    hrApplyLeave: builder.mutation<ApplyLeaveResponse[], HrApplyLeavePayload>({
+    hrApplyLeave: builder.mutation<
+      ApplyLeaveResponse | ApplyLeaveResponse[],
+      HrApplyLeavePayload
+    >({
       query: (body) => {
         const formData = new FormData();
 

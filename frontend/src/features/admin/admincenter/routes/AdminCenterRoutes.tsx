@@ -10,7 +10,7 @@ import PtDetailsForm from "../company/components/PtDetailsForm";
 import LwfDetailsForm from "../company/components/LwfDetailsForm";
 import EstablishmentDetailsForm from "../company/components/EstablishmentDetailsForm";
 import DocumentPage from "../company/components/DocumentPage";
-
+import AppliedLeavePage from "../appliedLeave/pages/AppliedLeavePage";
 
 //Settings
 import SettingsPage from "../settings/pages/SettingsPage";
@@ -36,12 +36,10 @@ import LeavePolicyPage from "../classifications/pages/LeavePolicyPage";
 import LeavePolicySettingsPage from "../classifications/pages/LeavePolicySettingsPage";
 import AttendancePage from "../classifications/pages/AttendancePage";
 
-
 //userManagement
 import UserManagementPage from "../userManagement/pages/UserManagementPage";
 import RoleMaster from "../userManagement/components/RoleMaster";
 import RoleAccessSettings from "../userManagement/pages/RoleAccessSettings";
-
 
 // //ess
 import Circular from "../ess/pages/circular/Circular";
@@ -54,17 +52,14 @@ import Feeds from "../ess/pages/Feeds/Feeds";
 import Memories from "../ess/pages/Memories/Memories";
 import WallOfFame from "../ess/pages/WallOfFame/WallOffFame";
 
-
 //workflows
 import WorkflowsPage from "../workflows/WorkflowsPage";
 import EmployeeGroup from "../workflows/EmployeeGroup";
 import ModuleSettings from "../workflows/ModuleSettings";
 
-
 export const AdminCenterRoutes = (
   <Route path="admin-center" element={<AdminCenterPage />}>
-
-
+    <Route path="applied-leave" element={<AppliedLeavePage />} />
     {/* Company */}
     <Route path="company">
       <Route path="details" element={<CompanyDetailsPage />}>
@@ -79,10 +74,9 @@ export const AdminCenterRoutes = (
 
       <Route path="documents" element={<CompanyDocumentsPage />}>
         <Route index element={<Navigate to="document" replace />} />
-        <Route path="document" element={<DocumentPage/>}/>
+        <Route path="document" element={<DocumentPage />} />
       </Route>
     </Route>
-
 
     {/* Settings */}
     <Route path="settings" element={<SettingsPage />}>
@@ -94,57 +88,60 @@ export const AdminCenterRoutes = (
     </Route>
 
     {/*Classifications */}
-      <Route path="classifications">
-        <Route index element={<ClassificationSummaryPage />} />
-        <Route path="branch" element={<BranchPage />} />
-        <Route path="additional" element={<AdditionalClassificationPage />} />
-        <Route path="designation" element={<DesignationPage />} />
-        <Route path="banks" element={<BanksPage />} />
-        <Route path="banks/:bankId/field-mapping" element={<BankFieldMappingPage />} />
-        <Route path="import" element={<ImportPage />} />
-        <Route path="salary-structure" element={<SalaryStructurePage />} />
-        <Route path="attendance" element={<AttendancePage />} />
-        <Route path="leave-policy" element={<Navigate to="employee" replace />} />
-        <Route path="leave-policy/:group" element={<LeavePolicyPage />} />
-        <Route path="leave-policy/:group/:leaveCode/settings/:settingTab" element={<LeavePolicySettingsPage />} />
-        <Route path="leave" element={<LeavePage />}>
-          <Route index element={<Navigate to="apply" replace />} />
-          <Route path="apply" element={<LeaveApplyPage />} />
-          <Route path="summary" element={<LeaveSummaryPage />} />
-          <Route path="history" element={<LeaveHistoryPage />} />
-        </Route>
-     </Route>
-
-
-      {/*User Management  */}
-
-      <Route path="user-management" element={<UserManagementPage />}>
-        <Route index element={<Navigate to="roles" replace />} />
-        <Route path="roles" element={<RoleMaster />} />
-        <Route path="role-access-settings" element={<RoleAccessSettings />}/>
+    <Route path="classifications">
+      <Route index element={<ClassificationSummaryPage />} />
+      <Route path="branch" element={<BranchPage />} />
+      <Route path="additional" element={<AdditionalClassificationPage />} />
+      <Route path="designation" element={<DesignationPage />} />
+      <Route path="banks" element={<BanksPage />} />
+      <Route
+        path="banks/:bankId/field-mapping"
+        element={<BankFieldMappingPage />}
+      />
+      <Route path="import" element={<ImportPage />} />
+      <Route path="salary-structure" element={<SalaryStructurePage />} />
+      <Route path="attendance" element={<AttendancePage />} />
+      <Route path="leave-policy" element={<Navigate to="employee" replace />} />
+      <Route path="leave-policy/:group" element={<LeavePolicyPage />} />
+      <Route
+        path="leave-policy/:group/:leaveCode/settings/:settingTab"
+        element={<LeavePolicySettingsPage />}
+      />
+      <Route path="leave" element={<LeavePage />}>
+        <Route index element={<Navigate to="apply" replace />} />
+        <Route path="apply" element={<LeaveApplyPage />} />
+        <Route path="summary" element={<LeaveSummaryPage />} />
+        <Route path="history" element={<LeaveHistoryPage />} />
       </Route>
+    </Route>
 
-     {/*ESS */}
-     <Route path="ess">
-        <Route index element={<Navigate to="circular" replace />} />
-        <Route path="circular" element={<Circular />} />
-        <Route path="policy" element={<Policy />} />
-        <Route path="notification" element={<Notification />} />
-        <Route path="flash-news" element={<FlashNews />} />
-        <Route path="help-desk" element={<HelpDesk />} />
-        <Route path="poll" element={<Poll />} />
-        <Route path="feeds" element={<Feeds />} />
-        <Route path="memories" element={<Memories />} /> 
-        <Route path="wall-of-fame" element={<WallOfFame />} /> 
-      </Route>
+    {/*User Management  */}
+
+    <Route path="user-management" element={<UserManagementPage />}>
+      <Route index element={<Navigate to="roles" replace />} />
+      <Route path="roles" element={<RoleMaster />} />
+      <Route path="role-access-settings" element={<RoleAccessSettings />} />
+    </Route>
+
+    {/*ESS */}
+    <Route path="ess">
+      <Route index element={<Navigate to="circular" replace />} />
+      <Route path="circular" element={<Circular />} />
+      <Route path="policy" element={<Policy />} />
+      <Route path="notification" element={<Notification />} />
+      <Route path="flash-news" element={<FlashNews />} />
+      <Route path="help-desk" element={<HelpDesk />} />
+      <Route path="poll" element={<Poll />} />
+      <Route path="feeds" element={<Feeds />} />
+      <Route path="memories" element={<Memories />} />
+      <Route path="wall-of-fame" element={<WallOfFame />} />
+    </Route>
 
     {/*WorkFlows*/}
     <Route path="workflows">
       <Route index element={<WorkflowsPage />} />
       <Route path="employee-group" element={<EmployeeGroup />} />
-      <Route path="module-settings" element={<ModuleSettings />}/>
+      <Route path="module-settings" element={<ModuleSettings />} />
     </Route>
-
-
   </Route>
 );

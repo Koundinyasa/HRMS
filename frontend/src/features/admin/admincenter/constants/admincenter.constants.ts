@@ -1,6 +1,7 @@
 import type { SubNavItem } from "../../components/sidebar.types";
 
 export const ADMIN_CENTER_SUB_NAV: SubNavItem[] = [
+  { label: "Applied Leave", path: "applied-leave" },
   {
     label: "Company",
     path: "company",

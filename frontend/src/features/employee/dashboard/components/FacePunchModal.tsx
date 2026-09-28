@@ -645,6 +645,9 @@ export default function FacePunchModal({
                         <div className="text-[10px] font-mono text-slate-500 mt-0.5">
                           {p.mode}
                         </div>
+                        <div className="text-[10px] font-mono text-slate-500 mt-0.5">
+                          {p.mode}
+                        </div>
                       </div>
                     </div>
                   ))

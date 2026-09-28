@@ -11,12 +11,13 @@ import * as sql from 'mssql';
 export class LeaveService {
   constructor(private readonly databaseService: DatabaseService) {}
   // Leave Types
-  async getLeaveTypes(employeeId: string) {
+  async getLeaveTypes(employeeId: string, companyId: number) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
+        .input('CompanyID', sql.Int, companyId)
         .input('EmployeeID', sql.VarChar(100), employeeId)
         .execute('USP_LeaveMasterData');
 
@@ -26,7 +27,7 @@ export class LeaveService {
       throw error;
     }
   }
- 
+
   // Holiday List
   async getHolidayList() {
     try {
@@ -222,39 +223,39 @@ export class LeaveService {
   async getLeaveStatus(employeeId: string) {
     try {
       const pool = await this.databaseService.connect();
- 
+
       const result = await pool
         .request()
         .input('EmployeeId', sql.VarChar(25), employeeId)
         .execute('USP_GetLeaveStatus');
- 
+
       console.log('🔥 Leave Status Recordset:', result.recordset);
       console.log('🔥 Leave Status Recordsets:', result.recordsets);
- 
+
       // SQL FOR JSON result
       const row = result.recordset?.[0];
- 
+
       if (!row) {
         return {
           LeaveApplications: [],
         };
       }
- 
+
       // Find the JSON column dynamically
       const jsonColumn = Object.keys(row)[0];
       const jsonValue = row[jsonColumn];
- 
+
       if (typeof jsonValue === 'string') {
         return JSON.parse(jsonValue);
       }
- 
+
       return jsonValue;
     } catch (error) {
       console.error('Error in getLeaveStatus:', error);
       throw error;
     }
   }
- 
+
   // Apply Leave
   async applyLeave(
     employeeId: string,
@@ -420,10 +421,10 @@ export class LeaveService {
   ) {
     try {
       const pool = await this.databaseService.connect();
- 
+
       const isHRForceApply = dto.isHRForceApply ?? false;
       const isHalfDay = dto.isHalfDay ?? false;
- 
+
       console.log('========== HR APPLY LEAVE ==========');
       console.log({
         employeeId: dto.employeeId,
@@ -439,7 +440,7 @@ export class LeaveService {
         isHRForceApply,
       });
       console.log('====================================');
- 
+
       const result = await pool
         .request()
         .input('EmployeeId', sql.VarChar(100), dto.employeeId.trim())
@@ -454,7 +455,7 @@ export class LeaveService {
         .input('CreatedBy', sql.Int, Number(createdBy))
         .input('IsHRForceApply', sql.Bit, isHRForceApply)
         .execute('USP_LeaveRequestSubmission');
- 
+
       /*
        * IMPORTANT:
        * The stored procedure can generate additional result sets
@@ -465,30 +466,30 @@ export class LeaveService {
        * Message
        * LeaveApplicationId
        */
- 
+
       console.log('🔥 ALL SP RECORDSETS:', result.recordsets);
- 
+
       const allResultSets = result.recordsets as unknown as any[][];
- 
+
       const response =
         allResultSets.length > 0
           ? allResultSets[allResultSets.length - 1]?.[0]
           : undefined;
- 
+
       console.log('🔥 FINAL SP RESPONSE:', response);
- 
+
       if (!response) {
         throw new BadRequestException(
           'No response received from leave submission procedure.',
         );
       }
- 
+
       if (Number(response.StatusCode) !== 200) {
         throw new BadRequestException(
           response.Message || 'Leave application failed.',
         );
       }
- 
+
       return {
         statusCode: Number(response.StatusCode),
         message: response.Message,
@@ -496,11 +497,11 @@ export class LeaveService {
       };
     } catch (error) {
       console.error('HR Apply Leave Error:', error);
- 
+
       if (error instanceof BadRequestException) {
         throw error;
       }
- 
+
       throw new InternalServerErrorException(
         error instanceof Error ? error.message : 'Failed to apply leave.',
       );
@@ -573,32 +574,32 @@ export class LeaveService {
       throw error;
     }
   }
- 
+
   async getReportingManagerEmployeeList(userId: number) {
     try {
       const pool = await this.databaseService.connect();
- 
+
       const result = await pool
         .request()
         .input('UserID', sql.Int, userId)
         .execute('USP_GetReportingManagerEmployeeList');
- 
+
       return result.recordset;
     } catch (error) {
       console.error('Error in getReportingManagerEmployeeList:', error);
- 
+
       throw error;
     }
   }
   async getEmployeeLeaveDetails(employeeId: string) {
     try {
       const pool = await this.databaseService.connect();
- 
+
       const result = await pool
         .request()
         .input('EmployeeID', sql.VarChar(25), employeeId)
         .execute('USP_GetEmployeeLeaveDetails');
- 
+
       return {
         employeeDetails: result.recordsets[0] ?? [],
         employeeLeaveBalance: result.recordsets[1] ?? [],
@@ -606,7 +607,7 @@ export class LeaveService {
       };
     } catch (error) {
       console.error('Error in getEmployeeLeaveDetails:', error);
- 
+
       throw error;
     }
   }

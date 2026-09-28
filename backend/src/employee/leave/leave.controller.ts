@@ -9,6 +9,8 @@ import {
   UseGuards,
   Res,
   Query,
+  Param,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -17,7 +19,7 @@ import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
- 
+
 import { LeaveService } from './leave.service';
 import { LeaveRequestDto } from './dto/leave-request.dto';
 import { HierarchicalLeaveActionDto } from './dto/hierarchical-leave-action.dto';
@@ -26,52 +28,63 @@ import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
 import { PendingLeaveRequestDto } from './dto/pending-leave-request.dto';
 @Controller('employee/leave')
 export class LeaveController {
-  constructor(
-    private readonly leaveService: LeaveService,
-  ) { }
- 
-  // Leave Types
-  @UseGuards(JwtAuthGuard)
-  @Get('leavetypes')
-  async getLeaveTypes(@Req() req) {
-    const employeeId = req.user.employeeId;
+  constructor(private readonly leaveService: LeaveService) {}
 
-    return this.leaveService.getLeaveTypes(employeeId);
+  @UseGuards(JwtAuthGuard)
+ @Get('leavetypes')
+  @UseGuards(JwtAuthGuard)
+  async getLeaveTypes(
+    @Req() req: any,
+    @Query('employeeId') employeeId?: string,
+  ) {
+    const targetEmployeeId =
+      employeeId?.trim() ||
+      String(req.user?.employeeId ?? '').trim();
+ 
+    const companyId = Number(req.user?.companyId);
+ 
+    if (!targetEmployeeId) {
+      throw new BadRequestException('Invalid employeeId');
+    }
+ 
+    if (!Number.isInteger(companyId) || companyId <= 0) {
+      throw new BadRequestException('Invalid companyId');
+    }
+ 
+    return this.leaveService.getLeaveTypes(
+      targetEmployeeId,
+      companyId,
+    );
   }
  
+
   // Holiday List
   @Get('holidaylist')
   async getHolidayList() {
     return this.leaveService.getHolidayList();
   }
- 
+
   // Employee Leave Balance
   @Get('balance')
   @UseGuards(JwtAuthGuard)
   async getEmployeeLeaveBalance(@Req() req) {
-    return this.leaveService.getEmployeeLeaveBalance(
-      req.user.employeeId,
-    );
+    return this.leaveService.getEmployeeLeaveBalance(req.user.employeeId);
   }
- 
+
   // Leave History
   @Get('history')
   @UseGuards(JwtAuthGuard)
   async getLeaveHistory(@Req() req) {
-    return this.leaveService.getLeaveHistory(
-      req.user.employeeId,
-    );
+    return this.leaveService.getLeaveHistory(req.user.employeeId);
   }
- 
+
   // Leave Status
   @Get('status')
   @UseGuards(JwtAuthGuard)
   async getLeaveStatus(@Req() req) {
-    return this.leaveService.getLeaveStatus(
-      req.user.employeeId,
-    );
+    return this.leaveService.getLeaveStatus(req.user.employeeId);
   }
- 
+
   // Apply Leave
   @UseGuards(JwtAuthGuard)
   @Post('apply')
@@ -80,27 +93,21 @@ export class LeaveController {
       storage: diskStorage({
         destination: (req, file, cb) => {
           const employeeId = (req as any).user.employeeId;
- 
- 
-          const uploadPath = path.join(
-            process.cwd(),
-            'uploads',
-            employeeId,
-          );
- 
+
+          const uploadPath = path.join(process.cwd(), 'uploads', employeeId);
+
           if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, {
               recursive: true,
             });
           }
- 
+
           cb(null, uploadPath);
         },
- 
+
         filename: (req, file, cb) => {
-          const uniqueFileName =
-            `${uuid()}${extname(file.originalname)}`;
- 
+          const uniqueFileName = `${uuid()}${extname(file.originalname)}`;
+
           cb(null, uniqueFileName);
         },
       }),
@@ -111,14 +118,11 @@ export class LeaveController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: LeaveRequestDto,
   ) {
- 
     const employeeId = req.user.employeeId;
     const createdBy = req.user.createdBy;
- 
-    const documentPath = file
-      ? `${employeeId}/${file.filename}`
-      : undefined;
- 
+
+    const documentPath = file ? `${employeeId}/${file.filename}` : undefined;
+
     return this.leaveService.applyLeave(
       employeeId,
       createdBy,
@@ -140,20 +144,20 @@ export class LeaveController {
   //     storage: diskStorage({
   //       destination: (req, file, cb) => {
   //         const employeeId = (req as any).user.employeeId;
- 
+
   //         const uploadPath = path.join(
   //           process.cwd(),
   //           'uploads',
   //           employeeId,
   //         );
- 
+
   //         if (!fs.existsSync(uploadPath)) {
   //           fs.mkdirSync(uploadPath, { recursive: true });
   //         }
- 
+
   //         cb(null, uploadPath);
   //       },
- 
+
   //       filename: (req, file, cb) => {
   //         cb(null, Date.now() + '-' + file.originalname);
   //       },
@@ -170,7 +174,7 @@ export class LeaveController {
   //   const documentPath = file
   //     ? `${employeeId}/${file.filename}`
   //     : undefined;
- 
+
   //   return this.leaveService.hrApplyLeave(
   //     employeeId,
   //     createdBy,
@@ -185,7 +189,7 @@ export class LeaveController {
   //     body.isHRForceApply,
   //   );
   // }
- 
+
   @Post('applyhr')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
@@ -193,20 +197,16 @@ export class LeaveController {
       storage: diskStorage({
         destination: (req, file, cb) => {
           const employeeId = (req as any).body.employeeId;
- 
-          const uploadPath = path.join(
-            process.cwd(),
-            'uploads',
-            employeeId,
-          );
- 
+
+          const uploadPath = path.join(process.cwd(), 'uploads', employeeId);
+
           if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
           }
- 
+
           cb(null, uploadPath);
         },
- 
+
         filename: (req, file, cb) => {
           const filename = `${Date.now()}-${file.originalname}`;
           cb(null, filename);
@@ -220,7 +220,7 @@ export class LeaveController {
     @UploadedFile() file?: Express.Multer.File,
   ) {
     const createdBy = Number(req.user.createdBy);
- 
+
     console.log('========== HR APPLY LEAVE ==========');
     console.log({
       employeeId: body.employeeId,
@@ -235,16 +235,12 @@ export class LeaveController {
       isHRForceApply: body.isHRForceApply,
     });
     console.log('====================================');
- 
+
     const documentPath = file
       ? `${body.employeeId}/${file.filename}`
       : undefined;
- 
-    return this.leaveService.hrApplyLeave(
-      body,
-      createdBy,
-      documentPath,
-    );
+
+    return this.leaveService.hrApplyLeave(body, createdBy, documentPath);
   }
   // Approval / Rejection
   @UseGuards(JwtAuthGuard)
@@ -260,14 +256,11 @@ export class LeaveController {
       body.remarks,
     );
   }
- 
+
   // Withdraw / Cancel Leave  <-- NEW API
   @UseGuards(JwtAuthGuard)
   @Post('withdrawcancel')
-  async withdrawCancelLeave(
-    @Req() req,
-    @Body() body: WithdrawCancelDto,
-  ) {
+  async withdrawCancelLeave(@Req() req, @Body() body: WithdrawCancelDto) {
     return this.leaveService.withdrawCancelLeave(
       req.user.employeeId,
       req.user.createdBy,
@@ -276,40 +269,31 @@ export class LeaveController {
       body.reason,
     );
   }
- 
+
   // Pending Leave Requests
   @Get('pending')
   @UseGuards(JwtAuthGuard)
   async getPendingLeaveRequests(@Req() req) {
-    return this.leaveService.getPendingLeaveRequests(
-      req.user.employeeId,
-    );
+    return this.leaveService.getPendingLeaveRequests(req.user.employeeId);
   }
- 
+
   // Upload Holiday Excel
   @Post('holidaysupload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadHolidayFile(@UploadedFile() file: Express.Multer.File) {
     return this.leaveService.uploadHolidayFile(file);
   }
- 
+
   @Get('reporting-employees')
   @UseGuards(JwtAuthGuard)
-  async getReportingManagerEmployeeList(
-    @Req() req,
-  ) {
-    return this.leaveService
-      .getReportingManagerEmployeeList(
-        req.user.createdBy,
-      );
+  async getReportingManagerEmployeeList(@Req() req) {
+    return this.leaveService.getReportingManagerEmployeeList(
+      req.user.createdBy,
+    );
   }
   @Get('employee-details')
   @UseGuards(JwtAuthGuard)
-  async getEmployeeLeaveDetails(
-    @Query('employeeId') employeeId: string,
-  ) {
-    return this.leaveService.getEmployeeLeaveDetails(
-      employeeId,
-    );
+  async getEmployeeLeaveDetails(@Query('employeeId') employeeId: string) {
+    return this.leaveService.getEmployeeLeaveDetails(employeeId);
   }
 }
