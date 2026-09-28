@@ -92,18 +92,22 @@ function toIsoDate(
   if (!value) {
     return new Date().toISOString();
   }
- 
-  // Already an ISO date/time.
-  if (value.includes("T")) {
-    return value;
+
+  // If value is already ISO (e.g. 2019-12-31T18:30:00.000Z),
+  // keep the calendar DATE part only at UTC midnight.
+  // Avoids IST shift (18:30Z) changing the day.
+  const datePartMatch = value
+    .trim()
+    .match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (datePartMatch) {
+    return `${datePartMatch[1]}-${datePartMatch[2]}-${datePartMatch[3]}T00:00:00.000Z`;
   }
- 
-  // YYYY-MM-DD from date inputs.
+
+  // YYYY-MM-DD from date inputs (fallback same as above).
   const isoDateMatch =
     /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
- 
+
   if (isoDateMatch) {
-    // Use UTC midnight for the selected calendar date.
     return `${value}T00:00:00.000Z`;
   }
  
@@ -211,53 +215,77 @@ function getStateId(
 // ------------------------------------------------------------
  
 function mapCompanyFromApi(
-  raw: CompanyDetailsApi,
+  raw: CompanyDetailsApi & Record<string, unknown>,
 ): CompanyDetails {
+  // Support both PascalCase (SQL) and camelCase (Nest) GET responses
+  const r = raw as Record<string, unknown>;
+  const str = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = r[k];
+      if (typeof v === "string") return v;
+    }
+    return "";
+  };
+  const bool = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = r[k];
+      if (typeof v === "boolean") return v;
+    }
+    return false;
+  };
+
   return {
-    companyName: raw.CompanyName ?? "",
+    companyName: str("CompanyName", "companyName"),
     dateOfEstablishment: toDateInputValue(
-      raw.DateOfEstablishment,
+      str("DateOfEstablishment", "dateOfEstablishment") || undefined,
     ),
-    cin_LPIN: raw.CIN_LPIN ?? "",
-    tan: raw.TAN ?? "",
-    website: raw.Website ?? "",
-    address1: raw.Address1 ?? "",
-    address2: raw.Address2 ?? "",
-    address3: raw.Address3 ?? "",
-    contactMobile: raw.ContactMobile ?? "",
-    companyCode: raw.CompanyCode ?? "",
-    isPFApplicable: raw.IsPFApplicable ?? false,
-    isESIApplicable: raw.IsESIApplicable ?? false,
-    isPTApplicable: raw.IsPTApplicable ?? false,
-    isTDSApplicable: raw.IsTDSApplicable ?? false,
-    tdsFilingMarToFeb:
-      raw.TDSFilingMarToFeb ?? false,
-    isLWFAvailable: raw.IsLWFAvailable ?? false,
-    companyLogoPath: raw.CompanyLogoPath ?? "",
+    cin_LPIN: str("CIN_LPIN", "cin_LPIN"),
+    tan: str("TAN", "tan"),
+    website: str("Website", "website"),
+    address1: str("Address1", "address1"),
+    address2: str("Address2", "address2"),
+    address3: str("Address3", "address3"),
+    contactMobile: str("ContactMobile", "contactMobile"),
+    companyCode: str("CompanyCode", "companyCode"),
+    isPFApplicable: bool("IsPFApplicable", "isPFApplicable"),
+    isESIApplicable: bool("IsESIApplicable", "isESIApplicable"),
+    isPTApplicable: bool("IsPTApplicable", "isPTApplicable"),
+    isTDSApplicable: bool("IsTDSApplicable", "isTDSApplicable"),
+    tdsFilingMarToFeb: bool("TDSFilingMarToFeb", "tdsFilingMarToFeb"),
+    isLWFAvailable: bool("IsLWFAvailable", "isLWFAvailable"),
+    companyLogoPath: str("CompanyLogoPath", "companyLogoPath"),
   };
 }
  
-function mapCompanyToApi(
-  data: CompanyDetails,
-): CompanyDetailsApi {
+/**
+ * PUT body for NestJS UpdateCompany DTO (camelCase).
+ *
+ * Backend ValidationPipe (forbidNonWhitelisted):
+ * - PascalCase fields → "property CompanyName should not exist"
+ * - companyName → "property companyName should not exist"
+ *   (company name is not on the update DTO — leave it out)
+ *
+ * Keep only fields the DTO allows.
+ */
+function mapCompanyToApi(data: CompanyDetails) {
   return {
-    CompanyName: data.companyName,
-    DateOfEstablishment: data.dateOfEstablishment,
-    CIN_LPIN: data.cin_LPIN,
-    TAN: data.tan,
-    Website: data.website,
-    Address1: data.address1,
-    Address2: data.address2,
-    Address3: data.address3,
-    ContactMobile: data.contactMobile,
-    CompanyCode: data.companyCode,
-    IsPFApplicable: data.isPFApplicable,
-    IsESIApplicable: data.isESIApplicable,
-    IsPTApplicable: data.isPTApplicable,
-    IsTDSApplicable: data.isTDSApplicable,
-    TDSFilingMarToFeb: data.tdsFilingMarToFeb,
-    IsLWFAvailable: data.isLWFAvailable,
-    CompanyLogoPath: data.companyLogoPath,
+    // companyName intentionally omitted — not allowed on update DTO
+    dateOfEstablishment: toIsoDate(data.dateOfEstablishment),
+    cin_LPIN: (data.cin_LPIN ?? "").trim(),
+    tan: (data.tan ?? "").trim(),
+    website: (data.website ?? "").trim(),
+    address1: (data.address1 ?? "").trim(),
+    address2: (data.address2 ?? "").trim(),
+    address3: (data.address3 ?? "").trim(),
+    contactMobile: (data.contactMobile ?? "").trim(),
+    companyCode: (data.companyCode ?? "").trim(),
+    isPFApplicable: Boolean(data.isPFApplicable),
+    isESIApplicable: Boolean(data.isESIApplicable),
+    isPTApplicable: Boolean(data.isPTApplicable),
+    isTDSApplicable: Boolean(data.isTDSApplicable),
+    tdsFilingMarToFeb: Boolean(data.tdsFilingMarToFeb),
+    isLWFAvailable: Boolean(data.isLWFAvailable),
+    companyLogoPath: data.companyLogoPath ?? "",
   };
 }
  
@@ -596,28 +624,49 @@ function mapEstablishmentToApi(
 // API endpoints
 // ------------------------------------------------------------
  
-export const companyApi = baseApi.injectEndpoints({
+function unwrapCompanyResponse(response: unknown): CompanyDetailsApi {
+  if (response && typeof response === "object") {
+    const r = response as Record<string, unknown>;
+    // Backend may wrap as { data: {...} } or { result: {...} }
+    if (r.data && typeof r.data === "object" && !Array.isArray(r.data)) {
+      return r.data as CompanyDetailsApi;
+    }
+    if (r.result && typeof r.result === "object" && !Array.isArray(r.result)) {
+      return r.result as CompanyDetailsApi;
+    }
+  }
+  return response as CompanyDetailsApi;
+}
+
+const companyApiBase = baseApi.enhanceEndpoints({
+  addTagTypes: ["CompanyDetails"],
+});
+
+export const companyApi = companyApiBase.injectEndpoints({
   endpoints: (builder) => ({
-    // Company
+    // Company — GET + PUT http://localhost:3001/api/admin/configuration/company
     getCompanyDetails: builder.query<
       CompanyDetails,
       void
     >({
       query: () => "/admin/configuration/company",
-      transformResponse: (
-        response: CompanyDetailsApi,
-      ) => mapCompanyFromApi(response),
+      providesTags: ["CompanyDetails"],
+      transformResponse: (response: unknown) =>
+        mapCompanyFromApi(unwrapCompanyResponse(response)),
     }),
- 
+
     updateCompanyDetails: builder.mutation<
       void,
       CompanyDetails
     >({
       query: (body) => ({
+        // PUT http://localhost:3001/api/admin/configuration/company
+        // (baseApi already prefixes with /api + host)
         url: "/admin/configuration/company",
         method: "PUT",
         body: mapCompanyToApi(body),
       }),
+      invalidatesTags: ["CompanyDetails"],
     }),
  
     // PF

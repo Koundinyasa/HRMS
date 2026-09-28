@@ -1,5 +1,8 @@
 import { Navigate, Route } from "react-router-dom";
 import AdminCenterPage from "../pages/AdminCenterPage";
+
+
+import AddEmployeePage from "../addEmployee/pages/AddEmployeePage";
 //Company
 import CompanyDetailsPage from "../company/pages/CompanyDetailsPage";
 import CompanyDocumentsPage from "../company/pages/CompanyDocumentsPage";
@@ -59,7 +62,9 @@ import ModuleSettings from "../workflows/ModuleSettings";
 
 export const AdminCenterRoutes = (
   <Route path="admin-center" element={<AdminCenterPage />}>
-    <Route path="applied-leave" element={<AppliedLeavePage />} />
+    <Route index element={<Navigate to="add-employee" replace />} />
+    <Route path="add-employee" element={<AddEmployeePage />} />
+
     {/* Company */}
     <Route path="company">
       <Route path="details" element={<CompanyDetailsPage />}>

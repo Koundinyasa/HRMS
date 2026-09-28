@@ -85,7 +85,7 @@ const tableHeaders = [
 
 export default function SubscriptionDetailsPage() {
   return (
-    <div className="w-full">
+    <div className="w-full font-['Urbanist'] text-slate-800">
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         {/* TABLE HEADER – Desktop */}
         <div className="hidden md:block" style={{ backgroundColor: "#EDE9FE" }}>

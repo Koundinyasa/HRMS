@@ -6,24 +6,24 @@ import CalendarPanel from "./CalendarPanel";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import { useSidebar } from "./SidebarContext";
 import { useNavigate, useParams } from "react-router-dom";
-
+ 
 export default function Navbar() {
-  
+ 
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const notifRef = useRef<HTMLDivElement>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
-
+ 
   const { toggleSidebar } = useSidebar();
   const { welcome } = useDashboard();
   const navigate = useNavigate();
   const { domain } = useParams();
-
+ 
   const now = new Date();
   // const monthBadge =
   //   now.toLocaleString("en-US", { month: "short" }).toUpperCase() + "/" + now.getFullYear();
-
+ 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -36,10 +36,10 @@ export default function Navbar() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
+ 
   return (
     <header className="h-16 w-full flex items-center justify-between px-4 sm:px-4 lg:px-6 bg-white border-b border-slate-100 sticky top-0 z-30">
-
+ 
       {/* ── Left: Logo + company name ── */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <button
@@ -57,19 +57,19 @@ export default function Navbar() {
             KTS-PEOPLE
           </span>
         </button>
-
+ 
         <button
           onClick={toggleSidebar}
           className="text-slate-400 hover:text-slate-600 transition-colors shrink-0"
         >
           <Menu size={18} />
         </button>
-
+ 
         <span className="text-[11px] sm:text-sm font-semibold text-slate-700 leading-tight">
           Koundinyasa Technology Services Pvt. Ltd.
         </span>
       </div>
-
+ 
       {/* ── Center: Search ── */}
       <div className="hidden md:flex flex-1 max-w-md mx-6">
         <div className="flex items-center gap-2 w-full h-10 px-4 rounded-full border border-slate-200 bg-slate-50 focus-within:border-blue-300 transition-colors">
@@ -88,8 +88,8 @@ export default function Navbar() {
           )}
         </div>
       </div>
-
-
+ 
+ 
       <div className="flex items-center gap-1.5 shrink-0">
         <div className="relative" ref={calendarRef}>
           <button
@@ -100,7 +100,7 @@ export default function Navbar() {
           </button>
           {calendarOpen && <CalendarPanel onClose={() => setCalendarOpen(false)} />}
         </div>
-
+ 
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setNotifOpen((p) => !p)}
@@ -111,9 +111,9 @@ export default function Navbar() {
           </button>
           {notifOpen && <NotificationPanel onClose={() => setNotifOpen(false)} />}
         </div>
-
+ 
         <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block" />
-
+ 
         <UserMenu
           fullName={welcome?.fullName}
           email={welcome?.email}

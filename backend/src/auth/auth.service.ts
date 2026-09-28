@@ -1,10 +1,5 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException,NotFoundException,BadRequestException,ForbiddenException } from '@nestjs/common';
+import * as sql from 'mssql';
 import * as bcrypt from 'bcrypt';
 import { DatabaseService } from '../database/database.service';
 import { JwtService } from '@nestjs/jwt';
@@ -25,165 +20,206 @@ export class AuthService {
     private readonly mailService: MailService,
     private readonly captchaService: CaptchaService,
     private readonly draftService: DraftService,
-  ) {}
- 
-  // ================= CHATBOT STATE =================
- 
+  ) { }
+  // A login (or logout) is a hard session boundary. Any chatbot flow that
+  // was left mid-way — most commonly "apply leave", the one multi-step flow
+  // that can be abandoned partway — must not survive into a new session.
+  // Drafts are otherwise keyed only by employeeId with a time-based expiry,
+  // so without this, a logout/login within that window resumes the old,
+  // now-stale flow as if nothing happened.
   private clearChatbotState(employeeId: string): void {
-    this.draftService.deleteDraft(
-      this.draftService.leaveDrafts,
-      employeeId,
-    );
-    this.draftService.deleteDraft(
-      this.draftService.partialCancelDrafts,
-      employeeId,
-    );
-    this.draftService.deleteDraft(
-      this.draftService.cancelChoiceDrafts,
-      employeeId,
-    );
+    this.draftService.deleteDraft(this.draftService.leaveDrafts, employeeId);
+    this.draftService.deleteDraft(this.draftService.partialCancelDrafts, employeeId);
+    this.draftService.deleteDraft(this.draftService.cancelChoiceDrafts, employeeId);
     this.draftService.cancelList.delete(employeeId);
     this.draftService.cancelTarget.delete(employeeId);
   }
  
   // ================= LOGIN =================
+   async login(dto: LoginDto) {
+     try {
+       // ================= CAPTCHA VALIDATION =================
+       const captchaValid = this.captchaService.validate(
+         dto.captchaId,
+         dto.captchaAnswer,
+       );
+
+       if (!captchaValid) {
+         throw new BadRequestException(
+           'Invalid or expired captcha. Please refresh and try again.',
+         );
+       }
+
+       // ================= DATABASE CONNECTION =================
+       const pool = await this.dbService.connect();
+
+       // ================= VALIDATE USER =================
+       const result = await pool
+         .request()
+         .input('EmailID', dto.userId)
+         .execute('USP_Validateuser');
+
+       const user = result.recordset?.[0];
+
+       // ================= USER NOT FOUND =================
+       if (!user) {
+         throw new UnauthorizedException('Invalid UserID or Password');
+       }
+
+       // ================= ACCOUNT ALREADY LOCKED =================
+       if (user.IsAccountLocked === true || user.IsAccountLocked === 1) {
+         throw new UnauthorizedException(
+           'Account is locked. Contact administrator.',
+         );
+       }
+
+       // ================= PASSWORD VALIDATION =================
+       const isPasswordValid = await bcrypt.compare(
+         dto.password,
+         user.PasswordHash,
+       );
+
+       // ========================================================
+       // WRONG PASSWORD
+       // ========================================================
+       if (!isPasswordValid) {
+         const updateResult = await pool
+           .request()
+           .input('EmployeeID', sql.VarChar(100), user.EmployeeID)
+           .input('flag', sql.Int, 1)
+           .output('StatusCode', sql.Int)
+           .output('StatusMessage', sql.NVarChar(200))
+           .execute('USP_UpdateLoginInfo');
+
+         // Read OUTPUT parameters returned by SP
+         const statusCode = updateResult.output?.StatusCode;
+         const statusMessage = updateResult.output?.StatusMessage;
+
+         console.log('🔥 LOGIN FAILED UPDATE:', {
+           EmployeeID: user.EmployeeID,
+           StatusCode: statusCode,
+           StatusMessage: statusMessage,
+         });
+
+         // ================= ACCOUNT LOCKED =================
+         if (statusCode === 2) {
+           throw new UnauthorizedException(
+             statusMessage || 'Account is locked. Contact administrator.',
+           );
+         }
+
+         // ================= INVALID PASSWORD =================
+         throw new UnauthorizedException(
+           statusMessage || 'Invalid UserID or Password',
+         );
+       }
+
+       // ========================================================
+       // FIRST LOGIN CHECK
+       // ========================================================
+       const isFirstLogin = user.LastLoginDateTime === null;
+
+       // ========================================================
+       // SUCCESSFUL LOGIN
+       // ========================================================
+       // Update login information only after first login
+       // has already been completed.
+       if (!isFirstLogin) {
+         const loginUpdateResult = await pool
+           .request()
+           .input('EmployeeID', sql.VarChar(100), user.EmployeeID)
+           .input('flag', sql.Int, 2)
+           .output('StatusCode', sql.Int)
+           .output('StatusMessage', sql.NVarChar(200))
+           .execute('USP_UpdateLoginInfo');
+
+         console.log('🔥 SUCCESS LOGIN UPDATE:', {
+           EmployeeID: user.EmployeeID,
+           StatusCode: loginUpdateResult.output?.StatusCode,
+           StatusMessage: loginUpdateResult.output?.StatusMessage,
+         });
+       }
+
+       // ========================================================
+       // GENERATE JWT
+       // ========================================================
+       const accessToken = this.jwtService.sign({
+         employeeId: user.EmployeeID,
+         userId: user.UserID,
+         roleId: user.RoleID,
+         companyId: user.CompanyID,
+         createdBy: user.Sessionuserid,
+         name: user.FullName,
+         role:
+           user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
+       });
+
+       // ========================================================
+       // LOGIN MESSAGE
+       // ========================================================
+       let loginMessage = 'Login successful';
+
+       if (user.RoleID === 1) {
+         loginMessage = 'Super Admin login successful';
+       } else if (user.RoleID === 2) {
+         loginMessage = 'HR Admin login successful';
+       }
+
+       // ========================================================
+       // CLEAR PREVIOUS CHATBOT SESSION
+       // ========================================================
+       this.clearChatbotState(String(user.EmployeeID));
+
+       // ========================================================
+       // SUCCESS RESPONSE
+       // ========================================================
+       return {
+         success: true,
+         message: loginMessage,
+         accessToken,
+         isFirstLogin,
+         data: {
+           employeeId: user.EmployeeID,
+           userId: user.UserID,
+           roleId: user.RoleID,
+         },
+       };
+     } catch (error) {
+       throw error;
+     }
+   }
  
-  async login(dto: LoginDto) {
-    try {
-      const captchaValid = this.captchaService.validate(
-        dto.captchaId,
-        dto.captchaAnswer,
-      );
  
-      if (!captchaValid) {
-        throw new BadRequestException(
-          'Invalid or expired captcha. Please refresh and try again.',
-        );
-      }
- 
-      const pool = await this.dbService.connect();
- 
-      const result = await pool
-        .request()
-        .input('EmailID', dto.userId)
-        .execute('USP_Validateuser');
- 
-      const user = result.recordset[0];
- 
-      if (!user) {
-        throw new UnauthorizedException('Invalid UserID or Password');
-      }
- 
-      if (
-        user.IsAccountLocked === true ||
-        user.IsAccountLocked === 1
-      ) {
-        throw new UnauthorizedException(
-          'Account is locked. Contact administrator.',
-        );
-      }
- 
-      const isPasswordValid = await bcrypt.compare(
-        dto.password,
-        user.PasswordHash,
-      );
- 
-      if (!isPasswordValid) {
-        await pool
-          .request()
-          .input('EmployeeID', user.EmployeeID)
-          .input('flag', 1)
-          .execute('USP_UpdateLoginInfo');
- 
-        throw new UnauthorizedException(
-          'Invalid UserID or Password',
-        );
-      }
- 
-      const isFirstLogin = user.LastLoginDateTime === null;
- 
-      // update login ONLY after first login is completed
-      if (!isFirstLogin) {
-        await pool
-          .request()
-          .input('EmployeeID', user.EmployeeID)
-          .input('flag', 2)
-          .execute('USP_UpdateLoginInfo');
-      }
- 
-      const accessToken = this.jwtService.sign({
-        employeeId: user.EmployeeID,
-        userId: user.UserID,
-        roleId: user.RoleID,
-        companyId: user.CompanyID,
-        createdBy: user.Sessionuserid,
-        name: user.FullName,
-        role:
-          user.RoleID === 1
-            ? 'admin'
-            : user.RoleID === 2
-              ? 'hr'
-              : 'employee',
-      });
- 
-      let loginMessage = 'Login successful';
- 
-      if (user.RoleID === 1) {
-        loginMessage = 'Super Admin login successful';
-      } else if (user.RoleID === 2) {
-        loginMessage = 'HR Admin login successful';
-      }
- 
-      // Fresh session boundary — wipe any chatbot flow left over
-      // from a previous session for this employee.
-      this.clearChatbotState(String(user.EmployeeID));
- 
-      return {
-        success: true,
-        message: loginMessage,
-        accessToken,
-        isFirstLogin,
-        data: {
-          employeeId: user.EmployeeID,
-          userId: user.UserID,
-          roleId: user.RoleID,
-        },
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
  
   // ================= VERIFY COMPANY =================
+ async verifyCompany(tenantCode: string) {
+  try {
+    const pool = await this.dbService.connect();
  
-  async verifyCompany(tenantCode: string) {
-    try {
-      const pool = await this.dbService.connect();
+    const result = await pool
+      .request()
+      .execute('USP_GetCompanyInfo');
  
-      const result = await pool
-        .request()
-        .execute('USP_GetCompanyInfo');
+    const company = result.recordset.find(
+      (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
+    );
  
-      const company = result.recordset.find(
-        (x) =>
-          x.DomainName?.toLowerCase() ===
-          tenantCode?.toLowerCase(),
-      );
- 
-      if (!company) {
-        throw new NotFoundException('Company not found');
-      }
- 
-      return {
-        exists: true,
-        companyId: company.CompanyID,
-        companyName: company.CompanyCode,
-        domain: company.DomainName,
-      };
-    } catch (error) {
-      throw error;
+    if (!company) {
+      throw new NotFoundException('Company not found');
     }
+ 
+    return {
+      exists: true,
+      companyId: company.CompanyID,
+      companyName: company.CompanyCode,
+      domain: company.DomainName,
+    };
+  } catch (error) {
+    throw error;
   }
+}
+ 
+ 
  
   // ================= RESET PASSWORD =================
  
@@ -248,7 +284,6 @@ export class AuthService {
         dto.newPassword,
         10,
       );
- 
       // USP_UpdatePassword expects EmployeeID
       await pool
         .request()
@@ -301,15 +336,12 @@ export class AuthService {
       const user = result.recordset[0];
  
       if (!user) {
-        throw new NotFoundException('User not found');
+      throw new NotFoundException('User not found');
       }
  
       const tempPassword = this.generateTempPassword();
  
-      const hashedPassword = await bcrypt.hash(
-        tempPassword,
-        10,
-      );
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
  
       await pool
         .request()
@@ -318,12 +350,7 @@ export class AuthService {
         .input('flag', 1)
         .input('Modifiedby', 'SYSTEM')
         .execute('USP_UpdatePassword');
- 
-      await this.mailService.sendTempPassword(
-        user.Email,
-        tempPassword,
-      );
- 
+      await this.mailService.sendTempPassword(user.Email, tempPassword,user.ApplicationURL);
       return {
         success: true,
         message: 'Temporary password sent successfully',
@@ -333,20 +360,20 @@ export class AuthService {
     }
   }
  
-  async testMail() {
-    return this.mailService.sendTempPassword(
-      'test@gmail.com',
-      'TEST1234',
-    );
-  }
+  // async testMail() {
+  //   return this.mailService.sendTempPassword(
+  //     'test@gmail.com',
+  //     'TEST1234',
+  //   );
+  // }
  
-  // ================= OTP =================
  
   private generateOtp(): string {
     return Math.floor(
       100000 + Math.random() * 900000,
     ).toString();
   }
+ 
  
   async forgotPassword(userId: string) {
     try {
@@ -360,8 +387,8 @@ export class AuthService {
       const user = result.recordset?.[0];
  
       if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      throw new NotFoundException('User not found');
+    }
  
       const otp = this.generateOtp();
  
@@ -381,13 +408,13 @@ export class AuthService {
         )
         .execute('USP_SaveGeneratedOTP');
  
-      const otpResponse = otpResult.recordset[0];
+      const otpResponse =
+        otpResult.recordset[0];
  
       await this.mailService.sendOtp(
         user.Email,
         otp,
       );
- 
       return {
         success: true,
         message: 'OTP sent successfully',
@@ -403,6 +430,8 @@ export class AuthService {
     }
   }
  
+ 
+ 
   async verifyOtp(
     employeeId: string,
     otp: string,
@@ -417,7 +446,7 @@ export class AuthService {
         .execute('USP_VerifyOTP');
  
       const response =
-      result.recordset[0];
+        result.recordset[0];
  
       if (response.StatusCode === 0) {
         throw new BadRequestException(
@@ -434,11 +463,8 @@ export class AuthService {
     }
   }
  
-  // ================= FORGOT PASSWORD RESET =================
  
-  async resetForgotPassword(
-    dto: ResetForgotPasswordDto,
-  ) {
+  async resetForgotPassword(dto: ResetForgotPasswordDto) {
     try {
       const pool = await this.dbService.connect();
  
@@ -453,25 +479,25 @@ export class AuthService {
       const user = userResult.recordset?.[0];
  
       if (!user) {
+        throw new BadRequestException('User not found');
+      }
+ 
+      if (dto.newPassword !== dto.confirmPassword) {
+        throw new BadRequestException('Passwords do not match');
+      }
+ 
+      const samePassword = await bcrypt.compare(
+        dto.newPassword,
+        user.PasswordHash,
+      );
+ 
+      if (samePassword) {
         throw new BadRequestException(
           'User not found',
         );
       }
  
-      // Confirm password check
-      if (dto.newPassword !== dto.confirmPassword) {
-        throw new BadRequestException(
-          'Passwords do not match',
-        );
-      }
- 
-      // Same-password restriction removed here.
-      // The existing password can now be used as the new password.
- 
-      const hashedPassword = await bcrypt.hash(
-        dto.newPassword,
-        10,
-      );
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
  
       await pool
         .request()
@@ -499,19 +525,13 @@ export class AuthService {
     }
   }
  
-  // ================= ACCESS TOKEN =================
- 
-  verifyAccessToken(
-    token: string,
-  ): Record<string, any> | null {
+  verifyAccessToken(token: string): Record<string, any> | null {
     try {
       return this.jwtService.verify(token);
     } catch (error) {
       return null;
     }
   }
- 
-  // ================= LOGOUT =================
  
   async logout(employeeId: string) {
     try {
@@ -527,9 +547,7 @@ export class AuthService {
         .execute('USP_UpdateLoginInfo');
  
       // Defense in depth alongside the login-time clear above.
-      this.clearChatbotState(
-        String(employeeId),
-      );
+      this.clearChatbotState(String(employeeId));
  
       return {
         success: true,
@@ -541,90 +559,68 @@ export class AuthService {
   }
  
   // ================= CHANGE PASSWORD =================
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+  try {
+    const pool = await this.dbService.connect();
  
-  async changePassword(
-    userId: string,
-    dto: ChangePasswordDto,
-  ) {
-    try {
-      const pool = await this.dbService.connect();
+    const result = await pool
+      .request()
+      .input('EmailID', userId.trim())
+      .execute('USP_Validateuser');
  
-      const result = await pool
-        .request()
-        .input(
-          'EmailID',
-          userId.trim(),
-        )
-        .execute('USP_Validateuser');
+    const user = result.recordset?.[0];
  
-      const user = result.recordset?.[0];
- 
-      if (!user) {
-        throw new BadRequestException(
-          'User not found',
-        );
-      }
- 
-      const isMatch = await bcrypt.compare(
-        dto.currentPassword,
-        user.PasswordHash,
-      );
- 
-      if (!isMatch) {
-        throw new BadRequestException(
-          'Current password is incorrect',
-        );
-      }
- 
-      if (
-        dto.newPassword !==
-        dto.confirmPassword
-      ) {
-        throw new BadRequestException(
-          'Passwords do not match',
-        );
-      }
- 
-      const samePassword = await bcrypt.compare(
-        dto.newPassword,
-        user.PasswordHash,
-      );
- 
-      if (samePassword) {
-        throw new BadRequestException(
-          'New password must be different from current password',
-        );
-      }
- 
-      const hashedPassword =
-        await bcrypt.hash(
-          dto.newPassword,
-          10,
-        );
- 
-      await pool
-        .request()
-        .input(
-          'EmployeeID',
-          user.EmployeeID,
-        )
-        .input(
-          'PasswordHash',
-          hashedPassword,
-        )
-        .input('Flag', 2)
-        .input(
-          'ModifiedBy',
-          user.EmployeeID,
-        )
-        .execute('USP_UpdatePassword');
- 
-      return {
-        success: true,
-        message: 'Password changed successfully',
-      };
-    } catch (error) {
-      throw error;
+    if (!user) {
+      throw new BadRequestException('User not found');
     }
+ 
+    const isMatch = await bcrypt.compare(
+      dto.currentPassword,
+      user.PasswordHash,
+    );
+ 
+    if (!isMatch) {
+      throw new BadRequestException(
+        'Current password is incorrect',
+      );
+    }
+ 
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException(
+        'Passwords do not match',
+      );
+    }
+ 
+    const samePassword = await bcrypt.compare(
+      dto.newPassword,
+      user.PasswordHash,
+    );
+ 
+    if (samePassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+    }
+ 
+    const hashedPassword = await bcrypt.hash(
+      dto.newPassword,
+      10,
+    );
+ 
+    await pool
+      .request()
+      .input('EmployeeID', user.EmployeeID)
+      .input('PasswordHash', hashedPassword)
+      .input('Flag', 2)
+      .input('ModifiedBy', user.EmployeeID)
+      .execute('USP_UpdatePassword');
+ 
+    return {
+      success: true,
+      message: 'Password changed successfully',
+    };
+  } catch (error) {
+    throw error;
   }
+}
 }
