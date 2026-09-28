@@ -5,9 +5,9 @@ export default function DesignationList({
   designations, onEdit, onDelete,
 }: { designations: Designation[]; onEdit: (d: Designation) => void; onDelete: (d: Designation) => void }) {
   return (
-    <table className="w-full">
+    <table className="w-full border border-black">
       <thead>
-        <tr className="bg-[#e8ddff] text-gray-800 text-sm">
+        <tr className="border-b border-black bg-[#e8ddff] text-gray-800 text-sm">
           <th className="p-4 text-left font-semibold">Designation</th>
           <th className="p-4 text-right font-semibold pr-6">Action</th>
         </tr>
@@ -23,7 +23,7 @@ export default function DesignationList({
         )}
 
         {designations.map((d) => (
-          <tr key={d.Id} className="text-sm text-gray-700 border-t border-gray-100">
+          <tr key={d.Id} className="border-t border-black text-sm text-gray-700">
             <td className="p-4">
               <div className="flex items-center gap-3">
                 <span className="w-7 h-7 rounded-lg bg-violet-50 text-violet-500 flex items-center justify-center shrink-0">

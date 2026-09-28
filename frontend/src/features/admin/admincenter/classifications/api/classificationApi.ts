@@ -51,7 +51,7 @@ export const classificationApi = baseApi.injectEndpoints({
 
     getAdditionalClassifications: builder.query<AdditionalClassification[], void>({
       query: () => ({
-        url: "/classifications/additional",
+        url: "/admin/classification/additional",
         method: "GET",
         cache: "no-store" as RequestCache,
       }),
@@ -64,7 +64,7 @@ export const classificationApi = baseApi.injectEndpoints({
       CreateAdditionalClassificationResponse,
       { name: string; tag: string }
     >({
-      query: (body) => ({ url: "/classifications/additional", method: "POST", body }),
+      query: (body) => ({ url: "/admin/classification/additional", method: "POST", body }),
       transformResponse: throwIfApiError<CreateAdditionalClassificationResponse>,
       invalidatesTags: ["AdditionalClassifications"],
     }),
@@ -73,13 +73,13 @@ export const classificationApi = baseApi.injectEndpoints({
       ApiMessageResponse,
       { id: number; name: string; tag: string }
     >({
-      query: (body) => ({ url: "/classifications/additional", method: "PUT", body }),
+      query: (body) => ({ url: "/admin/classification/additional", method: "PUT", body }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["AdditionalClassifications"],
     }),
 
     deleteAdditionalClassification: builder.mutation<ApiMessageResponse, { id: number }>({
-      query: (body) => ({ url: "/classifications/additional", method: "DELETE", body }),
+      query: (body) => ({ url: "/admin/classification/additional", method: "DELETE", body }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["AdditionalClassifications"],
     }),
@@ -89,7 +89,7 @@ export const classificationApi = baseApi.injectEndpoints({
     // ===============================
 
     getBranches: builder.query<Branch[], void>({
-      query: () => ({ url: "/classifications/branch", method: "GET", cache: "no-store" as RequestCache }),
+      query: () => ({ url: "/admin/classification/branch", method: "GET", cache: "no-store" as RequestCache }),
       transformResponse: (response: BranchListResponse) => response.Branches ?? [],
       providesTags: ["Branches"],
     }),
@@ -123,7 +123,7 @@ export const classificationApi = baseApi.injectEndpoints({
     }),
 
     deleteBranch: builder.mutation<ApiMessageResponse, { id: number }>({
-      query: (body) => ({ url: "/classifications/branch", method: "DELETE", body }),
+      query: (body) => ({ url: "/admin/classification/branch", method: "DELETE", body }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["Branches"],
     }),
@@ -134,7 +134,7 @@ export const classificationApi = baseApi.injectEndpoints({
 
     getDesignations: builder.query<DesignationListResponse, { page: number; pageSize: number }>({
       query: ({ page, pageSize }) => ({
-        url: "/classifications/designation",
+        url: "/admin/classification/designation",
         method: "GET",
         params: { page, pageSize },
         cache: "no-store" as RequestCache,
@@ -173,7 +173,7 @@ export const classificationApi = baseApi.injectEndpoints({
     }),
 
     deleteDesignation: builder.mutation<ApiMessageResponse, { id: number }>({
-      query: (body) => ({ url: "/classifications/designation", method: "DELETE", body }),
+      query: (body) => ({ url: "/admin/classification/designation", method: "DELETE", body }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["Designations"],
     }),
@@ -183,7 +183,7 @@ export const classificationApi = baseApi.injectEndpoints({
     // ===============================
 
     getBanks: builder.query<Bank[], void>({
-      query: () => ({ url: "/classifications/bank", method: "GET", cache: "no-store" as RequestCache }),
+      query: () => ({ url: "/admin/classification/bank", method: "GET", cache: "no-store" as RequestCache }),
       transformResponse: (response: BankListResponse) => response.Banks ?? [],
       providesTags: ["Banks"],
     }),

@@ -7,6 +7,7 @@ import { DatabaseModule } from '../database/database.module';
 import { AdmincenterModule } from './admincenter/admincenter.module';
 // import { TalentHubModule } from './talenthub/talenthub.module';
 import { EnrollmentModule } from './Enrollment/enrollment.module';
+import { GroupOfCompanyModule } from './group-of-company/group-of-company.module';
 
 @Module({
   controllers: [AdminController],
@@ -16,6 +17,7 @@ import { EnrollmentModule } from './Enrollment/enrollment.module';
     AdminDashboardModule,
     AdmincenterModule,
     EnrollmentModule,
+    GroupOfCompanyModule,
     // TalentHubModule,
     // BlockedUsersModule,
     // TemplateModule,

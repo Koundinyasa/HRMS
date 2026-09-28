@@ -389,6 +389,8 @@ export default function BranchPage() {
             bg-white
             rounded-2xl
             shadow-sm
+            border
+            border-black
             overflow-visible
           "
         >
@@ -581,7 +583,7 @@ export default function BranchPage() {
                   relative
                   z-50
                   border-t
-                  border-gray-100
+                  border-black
                   bg-white
                   px-4
                   sm:px-6

@@ -4,12 +4,16 @@ import anniversaryImage from "../../../../assets/images/anniversary.png";
 import { CalendarDays, Cake, Award, Clock3, } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDashboard } from "../hooks/useDashboard";
+import { useSendWishMutation } from "../api/dashboardApi";
+import { toast } from "react-toastify";
 export default function CelebrationsCard() {
   const { profileData } = useDashboard();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openWishModal, setOpenWishModal] = useState(false);
   const [openAllCelebrations, setOpenAllCelebrations,] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [wishMessage, setWishMessage] = useState("");
+  const [sendWish, { isLoading: isSendingWish }] = useSendWishMutation();
   const celebrations = profileData?.data?.upcomingEvents ?? [];
   const celebration = celebrations[currentIndex];
  
@@ -73,19 +77,6 @@ export default function CelebrationsCard() {
  
     return "Congratulations on another successful milestone! 👏";
   }, [celebration]);
- 
-  // Default Wish Message
- 
-  const defaultWish = useMemo(() => {
-    if (
-      selectedEvent?.EventName ===
-      "Birthday"
-    ) {
-      return "Wishing you a wonderful birthday filled with happiness, success and good health. Have an amazing year ahead!";
-    }
- 
-    return "Congratulations on your Work Anniversary! Thank you for your dedication and commitment. Wishing you continued success and many more milestones ahead!";
-  }, [selectedEvent]);
  
   return (
     <div
@@ -261,7 +252,12 @@ export default function CelebrationsCard() {
               setSelectedEvent(
                 celebration
               );
- 
+              setWishMessage(
+                celebration.EventName === "Birthday"
+                  ? "Wishing you a wonderful birthday filled with happiness, success and good health. Have an amazing year ahead!"
+                  : "Congratulations on your Work Anniversary! Thank you for your dedication and commitment. Wishing you continued success and many more milestones ahead!"
+              );
+
               setOpenWishModal(true);
             }}
             className=" mt-8 w-full h-11 text-white rounded-xl"
@@ -360,9 +356,8 @@ export default function CelebrationsCard() {
  
                 <textarea
                   rows={5}
-                  defaultValue={
-                    defaultWish
-                  }
+                  value={wishMessage}
+                  onChange={(event) => setWishMessage(event.target.value)}
                   className="
   w-full
   min-w-0
@@ -428,16 +423,24 @@ export default function CelebrationsCard() {
  
                 <Button
                   type="button"
-                  onClick={() => {
-                    alert(
-                      `${selectedEvent.EventName ===
-                        "Birthday"
-                        ? "Birthday Wishes"
-                        : "Congratulations"
-                      } sent successfully!`
-                    );
- 
-                    setOpenWishModal(false);
+                  disabled={isSendingWish || !wishMessage.trim()}
+                  onClick={async () => {
+                    try {
+                      await sendWish({
+                        employeeId: String(selectedEvent.Code),
+                        eventType:
+                          selectedEvent.EventName === "Birthday"
+                            ? "BIRTHDAY"
+                            : "WORK_ANNIVERSARY",
+                        message: wishMessage.trim(),
+                      }).unwrap();
+                      toast.success("Wish sent successfully.");
+                      setOpenWishModal(false);
+                      setSelectedEvent(null);
+                    } catch (error) {
+                      console.error("Failed to send wish:", error);
+                      toast.error("Unable to send the wish. Please try again.");
+                    }
                   }}
                   style={{
                     background:
@@ -445,7 +448,7 @@ export default function CelebrationsCard() {
                   }}
                   className="text-white w-full sm:w-auto"
                 >
-                  Send
+                  {isSendingWish ? "Sending..." : "Send"}
                 </Button>
               </div>
             </div>

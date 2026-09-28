@@ -373,8 +373,10 @@ export default function DetailsTabBar() {
           w-full
           min-w-0
           items-center
-          justify-between
           gap-3
+          overflow-x-auto
+          overflow-y-hidden
+          whitespace-nowrap
           rounded-[20px]
           border-[2px]
           border-[#8CCBFF]
@@ -387,12 +389,11 @@ export default function DetailsTabBar() {
         {/* Tabs */}
         <div
           className="
-            flex
-            min-w-0
-            items-center
-            gap-[8px]
-            overflow-x-auto
-            scrollbar-none
+          flex
+          min-w-max
+          shrink-0
+          items-center
+          gap-[8px]
           "
         >
           {TABS.map((tab) => (
@@ -467,12 +468,12 @@ export default function DetailsTabBar() {
         </div>
 
         {/* Search + History */}
-        <div className="flex shrink-0 items-center gap-[10px]">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-[10px]">
           <div
             className="
               flex
               h-[46px]
-              w-[272px]
+              w-[210px]
               items-center
               gap-2
               rounded-[16px]
@@ -480,6 +481,7 @@ export default function DetailsTabBar() {
               border-[#CBDCEB]
               bg-white
               px-[16px]
+              sm:w-[272px]
             "
           >
             <Search

@@ -21,9 +21,7 @@ export const useBanks = () => {
   const [deleteTarget, setDeleteTarget] = useState<Bank | null>(null);
 
   const { data: apiBanks, isLoading, isError } = useGetBanksQuery();
-  const banks: Bank[] = isError
-    ? [{ Id: 1, BankName: "IDBI Bank", AcType: "Salary Account", IfscCode: "IBKL0000002" }]
-    : apiBanks ?? [];
+  const banks: Bank[] = apiBanks ?? [];
   const usingFallback = isError;
   const [createBank, { isLoading: isCreating }] = useCreateBankMutation();
   const [updateBank, { isLoading: isUpdating }] = useUpdateBankMutation();

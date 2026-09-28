@@ -130,6 +130,7 @@ export default function ClassificationNavbar({
   return (
     <div
       className="
+        classification-typography
         w-full
         max-w-full
         min-w-0

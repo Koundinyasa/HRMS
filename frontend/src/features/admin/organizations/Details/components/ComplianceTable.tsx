@@ -288,7 +288,14 @@ export default function ComplianceTable({
   ];
 
   return (
-    <div className="w-full overflow-x-auto px-3 pb-3">
+    <div
+      className="
+        w-full min-w-0 overflow-x-scroll px-3 pb-3
+        [scrollbar-color:#94A3B8_transparent]
+        [scrollbar-width:thin]
+        [-webkit-overflow-scrolling:touch]
+      "
+    >
       <table className="w-full min-w-[1100px] border-collapse border border-slate-300 text-left">
         <colgroup>
           <col className="w-[17%]" />

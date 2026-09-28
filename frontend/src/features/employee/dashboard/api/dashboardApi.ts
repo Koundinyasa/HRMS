@@ -54,6 +54,17 @@ export const dashboardApi = baseApi.injectEndpoints({
         params: date ? { date } : undefined,
       }),
     }),
+
+    sendWish: builder.mutation<
+      { success: boolean; message: string },
+      { employeeId: string; eventType: "BIRTHDAY" | "WORK_ANNIVERSARY"; message: string }
+    >({
+      query: (body) => ({
+        url: "/auth/send-wish",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -63,4 +74,5 @@ export const {
   useGetMenusQuery,
   useGetApprovalSummaryQuery,
   useGetTeamAttendanceQuery,
+  useSendWishMutation,
 } = dashboardApi;

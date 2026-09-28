@@ -121,6 +121,25 @@ ol {
   border-radius: 14px;
 }
 
+.classification-typography {
+  font-family: "Urbanist", "Segoe UI", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.classification-typography h1,
+.classification-typography h2,
+.classification-typography h3,
+.classification-typography p,
+.classification-typography span,
+.classification-typography button,
+.classification-typography input,
+.classification-typography select,
+.classification-typography label,
+.classification-typography th,
+.classification-typography td {
+  font-family: inherit;
+}
+
 @keyframes bubble1 {
   0% {
     transform: translateY(0px);

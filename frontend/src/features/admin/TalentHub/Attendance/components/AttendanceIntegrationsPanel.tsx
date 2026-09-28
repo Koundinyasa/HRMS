@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Calendar, FolderX } from "lucide-react";
 import { useGetDescriptionsQuery, useGetAttendancetypesQuery } from "../api/attendanceApi";
-import { SEED_BRANCHES } from "@/features/admin/admincenter/classifications/constants/branch.constants";
-import { SEED_DESIGNATIONS } from "@/features/admin/admincenter/classifications/constants/designation.constants";
+import { useGetBranchesQuery, useGetDesignationsQuery } from "@/features/admin/admincenter/classifications/api/classificationApi";
 import { LEAVE_POLICY_GROUPS } from "@/features/admin/admincenter/classifications/constants/leavePolicy.constants";
 import FilterBar, { type FilterValues } from "@/features/admin/components/FilterBar";
 import type { FilterFieldKey } from "@/features/admin/components/filterFields.constants";
@@ -26,6 +25,8 @@ const EMP_STATUS_OPTIONS = [
 export default function AttendanceIntegrationPanel() {
   const descriptions = useGetDescriptionsQuery();
   const attendanceTypes = useGetAttendancetypesQuery();
+  const branches = useGetBranchesQuery();
+  const designations = useGetDesignationsQuery({ page: 1, pageSize: 1000 });
 
   const [filters, setFilters] = useState<FilterValues>({});
   const [description, setDescription] = useState("");
@@ -38,8 +39,8 @@ export default function AttendanceIntegrationPanel() {
   const clearAllFilters = () => setFilters({});
 
   const fieldOptions = {
-    branch: SEED_BRANCHES.map((b) => ({ value: String(b.Id), label: b.BranchName })),
-    designation: SEED_DESIGNATIONS.map((d) => ({ value: String(d.Id), label: d.DesignationName })),
+    branch: (branches.data ?? []).map((b) => ({ value: String(b.Id), label: b.BranchName })),
+    designation: (designations.data?.Designations ?? []).map((d) => ({ value: String(d.Id), label: d.DesignationName })),
     leave: LEAVE_POLICY_GROUPS.map((g) => ({ value: g.code, label: g.name })),
     attendance: (attendanceTypes.data ?? []).map((a: { id: number; label: string }) => ({
       value: String(a.id),

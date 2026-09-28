@@ -474,7 +474,7 @@ export default function BanksPage() {
             sm:rounded-2xl
             shadow-sm
             border
-            border-gray-100
+            border-black
             overflow-visible
             w-full
           "
@@ -736,7 +736,7 @@ export default function BanksPage() {
                   z-50
                   w-full
                   border-t
-                  border-gray-100
+                  border-black
                   bg-white
                   overflow-visible
                   px-5

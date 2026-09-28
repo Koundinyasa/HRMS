@@ -168,6 +168,7 @@ import { useComplianceOverview } from "../hooks/useComplianceOverview";
 
 export default function ComplianceOverviewPage() {
   const [month, setMonth] = useState(MONTH_OPTIONS[0]);
+  const [isMonthMenuOpen, setIsMonthMenuOpen] = useState(false);
 
   const { rows, isLoading, isError } = useComplianceOverview(month);
 
@@ -177,7 +178,7 @@ export default function ComplianceOverviewPage() {
         <div
           className="
             w-full
-            overflow-hidden
+            overflow-visible
             rounded-[18px]
             border border-slate-100
             bg-white
@@ -185,20 +186,22 @@ export default function ComplianceOverviewPage() {
           "
         >
           {/* Card Header */}
-          <div
-            className="
-              flex
-              min-h-[59px]
-              items-center
-              justify-between
-              gap-4
-              px-[18px]
-              py-3
-            "
-          >
+          <div className="w-full overflow-visible">
+            <div
+              className="
+                flex
+                min-h-[59px]
+                min-w-0
+                items-center
+                justify-between
+                gap-4
+                px-[18px]
+                py-3
+              "
+            >
             <h2
               className="
-                whitespace-nowrap
+                min-w-0 flex-1 truncate whitespace-nowrap
                 text-[14px]
                 font-semibold
                 leading-5
@@ -208,10 +211,10 @@ export default function ComplianceOverviewPage() {
               Companies Summary
             </h2>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
               <span
                 className="
-                  whitespace-nowrap
+                  hidden whitespace-nowrap sm:inline
                   text-[12px]
                   font-normal
                   text-slate-500
@@ -220,20 +223,23 @@ export default function ComplianceOverviewPage() {
                 Month Year
               </span>
 
-              <div className="relative">
-                <select
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
+              <div className="shrink-0">
+                <button
+                  type="button"
+                  aria-expanded={isMonthMenuOpen}
+                  aria-haspopup="listbox"
+                  onClick={() => setIsMonthMenuOpen((open) => !open)}
                   className="
+                    flex
                     h-8
-                    min-w-[114px]
-                    appearance-none
+                    w-[114px]
+                    items-center
+                    justify-between
                     rounded-full
                     border
                     border-slate-200
                     bg-white
                     px-3
-                    pr-7
                     text-[12px]
                     font-normal
                     text-slate-700
@@ -243,30 +249,52 @@ export default function ComplianceOverviewPage() {
                     focus:ring-0
                   "
                 >
-                  {MONTH_OPTIONS.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
+                  <span>{month}</span>
+                  <span className="text-[10px] leading-none text-slate-500">
+                    ▾
+                  </span>
+                </button>
 
-                <span
-                  className="
-                    pointer-events-none
-                    absolute
-                    right-2.5
-                    top-1/2
-                    -translate-y-1/2
-                    text-[10px]
-                    leading-none
-                    text-slate-500
-                  "
-                >
-                  ▾
-                </span>
               </div>
             </div>
           </div>
+          </div>
+
+          {isMonthMenuOpen && (
+            <div className="flex justify-end border-t border-slate-100 px-[18px] py-1">
+              <div
+                role="listbox"
+                aria-label="Month Year"
+                className="
+                  max-h-56 w-[114px] max-w-full overflow-y-auto
+                  rounded-lg border border-slate-200 bg-white py-1
+                  shadow-lg
+                "
+              >
+                {MONTH_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="option"
+                    aria-selected={option === month}
+                    onClick={() => {
+                      setMonth(option);
+                      setIsMonthMenuOpen(false);
+                    }}
+                    className={`
+                      block w-full px-3 py-1.5 text-left text-xs
+                      hover:bg-slate-50
+                      ${option === month
+                        ? "font-semibold text-blue-600"
+                        : "text-slate-600"}
+                    `}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Loading */}
           {isLoading && (

@@ -48,7 +48,7 @@ export default function HolidayListPage() {
  
   return (
     <div
-      className="rounded-3xl border border-[#1F2937] p-5 sm:p-8"
+      className="w-full min-w-0 rounded-3xl border border-[#1F2937] p-3 sm:p-5 lg:p-8"
       style={{ backgroundColor: "var(--card-bg)" }}
     >
       {/* Header */}
@@ -105,27 +105,28 @@ export default function HolidayListPage() {
               <div
                 key={holiday.HolidayId}
                 className="
-                  flex items-center justify-between
+                  flex min-w-0 flex-col items-stretch gap-3
+                  sm:flex-row sm:items-center sm:justify-between
                   rounded-xl border
-                  px-4 py-3 sm:px-5 sm:py-4
+                  px-3 py-3 sm:px-5 sm:py-4
                   transition
                   hover:shadow-sm
                 "
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <div>
-                  <p className="text-sm sm:text-base font-medium text-slate-800">
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-medium text-slate-800 sm:text-base">
                     {holiday.HolidayName}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1">
+                  <div className="mt-1 flex min-w-0 items-start gap-1.5">
                     <CalendarDays size={13} className="text-slate-400" />
-                    <span className="text-xs sm:text-sm text-slate-500">
+                    <span className="break-words text-xs text-slate-500 sm:text-sm">
                       Holiday Date : {formatHolidayDate(holiday.HolidayDate)}
                     </span>
                   </div>
                 </div>
  
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-wrap items-center justify-start gap-2 sm:shrink-0 sm:justify-end sm:gap-3">
                   {restricted && (
                     <button
                       type="button"
@@ -152,9 +153,9 @@ export default function HolidayListPage() {
  
                   <span
                     className="
-                      px-3 py-1
+                      max-w-full px-3 py-1
                       rounded-full
-                      text-xs font-medium text-white
+                      text-center text-xs font-medium text-white
                       whitespace-nowrap
                     "
                     style={{

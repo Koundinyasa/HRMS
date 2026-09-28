@@ -15,10 +15,27 @@ export type OrganizationCompany = {
 };
 
 export type DashboardApiResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    TotalEmployees?: number;
+    ConfirmationPending?: number;
+    JoinedEmployees?: number;
+    LeftEmployees?: number;
+    GenderRatio?: string;
+    AverageService?: string;
+    CompanyName?: string;
+  };
   company?: OrganizationCompany;
   companies?: OrganizationCompany[];
   stats?: OrganizationStat;
   companyName?: string;
+};
+
+export type GroupDashboardRequest = {
+  branchId: number;
+  month: number;
+  year: number;
 };
 
 export type ComplianceRow = {

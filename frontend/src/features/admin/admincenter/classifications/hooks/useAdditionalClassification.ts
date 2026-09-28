@@ -21,12 +21,7 @@ export const useAdditionalClassification = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const { data: apiItems, isLoading, isError } = useGetAdditionalClassificationsQuery();
-  const items: AdditionalClassification[] = isError
-    ? [
-        { Id: 1, Name: "Department", Tag: "Department" },
-        { Id: 2, Name: "Team", Tag: "Team" },
-      ]
-    : apiItems ?? [];
+  const items: AdditionalClassification[] = apiItems ?? [];
   const usingFallback = isError;
   const [createItem, { isLoading: isCreating }] = useCreateAdditionalClassificationMutation();
   const [updateItem, { isLoading: isUpdating }] = useUpdateAdditionalClassificationMutation();

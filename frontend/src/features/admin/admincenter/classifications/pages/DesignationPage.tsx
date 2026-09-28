@@ -314,6 +314,8 @@ export default function DesignationPage() {
             bg-white
             rounded-2xl
             shadow-sm
+            border
+            border-black
             overflow-visible
           "
         >
@@ -452,7 +454,7 @@ export default function DesignationPage() {
                   z-50
                   w-full
                   border-t
-                  border-gray-100
+                  border-black
                   bg-white
                   overflow-visible
                   px-4

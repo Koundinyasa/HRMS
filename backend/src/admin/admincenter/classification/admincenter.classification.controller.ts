@@ -3,6 +3,7 @@ import {
   Get,
   Req,
   Param,
+  Query,
   UseGuards,
   Body,
   Post,
@@ -54,6 +55,36 @@ export class AdmincenterClassificationController {
     return this.classificationService.getClassificationDetails(
       req.user.companyId,
       classificationId,
+    );
+  }
+
+  @Get('branch')
+  getBranches(@Req() req) {
+    return this.classificationService.getBranches(req.user.companyId);
+  }
+
+  @Get('designation')
+  getDesignations(
+    @Req() req,
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 10,
+  ) {
+    return this.classificationService.getDesignations(
+      req.user.companyId,
+      Number(page),
+      Number(pageSize),
+    );
+  }
+
+  @Get('bank')
+  getBanks(@Req() req) {
+    return this.classificationService.getBanks(req.user.companyId);
+  }
+
+  @Get('additional')
+  getAdditionalClassifications(@Req() req) {
+    return this.classificationService.getAdditionalClassifications(
+      req.user.companyId,
     );
   }
 

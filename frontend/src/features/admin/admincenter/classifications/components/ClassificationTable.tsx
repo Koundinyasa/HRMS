@@ -17,10 +17,10 @@ export default function ClassificationTable({
   onToggleStatus: (record: Classification) => void;
 }) {
   return (
-    <div className="mt-7 rounded-xl shadow-md overflow-hidden bg-white">
+    <div className="classification-typography mt-7 rounded-xl shadow-md overflow-hidden bg-white">
       <table className="w-full">
         <thead>
-          <tr className="bg-[#e8ddff] text-gray-800 text-sm">
+          <tr className="bg-[#e8ddff] text-gray-800 text-xs font-bold uppercase tracking-[0.04em]">
             {TABLE_COLUMNS.map((col) => (
               <th key={col.key} className="p-4 text-center first:text-left">
                 {col.label}
@@ -48,7 +48,7 @@ export default function ClassificationTable({
 
           {!isLoading &&
             classifications.map((item) => (
-              <tr key={item.id} className="text-sm text-gray-700 border-t border-gray-100">
+              <tr key={item.id} className="text-sm font-medium text-gray-700 border-t border-gray-100">
                 <td className="p-5">{item.name}</td>
                 <td className="p-5 text-center">{item.shortName}</td>
                 <td className="p-5 text-center">{item.type}</td>

@@ -34,9 +34,9 @@ export default function AttendanceConfigTable({
   }
 
   return (
-    <table className="w-full text-sm">
+    <table className="w-full border border-black text-sm">
       <thead>
-        <tr className="border-b text-left text-muted-foreground">
+        <tr className="border-b border-black text-left text-muted-foreground">
           <th className="py-3 px-6 font-medium">Attendance Name</th>
           <th className="py-3 px-3 font-medium">Short Name</th>
           <th className="py-3 px-3 font-medium">Salary Calender Days</th>
@@ -50,7 +50,7 @@ export default function AttendanceConfigTable({
       </thead>
       <tbody>
         {rows.map((c) => (
-          <tr key={c.Id} className="border-b last:border-0">
+          <tr key={c.Id} className="border-b border-black last:border-0">
             <td className="py-3 px-6 font-medium text-gray-800">{c.Name}</td>
             <td className="py-3 px-3 text-gray-700">{c.ShortName}</td>
             <td className="py-3 px-3 text-gray-700">{c.SalaryCalendarDays}</td>

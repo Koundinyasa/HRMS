@@ -3,12 +3,17 @@ import type {
   DashboardApiResponse,
   ComplianceApiResponse,
   ConsolidatedSalaryApiResponse,
+  GroupDashboardRequest,
 } from '../types/details.types';
 
 export const detailsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getGroupDashboard: builder.query<DashboardApiResponse, void>({
-      query: () => 'admin/organizations/details/dashboard',
+    getGroupDashboard: builder.query<DashboardApiResponse, GroupDashboardRequest>({
+      query: (body) => ({
+        url: 'admin/group-of-company/details/dashboard/employee-dashboard',
+        method: 'POST',
+        body,
+      }),
     }),
 
     getComplianceOverview: builder.query<ComplianceApiResponse, { monthYear?: string } | void>({

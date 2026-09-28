@@ -39,7 +39,7 @@ export default function AdditionalClassificationList({
             className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
               isSelected
                 ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm"
-                : "bg-white hover:bg-violet-50 border border-transparent"
+                : "bg-white hover:bg-violet-50 border border-black"
             }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">

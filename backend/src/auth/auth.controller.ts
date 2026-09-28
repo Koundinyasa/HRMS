@@ -19,6 +19,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { SendWishDto } from './dto/send-wish.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -105,4 +106,16 @@ export class AuthController {
   changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(req.user.userId, dto);
   }
+   @Post('send-wish')
+  @UseGuards(JwtAuthGuard)
+  async sendWish(
+    @Req() req: any,
+    @Body() dto: SendWishDto,
+  ) {
+    return this.authService.sendWish(
+      req.user.employeeId,
+      dto,
+    );
+  }
+ 
 }

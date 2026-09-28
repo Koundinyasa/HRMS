@@ -3,8 +3,7 @@ import { Filter, History, Check, X as XIcon } from "lucide-react";
 import * as XLSX from "xlsx";
 import EmptyState from "./EmptyState";
 import FilterBar, { type FilterValues } from "@/features/admin/components/FilterBar";
-import { SEED_BRANCHES } from "@/features/admin/admincenter/classifications/constants/branch.constants";
-import { SEED_DESIGNATIONS } from "@/features/admin/admincenter/classifications/constants/designation.constants";
+import { useGetBranchesQuery, useGetDesignationsQuery } from "@/features/admin/admincenter/classifications/api/classificationApi";
 import { LEAVE_POLICY_GROUPS } from "@/features/admin/admincenter/classifications/constants/leavePolicy.constants";
 import {
   useGetForceLeaveApprovalsQuery,
@@ -28,6 +27,8 @@ export default function ForceLeaveApprovalPanel() {
   const [monthType, setMonthType] = useState<LeaveApprovalMonthType>("current");
   const [filters, setFilters] = useState<FilterValues>({});
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const branches = useGetBranchesQuery();
+  const designations = useGetDesignationsQuery({ page: 1, pageSize: 1000 });
 
   const { data: rows, isFetching } = useGetForceLeaveApprovalsQuery({
     viewType,
@@ -44,8 +45,8 @@ export default function ForceLeaveApprovalPanel() {
   const [rejectLeaves, { isLoading: isRejecting }] = useRejectLeavesMutation();
 
   const fieldOptions = {
-    branch: SEED_BRANCHES.map((b) => ({ value: String(b.Id), label: b.BranchName })),
-    designation: SEED_DESIGNATIONS.map((d) => ({ value: String(d.Id), label: d.DesignationName })),
+    branch: (branches.data ?? []).map((b) => ({ value: String(b.Id), label: b.BranchName })),
+    designation: (designations.data?.Designations ?? []).map((d) => ({ value: String(d.Id), label: d.DesignationName })),
     leave: LEAVE_POLICY_GROUPS.map((g) => ({ value: g.code, label: g.name })),
     attendance: [], // wire real options if/when an attendance-type source exists
     salaryStructure: SALARY_STRUCTURE_OPTIONS,

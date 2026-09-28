@@ -71,14 +71,14 @@ export default function AdditionalClassificationPage() {
       <div className="mt-4 px-4 sm:px-6 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5">
           {/* Left: classification list panel */}
-          <div className="bg-[#F5F3FF] rounded-2xl border border-violet-100 p-4">
+          <div className="bg-[#F5F3FF] rounded-2xl border border-black p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-800">Classification</h3>
               <button
                 type="button"
                 onClick={openAdd}
                 aria-label="Add classification"
-                className="w-8 h-8 rounded-lg border border-violet-200 bg-white flex items-center justify-center text-violet-600 hover:bg-violet-50"
+                className="w-8 h-8 rounded-lg border border-black bg-white flex items-center justify-center text-violet-600 hover:bg-violet-50"
               >
                 <Plus size={16} />
               </button>
@@ -98,7 +98,7 @@ export default function AdditionalClassificationPage() {
           </div>
 
           {/* Right: detail / form panel */}
-          <div className="bg-white rounded-2xl border shadow-sm min-h-[320px] sm:min-h-[420px] flex items-center justify-center">
+          <div className="bg-white rounded-2xl border border-black shadow-sm min-h-[320px] sm:min-h-[420px] flex items-center justify-center">
             {isFormOpen ? (
               <div className="w-full max-w-md p-4 sm:p-8 space-y-4">
                 <div className="space-y-2">

@@ -55,9 +55,9 @@ export default function BranchList({
   }
 
   return (
-    <table className="w-full text-sm">
+    <table className="w-full border border-black text-sm">
       <thead>
-        <tr className="border-b text-left text-muted-foreground bg-[#F5F3FF]">
+        <tr className="border-b border-black text-left text-muted-foreground bg-[#F5F3FF]">
           {onSort ? (
             <SortableHeader label="Branch Name" sortKey="BranchName" activeKey={sortKey ?? null} onSort={onSort} />
           ) : (
@@ -79,7 +79,7 @@ export default function BranchList({
       </thead>
       <tbody>
         {branches.map((b) => (
-          <tr key={b.Id} className="border-b last:border-0">
+          <tr key={b.Id} className="border-b border-black last:border-0">
             <td className="py-3 px-3 font-medium text-gray-800">{b.BranchName}</td>
             <td className="py-3 px-3 text-gray-700">{b.Address}</td>
             <td className="py-3 px-3 text-gray-700">{b.State}</td>

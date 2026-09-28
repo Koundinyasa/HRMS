@@ -166,7 +166,7 @@ export default function AttendancePage() {
             sm:rounded-2xl
             shadow-sm
             border
-            border-gray-100
+            border-black
             overflow-hidden
           "
         >
@@ -296,7 +296,7 @@ export default function AttendancePage() {
               h-[52px]
               min-h-[52px]
               border-t
-              border-gray-100
+              border-black
               bg-white
               flex
               items-center

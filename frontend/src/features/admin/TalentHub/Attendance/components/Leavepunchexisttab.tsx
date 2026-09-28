@@ -7,8 +7,7 @@ import {
   useGetReconcileLeaveTypesQuery,
   useUpdateReconcileLeaveMutation,
 } from "../api/attendanceApi";
-import { SEED_BRANCHES } from "@/features/admin/admincenter/classifications/constants/branch.constants";
-import { SEED_DESIGNATIONS } from "@/features/admin/admincenter/classifications/constants/designation.constants";
+import { useGetBranchesQuery, useGetDesignationsQuery } from "@/features/admin/admincenter/classifications/api/classificationApi";
 import { LEAVE_POLICY_GROUPS } from "@/features/admin/admincenter/classifications/constants/leavePolicy.constants";
 
 const EMP_STATUS_OPTIONS = [
@@ -38,11 +37,13 @@ export default function LeavePunchExistTab() {
   });
 
   const leaveTypes = useGetReconcileLeaveTypesQuery();
+  const branches = useGetBranchesQuery();
+  const designations = useGetDesignationsQuery({ page: 1, pageSize: 1000 });
   const [updateReconcileLeave] = useUpdateReconcileLeaveMutation();
 
   const fieldOptions = {
-    branch: SEED_BRANCHES.map((b) => ({ value: String(b.Id), label: b.BranchName })),
-    designation: SEED_DESIGNATIONS.map((d) => ({ value: String(d.Id), label: d.DesignationName })),
+    branch: (branches.data ?? []).map((b) => ({ value: String(b.Id), label: b.BranchName })),
+    designation: (designations.data?.Designations ?? []).map((d) => ({ value: String(d.Id), label: d.DesignationName })),
     leave: LEAVE_POLICY_GROUPS.map((g) => ({ value: g.code, label: g.name })),
     empStatus: EMP_STATUS_OPTIONS,
   };

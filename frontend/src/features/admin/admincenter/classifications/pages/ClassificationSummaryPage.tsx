@@ -125,7 +125,7 @@ export default function ClassificationSummaryPage() {
   }) => (
     <NavLink
       to={to}
-      className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-5 py-4 hover:shadow-md hover:border-violet-200 transition-all"
+      className="flex items-center justify-between rounded-xl border border-black bg-white px-5 py-4 hover:shadow-md hover:border-violet-200 transition-all"
     >
       <div className="flex items-center gap-3">
         <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${iconBg}`}>
@@ -141,7 +141,7 @@ export default function ClassificationSummaryPage() {
   );
 
   return (
-    <div className="w-full">
+    <div className="classification-typography w-full">
       <ClassificationNavbar />
 
       <div className="mt-6 px-4 sm:px-6 pb-8">
@@ -160,7 +160,7 @@ export default function ClassificationSummaryPage() {
 
             <button
               type="button"
-              className="flex-1 min-h-[180px] flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 hover:border-violet-300 hover:text-violet-500 transition-colors"
+              className="flex-1 min-h-[180px] flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-black text-gray-400 hover:border-violet-300 hover:text-violet-500 transition-colors"
             >
               <span className="w-9 h-9 rounded-full bg-violet-100 text-violet-500 flex items-center justify-center">
                 <Plus size={18} />

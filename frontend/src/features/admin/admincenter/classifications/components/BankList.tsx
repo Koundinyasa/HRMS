@@ -55,9 +55,9 @@ export default function BankList({
   }
 
   return (
-    <table className="w-full text-sm">
+    <table className="w-full border border-black text-sm">
       <thead>
-        <tr className="border-b text-left text-muted-foreground bg-[#F5F3FF]">
+        <tr className="border-b border-black text-left text-muted-foreground bg-[#F5F3FF]">
           {onSort ? (
             <SortableHeader label="Name" sortKey="BankName" activeKey={sortKey ?? null} onSort={onSort} />
           ) : (
@@ -78,7 +78,7 @@ export default function BankList({
       </thead>
       <tbody>
         {banks.map((b) => (
-          <tr key={b.Id} className="border-b last:border-0">
+          <tr key={b.Id} className="border-b border-black last:border-0">
             <td className="py-3 px-3 font-medium text-gray-800">
               <button
                 type="button"

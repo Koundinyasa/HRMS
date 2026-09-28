@@ -28,6 +28,87 @@ import type { Response } from 'express';
 export class AdmincenterClassificationService {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  private async getCompanyMasterData(companyId: number) {
+    const pool = await this.databaseService.connect();
+    const result = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId)
+      .input('EmployeeID', sql.VarChar(100), null)
+      .input('TeamTechID', sql.Int, null)
+      .execute('USP_GetCompanyMasterData');
+
+    return result.recordsets as unknown as Record<string, unknown>[][];
+  }
+
+  async getBranches(companyId: number) {
+    const sets = await this.getCompanyMasterData(companyId);
+    return {
+      Branches: (sets[5] ?? []).map((row) => ({
+        Id: Number(row.BranchID ?? row.ID),
+        BranchName: String(row.BranchName ?? row.Name ?? ''),
+        Address: String(row.Address1 ?? row.Address ?? ''),
+        State: String(row.StateName ?? row.State ?? row.StateCode ?? ''),
+        IsActive: row.IsActive ? 1 : 0,
+      })),
+    };
+  }
+
+  async getDesignations(companyId: number, page: number, pageSize: number) {
+    const sets = await this.getCompanyMasterData(companyId);
+    const designations = (sets[2] ?? []).map((row) => ({
+      Id: Number(row.ID ?? row.DesignationID),
+      DesignationName: String(row.Name ?? row.DesignationName ?? ''),
+    }));
+    const start = Math.max(0, (page - 1) * pageSize);
+
+    return {
+      Designations: designations.slice(start, start + pageSize),
+      TotalCount: designations.length,
+    };
+  }
+
+  private async getClassificationRows(companyId: number, classificationName: string) {
+    const summary = await this.getClassificationSummary(companyId);
+    const classification = summary.data.find((row: Record<string, unknown>) =>
+      String(row.ClassificationName ?? row.classificationName ?? '')
+        .toLowerCase()
+        .includes(classificationName.toLowerCase()),
+    );
+    const classificationId = Number(
+      classification?.ClassificationId ?? classification?.classificationId,
+    );
+
+    if (!classificationId) {
+      return [];
+    }
+
+    const details = await this.getClassificationDetails(companyId, classificationId);
+    return details.data;
+  }
+
+  async getBanks(companyId: number) {
+    const rows = await this.getClassificationRows(companyId, 'bank');
+    return {
+      Banks: rows.map((row: Record<string, unknown>) => ({
+        Id: Number(row.Id ?? row.ID ?? row.BankID),
+        BankName: String(row.BankName ?? row.Name ?? ''),
+        AcType: String(row.AcType ?? row.AccountType ?? ''),
+        IfscCode: String(row.IfscCode ?? row.IFSC ?? row.IFSCCode ?? ''),
+      })),
+    };
+  }
+
+  async getAdditionalClassifications(companyId: number) {
+    const rows = await this.getClassificationRows(companyId, 'additional');
+    return {
+      AdditionalClassifications: rows.map((row: Record<string, unknown>) => ({
+        Id: Number(row.Id ?? row.ID ?? row.ClassificationID),
+        Name: String(row.Name ?? row.ClassificationName ?? ''),
+        Tag: String(row.Tag ?? row.Code ?? ''),
+      })),
+    };
+  }
+
   // Get Classification Summary
   async getClassificationSummary(companyId: number) {
     try {
