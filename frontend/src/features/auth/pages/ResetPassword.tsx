@@ -182,144 +182,23 @@
 // }
 
 
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import { resetPasswordSchema } from "../validation/resetPasswordSchema";
-// import { useResetPassword } from "../hooks/useResetPassword";
-// import { useNavigate, useParams } from "react-router-dom";
-// import { useAppDispatch } from "../../../hooks/useAppDispatch";
-// import { showPageLoader } from "../../employee/employeeSlice";
-// export default function ResetPasswordForm() {
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const { handleResetPassword } = useResetPassword();
-//   const navigate = useNavigate();
-//   const dispatch = useAppDispatch();
-//   const { domain } = useParams();
- 
- 
-//   const handleSubmit = async () => {
-//     const result = resetPasswordSchema.safeParse({ password, confirmPassword });
- 
-//     if (!result.success) {
-//       setError(result.error.issues[0].message);
-//       return;
-//     }
- 
-//     setError("");
- 
-//     const success = await handleResetPassword(
-//       password,
-//       confirmPassword
-//     );
- 
-//     if (success) {
-//       dispatch(showPageLoader());
- 
-//       setTimeout(() => {
-//         navigate(`/${domain}/login`);
-//       }, 1000);
-//     }
-//   };
- 
-//     return (
-//       <div className="space-y-5">
-//         <div>
-//           <label className="block text-sm font-medium mb-2">
-//             Password
-//             <span className="text-red-500">
-//               *
-//             </span>
-//           </label>
- 
-//           <input
-//             type="password"
-//             value={password}
-//             onChange={(e) =>
-//               setPassword(
-//                 e.target.value
-//               )
-//             }
-//             className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
-//           />
- 
-//           <p className="text-sm text-gray-500 mt-2">
-//             Must be at least
-//             8 characters
-//           </p>
-//         </div>
- 
-//         <div>
-//           <label className="block text-sm font-medium mb-2">
-//             Confirm Password
-//             <span className="text-red-500">
-//               *
-//             </span>
-//           </label>
- 
-//           <input
-//             type="password"
-//             value={
-//               confirmPassword
-//             }
-//             onChange={(e) =>
-//               setConfirmPassword(
-//                 e.target.value
-//               )
-//             }
-//             className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
-//           />
-//         </div>
- 
-//         {error && (
-//           <p className="text-red-500 text-sm">
-//             {error}
-//           </p>
-//         )}
- 
-//         <Button
-//           onClick={
-//             handleSubmit
-//           }
-//           className="w-full h-[50px] bg-blue-600 hover:bg-blue-700 rounded-xl"
-//         >
-//           Reset Password
-//         </Button>
-//       </div>
-//     );
-//   }
- 
- 
-
-
-
-
-
-
-
-
-
-
-
-
 import { useEffect } from "react";
 import { KeyRound } from "lucide-react";
- 
+
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { hidePageLoader } from "@/features/employee/employeeSlice";
- 
+
 import AuthLayout from "../components/AuthLayout";
 import FormCard from "../components/FormCard";
 import ResetPasswordForm from "../components/ResetPasswordForm";
- 
+
 export default function ResetPassword() {
   const dispatch = useAppDispatch();
- 
+
   useEffect(() => {
     dispatch(hidePageLoader());
   }, [dispatch]);
- 
+
   return (
     <AuthLayout>
       <FormCard
@@ -338,5 +217,4 @@ export default function ResetPassword() {
     </AuthLayout>
   );
 }
- 
  

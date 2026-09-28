@@ -9,11 +9,11 @@
 //     useState("Employee Audit Report_v2");
 
 //   return (
-//     <div className="w-full bg-white">
+//     <div className="font-[Urbanist] w-full bg-white">
 
 //       {/* REPORT NAME + CUSTOM QUERY */}
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           grid
 //           grid-cols-1
 //           gap-5
@@ -27,7 +27,7 @@
 //         {/* REPORT NAME */}
 //         <div>
 //           <label
-//             className="
+//             className="font-[Urbanist] 
 //               mb-1
 //               block
 //               text-[12px]
@@ -44,7 +44,7 @@
 //             onChange={(event) =>
 //               setReportName(event.target.value)
 //             }
-//             className="
+//             className="font-[Urbanist] 
 //               h-[35px]
 //               w-full
 //               rounded-[5px]
@@ -63,12 +63,12 @@
 
 //         {/* CUSTOM QUERY */}
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             items-center
 //             gap-2
 //             pt-5
-//           "
+//            flex-wrap min-w-0"
 //         >
 //           <button
 //             type="button"
@@ -111,14 +111,14 @@
 //           </button>
 
 //           <span
-//             className="
+//             className="font-[Urbanist] 
 //               whitespace-nowrap
 //               text-[12px]
 //               text-[#4c4c4c]
 //             "
 //           >
 //             Custom Query{" "}
-//             <span className="text-[#747474]">
+//             <span className="font-[Urbanist] text-[#747474]">
 //               (Write query)
 //             </span>
 //           </span>
@@ -128,10 +128,10 @@
 
 
 //       {/* PIN REPORT */}
-//       <div className="px-5 pb-4">
+//       <div className="font-[Urbanist] px-5 pb-4">
 
 //         <label
-//           className="
+//           className="font-[Urbanist] 
 //             mb-2
 //             block
 //             text-[12px]
@@ -142,11 +142,11 @@
 //           Pin Report to
 //         </label>
 
-//         <div className="relative">
+//         <div className="font-[Urbanist] relative">
 
 //           <select
 //             defaultValue="analytics"
-//             className="
+//             className="font-[Urbanist] 
 //               h-[35px]
 //               w-full
 //               appearance-none
@@ -181,7 +181,7 @@
 
 //           <ChevronDown
 //             size={16}
-//             className="
+//             className="font-[Urbanist] 
 //               pointer-events-none
 //               absolute
 //               right-3
@@ -228,14 +228,14 @@ export default function ReportHeader() {
   ];
 
   return (
-    <div className="w-full bg-white">
+    <div className="font-[Urbanist] w-full bg-white">
 
       {/* =====================================================
           REPORT NAME + CUSTOM QUERY
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           grid
           grid-cols-1
           gap-5
@@ -253,7 +253,7 @@ export default function ReportHeader() {
         <div>
 
           <label
-            className="
+            className="font-[Urbanist] 
               mb-1
               block
               text-[12px]
@@ -272,7 +272,7 @@ export default function ReportHeader() {
                 event.target.value
               )
             }
-            className="
+            className="font-[Urbanist] 
               h-[35px]
               w-full
               rounded-[5px]
@@ -295,12 +295,12 @@ export default function ReportHeader() {
         ================================================= */}
 
         <div
-          className="
+          className="font-[Urbanist] 
             flex
             items-center
             gap-2
             pt-5
-          "
+           flex-wrap min-w-0"
         >
 
           <button
@@ -346,14 +346,14 @@ export default function ReportHeader() {
           </button>
 
           <span
-            className="
+            className="font-[Urbanist] 
               whitespace-nowrap
               text-[12px]
               text-[#4c4c4c]
             "
           >
             Custom Query{" "}
-            <span className="text-[#747474]">
+            <span className="font-[Urbanist] text-[#747474]">
               (Write query)
             </span>
           </span>
@@ -367,10 +367,10 @@ export default function ReportHeader() {
           PIN REPORT TO
       ===================================================== */}
 
-      <div className="px-5 pb-4">
+      <div className="font-[Urbanist] px-5 pb-4">
 
         <label
-          className="
+          className="font-[Urbanist] 
             mb-2
             block
             text-[12px]
@@ -386,7 +386,7 @@ export default function ReportHeader() {
             CUSTOM DROPDOWN
         ================================================= */}
 
-        <div className="relative w-full">
+        <div className="font-[Urbanist] relative w-full">
 
 
           {/* =================================================
@@ -467,7 +467,7 @@ export default function ReportHeader() {
           {pinReportOpen && (
 
             <div
-              className="
+              className="font-[Urbanist] 
                 absolute
                 left-0
                 top-[48px]
@@ -479,7 +479,7 @@ export default function ReportHeader() {
                 border-[#dfe3e8]
                 bg-white
                 shadow-[0_2px_6px_rgba(0,0,0,0.08)]
-              "
+               max-w-full"
             >
 
               {PIN_REPORT_OPTIONS.map(
@@ -504,7 +504,7 @@ export default function ReportHeader() {
                         false
                       );
                     }}
-                    className="
+                    className="font-[Urbanist] 
                       flex
                       min-h-[40px]
                       w-full
@@ -517,7 +517,7 @@ export default function ReportHeader() {
                       transition-colors
                       hover:bg-[#fffaf8]
                       hover:text-[#955847]
-                    "
+                     min-w-0 max-w-full"
                   >
 
                     {option}

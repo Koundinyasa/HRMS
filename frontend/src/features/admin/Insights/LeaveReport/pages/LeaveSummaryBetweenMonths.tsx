@@ -63,9 +63,9 @@ export default function LeaveSummaryBetweenMonths() {
   });
 
   return (
-    <div className="space-y-3">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
-        <span className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-orange-200 bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
+    <div className="font-[Urbanist] space-y-3">
+      <div className="font-[Urbanist] bg-white rounded-lg shadow-sm border border-[#8B5A2B] px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
+        <span className="font-[Urbanist] flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#8B5A2B] bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
           <FileText size={15} />
           Leave Summary Report Between Months
         </span>

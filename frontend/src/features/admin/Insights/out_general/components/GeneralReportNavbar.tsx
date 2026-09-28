@@ -11,10 +11,10 @@
 //     useState("Report Writer");
 
 //   return (
-//     <div className="flex min-h-[72px] w-full items-center justify-between gap-4 border-b border-[#e5e7eb] bg-white px-5">
+//     <div className="font-[Urbanist] flex min-h-[72px] w-full items-center justify-between gap-4 border-b border-black bg-white px-5 flex-wrap min-w-0 max-w-full">
 
 //       {/* TABS */}
-//       <div className="flex h-[72px] min-w-0 flex-1 items-center gap-8 overflow-x-auto">
+//       <div className="font-[Urbanist] flex h-[72px] min-w-0 flex-1 items-center gap-8 overflow-x-auto flex-wrap">
 
 //         {REPORT_TABS.map((tab) => {
 //           const isActive = activeTab === tab;
@@ -33,7 +33,7 @@
 //               {tab}
 
 //               {isActive && (
-//                 <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#2196df]" />
+//                 <span className="font-[Urbanist] absolute bottom-0 left-0 right-0 h-[3px] bg-[#2196df]" />
 //               )}
 //             </button>
 //           );
@@ -43,11 +43,11 @@
 
 
 //       {/* RIGHT BUTTONS */}
-//       <div className="flex shrink-0 items-center gap-3">
+//       <div className="font-[Urbanist] flex shrink-0 items-center gap-3 flex-wrap min-w-0">
 
 //         <button
 //           type="button"
-//           className="flex h-[46px] items-center gap-2 rounded-lg bg-[#2196df] px-5 text-[16px] font-semibold text-white shadow-sm hover:bg-[#178bd0]"
+//           className="font-[Urbanist] flex h-[46px] items-center gap-2 rounded-lg bg-[#2196df] px-5 text-[16px] font-semibold text-white shadow-sm hover:bg-[#178bd0] flex-wrap min-w-0"
 //         >
 //           <Bookmark size={19} />
 //           Save
@@ -56,7 +56,7 @@
 
 //         <button
 //           type="button"
-//           className="flex h-[46px] items-center gap-2 rounded-lg border border-[#c7c7c7] bg-white px-5 text-[16px] font-medium text-[#333] hover:bg-[#f7f7f7]"
+//           className="font-[Urbanist] flex h-[46px] items-center gap-2 rounded-lg border border-black bg-white px-5 text-[16px] font-medium text-[#333] hover:bg-[#f7f7f7] flex-wrap min-w-0"
 //         >
 //           <ChevronLeft size={20} />
 //           Back
@@ -121,7 +121,7 @@ export default function GeneralReportNavbar() {
 
   return (
     <div
-      className="
+      className="font-[Urbanist] 
         flex
         min-h-[72px]
         w-full
@@ -129,10 +129,10 @@ export default function GeneralReportNavbar() {
         justify-between
         gap-4
         border-b
-        border-[#e5e7eb]
+        border-[#c9a79d]
         bg-white
         px-5
-      "
+       flex-wrap min-w-0 max-w-full"
     >
 
       {/* =====================================================
@@ -140,7 +140,7 @@ export default function GeneralReportNavbar() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           flex
           h-[72px]
           min-w-0
@@ -148,7 +148,7 @@ export default function GeneralReportNavbar() {
           items-center
           gap-8
           overflow-x-auto
-        "
+         flex-wrap"
       >
 
         {REPORT_TABS.map((tab) => {
@@ -200,7 +200,7 @@ export default function GeneralReportNavbar() {
 
               {isActive && (
                 <span
-                  className="
+                  className="font-[Urbanist] 
                     absolute
                     bottom-0
                     left-0
@@ -222,19 +222,19 @@ export default function GeneralReportNavbar() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           flex
           shrink-0
           items-center
           gap-3
-        "
+         flex-wrap min-w-0"
       >
 
         {/* SAVE */}
 
         <button
           type="button"
-          className="
+          className="font-[Urbanist] 
             flex
             h-[46px]
             items-center
@@ -247,7 +247,7 @@ export default function GeneralReportNavbar() {
             text-white
             shadow-sm
             hover:bg-[#178bd0]
-          "
+           flex-wrap min-w-0"
         >
           <Bookmark size={19} />
 
@@ -259,21 +259,21 @@ export default function GeneralReportNavbar() {
 
         <button
           type="button"
-          className="
+          className="font-[Urbanist] 
             flex
             h-[46px]
             items-center
             gap-2
             rounded-lg
             border
-            border-[#c7c7c7]
+            border-black
             bg-white
             px-5
             text-[16px]
             font-medium
             text-[#333]
             hover:bg-[#f7f7f7]
-          "
+           flex-wrap min-w-0"
         >
           <ChevronLeft size={20} />
 

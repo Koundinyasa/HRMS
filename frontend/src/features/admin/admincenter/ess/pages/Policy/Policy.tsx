@@ -68,7 +68,7 @@ function CustomDropdown({
   );
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full font-[Urbanist]">
       <button
         type="button"
         onClick={onToggle}
@@ -93,7 +93,7 @@ function CustomDropdown({
           ${isOpen ? "border-purple-500" : ""}
         `}
       >
-        <span className="truncate">
+        <span className="truncate font-[Urbanist]">
           {selectedOption?.label || placeholder}
         </span>
 
@@ -124,12 +124,12 @@ function CustomDropdown({
             overflow-hidden
             rounded-md
             border
-            border-gray-200
+            border-black
             bg-white
             shadow-lg
-          "
+           font-[Urbanist]"
         >
-          <div className="max-h-40 overflow-y-auto overflow-x-hidden">
+          <div className="max-h-40 overflow-y-auto overflow-x-hidden font-[Urbanist]">
             <button
               type="button"
               onClick={() => onSelect("")}
@@ -143,7 +143,7 @@ function CustomDropdown({
                 text-gray-500
                 truncate
                 hover:bg-purple-50
-              "
+               font-[Urbanist]"
             >
               {placeholder}
             </button>
@@ -163,7 +163,7 @@ function CustomDropdown({
                   text-gray-700
                   truncate
                   hover:bg-purple-50
-                "
+                 font-[Urbanist]"
                 title={option.label}
               >
                 {option.label}
@@ -356,13 +356,13 @@ export default function Policy() {
   ];
 
   return (
-    <div className="w-full min-h-[calc(100vh-100px)]">
+    <div className="w-full min-h-[calc(100vh-100px)] font-[Urbanist]">
 
       {/* ================================================= */}
       {/* HEADER */}
       {/* ================================================= */}
 
-      <div className="flex items-center justify-between bg-[#F7F3FF] px-4 py-3 rounded-xl mb-5">
+      <div className="flex items-center justify-between bg-[#F7F3FF] px-4 py-3 rounded-xl mb-5 font-[Urbanist]">
         <button
           type="button"
           className="px-5 py-2 bg-[#7C4DFF] text-white rounded-lg text-sm font-medium"
@@ -370,7 +370,7 @@ export default function Policy() {
           Policy
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 font-[Urbanist]">
           <button
             type="button"
             onClick={() => {
@@ -384,7 +384,7 @@ export default function Policy() {
 
           <button
             type="button"
-            className="text-gray-700 hover:text-purple-600"
+            className="text-gray-700 hover:text-purple-600 font-[Urbanist]"
             title="History"
           >
             <Clock size={20} />
@@ -396,12 +396,12 @@ export default function Policy() {
       {/* SEARCH */}
       {/* ================================================= */}
 
-      <div className="mb-3">
-        <div className="relative w-[280px] max-w-full">
+      <div className="mb-3 font-[Urbanist]">
+        <div className="relative w-[280px] max-w-full font-[Urbanist]">
 
           <Search
             size={15}
-            className="absolute left-3 top-2.5 text-gray-400"
+            className="absolute left-3 top-2.5 text-gray-400 font-[Urbanist]"
           />
 
           <input
@@ -417,12 +417,12 @@ export default function Policy() {
               pl-9
               pr-3
               border
-              border-gray-200
+              border-black
               rounded-md
               text-xs
               outline-none
-              focus:border-purple-500
-            "
+              focus:border-black
+             font-[Urbanist]"
           />
 
         </div>
@@ -432,13 +432,13 @@ export default function Policy() {
       {/* POLICY TABLE */}
       {/* ================================================= */}
 
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white border border-black rounded-lg overflow-hidden font-[Urbanist]">
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto font-[Urbanist]">
 
-          <table className="w-full text-xs">
+          <table className="w-full text-xs font-[Urbanist]">
 
-            <thead className="bg-[#F8FAFC] border-b border-gray-200">
+            <thead className="bg-[#F8FAFC] border-b border-black font-[Urbanist]">
 
               <tr>
 
@@ -476,36 +476,36 @@ export default function Policy() {
 
                 <tr
                   key={policy.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
+                  className="border-b border-black hover:bg-gray-50 font-[Urbanist]"
                 >
 
                   <td className="px-3 py-3 font-medium text-gray-800 whitespace-nowrap">
                     {policy.policyName}
                   </td>
 
-                  <td className="px-3 py-3 text-gray-500 max-w-[230px] truncate">
+                  <td className="px-3 py-3 text-gray-500 max-w-[230px] truncate font-[Urbanist]">
                     {policy.description}
                   </td>
 
-                  <td className="px-3 py-3 text-gray-500 whitespace-nowrap">
+                  <td className="px-3 py-3 text-gray-500 whitespace-nowrap font-[Urbanist]">
                     {policy.date}
                   </td>
 
-                  <td className="px-3 py-3 text-gray-500 whitespace-nowrap">
+                  <td className="px-3 py-3 text-gray-500 whitespace-nowrap font-[Urbanist]">
                     {policy.fileSize}
                   </td>
 
-                  <td className="px-3 py-3 whitespace-nowrap">
+                  <td className="px-3 py-3 whitespace-nowrap font-[Urbanist]">
 
-                    <span className="px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#7C4DFF] text-[10px]">
+                    <span className="px-2.5 py-1 rounded-full bg-[#EEF2FF] text-[#7C4DFF] text-[10px] font-[Urbanist]">
                       {policy.acknowledgement}
                     </span>
 
                   </td>
 
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3 font-[Urbanist]">
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 font-[Urbanist]">
 
                       <button
                         type="button"
@@ -521,7 +521,7 @@ export default function Policy() {
                       <button
                         type="button"
                         title="View"
-                        className="text-gray-500 hover:text-purple-600"
+                        className="text-gray-500 hover:text-purple-600 font-[Urbanist]"
                       >
                         <Eye size={15} />
                       </button>
@@ -529,7 +529,7 @@ export default function Policy() {
                       <button
                         type="button"
                         title="Download"
-                        className="text-gray-500 hover:text-purple-600"
+                        className="text-gray-500 hover:text-purple-600 font-[Urbanist]"
                       >
                         <Download size={15} />
                       </button>
@@ -537,7 +537,7 @@ export default function Policy() {
                       <button
                         type="button"
                         title="Edit"
-                        className="text-gray-500 hover:text-purple-600"
+                        className="text-gray-500 hover:text-purple-600 font-[Urbanist]"
                       >
                         <Pencil size={15} />
                       </button>
@@ -545,7 +545,7 @@ export default function Policy() {
                       <button
                         type="button"
                         title="Delete"
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 font-[Urbanist]"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -570,24 +570,24 @@ export default function Policy() {
       {/* TABLE FOOTER */}
       {/* ================================================= */}
 
-      <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
+      <div className="flex items-center justify-between mt-4 text-xs text-gray-500 font-[Urbanist]">
 
         <span>
           Showing 1 - {filteredPolicies.length} of{" "}
           {filteredPolicies.length} records
         </span>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 font-[Urbanist]">
 
-          <button className="w-7 h-7 border rounded text-gray-400">
+          <button className="w-7 h-7 border rounded text-gray-400 font-[Urbanist]">
             ‹
           </button>
 
-          <button className="w-7 h-7 bg-[#2563EB] text-white rounded">
+          <button className="w-7 h-7 bg-[#2563EB] text-white rounded font-[Urbanist]">
             1
           </button>
 
-          <button className="w-7 h-7 border rounded text-gray-500">
+          <button className="w-7 h-7 border rounded text-gray-500 font-[Urbanist]">
             ›
           </button>
 
@@ -612,7 +612,7 @@ export default function Policy() {
             bg-black/20
             p-3
             overflow-y-auto
-          "
+           font-[Urbanist]"
           onClick={() => setOpenDropdown(null)}
         >
 
@@ -624,13 +624,13 @@ export default function Policy() {
               rounded-xl
               shadow-2xl
               relative
-            "
+             font-[Urbanist]"
             onClick={(e) => e.stopPropagation()}
           >
 
             {/* HEADER */}
 
-            <div className="flex items-center justify-between px-5 py-3.5 border-b">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b font-[Urbanist]">
 
               <h2 className="text-sm font-semibold text-gray-800">
                 Policy Form
@@ -642,7 +642,7 @@ export default function Policy() {
                   setShowForm(false);
                   setOpenDropdown(null);
                 }}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 font-[Urbanist]"
               >
                 <X size={18} />
               </button>
@@ -651,17 +651,17 @@ export default function Policy() {
 
             {/* FORM */}
 
-            <div className="p-4">
+            <div className="p-4 font-[Urbanist]">
 
               {/* ROW 1 */}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 font-[Urbanist]">
 
-                <div className="min-w-0">
+                <div className="min-w-0 font-[Urbanist]">
 
                   <label className="block text-[11px] font-medium text-gray-700 mb-1">
                     Policy Name
-                    <span className="text-red-500 ml-1">
+                    <span className="text-red-500 ml-1 font-[Urbanist]">
                       *
                     </span>
                   </label>
@@ -679,17 +679,17 @@ export default function Policy() {
                       h-8
                       px-2.5
                       border
-                      border-gray-200
+                      border-black
                       rounded-md
                       text-xs
                       outline-none
-                      focus:border-purple-500
-                    "
+                      focus:border-black
+                     font-[Urbanist]"
                   />
 
                 </div>
 
-                <div className="min-w-0">
+                <div className="min-w-0 font-[Urbanist]">
 
                   <label className="block text-[11px] font-medium text-gray-700 mb-1">
                     Description
@@ -709,14 +709,14 @@ export default function Policy() {
                       px-2.5
                       py-2
                       border
-                      border-gray-200
+                      border-black
                       rounded-md
                       text-xs
                       outline-none
                       resize-none
                       overflow-hidden
-                      focus:border-purple-500
-                    "
+                      focus:border-black
+                     font-[Urbanist]"
                   />
 
                 </div>
@@ -725,11 +725,11 @@ export default function Policy() {
 
               {/* ROW 2 */}
 
-              <div className="grid grid-cols-2 gap-3 mt-3">
+              <div className="grid grid-cols-2 gap-3 mt-3 font-[Urbanist]">
 
                 {/* FILTER */}
 
-                <div className="min-w-0">
+                <div className="min-w-0 font-[Urbanist]">
 
                   <label className="block text-[11px] font-medium text-gray-700 mb-1">
                     Select Filter
@@ -763,13 +763,13 @@ export default function Policy() {
 
                 {/* DATE */}
 
-                <div className="min-w-0">
+                <div className="min-w-0 font-[Urbanist]">
 
                   <label className="block text-[11px] font-medium text-gray-700 mb-1">
                     Date
                   </label>
 
-                  <div className="relative w-full">
+                  <div className="relative w-full font-[Urbanist]">
 
                     <input
                       type="date"
@@ -783,12 +783,12 @@ export default function Policy() {
                         h-8
                         px-2.5
                         border
-                        border-gray-200
+                        border-black
                         rounded-md
                         text-xs
                         text-gray-500
                         outline-none
-                      "
+                       font-[Urbanist]"
                     />
 
                   </div>
@@ -799,7 +799,7 @@ export default function Policy() {
 
               {/* ACKNOWLEDGEMENT */}
 
-              <div className="mt-3">
+              <div className="mt-3 font-[Urbanist]">
 
                 <label className="block text-[11px] font-medium text-gray-700 mb-1">
                   Acknowledgement Type
@@ -840,7 +840,7 @@ export default function Policy() {
 
               {/* CHECKBOX */}
 
-              <label className="flex items-center gap-2 mt-3 text-[11px] text-gray-600 cursor-pointer">
+              <label className="flex items-center gap-2 mt-3 text-[11px] text-gray-600 cursor-pointer font-[Urbanist]">
 
                 <input
                   type="checkbox"
@@ -862,7 +862,7 @@ export default function Policy() {
 
               {/* FILE */}
 
-              <div className="mt-4">
+              <div className="mt-4 font-[Urbanist]">
 
                 <label
                   htmlFor="policy-file"
@@ -875,23 +875,23 @@ export default function Policy() {
                     w-full
                     border
                     border-dashed
-                    border-gray-300
+                    border-black
                     rounded-md
                     cursor-pointer
                     hover:bg-purple-50
-                  "
+                   font-[Urbanist]"
                 >
 
                   <Upload
                     size={24}
-                    className="text-purple-400 mb-2"
+                    className="text-purple-400 mb-2 font-[Urbanist]"
                   />
 
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 font-[Urbanist]">
                     Drag and drop
                   </span>
 
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 font-[Urbanist]">
                     - or -
                   </span>
 
@@ -900,7 +900,7 @@ export default function Policy() {
                   </span>
 
                   {formData.file && (
-                    <span className="text-[10px] text-green-600 mt-1 truncate max-w-[90%]">
+                    <span className="text-[10px] text-green-600 mt-1 truncate max-w-[90%] font-[Urbanist]">
                       {formData.file.name}
                     </span>
                   )}
@@ -910,7 +910,7 @@ export default function Policy() {
                 <input
                   id="policy-file"
                   type="file"
-                  className="hidden"
+                  className="hidden font-[Urbanist]"
                   onChange={handleFileChange}
                 />
 
@@ -920,7 +920,7 @@ export default function Policy() {
 
             {/* FOOTER */}
 
-            <div className="flex justify-end gap-2 px-5 py-3 border-t">
+            <div className="flex justify-end gap-2 px-5 py-3 border-t font-[Urbanist]">
 
               <button
                 type="button"
@@ -928,7 +928,7 @@ export default function Policy() {
                   setShowForm(false);
                   setOpenDropdown(null);
                 }}
-                className="px-4 py-1.5 border border-gray-200 rounded-md text-xs text-gray-700"
+                className="px-4 py-1.5 border border-black rounded-md text-xs text-gray-700 font-[Urbanist]"
               >
                 × Close
               </button>
@@ -936,7 +936,7 @@ export default function Policy() {
               <button
                 type="button"
                 onClick={handleSave}
-                className="px-4 py-1.5 bg-[#7C4DFF] text-white rounded-md text-xs flex items-center gap-1.5"
+                className="px-4 py-1.5 bg-[#7C4DFF] text-white rounded-md text-xs flex items-center gap-1.5 font-[Urbanist]"
               >
                 <Bookmark size={14} />
                 Save
@@ -956,13 +956,13 @@ export default function Policy() {
 
       {showPending && (
 
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10 p-3">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10 p-3 font-[Urbanist]">
 
-          <div className="w-[500px] max-w-full bg-white rounded-xl shadow-2xl overflow-hidden">
+          <div className="w-[500px] max-w-full bg-white rounded-xl shadow-2xl overflow-hidden font-[Urbanist]">
 
             {/* TABS */}
 
-            <div className="flex border-b overflow-x-auto">
+            <div className="flex border-b overflow-x-auto font-[Urbanist]">
 
               <button
                 type="button"
@@ -1006,14 +1006,14 @@ export default function Policy() {
                 Pending (90)
               </button>
 
-              <div className="flex-1" />
+              <div className="flex-1 font-[Urbanist]" />
 
               <button
                 type="button"
                 onClick={() =>
                   setShowPending(false)
                 }
-                className="px-4 text-gray-500"
+                className="px-4 text-gray-500 font-[Urbanist]"
               >
                 <X size={17} />
               </button>
@@ -1022,9 +1022,9 @@ export default function Policy() {
 
             {/* SUB HEADER */}
 
-            <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center justify-between px-5 py-4 font-[Urbanist]">
 
-              <div className="min-w-0">
+              <div className="min-w-0 font-[Urbanist]">
 
                 <span className="text-sm font-semibold text-gray-800">
                   {activeTab === "pending"
@@ -1035,25 +1035,25 @@ export default function Policy() {
                 </span>
 
                 {activeTab === "pending" && (
-                  <span className="ml-2 text-xs text-gray-400">
+                  <span className="ml-2 text-xs text-gray-400 font-[Urbanist]">
                     • Action Required
                   </span>
                 )}
 
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 font-[Urbanist]">
 
                 <button
                   type="button"
-                  className="w-8 h-8 border rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 border rounded-lg flex items-center justify-center font-[Urbanist]"
                 >
                   <Search size={15} />
                 </button>
 
                 <button
                   type="button"
-                  className="w-8 h-8 border rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 border rounded-lg flex items-center justify-center font-[Urbanist]"
                 >
                   <MoreHorizontal size={15} />
                 </button>
@@ -1087,13 +1087,13 @@ export default function Policy() {
 
             {/* EMPLOYEES */}
 
-            <div className="max-h-[310px] overflow-y-auto">
+            <div className="max-h-[310px] overflow-y-auto font-[Urbanist]">
 
               {employees.map((employee) => (
 
                 <div
                   key={employee.id}
-                  className="grid grid-cols-[45px_70px_1fr_55px] items-center px-4 py-2.5 border-b text-xs"
+                  className="grid grid-cols-[45px_70px_1fr_55px] items-center px-4 py-2.5 border-b text-xs font-[Urbanist]"
                 >
 
                   <div>
@@ -1112,17 +1112,17 @@ export default function Policy() {
 
                   </div>
 
-                  <div className="text-gray-600">
+                  <div className="text-gray-600 font-[Urbanist]">
                     {employee.refNo}
                   </div>
 
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 font-[Urbanist]">
 
                     <span className="w-6 h-6 flex-shrink-0 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-[8px] font-medium">
                       {employee.initials}
                     </span>
 
-                    <span className="text-gray-700 truncate">
+                    <span className="text-gray-700 truncate font-[Urbanist]">
                       {employee.name}
                     </span>
 
@@ -1130,7 +1130,7 @@ export default function Policy() {
 
                   <button
                     type="button"
-                    className="text-gray-500"
+                    className="text-gray-500 font-[Urbanist]"
                   >
                     <MoreHorizontal size={15} />
                   </button>
@@ -1143,27 +1143,27 @@ export default function Policy() {
 
             {/* FOOTER */}
 
-            <div className="flex items-center justify-between px-5 py-4 bg-[#F8F8FC]">
+            <div className="flex items-center justify-between px-5 py-4 bg-[#F8F8FC] font-[Urbanist]">
 
-              <span className="text-[10px] text-gray-600">
+              <span className="text-[10px] text-gray-600 font-[Urbanist]">
                 Showing 1-8 of 90
               </span>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 font-[Urbanist]">
 
                 <button
                   type="button"
                   onClick={() =>
                     setShowPending(false)
                   }
-                  className="px-4 py-2 border bg-white rounded-lg text-xs"
+                  className="px-4 py-2 border bg-white rounded-lg text-xs font-[Urbanist]"
                 >
                   × Cancel
                 </button>
 
                 <button
                   type="button"
-                  className="px-4 py-2 bg-[#7C4DFF] text-white rounded-lg text-xs"
+                  className="px-4 py-2 bg-[#7C4DFF] text-white rounded-lg text-xs font-[Urbanist]"
                 >
                   ✓ Approve Selected (
                   {selectedEmployees.length})

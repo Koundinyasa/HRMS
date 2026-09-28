@@ -35,7 +35,7 @@ export default function TagLeaveReport() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Top Leave Taken"
         reportType="top-leave-taken"

@@ -20,26 +20,26 @@ export default function LeaveReportLayout() {
   const handleBack = () => navigate(landingPath);
 
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="font-[Urbanist] p-3 sm:p-4 space-y-3 w-full min-w-0 max-w-full overflow-x-clip">
       {/* Top strip: section tab (left) + Back + filter icon (right, where marked) */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
-        <span className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-orange-200 bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
+      <div className="font-[Urbanist] bg-white rounded-lg shadow-sm border border-[#8B5A2B] px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <span className="font-[Urbanist] flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#8B5A2B] bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
           <ClipboardList size={16} />
           Leave Report
         </span>
 
-        <div className="flex items-center gap-3">
+        <div className="font-[Urbanist] flex items-center gap-3">
           {!isOnLandingPage && (
             <button
               type="button"
               onClick={handleBack}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-orange-800 rounded-md hover:bg-orange-900 transition-colors shrink-0"
+              className="font-[Urbanist] flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-orange-800 rounded-md hover:bg-orange-900 transition-colors shrink-0"
             >
               <ChevronLeft size={16} />
               Back
             </button>
           )}
-          <Filter size={18} className="text-gray-400 shrink-0" />
+          <Filter size={18} className="font-[Urbanist] text-gray-400 shrink-0" />
         </div>
       </div>
 

@@ -10,7 +10,7 @@ export default function CraftReportTabs({
   onTabChange,
 }: CraftReportTabsProps) {
   return (
-    <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
+    <div className="font-[Urbanist] flex items-center gap-3 border-b border-[#c9a79d] bg-white px-4 py-3 flex-wrap min-w-0">
       {CRAFT_REPORT_TABS.map((tab) => (
         <button
           key={tab.value}

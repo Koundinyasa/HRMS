@@ -358,13 +358,13 @@
 
 //   return (
 //     <div
-//       className="
+//       className="font-[Urbanist] 
 //         min-h-screen
 //         w-full
 //         overflow-x-hidden
 //         bg-[#f4f7fb]
 //         p-0
-//       "
+//        max-w-full"
 //     >
 
 //       {/* =====================================================
@@ -372,7 +372,7 @@
 //       ===================================================== */}
 
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           mt-2
 //           grid
 //           grid-cols-1
@@ -387,7 +387,7 @@
 //         =================================================== */}
 
 //         <aside
-//           className="
+//           className="font-[Urbanist] 
 //             min-h-[calc(100vh-8px)]
 //             rounded-[12px]
 //             border
@@ -398,7 +398,7 @@
 //         >
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               h-[61px]
 //               items-center
@@ -406,11 +406,11 @@
 //               border-b
 //               border-[#d9d9d9]
 //               px-3
-//             "
+//              flex-wrap min-w-0"
 //           >
 
 //             <h2
-//               className="
+//               className="font-[Urbanist] 
 //                 text-[16px]
 //                 font-semibold
 //                 text-[#263238]
@@ -421,7 +421,7 @@
 
 //             <button
 //               type="button"
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 h-[40px]
 //                 w-[40px]
@@ -432,7 +432,7 @@
 //                 border-[#b17869]
 //                 text-[#8f5142]
 //                 hover:bg-[#fff8f5]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <Plus size={24} />
 //             </button>
@@ -448,10 +448,10 @@
 //             CENTER FORM MASTER CONTENT
 //         =================================================== */}
 
-//         <div className="min-w-0">
+//         <div className="font-[Urbanist] min-w-0">
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               rounded-[10px]
 //               border
 //               border-[#d9d9d9]
@@ -465,7 +465,7 @@
 //           ================================================= */}
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               grid
 //               grid-cols-1
 //               gap-1
@@ -516,7 +516,7 @@
 //           </div>
 
 //           <main
-//             className="
+//             className="font-[Urbanist] 
 //               mt-[28px]
 //               min-w-0
 //               rounded-[12px]
@@ -532,7 +532,7 @@
 //           ================================================= */}
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               mt-3
 //               grid
 //               grid-cols-1
@@ -544,9 +544,9 @@
 
 //             {/* DOCUMENT NAME */}
 
-//             <div className="min-w-0">
-//               <label className="mb-1 block text-[12px] font-medium text-[#333]">
-//                 Document Name<span className="text-red-500">*</span>
+//             <div className="font-[Urbanist] min-w-0">
+//               <label className="font-[Urbanist] mb-1 block text-[12px] font-medium text-[#333]">
+//                 Document Name<span className="font-[Urbanist] text-red-500">*</span>
 //               </label>
 //               <input
 //                 type="text"
@@ -555,7 +555,7 @@
 //                   setDocumentName(event.target.value)
 //                 }
 //                 placeholder="Document Name..."
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[40px]
 //                   w-full
 //                   rounded-md
@@ -575,14 +575,14 @@
 
 //             {/* FORMAT TYPE */}
 
-//             <div className="relative">
+//             <div className="font-[Urbanist] relative">
 
 //               <select
 //                 value={formatType}
 //                 onChange={(event) =>
 //                   setFormatType(event.target.value)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[40px]
 //                   w-full
 //                   appearance-none
@@ -614,7 +614,7 @@
 
 //               <ChevronDown
 //                 size={16}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   pointer-events-none
 //                   absolute
 //                   right-3
@@ -629,14 +629,14 @@
 
 //             {/* MODULE TYPE */}
 
-//             <div className="relative">
+//             <div className="font-[Urbanist] relative">
 
 //               <select
 //                 value={moduleType}
 //                 onChange={(event) =>
 //                   setModuleType(event.target.value)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[40px]
 //                   w-full
 //                   appearance-none
@@ -672,7 +672,7 @@
 
 //               <ChevronDown
 //                 size={16}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   pointer-events-none
 //                   absolute
 //                   right-3
@@ -688,7 +688,7 @@
 //             {/* ALL COMPANY */}
 
 //             <label
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 h-[40px]
 //                 items-center
@@ -696,7 +696,7 @@
 //                 whitespace-nowrap
 //                 text-[14px]
 //                 text-[#455a64]
-//               "
+//                flex-wrap min-w-0"
 //             >
 
 //               <input
@@ -705,7 +705,7 @@
 //                 onChange={(event) =>
 //                   setAllCompany(event.target.checked)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[18px]
 //                   w-[18px]
 //                   accent-[#8f5142]
@@ -725,20 +725,20 @@
 //           ================================================= */}
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               mt-4
 //               flex
 //               items-center
 //               justify-between
 //               gap-3
 //               border-b
-//               border-[#e5e7eb]
+//               border-black
 //               pb-3
-//             "
+//              flex-wrap min-w-0"
 //           >
 
 //             <h2
-//               className="
+//               className="font-[Urbanist] 
 //                 text-[17px]
 //                 font-semibold
 //                 text-[#263238]
@@ -752,14 +752,14 @@
 //               onClick={() =>
 //                 setShowExpression(true)
 //               }
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 items-center
 //                 gap-1
 //                 text-[14px]
 //                 font-semibold
 //                 text-[#955847]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <Plus size={17} />
 
@@ -772,13 +772,13 @@
 
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 mt-3
 //                 min-w-0
 //               "
 //             >
 //             <section
-//               className="
+//               className="font-[Urbanist] 
 //                 min-w-0
 //                 overflow-hidden
 //                 rounded-md
@@ -790,19 +790,19 @@
 //               {/* FIELD TABS */}
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[46px]
 //                   items-center
 //                   overflow-x-auto
 //                   border-b
-//                   border-[#e5e7eb]
-//                 "
+//                   border-black
+//                  min-w-0"
 //               >
 
 //                 <button
 //                   type="button"
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex
 //                     h-full
 //                     w-[42px]
@@ -810,7 +810,7 @@
 //                     items-center
 //                     justify-center
 //                     text-[#777]
-//                   "
+//                    flex-wrap min-w-0"
 //                 >
 //                   <ChevronLeft size={18} />
 //                 </button>
@@ -849,7 +849,7 @@
 
 //                       {active && (
 //                         <span
-//                           className="
+//                           className="font-[Urbanist] 
 //                             absolute
 //                             bottom-0
 //                             left-0
@@ -866,7 +866,7 @@
 
 //                 <button
 //                   type="button"
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex
 //                     h-full
 //                     w-[42px]
@@ -874,7 +874,7 @@
 //                     items-center
 //                     justify-center
 //                     text-[#777]
-//                   "
+//                    flex-wrap min-w-0"
 //                 >
 //                   <ChevronRight size={18} />
 //                 </button>
@@ -885,21 +885,21 @@
 //               {/* SEARCH + SELECTED COUNT */}
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   items-center
 //                   justify-between
 //                   gap-3
 //                   px-3
 //                   py-2
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 
-//                 <div className="relative w-[250px]">
+//                 <div className="font-[Urbanist] relative w-[250px]">
 
 //                   <Search
 //                     size={17}
-//                     className="
+//                     className="font-[Urbanist] 
 //                       pointer-events-none
 //                       absolute
 //                       left-3
@@ -916,7 +916,7 @@
 //                       setSearchText(event.target.value)
 //                     }
 //                     placeholder="Search..."
-//                     className="
+//                     className="font-[Urbanist] 
 //                       h-[34px]
 //                       w-full
 //                       rounded-md
@@ -934,7 +934,7 @@
 
 
 //                 <div
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex
 //                     shrink-0
 //                     items-center
@@ -942,11 +942,11 @@
 //                     text-[13px]
 //                     font-medium
 //                     text-[#333]
-//                   "
+//                    flex-wrap min-w-0"
 //                 >
 
 //                   <span
-//                     className="
+//                     className="font-[Urbanist] 
 //                       flex
 //                       h-[18px]
 //                       w-[18px]
@@ -954,7 +954,7 @@
 //                       justify-center
 //                       rounded-[4px]
 //                       bg-[#8f5142]
-//                     "
+//                      flex-wrap min-w-0"
 //                   >
 //                     <svg
 //                       width="12"
@@ -983,17 +983,17 @@
 //               ================================================= */}
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[215px]
 //                   overflow-y-auto
 //                   overflow-x-hidden
 //                   border-t
-//                   border-[#e5e7eb]
+//                   border-black
 //                 "
 //               >
 
 //                 <div
-//                   className="
+//                   className="font-[Urbanist] 
 //                     grid
 //                     grid-cols-1
 //                     md:grid-cols-2
@@ -1013,7 +1013,7 @@
 //                       return (
 //                         <label
 //                           key={`${field}-${index}`}
-//                           className="
+//                           className="font-[Urbanist] 
 //                             flex
 //                             min-h-[45px]
 //                             cursor-pointer
@@ -1021,12 +1021,12 @@
 //                             gap-3
 //                             border-b
 //                             border-r
-//                             border-[#e5e7eb]
+//                             border-black
 //                             px-3
 //                             text-[13px]
 //                             text-[#37474f]
 //                             hover:bg-[#fafafa]
-//                           "
+//                            flex-wrap min-w-0"
 //                         >
 
 //                           <input
@@ -1035,7 +1035,7 @@
 //                             onChange={() =>
 //                               toggleField(field)
 //                             }
-//                             className="
+//                             className="font-[Urbanist] 
 //                               h-[18px]
 //                               w-[18px]
 //                               shrink-0
@@ -1067,28 +1067,28 @@
 //               {/* GROUP BY / ORDER BY */}
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   grid
 //                   grid-cols-1
 //                   gap-3
 //                   border-t
-//                   border-[#e5e7eb]
+//                   border-black
 //                   px-3
 //                   py-3
 //                   sm:grid-cols-2
 //                 "
 //               >
 //                 <div>
-//                   <label className="mb-1 block text-[12px] font-medium text-[#333]">
+//                   <label className="font-[Urbanist] mb-1 block text-[12px] font-medium text-[#333]">
 //                     Group By
 //                   </label>
-//                   <div className="relative">
+//                   <div className="font-[Urbanist] relative">
 //                     <select
 //                       value={groupBy}
 //                       onChange={(event) =>
 //                         setGroupBy(event.target.value)
 //                       }
-//                       className="
+//                       className="font-[Urbanist] 
 //                         h-[34px]
 //                         w-full
 //                         appearance-none
@@ -1113,22 +1113,22 @@
 //                     </select>
 //                     <ChevronDown
 //                       size={15}
-//                       className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#555]"
+//                       className="font-[Urbanist] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#555]"
 //                     />
 //                   </div>
 //                 </div>
 
 //                 <div>
-//                   <label className="mb-1 block text-[12px] font-medium text-[#333]">
+//                   <label className="font-[Urbanist] mb-1 block text-[12px] font-medium text-[#333]">
 //                     Order By
 //                   </label>
-//                   <div className="relative">
+//                   <div className="font-[Urbanist] relative">
 //                     <select
 //                       value={orderBy}
 //                       onChange={(event) =>
 //                         setOrderBy(event.target.value)
 //                       }
-//                       className="
+//                       className="font-[Urbanist] 
 //                         h-[34px]
 //                         w-full
 //                         appearance-none
@@ -1153,7 +1153,7 @@
 //                     </select>
 //                     <ChevronDown
 //                       size={15}
-//                       className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#555]"
+//                       className="font-[Urbanist] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#555]"
 //                     />
 //                   </div>
 //                 </div>
@@ -1174,13 +1174,13 @@
 //         =================================================== */}
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             min-w-0
 //             xl:mt-[93px]
 //           "
 //         >
 //             <section
-//               className="
+//               className="font-[Urbanist] 
 //                 min-w-0
 //                 rounded-lg
 //                 border
@@ -1192,16 +1192,16 @@
 //             >
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mb-3
 //                   flex
 //                   items-center
 //                   justify-between
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 
 //                 <h2
-//                   className="
+//                   className="font-[Urbanist] 
 //                     text-[16px]
 //                     font-semibold
 //                     text-[#263238]
@@ -1211,7 +1211,7 @@
 //                 </h2>
 
 //                 <span
-//                   className="
+//                   className="font-[Urbanist] 
 //                     rounded-md
 //                     bg-[#fff0eb]
 //                     px-3
@@ -1228,7 +1228,7 @@
 
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   max-h-[300px]
 //                   space-y-2
 //                   overflow-y-auto
@@ -1241,7 +1241,7 @@
 //                   (field, index) => (
 //                     <div
 //                       key={field.id}
-//                       className="
+//                       className="font-[Urbanist] 
 //                         flex
 //                         min-h-[38px]
 //                         items-center
@@ -1250,11 +1250,11 @@
 //                         border
 //                         border-[#dfe5eb]
 //                         px-3
-//                       "
+//                        flex-wrap min-w-0"
 //                     >
 
 //                       <span
-//                         className="
+//                         className="font-[Urbanist] 
 //                           w-[22px]
 //                           shrink-0
 //                           text-[11px]
@@ -1265,7 +1265,7 @@
 //                       </span>
 
 //                       <span
-//                         className="
+//                         className="font-[Urbanist] 
 //                           min-w-0
 //                           flex-1
 //                           truncate
@@ -1281,7 +1281,7 @@
 //                         onClick={() =>
 //                           moveUp(index)
 //                         }
-//                         className="text-[#777]"
+//                         className="font-[Urbanist] text-[#777]"
 //                       >
 //                         <ArrowUp size={15} />
 //                       </button>
@@ -1291,7 +1291,7 @@
 //                         onClick={() =>
 //                           moveDown(index)
 //                         }
-//                         className="text-[#777]"
+//                         className="font-[Urbanist] text-[#777]"
 //                       >
 //                         <ArrowDown size={15} />
 //                       </button>
@@ -1301,7 +1301,7 @@
 //                         onClick={() =>
 //                           removeSelected(index)
 //                         }
-//                         className="text-[#ff6b6b]"
+//                         className="font-[Urbanist] text-[#ff6b6b]"
 //                       >
 //                         <Trash2 size={16} />
 //                       </button>
@@ -1314,7 +1314,7 @@
 
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mt-4
 //                   rounded-md
 //                   bg-[#f6f8fa]
@@ -1341,7 +1341,7 @@
 
 //       {showExpression && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             fixed
 //             inset-0
 //             z-[99999]
@@ -1350,36 +1350,36 @@
 //             justify-center
 //             bg-black/50
 //             p-4
-//           "
+//            flex-wrap min-w-0"
 //         >
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               w-full
 //               max-w-[780px]
 //               overflow-hidden
 //               rounded-lg
 //               bg-white
 //               shadow-2xl
-//             "
+//              max-w-full"
 //           >
 
 //             {/* MODAL HEADER */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 items-center
 //                 justify-between
 //                 border-b
-//                 border-[#e5e7eb]
+//                 border-black
 //                 px-6
 //                 py-4
-//               "
+//                flex-wrap min-w-0"
 //             >
 
 //               <h2
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[22px]
 //                   font-semibold
 //                   text-[#263238]
@@ -1393,14 +1393,14 @@
 //                 onClick={() =>
 //                   setShowExpression(false)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[#777]
 //                   hover:text-[#333]
 //                 "
 //               >
 //                 <ChevronDown
 //                   size={20}
-//                   className="rotate-180"
+//                   className="font-[Urbanist] rotate-180"
 //                 />
 //               </button>
 
@@ -1409,10 +1409,10 @@
 
 //             {/* WARNING */}
 
-//             <div className="p-5">
+//             <div className="font-[Urbanist] p-5">
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mb-5
 //                   rounded-md
 //                   border
@@ -1431,7 +1431,7 @@
 
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   grid
 //                   grid-cols-1
 //                   gap-4
@@ -1444,7 +1444,7 @@
 //                 <div>
 
 //                   <label
-//                     className="
+//                     className="font-[Urbanist] 
 //                       mb-2
 //                       block
 //                       text-[15px]
@@ -1453,14 +1453,14 @@
 //                     "
 //                   >
 //                     Formula Name
-//                     <span className="text-red-500">
+//                     <span className="font-[Urbanist] text-red-500">
 //                       *
 //                     </span>
 //                   </label>
 
 //                   <input
 //                     type="text"
-//                     className="
+//                     className="font-[Urbanist] 
 //                       h-[44px]
 //                       w-full
 //                       rounded-md
@@ -1475,7 +1475,7 @@
 
 
 //                   <label
-//                     className="
+//                     className="font-[Urbanist] 
 //                       mb-2
 //                       mt-5
 //                       block
@@ -1488,7 +1488,7 @@
 //                   </label>
 
 //                   <textarea
-//                     className="
+//                     className="font-[Urbanist] 
 //                       h-[160px]
 //                       w-full
 //                       resize-none
@@ -1508,7 +1508,7 @@
 //                 {/* RIGHT */}
 
 //                 <div
-//                   className="
+//                   className="font-[Urbanist] 
 //                     min-h-[230px]
 //                     rounded-lg
 //                     bg-[#eee9fa]
@@ -1517,7 +1517,7 @@
 //                 >
 
 //                   <div
-//                     className="
+//                     className="font-[Urbanist] 
 //                       flex
 //                       h-7
 //                       w-7
@@ -1527,7 +1527,7 @@
 //                       border
 //                       border-[#a995ef]
 //                       text-[#8b72e8]
-//                     "
+//                      flex-wrap min-w-0"
 //                   >
 //                     i
 //                   </div>
@@ -1542,17 +1542,17 @@
 //             {/* MODAL FOOTER */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 items-center
 //                 justify-end
 //                 gap-3
 //                 border-t
-//                 border-[#e5e7eb]
+//                 border-black
 //                 bg-[#f5f7fa]
 //                 px-5
 //                 py-4
-//               "
+//                flex-wrap min-w-0"
 //             >
 
 //               <button
@@ -1560,7 +1560,7 @@
 //                 onClick={() =>
 //                   setShowExpression(false)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[48px]
 //                   items-center
@@ -1572,7 +1572,7 @@
 //                   px-6
 //                   text-[16px]
 //                   text-[#555]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <XIcon />
 
@@ -1582,7 +1582,7 @@
 
 //               <button
 //                 type="button"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[48px]
 //                   items-center
@@ -1593,7 +1593,7 @@
 //                   text-[16px]
 //                   font-semibold
 //                   text-white
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Bookmark size={18} />
 
@@ -1995,13 +1995,13 @@ export default function FormMasterPage() {
 
   return (
     <div
-      className="
+      className="font-[Urbanist] 
         min-h-screen
         w-full
         overflow-x-hidden
         bg-[#f4f7fb]
         p-0
-      "
+       max-w-full"
     >
 
       {/* =====================================================
@@ -2009,7 +2009,7 @@ export default function FormMasterPage() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           mt-2
           grid
           grid-cols-1
@@ -2024,7 +2024,7 @@ export default function FormMasterPage() {
         =================================================== */}
 
         <aside
-          className="
+          className="font-[Urbanist] 
             h-fit
     min-h-0
     w-full
@@ -2038,7 +2038,7 @@ export default function FormMasterPage() {
         >
 
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               h-[61px]
               items-center
@@ -2046,11 +2046,11 @@ export default function FormMasterPage() {
               border-b
               border-[#d9d9d9]
               px-3
-            "
+             flex-wrap min-w-0"
           >
 
             <h2
-              className="
+              className="font-[Urbanist] 
                 text-[16px]
                 font-semibold
                 text-[#263238]
@@ -2061,7 +2061,7 @@ export default function FormMasterPage() {
 
             <button
               type="button"
-              className="
+              className="font-[Urbanist] 
                 flex
                 h-[40px]
                 w-[40px]
@@ -2072,7 +2072,7 @@ export default function FormMasterPage() {
                 border-[#b17869]
                 text-[#8f5142]
                 hover:bg-[#fff8f5]
-              "
+               flex-wrap min-w-0"
             >
               <Plus size={24} />
             </button>
@@ -2097,7 +2097,7 @@ export default function FormMasterPage() {
         >
 
           <div
-            className="
+            className="font-[Urbanist] 
               rounded-[10px]
               border
               border-[#d9d9d9]
@@ -2111,7 +2111,7 @@ export default function FormMasterPage() {
           ================================================= */}
 
           <div
-            className="
+            className="font-[Urbanist] 
               grid
               grid-cols-1
               gap-1
@@ -2164,7 +2164,7 @@ export default function FormMasterPage() {
           {activeStep === "Step 1 - Settings" && (
             <>
           <main
-            className="
+            className="font-[Urbanist] 
               mt-[28px]
               min-w-0
               rounded-[12px]
@@ -2183,9 +2183,9 @@ export default function FormMasterPage() {
               DOCUMENT NAME - FULL ROW
           ================================================= */}
 
-          <div className="mt-3 w-full">
-            <label className="mb-1 block text-[12px] font-medium text-[#333]">
-              Document Name<span className="text-red-500">*</span>
+          <div className="font-[Urbanist] mt-3 w-full">
+            <label className="font-[Urbanist] mb-1 block text-[12px] font-medium text-[#333]">
+              Document Name<span className="font-[Urbanist] text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -2194,7 +2194,7 @@ export default function FormMasterPage() {
                 setDocumentName(event.target.value)
               }
               placeholder="Document Name..."
-              className="
+              className="font-[Urbanist] 
                 h-[40px]
                 w-full
                 rounded-md
@@ -2216,7 +2216,7 @@ export default function FormMasterPage() {
           ================================================= */}
 
           <div
-            className="
+            className="font-[Urbanist] 
               mt-3
               flex
               w-full
@@ -2230,7 +2230,7 @@ export default function FormMasterPage() {
 
             {/* FORMAT TYPE */}
 
-            <div className="relative w-full min-w-0 sm:w-[220px]">
+            <div className="font-[Urbanist] relative w-full min-w-0 sm:w-[220px]">
               <ResponsiveDropdown
                 value={formatType}
                 placeholder="Select Format Type"
@@ -2245,7 +2245,7 @@ export default function FormMasterPage() {
 
             {/* MODULE TYPE */}
 
-            <div className="relative w-full min-w-0 sm:w-[220px]">
+            <div className="font-[Urbanist] relative w-full min-w-0 sm:w-[220px]">
               <ResponsiveDropdown
                 value={moduleType}
                 placeholder="Select module Type"
@@ -2262,7 +2262,7 @@ export default function FormMasterPage() {
             {/* ALL COMPANY */}
 
             <label
-              className="
+              className="font-[Urbanist] 
                 flex
                 h-[40px]
                 items-center
@@ -2270,7 +2270,7 @@ export default function FormMasterPage() {
                 whitespace-nowrap
                 text-[14px]
                 text-[#455a64]
-              "
+               flex-wrap min-w-0"
             >
 
               <input
@@ -2279,7 +2279,7 @@ export default function FormMasterPage() {
                 onChange={(event) =>
                   setAllCompany(event.target.checked)
                 }
-                className="
+                className="font-[Urbanist] 
                   h-[18px]
                   w-[18px]
                   accent-[#8f5142]
@@ -2299,18 +2299,18 @@ export default function FormMasterPage() {
           ================================================= */}
 
           <div
-            className="
+            className="font-[Urbanist] 
               mt-4
               flex
               items-center
               justify-between
               gap-3
               pb-3
-            "
+             flex-wrap min-w-0"
           >
 
             <h2
-              className="
+              className="font-[Urbanist] 
                 text-[17px]
                 font-semibold
                 text-[#263238]
@@ -2324,14 +2324,14 @@ export default function FormMasterPage() {
               onClick={() =>
                 setShowExpression(true)
               }
-              className="
+              className="font-[Urbanist] 
                 flex
                 items-center
                 gap-1
                 text-[14px]
                 font-semibold
                 text-[#955847]
-              "
+               flex-wrap min-w-0"
             >
               <Plus size={17} />
 
@@ -2344,13 +2344,13 @@ export default function FormMasterPage() {
 
 
             <div
-              className="
+              className="font-[Urbanist] 
                 mt-3
                 min-w-0
               "
             >
             <section
-              className="
+              className="font-[Urbanist] 
                 min-w-0
                 overflow-visible
                 rounded-md
@@ -2362,17 +2362,17 @@ export default function FormMasterPage() {
               {/* FIELD TABS */}
 
               <div
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[46px]
                   items-center
                   overflow-x-auto
-                "
+                 min-w-0"
               >
 
                 <button
                   type="button"
-                  className="
+                  className="font-[Urbanist] 
                     flex
                     h-full
                     w-[42px]
@@ -2380,7 +2380,7 @@ export default function FormMasterPage() {
                     items-center
                     justify-center
                     text-[#777]
-                  "
+                   flex-wrap min-w-0"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -2419,7 +2419,7 @@ export default function FormMasterPage() {
 
                       {active && (
                         <span
-                          className="
+                          className="font-[Urbanist] 
                             absolute
                             bottom-0
                             left-0
@@ -2436,7 +2436,7 @@ export default function FormMasterPage() {
 
                 <button
                   type="button"
-                  className="
+                  className="font-[Urbanist] 
                     flex
                     h-full
                     w-[42px]
@@ -2444,7 +2444,7 @@ export default function FormMasterPage() {
                     items-center
                     justify-center
                     text-[#777]
-                  "
+                   flex-wrap min-w-0"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -2455,21 +2455,21 @@ export default function FormMasterPage() {
               {/* SEARCH + SELECTED COUNT */}
 
               <div
-                className="
+                className="font-[Urbanist] 
                   flex
                   items-center
                   justify-between
                   gap-3
                   px-3
                   py-2
-                "
+                 flex-wrap min-w-0"
               >
 
-                <div className="relative w-[250px]">
+                <div className="font-[Urbanist] relative w-[250px]">
 
                   <Search
                     size={17}
-                    className="
+                    className="font-[Urbanist] 
                       pointer-events-none
                       absolute
                       left-3
@@ -2486,7 +2486,7 @@ export default function FormMasterPage() {
                       setSearchText(event.target.value)
                     }
                     placeholder="Search..."
-                    className="
+                    className="font-[Urbanist] 
                       h-[34px]
                       w-full
                       rounded-md
@@ -2504,7 +2504,7 @@ export default function FormMasterPage() {
 
 
                 <div
-                  className="
+                  className="font-[Urbanist] 
                     flex
                     shrink-0
                     items-center
@@ -2512,11 +2512,11 @@ export default function FormMasterPage() {
                     text-[13px]
                     font-medium
                     text-[#333]
-                  "
+                   flex-wrap min-w-0"
                 >
 
                   <span
-                    className="
+                    className="font-[Urbanist] 
                       flex
                       h-[18px]
                       w-[18px]
@@ -2524,7 +2524,7 @@ export default function FormMasterPage() {
                       justify-center
                       rounded-[4px]
                       bg-[#8f5142]
-                    "
+                     flex-wrap min-w-0"
                   >
                     <svg
                       width="12"
@@ -2553,7 +2553,7 @@ export default function FormMasterPage() {
               ================================================= */}
 
               <div
-                className="
+                className="font-[Urbanist] 
                   h-[215px]
                   overflow-y-auto
                   overflow-x-hidden
@@ -2561,7 +2561,7 @@ export default function FormMasterPage() {
               >
 
                 <div
-                  className="
+                  className="font-[Urbanist] 
                     grid
                     grid-cols-1
                     md:grid-cols-2
@@ -2581,7 +2581,7 @@ export default function FormMasterPage() {
                       return (
                         <label
                           key={`${field}-${index}`}
-                          className="
+                          className="font-[Urbanist] 
                             flex
                             min-h-[45px]
                             cursor-pointer
@@ -2591,7 +2591,7 @@ export default function FormMasterPage() {
                             text-[13px]
                             text-[#37474f]
                             hover:bg-[#fafafa]
-                          "
+                           flex-wrap min-w-0"
                         >
 
                           <input
@@ -2600,7 +2600,7 @@ export default function FormMasterPage() {
                             onChange={() =>
                               toggleField(field)
                             }
-                            className="
+                            className="font-[Urbanist] 
                               h-[18px]
                               w-[18px]
                               shrink-0
@@ -2632,7 +2632,7 @@ export default function FormMasterPage() {
               {/* GROUP BY / ORDER BY */}
 
               <div
-                className="
+                className="font-[Urbanist] 
                   grid
                   w-full
                   min-w-0
@@ -2646,8 +2646,8 @@ export default function FormMasterPage() {
                 "
               >
                 {/* GROUP BY */}
-                <div className="w-full min-w-0">
-                  <label className="mb-1 block text-[12px] font-medium text-[#333]">
+                <div className="font-[Urbanist] w-full min-w-0">
+                  <label className="font-[Urbanist] mb-1 block text-[12px] font-medium text-[#333]">
                     Group By
                   </label>
 
@@ -2661,8 +2661,8 @@ export default function FormMasterPage() {
                 </div>
 
                 {/* ORDER BY */}
-                <div className="w-full min-w-0">
-                  <label className="mb-1 block text-[12px] font-medium text-[#333]">
+                <div className="font-[Urbanist] w-full min-w-0">
+                  <label className="font-[Urbanist] mb-1 block text-[12px] font-medium text-[#333]">
                     Order By
                   </label>
 
@@ -2688,7 +2688,7 @@ export default function FormMasterPage() {
 
           {activeStep === "Step 2 - Email Settings" && (
             <div
-              className="
+              className="font-[Urbanist] 
                 mt-[28px]
                 min-w-0
                 rounded-[12px]
@@ -2703,15 +2703,15 @@ export default function FormMasterPage() {
                   EMAIL SETTINGS
               ================================================= */}
 
-              <div className="w-full">
-                <label className="mb-1 block text-[14px] font-medium text-[#263238]">
-                  Subject<span className="text-red-500">*</span>
+              <div className="font-[Urbanist] w-full">
+                <label className="font-[Urbanist] mb-1 block text-[14px] font-medium text-[#263238]">
+                  Subject<span className="font-[Urbanist] text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
                   placeholder="Enter Information"
-                  className="
+                  className="font-[Urbanist] 
                     h-[60px]
                     w-full
                     rounded-[7px]
@@ -2726,13 +2726,13 @@ export default function FormMasterPage() {
                   "
                 />
 
-                <p className="mt-1 px-2 text-[13px] text-[#d56b7d]">
+                <p className="font-[Urbanist] mt-1 px-2 text-[13px] text-[#d56b7d]">
                   Field Required
                 </p>
               </div>
 
               <div
-                className="
+                className="font-[Urbanist] 
                   mt-5
                   grid
                   grid-cols-1
@@ -2741,16 +2741,16 @@ export default function FormMasterPage() {
                 "
               >
                 <div
-                  className="
+                  className="font-[Urbanist] 
                     min-h-[430px]
                     rounded-[8px]
                     bg-[#f5f3ff]
                     p-5
                   "
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="font-[Urbanist] flex items-start gap-3 flex-wrap min-w-0">
                     <span
-                      className="
+                      className="font-[Urbanist] 
                         flex
                         h-6
                         w-6
@@ -2763,19 +2763,19 @@ export default function FormMasterPage() {
                         text-[15px]
                         font-semibold
                         text-[#8b72e8]
-                      "
+                       flex-wrap min-w-0"
                     >
                       i
                     </span>
 
-                    <p className="text-[15px] font-medium leading-6 text-[#4b5563]">
+                    <p className="font-[Urbanist] text-[15px] font-medium leading-6 text-[#4b5563]">
                       Use below placeholder for these
                       <br />
                       information, click to copy
                     </p>
                   </div>
 
-                  <div className="mt-3 space-y-4 pl-12 text-[14px] text-[#667085]">
+                  <div className="font-[Urbanist] mt-3 space-y-4 pl-12 text-[14px] text-[#667085]">
                     <p>User Name : {"{username}"}</p>
                     <p>Employee Name : {"{empname}"}</p>
                     <p>Company Name : {"{companyname}"}</p>
@@ -2784,9 +2784,9 @@ export default function FormMasterPage() {
                   </div>
                 </div>
 
-                <div className="min-w-0">
+                <div className="font-[Urbanist] min-w-0">
                   <div
-                    className="
+                    className="font-[Urbanist] 
                       rounded-[7px]
                       border
                       border-[#f0e2bc]
@@ -2797,19 +2797,19 @@ export default function FormMasterPage() {
                       text-[#777]
                     "
                   >
-                    <span className="mr-2 text-[#d6b74c]">⚠</span>
+                    <span className="font-[Urbanist] mr-2 text-[#d6b74c]">⚠</span>
                     Please do not change the variable ex:{"{username}"},
                     and Please do not use space between the lines.
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <label className="text-[14px] font-medium text-[#263238]">
-                      Message<span className="text-red-500">*</span>
+                  <div className="font-[Urbanist] mt-4 flex items-center justify-between flex-wrap min-w-0">
+                    <label className="font-[Urbanist] text-[14px] font-medium text-[#263238]">
+                      Message<span className="font-[Urbanist] text-red-500">*</span>
                     </label>
 
                     <button
                       type="button"
-                      className="
+                      className="font-[Urbanist] 
                         rounded-full
                         bg-[#dff6ff]
                         px-4
@@ -2824,7 +2824,7 @@ export default function FormMasterPage() {
                   </div>
 
                   <div
-                    className="
+                    className="font-[Urbanist] 
                       mt-2
                       overflow-hidden
                       rounded-[6px]
@@ -2834,7 +2834,7 @@ export default function FormMasterPage() {
                     "
                   >
                     <div
-                      className="
+                      className="font-[Urbanist] 
                         flex
                         flex-wrap
                         items-center
@@ -2845,7 +2845,7 @@ export default function FormMasterPage() {
                         py-3
                         text-[15px]
                         text-[#4b5563]
-                      "
+                       min-w-0"
                     >
                       <span>Arial</span>
                       <span>⌄</span>
@@ -2875,7 +2875,7 @@ export default function FormMasterPage() {
 
                     <textarea
                       placeholder="Write something awesome..."
-                      className="
+                      className="font-[Urbanist] 
                         h-[310px]
                         w-full
                         resize-none
@@ -2901,13 +2901,13 @@ export default function FormMasterPage() {
 
         {activeStep === "Step 1 - Settings" && (
         <div
-          className="
+          className="font-[Urbanist] 
             min-w-0
             xl:mt-[93px]
           "
         >
             <section
-              className="
+              className="font-[Urbanist] 
                 min-w-0
                 rounded-lg
                 border
@@ -2919,16 +2919,16 @@ export default function FormMasterPage() {
             >
 
               <div
-                className="
+                className="font-[Urbanist] 
                   mb-3
                   flex
                   items-center
                   justify-between
-                "
+                 flex-wrap min-w-0"
               >
 
                 <h2
-                  className="
+                  className="font-[Urbanist] 
                     text-[16px]
                     font-semibold
                     text-[#263238]
@@ -2938,7 +2938,7 @@ export default function FormMasterPage() {
                 </h2>
 
                 <span
-                  className="
+                  className="font-[Urbanist] 
                     rounded-md
                     bg-[#fff0eb]
                     px-3
@@ -2955,7 +2955,7 @@ export default function FormMasterPage() {
 
 
               <div
-                className="
+                className="font-[Urbanist] 
                   max-h-[300px]
                   space-y-2
                   overflow-y-auto
@@ -2968,7 +2968,7 @@ export default function FormMasterPage() {
                   (field, index) => (
                     <div
                       key={field.id}
-                      className="
+                      className="font-[Urbanist] 
                         flex
                         min-h-[38px]
                         items-center
@@ -2977,11 +2977,11 @@ export default function FormMasterPage() {
                         border
                         border-[#dfe5eb]
                         px-3
-                      "
+                       flex-wrap min-w-0"
                     >
 
                       <span
-                        className="
+                        className="font-[Urbanist] 
                           w-[22px]
                           shrink-0
                           text-[11px]
@@ -2992,7 +2992,7 @@ export default function FormMasterPage() {
                       </span>
 
                       <span
-                        className="
+                        className="font-[Urbanist] 
                           min-w-0
                           flex-1
                           truncate
@@ -3008,7 +3008,7 @@ export default function FormMasterPage() {
                         onClick={() =>
                           moveUp(index)
                         }
-                        className="text-[#777]"
+                        className="font-[Urbanist] text-[#777]"
                       >
                         <ArrowUp size={15} />
                       </button>
@@ -3018,7 +3018,7 @@ export default function FormMasterPage() {
                         onClick={() =>
                           moveDown(index)
                         }
-                        className="text-[#777]"
+                        className="font-[Urbanist] text-[#777]"
                       >
                         <ArrowDown size={15} />
                       </button>
@@ -3028,7 +3028,7 @@ export default function FormMasterPage() {
                         onClick={() =>
                           removeSelected(index)
                         }
-                        className="text-[#ff6b6b]"
+                        className="font-[Urbanist] text-[#ff6b6b]"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -3041,7 +3041,7 @@ export default function FormMasterPage() {
 
 
               <div
-                className="
+                className="font-[Urbanist] 
                   mt-4
                   rounded-md
                   bg-[#f6f8fa]
@@ -3069,7 +3069,7 @@ export default function FormMasterPage() {
 
       {showExpression && (
         <div
-          className="
+          className="font-[Urbanist] 
             fixed
             inset-0
             z-[99999]
@@ -3078,36 +3078,36 @@ export default function FormMasterPage() {
             justify-center
             bg-black/50
             p-4
-          "
+           flex-wrap min-w-0"
         >
 
           <div
-            className="
+            className="font-[Urbanist] 
               w-full
               max-w-[780px]
               overflow-hidden
               rounded-lg
               bg-white
               shadow-2xl
-            "
+             max-w-full"
           >
 
             {/* MODAL HEADER */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 items-center
                 justify-between
                 border-b
-                border-[#e5e7eb]
+                border-black
                 px-6
                 py-4
-              "
+               flex-wrap min-w-0"
             >
 
               <h2
-                className="
+                className="font-[Urbanist] 
                   text-[22px]
                   font-semibold
                   text-[#263238]
@@ -3121,14 +3121,14 @@ export default function FormMasterPage() {
                 onClick={() =>
                   setShowExpression(false)
                 }
-                className="
+                className="font-[Urbanist] 
                   text-[#777]
                   hover:text-[#333]
                 "
               >
                 <ChevronDown
                   size={20}
-                  className="rotate-180"
+                  className="font-[Urbanist] rotate-180"
                 />
               </button>
 
@@ -3137,10 +3137,10 @@ export default function FormMasterPage() {
 
             {/* WARNING */}
 
-            <div className="p-5">
+            <div className="font-[Urbanist] p-5">
 
               <div
-                className="
+                className="font-[Urbanist] 
                   mb-5
                   rounded-md
                   border
@@ -3159,7 +3159,7 @@ export default function FormMasterPage() {
 
 
               <div
-                className="
+                className="font-[Urbanist] 
                   grid
                   grid-cols-1
                   gap-4
@@ -3172,7 +3172,7 @@ export default function FormMasterPage() {
                 <div>
 
                   <label
-                    className="
+                    className="font-[Urbanist] 
                       mb-2
                       block
                       text-[15px]
@@ -3181,14 +3181,14 @@ export default function FormMasterPage() {
                     "
                   >
                     Formula Name
-                    <span className="text-red-500">
+                    <span className="font-[Urbanist] text-red-500">
                       *
                     </span>
                   </label>
 
                   <input
                     type="text"
-                    className="
+                    className="font-[Urbanist] 
                       h-[44px]
                       w-full
                       rounded-md
@@ -3203,7 +3203,7 @@ export default function FormMasterPage() {
 
 
                   <label
-                    className="
+                    className="font-[Urbanist] 
                       mb-2
                       mt-5
                       block
@@ -3216,7 +3216,7 @@ export default function FormMasterPage() {
                   </label>
 
                   <textarea
-                    className="
+                    className="font-[Urbanist] 
                       h-[160px]
                       w-full
                       resize-none
@@ -3236,7 +3236,7 @@ export default function FormMasterPage() {
                 {/* RIGHT */}
 
                 <div
-                  className="
+                  className="font-[Urbanist] 
                     min-h-[230px]
                     rounded-lg
                     bg-[#eee9fa]
@@ -3245,7 +3245,7 @@ export default function FormMasterPage() {
                 >
 
                   <div
-                    className="
+                    className="font-[Urbanist] 
                       flex
                       h-7
                       w-7
@@ -3255,7 +3255,7 @@ export default function FormMasterPage() {
                       border
                       border-[#a995ef]
                       text-[#8b72e8]
-                    "
+                     flex-wrap min-w-0"
                   >
                     i
                   </div>
@@ -3270,17 +3270,17 @@ export default function FormMasterPage() {
             {/* MODAL FOOTER */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 items-center
                 justify-end
                 gap-3
                 border-t
-                border-[#e5e7eb]
+                border-black
                 bg-[#f5f7fa]
                 px-5
                 py-4
-              "
+               flex-wrap min-w-0"
             >
 
               <button
@@ -3288,7 +3288,7 @@ export default function FormMasterPage() {
                 onClick={() =>
                   setShowExpression(false)
                 }
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[48px]
                   items-center
@@ -3300,7 +3300,7 @@ export default function FormMasterPage() {
                   px-6
                   text-[16px]
                   text-[#555]
-                "
+                 flex-wrap min-w-0"
               >
                 <XIcon />
 
@@ -3310,7 +3310,7 @@ export default function FormMasterPage() {
 
               <button
                 type="button"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[48px]
                   items-center
@@ -3321,7 +3321,7 @@ export default function FormMasterPage() {
                   text-[16px]
                   font-semibold
                   text-white
-                "
+                 flex-wrap min-w-0"
               >
                 <Bookmark size={18} />
 
@@ -3407,7 +3407,7 @@ function ResponsiveDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="w-full min-w-0"
+      className="font-[Urbanist] w-full min-w-0"
     >
       <button
         type="button"
@@ -3416,7 +3416,7 @@ function ResponsiveDropdown({
         }
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="
+        className="font-[Urbanist] 
           flex
           h-[40px]
           w-full
@@ -3436,7 +3436,7 @@ function ResponsiveDropdown({
           focus:border-[#8f5142]
           focus:ring-1
           focus:ring-[#b17869]/30
-        "
+         flex-wrap max-w-full"
       >
         <span
           className={`
@@ -3467,7 +3467,7 @@ function ResponsiveDropdown({
       {open && (
         <div
           role="listbox"
-          className="
+          className="font-[Urbanist] 
             mt-1
             w-full
             min-w-0
@@ -3480,7 +3480,7 @@ function ResponsiveDropdown({
             shadow-[0_4px_12px_rgba(0,0,0,0.14)]
           "
         >
-          <div className="max-h-[180px] w-full min-w-0 overflow-y-auto overflow-x-hidden">
+          <div className="font-[Urbanist] max-h-[180px] w-full min-w-0 overflow-y-auto overflow-x-hidden max-w-full">
             <button
               type="button"
               role="option"
@@ -3601,7 +3601,7 @@ function ColumnDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="w-full min-w-0"
+      className="font-[Urbanist] w-full min-w-0"
     >
       <button
         type="button"
@@ -3610,7 +3610,7 @@ function ColumnDropdown({
         }
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="
+        className="font-[Urbanist] 
           flex
           h-[34px]
           w-full
@@ -3630,7 +3630,7 @@ function ColumnDropdown({
           focus:border-[#8f5142]
           focus:ring-1
           focus:ring-[#b17869]/30
-        "
+         flex-wrap max-w-full"
       >
         <span
           className={`
@@ -3661,7 +3661,7 @@ function ColumnDropdown({
       {open && (
         <div
           role="listbox"
-          className="
+          className="font-[Urbanist] 
             mt-1
             w-full
             min-w-0
@@ -3674,7 +3674,7 @@ function ColumnDropdown({
             shadow-[0_4px_12px_rgba(0,0,0,0.14)]
           "
         >
-          <div className="max-h-[180px] w-full min-w-0 overflow-y-auto overflow-x-hidden">
+          <div className="font-[Urbanist] max-h-[180px] w-full min-w-0 overflow-y-auto overflow-x-hidden max-w-full">
             <button
               type="button"
               role="option"

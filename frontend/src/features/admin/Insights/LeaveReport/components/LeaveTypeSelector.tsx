@@ -46,22 +46,22 @@ export default function LeaveTypeSelector({ value, onChange }: LeaveTypeSelector
     LEAVE_TYPE_OPTIONS.find((o) => o.value === value)?.label ?? "Select Leave Type";
 
   return (
-    <div ref={ref} className="relative w-full sm:w-auto">
+    <div ref={ref} className="font-[Urbanist] relative w-full sm:w-auto">
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors w-full sm:min-w-[160px] justify-between"
+        className="font-[Urbanist] flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-800 border border-[#8B5A2B] rounded-md hover:bg-gray-50 transition-colors w-full sm:min-w-[160px] justify-between"
       >
-        <span className="truncate">{selectedLabel}</span>
-        <ChevronDown size={14} className="text-gray-500 shrink-0" />
+        <span className="font-[Urbanist] truncate">{selectedLabel}</span>
+        <ChevronDown size={14} className="font-[Urbanist] text-gray-500 shrink-0" />
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-1 w-56 max-w-[90vw] bg-white border border-gray-200 rounded-md shadow-lg p-3 space-y-2">
+        <div className="font-[Urbanist] absolute z-20 mt-1 w-[min(14rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] bg-white border border-[#8B5A2B] rounded-md shadow-lg p-3 space-y-2">
           {LEAVE_TYPE_OPTIONS.map((opt) => (
             <label
               key={opt.value}
-              className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
+              className="font-[Urbanist] flex items-center gap-2 text-sm text-gray-700 cursor-pointer min-w-0 break-words"
             >
               <input
                 type="radio"
@@ -71,7 +71,7 @@ export default function LeaveTypeSelector({ value, onChange }: LeaveTypeSelector
                   onChange(opt.value);
                   setOpen(false);
                 }}
-                className="w-4 h-4 text-orange-800 focus:ring-orange-400"
+                className="font-[Urbanist] w-4 h-4 text-orange-800 focus:ring-orange-400"
               />
               {opt.label}
             </label>
@@ -79,7 +79,7 @@ export default function LeaveTypeSelector({ value, onChange }: LeaveTypeSelector
           <button
             type="button"
             onClick={() => onChange("")}
-            className="w-full flex items-center justify-center gap-2 mt-2 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+            className="font-[Urbanist] w-full flex items-center justify-center gap-2 mt-2 px-3 py-2 text-sm text-gray-600 border border-[#8B5A2B] rounded-md hover:bg-gray-50 transition-colors"
           >
             Clear
           </button>

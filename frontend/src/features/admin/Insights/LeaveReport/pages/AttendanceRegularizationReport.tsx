@@ -36,7 +36,7 @@ export default function AttendanceRegularizationReport() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Attendance Independent Report"
         reportType="attendance-independent-report"

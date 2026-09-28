@@ -91,7 +91,7 @@
 // }: MailMergeToolbarProps) {
 //   return (
 //     <div
-//       className="
+//       className="font-[Urbanist] 
 //         flex
 //         w-full
 //         min-h-[58px]
@@ -100,20 +100,20 @@
 //         justify-end
 //         gap-3
 //         border-b
-//         border-[#e5e7eb]
+//         border-black
 //         bg-white
 //         px-4
 //         py-2
-//       "
+//        min-w-0 max-w-full"
 //     >
 //       {/* SELECT DOCUMENT */}
-//       <div className="relative hidden sm:block">
+//       <div className="font-[Urbanist] relative hidden sm:block">
 //         <select
 //           value={document}
 //           onChange={(event) =>
 //             setDocument(event.target.value)
 //           }
-//           className="
+//           className="font-[Urbanist] 
 //             h-[48px]
 //             w-[220px]
 //             appearance-none
@@ -146,7 +146,7 @@
 
 //         <ChevronDown
 //           size={17}
-//           className="
+//           className="font-[Urbanist] 
 //             pointer-events-none
 //             absolute
 //             right-3
@@ -158,13 +158,13 @@
 //       </div>
 
 //       {/* MONTH */}
-//       <div className="relative hidden md:block">
+//       <div className="font-[Urbanist] relative hidden md:block">
 //         <select
 //           value={month}
 //           onChange={(event) =>
 //             setMonth(event.target.value)
 //           }
-//           className="
+//           className="font-[Urbanist] 
 //             h-[48px]
 //             w-[190px]
 //             appearance-none
@@ -194,7 +194,7 @@
 
 //         <ChevronDown
 //           size={17}
-//           className="
+//           className="font-[Urbanist] 
 //             pointer-events-none
 //             absolute
 //             right-3
@@ -209,7 +209,7 @@
 //       <button
 //         type="button"
 //         disabled
-//         className="
+//         className="font-[Urbanist] 
 //           hidden
 //           h-[48px]
 //           w-[190px]
@@ -222,7 +222,7 @@
 //           font-medium
 //           text-[#999]
 //           lg:flex
-//         "
+//          flex-wrap min-w-0"
 //       >
 //         Attach Document To
 //         <br />
@@ -233,7 +233,7 @@
 //       <button
 //         type="button"
 //         disabled
-//         className="
+//         className="font-[Urbanist] 
 //           hidden
 //           h-[48px]
 //           min-w-[125px]
@@ -246,7 +246,7 @@
 //           font-medium
 //           text-[#999]
 //           xl:flex
-//         "
+//          flex-wrap min-w-0"
 //       >
 //         Generate
 //       </button>
@@ -255,7 +255,7 @@
 //       <button
 //         type="button"
 //         disabled
-//         className="
+//         className="font-[Urbanist] 
 //           hidden
 //           h-[48px]
 //           min-w-[125px]
@@ -268,11 +268,11 @@
 //           font-medium
 //           text-[#999]
 //           xl:flex
-//         "
+//          flex-wrap min-w-0"
 //       >
 //         <Mail
 //           size={17}
-//           className="mr-2"
+//           className="font-[Urbanist] mr-2"
 //         />
 //         Send
 //         <br />
@@ -282,14 +282,14 @@
 //       {/* FILTER */}
 //       <button
 //         type="button"
-//         className="
+//         className="font-[Urbanist] 
 //           flex
 //           h-[42px]
 //           w-[42px]
 //           items-center
 //           justify-center
 //           text-[#667085]
-//         "
+//          flex-wrap min-w-0"
 //       >
 //         <Filter size={20} />
 //       </button>
@@ -297,14 +297,14 @@
 //       {/* CLOCK */}
 //       <button
 //         type="button"
-//         className="
+//         className="font-[Urbanist] 
 //           flex
 //           h-[42px]
 //           w-[42px]
 //           items-center
 //           justify-center
 //           text-[#667085]
-//         "
+//          flex-wrap min-w-0"
 //       >
 //         <Clock3 size={20} />
 //       </button>
@@ -398,7 +398,7 @@
 
 //     return (
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           absolute
 //           left-1/2
 //           top-[calc(100%+4px)]
@@ -408,13 +408,13 @@
 //           overflow-hidden
 //           rounded-md
 //           border
-//           border-[#e5e7eb]
+//           border-black
 //           bg-white
 //           shadow-[0_4px_12px_rgba(0,0,0,0.12)]
 //         "
 //       >
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             border-b
 //             border-[#edf0f2]
 //             px-3
@@ -439,7 +439,7 @@
 //           {options.map((option) => (
 //             <label
 //               key={option}
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 min-h-[48px]
 //                 cursor-pointer
@@ -452,7 +452,7 @@
 //                 text-[14px]
 //                 text-[#475467]
 //                 hover:bg-[#fafafa]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <input
 //                 type="checkbox"
@@ -460,14 +460,14 @@
 //                 onChange={() =>
 //                   toggleDropdownOption(name, option)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[19px]
 //                   w-[19px]
 //                   shrink-0
 //                   accent-[#7e4031]
 //                 "
 //               />
-//               <span className="leading-5">
+//               <span className="font-[Urbanist] leading-5">
 //                 {option}
 //               </span>
 //             </label>
@@ -475,7 +475,7 @@
 
 //           {options.length === 0 && (
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 min-h-[58px]
 //                 px-3
 //                 py-3
@@ -489,7 +489,7 @@
 //         <button
 //           type="button"
 //           onClick={() => clearDropdown(name)}
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             h-[48px]
 //             w-full
@@ -502,7 +502,7 @@
 //             text-[15px]
 //             text-[#b7b9bd]
 //             hover:bg-[#fafafa]
-//           "
+//            flex-wrap min-w-0 max-w-full"
 //         >
 //           <X size={17} />
 //           Clear
@@ -513,27 +513,27 @@
 
 //   return (
 //     <div
-//     className="
+//     className="font-[Urbanist] 
 //       relative
 //       min-h-screen
 //       w-full
 //       overflow-x-hidden
 //       bg-[#f5f7fb]
-//     "
+//      max-w-full"
 //   >
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           relative
 //           w-full
 //           overflow-visible
 //           rounded-[6px]
 //           bg-white
 //           shadow-sm
-//         "
+//          max-w-full"
 //       >
 //         {/* FILTER / SEARCH BAR */}
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             relative
 //             flex
 //             min-h-[58px]
@@ -546,21 +546,21 @@
 //             border-[#b17869]
 //             bg-[#fff9f7]
 //             px-4
-//           "
+//            flex-wrap min-w-0 max-w-full"
 //         >
 //           {/* SEARCH */}
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               relative
 //               flex
 //               min-w-[230px]
 //               shrink-0
 //               items-center
-//             "
+//              min-w-0"
 //           >
 //             <Search
 //               size={20}
-//               className="
+//               className="font-[Urbanist] 
 //                 absolute
 //                 left-3
 //                 text-[#98a2b3]
@@ -570,7 +570,7 @@
 //             <input
 //               type="text"
 //               placeholder="Start Typing..."
-//               className="
+//               className="font-[Urbanist] 
 //                 h-[42px]
 //                 w-full
 //                 rounded-md
@@ -590,7 +590,7 @@
 //           <button
 //             type="button"
 //             onClick={addFilter}
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               shrink-0
 //               items-center
@@ -599,18 +599,18 @@
 //               font-medium
 //               text-[#555]
 //               hover:text-[#2196df]
-//             "
+//              flex-wrap min-w-0"
 //           >
 //             <Plus size={20} />
 //             Add Filter
 //           </button>
 
 //           {/* QUERY */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() => toggleDropdown("Query")}
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -618,7 +618,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Query
 //               {openDropdown === "Query" ? (
@@ -633,11 +633,11 @@
 //           </div>
 
 //           {/* BRANCH */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() => toggleDropdown("Branch")}
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -645,7 +645,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Branch
 //               {openDropdown === "Branch" ? (
@@ -660,13 +660,13 @@
 //           </div>
 
 //           {/* SALARY STRUCTURE */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() =>
 //                 toggleDropdown("Salary Structure")
 //               }
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -674,7 +674,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Salary Structure
 //               {openDropdown === "Salary Structure" ? (
@@ -689,11 +689,11 @@
 //           </div>
 
 //           {/* LEAVE */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() => toggleDropdown("Leave")}
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -701,7 +701,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Leave
 //               {openDropdown === "Leave" ? (
@@ -716,13 +716,13 @@
 //           </div>
 
 //           {/* ATTENDANCE */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() =>
 //                 toggleDropdown("Attendance")
 //               }
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -730,7 +730,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Attendance
 //               {openDropdown === "Attendance" ? (
@@ -745,13 +745,13 @@
 //           </div>
 
 //           {/* DESIGNATION */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() =>
 //                 toggleDropdown("Designation")
 //               }
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -759,7 +759,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Designation
 //               {openDropdown === "Designation" ? (
@@ -774,13 +774,13 @@
 //           </div>
 
 //           {/* EMPLOYEE STATUS */}
-//           <div className="relative shrink-0">
+//           <div className="font-[Urbanist] relative shrink-0">
 //             <button
 //               type="button"
 //               onClick={() =>
 //                 toggleDropdown("Emp Status")
 //               }
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -788,7 +788,7 @@
 //                 text-[15px]
 //                 font-medium
 //                 text-[#555]
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               Emp Status
 //               {openDropdown === "Emp Status" ? (
@@ -805,14 +805,14 @@
 //           {/* MORE */}
 //           <button
 //             type="button"
-//             className="
+//             className="font-[Urbanist] 
 //               ml-auto
 //               flex
 //               shrink-0
 //               items-center
 //               justify-center
 //               text-[#777]
-//             "
+//              flex-wrap min-w-0"
 //           >
 //             <MoreVertical size={21} />
 //           </button>
@@ -821,13 +821,13 @@
 //           <button
 //             type="button"
 //             onClick={() => setFilters([])}
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               shrink-0
 //               items-center
 //               justify-center
 //               text-[#d9534f]
-//             "
+//              flex-wrap min-w-0"
 //           >
 //             <X size={21} />
 //           </button>
@@ -836,20 +836,20 @@
 //         {/* ACTIVE FILTERS */}
 //         {filters.length > 0 && (
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               flex-wrap
 //               gap-2
 //               border-b
-//               border-[#e5e7eb]
+//               border-black
 //               px-5
 //               py-3
-//             "
+//              min-w-0"
 //           >
 //             {filters.map((filter) => (
 //               <span
 //                 key={filter}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   rounded-full
 //                   bg-[#f1f5f9]
 //                   px-3
@@ -866,7 +866,7 @@
 
 //         {/* EMPTY CONTENT AREA */}
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             min-h-[calc(100vh-180px)]
 //             w-full
 //             bg-[#f5f7fb]
@@ -1124,7 +1124,7 @@ export function MailMergeToolbar({
 
   return (
     <div
-      className="
+      className="font-[Urbanist] 
         relative
         z-[1000]
         w-full
@@ -1133,13 +1133,13 @@ export function MailMergeToolbar({
         overflow-x-auto
         overflow-y-hidden
         border-b
-        border-[#e5e7eb]
+        border-black
         bg-white
         [scrollbar-width:thin]
       "
     >
       <div
-        className="
+        className="font-[Urbanist] 
           flex
           min-h-[58px]
           w-max
@@ -1150,17 +1150,17 @@ export function MailMergeToolbar({
           whitespace-nowrap
           px-4
           py-2
-        "
+         min-w-0"
       >
       {/* SELECT DOCUMENT */}
       <div
-        className="
+        className="font-[Urbanist] 
           relative
           z-[1001]
           flex
           shrink-0
           overflow-visible
-        "
+         min-w-0"
       >
         <button
           ref={documentButtonRef}
@@ -1200,7 +1200,7 @@ export function MailMergeToolbar({
           aria-haspopup="listbox"
           aria-expanded={documentDropdownOpen}
         >
-          <span className="min-w-0 flex-1 truncate">
+          <span className="font-[Urbanist] min-w-0 flex-1 truncate">
             {documentOptions.find(
               (option) =>
                 option.value === document,
@@ -1210,12 +1210,12 @@ export function MailMergeToolbar({
           {documentDropdownOpen ? (
             <ChevronUp
               size={17}
-              className="shrink-0 text-[#777]"
+              className="font-[Urbanist] shrink-0 text-[#777]"
             />
           ) : (
             <ChevronDown
               size={17}
-              className="shrink-0 text-[#777]"
+              className="font-[Urbanist] shrink-0 text-[#777]"
             />
           )}
         </button>
@@ -1223,7 +1223,7 @@ export function MailMergeToolbar({
         {documentDropdownOpen &&
           createPortal(
             <div
-              className="
+              className="font-[Urbanist] 
                 fixed
                 z-[2147483647]
                 w-[220px]
@@ -1275,7 +1275,7 @@ export function MailMergeToolbar({
                     }
                   `}
                 >
-                  <span className="min-w-0 truncate">
+                  <span className="font-[Urbanist] min-w-0 truncate">
                     {option.label}
                   </span>
                 </button>
@@ -1287,13 +1287,13 @@ export function MailMergeToolbar({
 
       {/* MONTH */}
       <div
-        className="
+        className="font-[Urbanist] 
           relative
           z-[1001]
           flex
           shrink-0
           overflow-visible
-        "
+         min-w-0"
       >
         <button
           ref={monthButtonRef}
@@ -1333,19 +1333,19 @@ export function MailMergeToolbar({
           aria-haspopup="listbox"
           aria-expanded={monthDropdownOpen}
         >
-          <span className="min-w-0 flex-1 truncate">
+          <span className="font-[Urbanist] min-w-0 flex-1 truncate">
             {month}
           </span>
 
           {monthDropdownOpen ? (
             <ChevronUp
               size={17}
-              className="shrink-0 text-[#777]"
+              className="font-[Urbanist] shrink-0 text-[#777]"
             />
           ) : (
             <ChevronDown
               size={17}
-              className="shrink-0 text-[#777]"
+              className="font-[Urbanist] shrink-0 text-[#777]"
             />
           )}
         </button>
@@ -1353,7 +1353,7 @@ export function MailMergeToolbar({
         {monthDropdownOpen &&
           createPortal(
             <div
-              className="
+              className="font-[Urbanist] 
                 fixed
                 z-[2147483647]
                 w-[190px]
@@ -1414,7 +1414,7 @@ export function MailMergeToolbar({
       <button
         type="button"
         disabled
-        className="
+        className="font-[Urbanist] 
           flex
           shrink-0
           h-[48px]
@@ -1428,7 +1428,7 @@ export function MailMergeToolbar({
           font-medium
           text-[#999]
           lg:flex
-        "
+         flex-wrap min-w-0"
       >
         Attach Document To
         <br />
@@ -1439,7 +1439,7 @@ export function MailMergeToolbar({
       <button
         type="button"
         disabled
-        className="
+        className="font-[Urbanist] 
           flex
           shrink-0
           h-[48px]
@@ -1452,7 +1452,7 @@ export function MailMergeToolbar({
           text-[15px]
           font-medium
           text-[#999]
-        "
+         flex-wrap min-w-0"
       >
         Generate
       </button>
@@ -1461,7 +1461,7 @@ export function MailMergeToolbar({
       <button
         type="button"
         disabled
-        className="
+        className="font-[Urbanist] 
           flex
           shrink-0
           h-[48px]
@@ -1474,11 +1474,11 @@ export function MailMergeToolbar({
           text-[15px]
           font-medium
           text-[#999]
-        "
+         flex-wrap min-w-0"
       >
         <Mail
           size={17}
-          className="mr-2"
+          className="font-[Urbanist] mr-2"
         />
         Send
         <br />
@@ -1488,7 +1488,7 @@ export function MailMergeToolbar({
       {/* FILTER */}
       <button
         type="button"
-        className="
+        className="font-[Urbanist] 
           flex
           h-[42px]
           w-[42px]
@@ -1496,7 +1496,7 @@ export function MailMergeToolbar({
           items-center
           justify-center
           text-[#667085]
-        "
+         flex-wrap min-w-0"
       >
         <Filter size={20} />
       </button>
@@ -1504,7 +1504,7 @@ export function MailMergeToolbar({
       {/* CLOCK */}
       <button
         type="button"
-        className="
+        className="font-[Urbanist] 
           flex
           h-[42px]
           w-[42px]
@@ -1512,7 +1512,7 @@ export function MailMergeToolbar({
           items-center
           justify-center
           text-[#667085]
-        "
+         flex-wrap min-w-0"
       >
         <Clock3 size={20} />
       </button>
@@ -1730,7 +1730,7 @@ export default function MailMergePage({
 
     return createPortal(
       <div
-        className="
+        className="font-[Urbanist] 
           fixed
           z-[2147483647]
           w-[230px]
@@ -1750,7 +1750,7 @@ export default function MailMergePage({
         role="listbox"
       >
         <div
-          className="
+          className="font-[Urbanist] 
             border-b
             border-[#d8b4aa]
             bg-[#fff9f7]
@@ -1813,7 +1813,7 @@ export default function MailMergePage({
                       option,
                     )
                   }
-                  className="sr-only"
+                  className="font-[Urbanist] sr-only"
                 />
 
                 <span
@@ -1854,7 +1854,7 @@ export default function MailMergePage({
                   )}
                 </span>
 
-                <span className="min-w-0 truncate leading-5">
+                <span className="font-[Urbanist] min-w-0 truncate leading-5">
                   {option}
                 </span>
               </label>
@@ -1863,7 +1863,7 @@ export default function MailMergePage({
 
           {options.length === 0 && (
             <div
-              className="
+              className="font-[Urbanist] 
                 min-h-[58px]
                 px-3
                 py-3
@@ -1879,7 +1879,7 @@ export default function MailMergePage({
           onClick={() =>
             clearDropdown(name)
           }
-          className="
+          className="font-[Urbanist] 
             flex
             h-[48px]
             w-full
@@ -1892,7 +1892,7 @@ export default function MailMergePage({
             text-[15px]
             text-[#b7b9bd]
             hover:bg-[#fafafa]
-          "
+           flex-wrap min-w-0 max-w-full"
         >
           <X size={17} />
           Clear
@@ -1904,7 +1904,7 @@ export default function MailMergePage({
 
   return (
     <div
-      className="
+      className="font-[Urbanist] 
         relative
         min-h-screen
         h-full
@@ -1917,7 +1917,7 @@ export default function MailMergePage({
       "
     >
       <div
-        className="
+        className="font-[Urbanist] 
           relative
           z-[100]
           w-full
@@ -1931,7 +1931,7 @@ export default function MailMergePage({
       >
         {/* FILTER / SEARCH BAR */}
         <div
-          className="
+          className="font-[Urbanist] 
             relative
             z-[1000]
             w-full
@@ -1947,7 +1947,7 @@ export default function MailMergePage({
           "
         >
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               min-h-[58px]
               w-max
@@ -1957,21 +1957,21 @@ export default function MailMergePage({
               gap-4
               whitespace-nowrap
               px-4
-            "
+             min-w-0"
           >
           {/* SEARCH */}
           <div
-            className="
+            className="font-[Urbanist] 
               relative
               flex
               min-w-[230px]
               shrink-0
               items-center
-            "
+             min-w-0"
           >
             <Search
               size={20}
-              className="
+              className="font-[Urbanist] 
                 absolute
                 left-3
                 text-[#98a2b3]
@@ -1981,7 +1981,7 @@ export default function MailMergePage({
             <input
               type="text"
               placeholder="Start Typing..."
-              className="
+              className="font-[Urbanist] 
                 h-[42px]
                 w-full
                 rounded-md
@@ -2001,7 +2001,7 @@ export default function MailMergePage({
           <button
             type="button"
             onClick={addFilter}
-            className="
+            className="font-[Urbanist] 
               flex
               shrink-0
               items-center
@@ -2010,14 +2010,14 @@ export default function MailMergePage({
               font-medium
               text-[#555]
               hover:text-[#7e4031]
-            "
+             flex-wrap min-w-0"
           >
             <Plus size={20} />
             Add Filter
           </button>
 
           {/* QUERY */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Query", event)}
@@ -2049,7 +2049,7 @@ export default function MailMergePage({
           </div>
 
           {/* BRANCH */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Branch", event)}
@@ -2081,7 +2081,7 @@ export default function MailMergePage({
           </div>
 
           {/* SALARY STRUCTURE */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Salary Structure", event)}
@@ -2113,7 +2113,7 @@ export default function MailMergePage({
           </div>
 
           {/* LEAVE */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Leave", event)}
@@ -2145,7 +2145,7 @@ export default function MailMergePage({
           </div>
 
           {/* ATTENDANCE */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Attendance", event)}
@@ -2177,7 +2177,7 @@ export default function MailMergePage({
           </div>
 
           {/* DESIGNATION */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Designation", event)}
@@ -2209,7 +2209,7 @@ export default function MailMergePage({
           </div>
 
           {/* EMPLOYEE STATUS */}
-          <div className="relative shrink-0">
+          <div className="font-[Urbanist] relative shrink-0">
             <button
               type="button"
               onClick={(event) => toggleDropdown("Emp Status", event)}
@@ -2243,14 +2243,14 @@ export default function MailMergePage({
           {/* MORE */}
           <button
             type="button"
-            className="
+            className="font-[Urbanist] 
               ml-auto
               flex
               shrink-0
               items-center
               justify-center
               text-[#777]
-            "
+             flex-wrap min-w-0"
           >
             <MoreVertical size={21} />
           </button>
@@ -2259,13 +2259,13 @@ export default function MailMergePage({
           <button
             type="button"
             onClick={() => setFilters([])}
-            className="
+            className="font-[Urbanist] 
               flex
               shrink-0
               items-center
               justify-center
               text-[#d9534f]
-            "
+             flex-wrap min-w-0"
           >
             <X size={21} />
           </button>
@@ -2277,23 +2277,23 @@ export default function MailMergePage({
           ([, values]) => values.length > 0,
         ) && (
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               flex-wrap
               gap-2
               border-b
-              border-[#e5e7eb]
+              border-black
               bg-[#fff9f7]
               px-5
               py-2
-            "
+             min-w-0"
           >
             {Object.entries(dropdownSelections).flatMap(
               ([name, values]) =>
                 values.map((value) => (
                   <span
                     key={`${name}-${value}`}
-                    className="
+                    className="font-[Urbanist] 
                       inline-flex
                       items-center
                       rounded-full
@@ -2305,7 +2305,7 @@ export default function MailMergePage({
                       text-[12px]
                       font-medium
                       text-[#7e4031]
-                    "
+                     min-w-0"
                   >
                     {value}
                   </span>
@@ -2317,20 +2317,20 @@ export default function MailMergePage({
         {/* ACTIVE FILTERS */}
         {filters.length > 0 && (
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               flex-wrap
               gap-2
               border-b
-              border-[#e5e7eb]
+              border-black
               px-5
               py-3
-            "
+             min-w-0"
           >
             {filters.map((filter) => (
               <span
                 key={filter}
-                className="
+                className="font-[Urbanist] 
                   rounded-full
                   bg-[#f1f5f9]
                   px-3
@@ -2347,7 +2347,7 @@ export default function MailMergePage({
 
         {/* EMPTY CONTENT AREA */}
         <div
-          className="
+          className="font-[Urbanist] 
             min-h-[calc(100vh-180px)]
             w-full
             bg-[#f5f7fb]

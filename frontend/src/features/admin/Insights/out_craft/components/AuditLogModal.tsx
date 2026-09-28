@@ -78,67 +78,67 @@ export default function AuditLogModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="flex max-h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl">
+    <div className="font-[Urbanist] fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 flex-wrap min-w-0">
+      <div className="font-[Urbanist] flex max-h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg bg-white shadow-xl min-w-0 max-w-full">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h2 className="text-base font-semibold text-[#814A3C]">
+        <div className="font-[Urbanist] flex items-center justify-between border-b border-black px-5 py-4 flex-wrap min-w-0">
+          <h2 className="font-[Urbanist] text-base font-semibold text-[#814A3C]">
             Audit Log
           </h2>
           <button
             type="button"
             onClick={handleExportClick}
             title="Export to Excel"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-emerald-600 hover:bg-emerald-50"
+            className="font-[Urbanist] flex h-8 w-8 items-center justify-center rounded-md border border-black text-emerald-600 hover:bg-emerald-50 flex-wrap min-w-0"
           >
             <FileSpreadsheet size={16} />
           </button>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-3">
-          <div className="relative w-64">
+        <div className="font-[Urbanist] flex flex-wrap items-center gap-3 border-b border-black px-5 py-3 min-w-0">
+          <div className="font-[Urbanist] relative w-full sm:w-64">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="font-[Urbanist] absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Start Typing..."
-              className="h-9 w-full rounded-md border border-slate-200 bg-slate-50 pl-8 pr-3 text-xs text-slate-700 outline-none focus:border-[#D97B3F]"
+              className="font-[Urbanist] h-9 w-full rounded-md border border-black bg-slate-50 pl-8 pr-3 text-xs text-slate-700 outline-none focus:border-[#D97B3F]"
             />
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="font-[Urbanist] ml-auto flex items-center gap-2 flex-wrap min-w-0">
             <button
               type="button"
               onClick={() => setEmployeeOpen((v) => !v)}
-              className="flex h-9 w-32 items-center justify-between rounded-md border border-slate-300 px-3 text-xs text-slate-600"
+              className="font-[Urbanist] flex h-9 w-full sm:w-32 items-center justify-between rounded-md border border-black px-3 text-xs text-slate-600 flex-wrap min-w-0 max-w-full"
             >
               Employee
-              <ChevronDown size={14} className="text-slate-400" />
+              <ChevronDown size={14} className="font-[Urbanist] text-slate-400" />
             </button>
             <button
               type="button"
               onClick={() => setActionOpen((v) => !v)}
-              className="flex h-9 w-28 items-center justify-between rounded-md border border-slate-300 px-3 text-xs text-slate-600"
+              className="font-[Urbanist] flex h-9 w-full sm:w-28 items-center justify-between rounded-md border border-black px-3 text-xs text-slate-600 flex-wrap min-w-0 max-w-full"
             >
               Action
-              <ChevronDown size={14} className="text-slate-400" />
+              <ChevronDown size={14} className="font-[Urbanist] text-slate-400" />
             </button>
           </div>
         </div>
 
         {/* Table */}
-        <div className="flex-1 overflow-auto">
-          <table className="w-full border-collapse text-left text-xs">
-            <thead className="sticky top-0 bg-[#EAF2FB] text-[#334155]">
+        <div className="font-[Urbanist] flex-1 overflow-auto min-w-0">
+          <table className="font-[Urbanist] w-full border-collapse text-left text-xs">
+            <thead className="font-[Urbanist] sticky top-0 bg-[#EAF2FB] text-[#334155]">
               <tr>
                 {COLUMNS.map((col) => (
                   <th
                     key={col}
-                    className="whitespace-nowrap px-4 py-3 font-semibold"
+                    className="font-[Urbanist] whitespace-nowrap px-4 py-3 font-semibold"
                   >
                     {col}
                   </th>
@@ -148,26 +148,26 @@ export default function AuditLogModal({
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={COLUMNS.length} className="bg-[#FFFBEB] px-4 py-8">
-                    <p className="text-center text-[13px] font-medium text-[#B45309]">
+                  <td colSpan={COLUMNS.length} className="font-[Urbanist] bg-[#FFFBEB] px-4 py-8">
+                    <p className="font-[Urbanist] text-center text-[13px] font-medium text-[#B45309]">
                       No Record Found
                     </p>
                   </td>
                 </tr>
               ) : (
                 filtered.map((entry) => (
-                  <tr key={entry.id} className="border-b border-slate-100">
-                    <td className="px-4 py-3 text-slate-700">
+                  <tr key={entry.id} className="font-[Urbanist] border-b border-black">
+                    <td className="font-[Urbanist] px-4 py-3 text-slate-700">
                       {entry.recordDetails}
                     </td>
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="font-[Urbanist] px-4 py-3 text-slate-700">
                       {entry.recordChanges}
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="font-[Urbanist] px-4 py-3 text-slate-500">
                       {entry.actionTime}
                     </td>
-                    <td className="px-4 py-3 text-slate-500">{entry.user}</td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="font-[Urbanist] px-4 py-3 text-slate-500">{entry.user}</td>
+                    <td className="font-[Urbanist] px-4 py-3 text-slate-500">
                       {entry.employeeName}
                     </td>
                   </tr>
@@ -178,11 +178,11 @@ export default function AuditLogModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end border-t border-slate-200 px-5 py-3">
+        <div className="font-[Urbanist] flex items-center justify-end border-t border-black px-5 py-3 flex-wrap min-w-0">
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-4 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="font-[Urbanist] inline-flex h-9 items-center gap-1.5 rounded-md border border-black bg-white px-4 text-xs font-medium text-slate-600 hover:bg-slate-50 flex-wrap min-w-0"
           >
             <X size={14} />
             Cancel

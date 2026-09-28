@@ -56,7 +56,7 @@
 
 //   return (
 //     <div
-//       className="
+//       className="font-[Urbanist] 
 //         w-full
 //         rounded-[14px]
 //         border
@@ -69,7 +69,7 @@
 
 //       {/* HEADER */}
 //       <div
-//   className="
+//   className="font-[Urbanist] 
 //     mb-3
 //     flex
 //     flex-col
@@ -78,11 +78,11 @@
 //     sm:flex-row
 //     sm:items-center
 //     sm:justify-between
-//   "
+//    flex-wrap min-w-0"
 // >
 
 //         <h3
-//           className="
+//           className="font-[Urbanist] 
 //             text-[15px]
 //             font-semibold
 //             text-[#263445]
@@ -92,7 +92,7 @@
 //         </h3>
 
 //         <span
-//           className="
+//           className="font-[Urbanist] 
 //             whitespace-nowrap
 //             rounded-[5px]
 //             bg-[#fff0eb]
@@ -109,14 +109,14 @@
 //       </div>
 
 //       {/* COLUMN LIST */}
-//       <div className="space-y-2">
+//       <div className="font-[Urbanist] space-y-2">
 
 //         {columns.map(
 //           (column, index) => (
 
 //             <div
 //               key={`${column}-${index}`}
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 h-[34px]
 //                 items-center
@@ -125,11 +125,11 @@
 //                 border
 //                 border-[#e4e8ec]
 //                 px-2
-//               "
+//                flex-wrap min-w-0"
 //             >
 
 //               <span
-//                 className="
+//                 className="font-[Urbanist] 
 //                   w-[15px]
 //                   shrink-0
 //                   text-[11px]
@@ -140,7 +140,7 @@
 //               </span>
 
 //               <span
-//                 className="
+//                 className="font-[Urbanist] 
 //                   min-w-0
 //                   flex-1
 //                   truncate
@@ -160,7 +160,7 @@
 //                     "up"
 //                   )
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[#68717a]
 //                   hover:text-[#333]
 //                 "
@@ -177,7 +177,7 @@
 //                     "down"
 //                   )
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[#68717a]
 //                   hover:text-[#333]
 //                 "
@@ -191,7 +191,7 @@
 //                 onClick={() =>
 //                   removeColumn(index)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[#ed7777]
 //                   hover:text-[#d95353]
 //                 "
@@ -208,7 +208,7 @@
 
 //       {/* HELPER */}
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           mt-4
 //           rounded-[7px]
 //           bg-[#f7f9fb]
@@ -285,14 +285,14 @@ export default function SelectedColumns() {
 
   return (
     <section
-      className="
+      className="font-[Urbanist] 
         w-full
         min-w-0
         max-w-full
         overflow-hidden
         rounded-lg
         border
-        border-[#e0e5ea]
+        border-[#c9a79d]
         bg-white
         p-3
         shadow-sm
@@ -300,7 +300,7 @@ export default function SelectedColumns() {
       "
     >
       <div
-        className="
+        className="font-[Urbanist] 
           mb-3
           flex
           flex-col
@@ -309,10 +309,10 @@ export default function SelectedColumns() {
           sm:flex-row
           sm:items-center
           sm:justify-between
-        "
+         flex-wrap min-w-0"
       >
         <h3
-          className="
+          className="font-[Urbanist] 
             min-w-0
             text-[15px]
             font-semibold
@@ -323,7 +323,7 @@ export default function SelectedColumns() {
         </h3>
 
         <span
-          className="
+          className="font-[Urbanist] 
             whitespace-nowrap
             rounded-[5px]
             bg-[#fff0eb]
@@ -339,7 +339,7 @@ export default function SelectedColumns() {
       </div>
 
       <div
-        className="
+        className="font-[Urbanist] 
           max-h-[360px]
           w-full
           min-w-0
@@ -348,13 +348,13 @@ export default function SelectedColumns() {
           overflow-x-hidden
           pr-1
           sm:max-h-[300px]
-        "
+         max-w-full"
       >
         {columns.map(
           (column, index) => (
             <div
               key={`${column}-${index}`}
-              className="
+              className="font-[Urbanist] 
                 flex
                 h-[34px]
                 min-w-0
@@ -366,10 +366,10 @@ export default function SelectedColumns() {
                 border-[#e4e8ec]
                 px-2
                 sm:gap-2
-              "
+               flex-wrap max-w-full"
             >
               <span
-                className="
+                className="font-[Urbanist] 
                   w-[15px]
                   shrink-0
                   text-[11px]
@@ -380,7 +380,7 @@ export default function SelectedColumns() {
               </span>
 
               <span
-                className="
+                className="font-[Urbanist] 
                   min-w-0
                   flex-1
                   truncate
@@ -399,7 +399,7 @@ export default function SelectedColumns() {
                   moveColumn(index, "up")
                 }
                 aria-label={`Move ${column} up`}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[26px]
                   w-[26px]
@@ -411,7 +411,7 @@ export default function SelectedColumns() {
                   transition-colors
                   hover:bg-[#f5f5f5]
                   hover:text-[#333]
-                "
+                 flex-wrap min-w-0"
               >
                 <ArrowUp size={13} />
               </button>
@@ -422,7 +422,7 @@ export default function SelectedColumns() {
                   moveColumn(index, "down")
                 }
                 aria-label={`Move ${column} down`}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[26px]
                   w-[26px]
@@ -434,7 +434,7 @@ export default function SelectedColumns() {
                   transition-colors
                   hover:bg-[#f5f5f5]
                   hover:text-[#333]
-                "
+                 flex-wrap min-w-0"
               >
                 <ArrowDown size={13} />
               </button>
@@ -445,7 +445,7 @@ export default function SelectedColumns() {
                   removeColumn(index)
                 }
                 aria-label={`Remove ${column}`}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[26px]
                   w-[26px]
@@ -457,7 +457,7 @@ export default function SelectedColumns() {
                   transition-colors
                   hover:bg-[#fff1f1]
                   hover:text-[#d95353]
-                "
+                 flex-wrap min-w-0"
               >
                 <Trash2 size={14} />
               </button>
@@ -467,7 +467,7 @@ export default function SelectedColumns() {
       </div>
 
       <div
-        className="
+        className="font-[Urbanist] 
           mt-4
           w-full
           min-w-0

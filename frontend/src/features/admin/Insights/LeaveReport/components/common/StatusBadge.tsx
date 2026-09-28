@@ -12,7 +12,7 @@ const STATUS_STYLES: Record<string, string> = {
 export default function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+      className={`font-[Urbanist] inline-block px-3 py-1 rounded-full text-xs font-medium ${
         STATUS_STYLES[status] ?? "bg-gray-100 text-gray-600"
       }`}
     >

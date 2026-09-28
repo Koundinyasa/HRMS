@@ -19,8 +19,6 @@ import ConfirmationLetterViewerPage from "../Onboard/pages/ConfirmationLetterVie
 import OnboardReportsPage from "../Onboard/pages/OnboardReportsPage";
 
 
-//Craft Report
-import CraftReportPage from "../CraftReport/pages/CraftReportPage";
 
 //Others
 // import OthersPage from "../";
@@ -49,12 +47,8 @@ import ExceptionReportMonthly from "../LeaveReport/pages/ExceptionReportMonthly"
 import TagAttendanceReport from "../LeaveReport/pages/TagAttendanceReport";
 import TagLeaveReport from "../LeaveReport/pages/TagLeaveReport";
 
-//General Report
 
-import GeneralReport from "../General Report/pages/GeneralReport";
-import FormMasterPage from "../General Report/pages/FormMasterPage";
-import MailMergePage from "../General Report/pages/MailMergePage";
-import FactoryActFormsPage from "../General Report/pages/FactoryActFormsPage";
+
 
 
 //TDS 
@@ -107,6 +101,11 @@ import ESIAcknowledgementViewPage from "../Statutory Report/pages/ESIAcknowledge
 import ESIAcknowledgementPage from "../Statutory Report/pages/ESIAcknowledgementPage";
 import LWFReportPage from "../Statutory Report/pages/LWFReportPage";
 import LWFMonthlyReportPage from "../Statutory Report/pages/LWFMonthlyReportPage";
+import CraftReportPage from "../out_craft/pages/CraftReportPage";
+import FactoryActFormsPage from "../out_general/pages/FactoryActFormsPage";
+import MailMergePage from "../out_general/pages/MailMergePage";
+import FormMasterPage from "../out_general/pages/FormMasterPage";
+import GeneralReport from "../out_general/pages/GeneralReport";
 
 export const InsightsRoutes = (
   <Route path="insights" element={<InsightsPage />}>

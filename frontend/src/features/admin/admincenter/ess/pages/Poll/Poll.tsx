@@ -734,7 +734,7 @@ export default function Poll() {
         min-w-0
         min-h-[calc(100vh-100px)]
         overflow-x-hidden
-      "
+       font-[Urbanist]"
     >
 
       {/* ================================================= */}
@@ -754,7 +754,7 @@ export default function Poll() {
           w-full
           min-w-0
           box-border
-        "
+         font-[Urbanist]"
       >
 
         <div
@@ -777,7 +777,7 @@ export default function Poll() {
             items-center
             gap-4
             shrink-0
-          "
+           font-[Urbanist]"
         >
 
           <button
@@ -807,7 +807,7 @@ export default function Poll() {
             className="
               text-gray-500
               hover:text-[#7C4DFF]
-            "
+             font-[Urbanist]"
           >
             <Clock3 size={17} />
           </button>
@@ -827,7 +827,7 @@ export default function Poll() {
           min-h-[600px]
           w-full
           min-w-0
-        "
+         font-[Urbanist]"
       />
 
       {/* ================================================= */}
@@ -849,7 +849,7 @@ export default function Poll() {
             sm:p-4
             overflow-hidden
             box-border
-          "
+           font-[Urbanist]"
         >
 
           {/* ================================================= */}
@@ -870,7 +870,7 @@ export default function Poll() {
               flex-col
               min-w-0
               box-border
-            "
+             font-[Urbanist]"
           >
 
             {/* ================================================= */}
@@ -885,10 +885,10 @@ export default function Poll() {
                 px-4
                 py-3
                 border-b
-                border-gray-200
+                border-black
                 shrink-0
                 min-w-0
-              "
+               font-[Urbanist]"
             >
 
               <div
@@ -897,7 +897,7 @@ export default function Poll() {
                   items-center
                   gap-2
                   min-w-0
-                "
+                 font-[Urbanist]"
               >
 
                 <div
@@ -911,7 +911,7 @@ export default function Poll() {
                     bg-[#F0EBFF]
                     text-[#7C4DFF]
                     shrink-0
-                  "
+                   font-[Urbanist]"
                 >
                   <BarChart3 size={15} />
                 </div>
@@ -936,7 +936,7 @@ export default function Poll() {
                   text-gray-500
                   hover:text-gray-800
                   shrink-0
-                "
+                 font-[Urbanist]"
               >
                 <X size={16} />
               </button>
@@ -957,7 +957,7 @@ export default function Poll() {
                 min-h-0
                 min-w-0
                 box-border
-              "
+               font-[Urbanist]"
             >
 
               {/* ================================================= */}
@@ -971,10 +971,10 @@ export default function Poll() {
                   w-full
                   min-w-0
                   mb-4
-                "
+                 font-[Urbanist]"
               >
 
-                <div className="relative w-full min-w-0">
+                <div className="relative w-full min-w-0 font-[Urbanist]">
 
                   <label
                     className="
@@ -997,7 +997,7 @@ export default function Poll() {
                       w-full
                       min-w-0
                       max-w-full
-                    "
+                     font-[Urbanist]"
                   >
 
                     <DatePicker
@@ -1072,10 +1072,10 @@ export default function Poll() {
                   w-full
                   min-w-0
                   mb-4
-                "
+                 font-[Urbanist]"
               >
 
-                <div className="relative w-full min-w-0">
+                <div className="relative w-full min-w-0 font-[Urbanist]">
 
                   <label
                     className="
@@ -1098,7 +1098,7 @@ export default function Poll() {
                       w-full
                       min-w-0
                       max-w-full
-                    "
+                     font-[Urbanist]"
                   >
 
                     <DatePicker
@@ -1171,7 +1171,7 @@ export default function Poll() {
                   w-full
                   min-w-0
                   mb-4
-                "
+                 font-[Urbanist]"
               >
 
                 <label
@@ -1195,7 +1195,7 @@ export default function Poll() {
                     w-full
                     min-w-0
                     max-w-full
-                  "
+                   font-[Urbanist]"
                 >
 
                   <button
@@ -1227,16 +1227,16 @@ export default function Poll() {
                       h-8
                       px-2
                       border
-                      border-gray-200
+                      border-black
                       rounded-md
                       text-[11px]
                       text-gray-500
                       outline-none
-                      focus:border-[#7C4DFF]
+                      focus:border-black
                       bg-white
                       box-border
                       overflow-hidden
-                    "
+                     font-[Urbanist]"
                   >
 
                     <span
@@ -1244,7 +1244,7 @@ export default function Poll() {
                         min-w-0
                         truncate
                         text-left
-                      "
+                       font-[Urbanist]"
                     >
                       {selectedTargetLabel}
                     </span>
@@ -1254,7 +1254,7 @@ export default function Poll() {
                         ml-1
                         shrink-0
                         text-gray-400
-                      "
+                       font-[Urbanist]"
                     >
                       ▾
                     </span>
@@ -1277,11 +1277,11 @@ export default function Poll() {
                         overflow-hidden
                         rounded-md
                         border
-                        border-gray-200
+                        border-black
                         bg-white
                         shadow-lg
                         box-border
-                      "
+                       font-[Urbanist]"
                     >
 
                       {targetFilterOptions.map(
@@ -1315,7 +1315,7 @@ export default function Poll() {
                               hover:bg-purple-50
                               hover:text-[#7C4DFF]
                               box-border
-                            "
+                             font-[Urbanist]"
                           >
                             {option.label}
                           </button>
@@ -1340,7 +1340,7 @@ export default function Poll() {
                   w-full
                   min-w-0
                   mb-4
-                "
+                 font-[Urbanist]"
               >
 
                 <label
@@ -1364,7 +1364,7 @@ export default function Poll() {
                     w-full
                     min-w-0
                     max-w-full
-                  "
+                   font-[Urbanist]"
                 >
 
                   <button
@@ -1396,16 +1396,16 @@ export default function Poll() {
                       h-8
                       px-2
                       border
-                      border-gray-200
+                      border-black
                       rounded-md
                       text-[11px]
                       text-gray-500
                       outline-none
-                      focus:border-[#7C4DFF]
+                      focus:border-black
                       bg-white
                       box-border
                       overflow-hidden
-                    "
+                     font-[Urbanist]"
                   >
 
                     <span
@@ -1413,7 +1413,7 @@ export default function Poll() {
                         min-w-0
                         truncate
                         text-left
-                      "
+                       font-[Urbanist]"
                     >
                       {selectedQuestionLabel}
                     </span>
@@ -1423,7 +1423,7 @@ export default function Poll() {
                         ml-1
                         shrink-0
                         text-gray-400
-                      "
+                       font-[Urbanist]"
                     >
                       ▾
                     </span>
@@ -1446,11 +1446,11 @@ export default function Poll() {
                         overflow-hidden
                         rounded-md
                         border
-                        border-gray-200
+                        border-black
                         bg-white
                         shadow-lg
                         box-border
-                      "
+                       font-[Urbanist]"
                     >
 
                       {questionTypeOptions.map(
@@ -1484,7 +1484,7 @@ export default function Poll() {
                               hover:bg-purple-50
                               hover:text-[#7C4DFF]
                               box-border
-                            "
+                             font-[Urbanist]"
                           >
                             {option.label}
                           </button>
@@ -1508,7 +1508,7 @@ export default function Poll() {
                 className="
                   w-full
                   min-w-0
-                "
+                 font-[Urbanist]"
               >
 
                 <label
@@ -1523,7 +1523,7 @@ export default function Poll() {
                   "
                 >
 
-                  <span className="text-sm">
+                  <span className="text-sm font-[Urbanist]">
                     □
                   </span>
 
@@ -1550,15 +1550,15 @@ export default function Poll() {
                     px-2.5
                     py-2
                     border
-                    border-gray-200
+                    border-black
                     rounded-md
                     text-[11px]
                     text-gray-700
                     outline-none
                     placeholder:text-gray-300
-                    focus:border-[#7C4DFF]
+                    focus:border-black
                     box-border
-                  "
+                   font-[Urbanist]"
                 />
 
                 <div
@@ -1571,15 +1571,15 @@ export default function Poll() {
                     text-[9px]
                     text-gray-400
                     min-w-0
-                  "
+                   font-[Urbanist]"
                 >
 
-                  <span className="min-w-0">
+                  <span className="min-w-0 font-[Urbanist]">
                     Keep questions clear and neutral
                     for best engagement.
                   </span>
 
-                  <span className="shrink-0">
+                  <span className="shrink-0 font-[Urbanist]">
                     {question.length} / 250 characters
                   </span>
 
@@ -1602,12 +1602,12 @@ export default function Poll() {
                 px-4
                 py-3
                 border-t
-                border-gray-200
+                border-black
                 bg-white
                 shrink-0
                 min-w-0
                 box-border
-              "
+               font-[Urbanist]"
             >
 
               <div
@@ -1618,7 +1618,7 @@ export default function Poll() {
                   text-[10px]
                   text-gray-600
                   min-w-0
-                "
+                 font-[Urbanist]"
               >
 
                 <span
@@ -1628,10 +1628,10 @@ export default function Poll() {
                     rounded-full
                     bg-[#7C4DFF]
                     shrink-0
-                  "
+                   font-[Urbanist]"
                 />
 
-                <span className="truncate">
+                <span className="truncate font-[Urbanist]">
                   Ready to publish
                 </span>
 
@@ -1643,7 +1643,7 @@ export default function Poll() {
                   items-center
                   gap-2
                   shrink-0
-                "
+                 font-[Urbanist]"
               >
 
                 <button
@@ -1653,13 +1653,13 @@ export default function Poll() {
                     px-4
                     py-1.5
                     border
-                    border-gray-200
+                    border-black
                     bg-white
                     rounded-md
                     text-[11px]
                     text-gray-600
                     hover:bg-gray-50
-                  "
+                   font-[Urbanist]"
                 >
                   Cancel
                 </button>

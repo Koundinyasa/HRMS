@@ -26,7 +26,7 @@ export default function LeaveHistoryMonthWise() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Leave History Report(Month-Wise)"
         reportType="leave-history-report-month-wise"

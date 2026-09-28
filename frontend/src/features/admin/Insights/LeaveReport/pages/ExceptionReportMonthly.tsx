@@ -25,7 +25,7 @@ export default function ExceptionReportMonthly() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Exception Report - Reconcile (Monthly)"
         reportType="exception-report-reconcile-monthly"

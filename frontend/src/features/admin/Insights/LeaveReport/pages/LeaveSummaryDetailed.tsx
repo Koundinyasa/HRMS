@@ -16,7 +16,7 @@ const COLUMNS = [
     label: "Action",
     align: "right" as const,
     render: () => (
-      <button type="button" aria-label="View details" className="text-orange-800 hover:text-orange-900 transition-colors">
+      <button type="button" aria-label="View details" className="font-[Urbanist] text-orange-800 hover:text-orange-900 transition-colors">
         <Eye size={18} />
       </button>
     ),
@@ -36,7 +36,7 @@ export default function LeaveSummaryDetailed() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Leave Summary Report(Detailed)"
         reportType="leave-summary-report-detailed"

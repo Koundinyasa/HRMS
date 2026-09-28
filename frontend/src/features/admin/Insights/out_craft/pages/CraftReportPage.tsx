@@ -47,7 +47,7 @@ export default function CraftReportPage() {
   };
 
   return (
-    <div className="w-full bg-[#F5F6F8] p-4">
+    <div className="font-[Urbanist] w-full bg-[#F5F6F8] p-4">
       <CraftReportHeader
         onDownloadTemplate={openStoreModal}
         onAddFile={openCreateFileModal}
@@ -55,7 +55,7 @@ export default function CraftReportPage() {
         onOpenHistory={openAuditLogModal}
       />
 
-      <div className="overflow-hidden rounded-md border border-slate-200 bg-[#f8f9fc] shadow-sm">
+      <div className="font-[Urbanist] overflow-hidden rounded-md border border-[#c9a79d] bg-[#f8f9fc] shadow-sm">
         <CraftReportTabs activeTab={activeTab} onTabChange={setActiveTab} />
         <CraftReportContent activeTab={activeTab} />
       </div>

@@ -93,15 +93,15 @@ export default function HelpDesk() {
     switch (activeTab) {
       case "create":
         return (
-          <div className="min-h-[550px]">
+          <div className="min-h-[550px] font-[Urbanist]">
             {/* Empty content area */}
           </div>
         );
 
       case "pending":
         return (
-          <div className="p-5">
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="p-5 font-[Urbanist]">
+            <div className="border border-black rounded-lg overflow-hidden font-[Urbanist]">
 
               <div className="grid grid-cols-4 bg-gray-50 border-b px-4 py-3 text-xs font-medium text-gray-600">
                 <span>Category</span>
@@ -110,7 +110,7 @@ export default function HelpDesk() {
                 <span>Action</span>
               </div>
 
-              <div className="px-4 py-12 text-center text-sm text-gray-400">
+              <div className="px-4 py-12 text-center text-sm text-gray-400 font-[Urbanist]">
                 No Pending Help Desk Requests
               </div>
 
@@ -120,8 +120,8 @@ export default function HelpDesk() {
 
       case "completed":
         return (
-          <div className="p-5">
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="p-5 font-[Urbanist]">
+            <div className="border border-black rounded-lg overflow-hidden font-[Urbanist]">
 
               <div className="grid grid-cols-4 bg-gray-50 border-b px-4 py-3 text-xs font-medium text-gray-600">
                 <span>Category</span>
@@ -130,7 +130,7 @@ export default function HelpDesk() {
                 <span>Action</span>
               </div>
 
-              <div className="px-4 py-12 text-center text-sm text-gray-400">
+              <div className="px-4 py-12 text-center text-sm text-gray-400 font-[Urbanist]">
                 No Completed Help Desk Requests
               </div>
 
@@ -144,7 +144,7 @@ export default function HelpDesk() {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-100px)]">
+    <div className="w-full min-h-[calc(100vh-100px)] font-[Urbanist]">
 
       {/* ================================================= */}
       {/* TOP BAR */}
@@ -163,7 +163,7 @@ export default function HelpDesk() {
 
           max-[639px]:overflow-x-auto
           max-[639px]:overflow-y-hidden
-        "
+         font-[Urbanist]"
       >
 
         <div
@@ -174,7 +174,7 @@ export default function HelpDesk() {
             min-w-max
             w-full
             gap-2
-          "
+           font-[Urbanist]"
         >
 
           {/* ================================================= */}
@@ -188,7 +188,7 @@ export default function HelpDesk() {
               gap-1
               shrink-0
               sm:flex-1
-            "
+             font-[Urbanist]"
           >
 
             {tabs.map((tab) => {
@@ -236,7 +236,7 @@ export default function HelpDesk() {
               items-center
               shrink-0
               ml-2
-            "
+             font-[Urbanist]"
           >
 
             {/* ADD NEW */}
@@ -260,7 +260,7 @@ export default function HelpDesk() {
                 whitespace-nowrap
               "
             >
-              <span className="text-base leading-none">
+              <span className="text-base leading-none font-[Urbanist]">
                 +
               </span>
 
@@ -276,7 +276,7 @@ export default function HelpDesk() {
                 shrink-0
                 text-gray-500
                 hover:text-purple-600
-              "
+               font-[Urbanist]"
               title="History"
             >
               <Clock3 size={17} />
@@ -292,7 +292,7 @@ export default function HelpDesk() {
       {/* PAGE CONTENT */}
       {/* ================================================= */}
 
-      <div className="bg-white rounded-xl min-h-[600px]">
+      <div className="bg-white rounded-xl min-h-[600px] font-[Urbanist]">
 
         {renderContent()}
 
@@ -314,7 +314,7 @@ export default function HelpDesk() {
             justify-center
             bg-black/20
             p-3
-          "
+           font-[Urbanist]"
         >
 
           {/* MODAL */}
@@ -327,7 +327,7 @@ export default function HelpDesk() {
               rounded-xl
               shadow-2xl
               overflow-hidden
-            "
+             font-[Urbanist]"
           >
 
             {/* =========================================== */}
@@ -342,8 +342,8 @@ export default function HelpDesk() {
                 px-4
                 py-3
                 border-b
-                border-gray-200
-              "
+                border-black
+               font-[Urbanist]"
             >
 
               <h2
@@ -362,7 +362,7 @@ export default function HelpDesk() {
                 className="
                   text-gray-500
                   hover:text-gray-800
-                "
+                 font-[Urbanist]"
               >
                 <X size={17} />
               </button>
@@ -373,11 +373,11 @@ export default function HelpDesk() {
             {/* MODAL BODY */}
             {/* =========================================== */}
 
-            <div className="px-4 py-4">
+            <div className="px-4 py-4 font-[Urbanist]">
 
               {/* CATEGORY */}
 
-              <div className="mb-4">
+              <div className="mb-4 font-[Urbanist]">
 
                 <label
                   className="
@@ -390,7 +390,7 @@ export default function HelpDesk() {
                 >
                   Category
 
-                  <span className="text-red-500 ml-1">
+                  <span className="text-red-500 ml-1 font-[Urbanist]">
                     *
                   </span>
                 </label>
@@ -407,16 +407,16 @@ export default function HelpDesk() {
                     h-8
                     px-2.5
                     border
-                    border-gray-200
+                    border-black
                     rounded-md
                     text-xs
                     text-gray-700
                     outline-none
                     placeholder:text-gray-300
-                    focus:border-[#7C4DFF]
+                    focus:border-black
                     focus:ring-1
                     focus:ring-[#7C4DFF]/20
-                  "
+                   font-[Urbanist]"
                 />
 
               </div>
@@ -436,7 +436,7 @@ export default function HelpDesk() {
                 >
                   Category Type
 
-                  <span className="text-red-500 ml-1">
+                  <span className="text-red-500 ml-1 font-[Urbanist]">
                     *
                   </span>
                 </label>
@@ -445,7 +445,7 @@ export default function HelpDesk() {
                 {/* RESPONSIVE CUSTOM CATEGORY TYPE DROPDOWN */}
                 {/* ================================================= */}
 
-                <div className="relative w-full">
+                <div className="relative w-full font-[Urbanist]">
 
                   {/* SELECT BUTTON */}
 
@@ -462,7 +462,7 @@ export default function HelpDesk() {
                       px-2.5
                       pr-8
                       border
-                      border-gray-200
+                      border-black
                       rounded-md
                       text-xs
                       text-gray-500
@@ -470,13 +470,13 @@ export default function HelpDesk() {
                       text-left
                       bg-white
                       relative
-                      focus:border-[#7C4DFF]
+                      focus:border-black
                       focus:ring-1
                       focus:ring-[#7C4DFF]/20
-                    "
+                     font-[Urbanist]"
                   >
 
-                    <span className="block truncate">
+                    <span className="block truncate font-[Urbanist]">
                       {categoryType
                         ? categoryType
                             .charAt(0)
@@ -522,11 +522,11 @@ export default function HelpDesk() {
                         max-w-full
                         bg-white
                         border
-                        border-gray-200
+                        border-black
                         rounded-md
                         shadow-lg
                         overflow-hidden
-                      "
+                       font-[Urbanist]"
                     >
 
                       <div
@@ -534,7 +534,7 @@ export default function HelpDesk() {
                           max-h-32
                           overflow-y-auto
                           overflow-x-hidden
-                        "
+                         font-[Urbanist]"
                       >
 
                         {[
@@ -588,7 +588,7 @@ export default function HelpDesk() {
                               truncate
                               hover:bg-purple-50
                               hover:text-[#7C4DFF]
-                            "
+                             font-[Urbanist]"
                           >
                             {option.label}
                           </button>
@@ -620,8 +620,8 @@ export default function HelpDesk() {
                 py-3
                 bg-gray-50
                 border-t
-                border-gray-200
-              "
+                border-black
+               font-[Urbanist]"
             >
 
               {/* CLOSE */}
@@ -636,13 +636,13 @@ export default function HelpDesk() {
                   px-4
                   py-1.5
                   border
-                  border-gray-200
+                  border-black
                   bg-white
                   rounded-md
                   text-xs
                   text-gray-700
                   hover:bg-gray-100
-                "
+                 font-[Urbanist]"
               >
                 <X size={12} />
                 Close

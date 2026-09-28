@@ -555,7 +555,7 @@ export default function Circular() {
   // =====================================================
 
   return (
-    <div className="w-full min-w-0">
+    <div className="w-full min-w-0 font-[Urbanist]">
 
       {/* ================================================= */}
       {/* PAGE HEADER */}
@@ -572,7 +572,7 @@ export default function Circular() {
           px-3
           py-3
           sm:px-4
-        "
+         font-[Urbanist]"
       >
         <button
           type="button"
@@ -610,7 +610,7 @@ export default function Circular() {
             sm:px-5
           "
         >
-          <span className="text-lg">
+          <span className="text-lg font-[Urbanist]">
             +
           </span>
 
@@ -627,7 +627,7 @@ export default function Circular() {
           min-h-[500px]
           rounded-xl
           bg-white
-        "
+         font-[Urbanist]"
       >
         {/* Circular records will come here */}
       </div>
@@ -649,7 +649,7 @@ export default function Circular() {
             bg-black/20
             p-3
             sm:p-4
-          "
+           font-[Urbanist]"
         >
 
           {/* ================================================= */}
@@ -669,7 +669,7 @@ export default function Circular() {
               rounded-xl
               bg-white
               shadow-2xl
-            "
+             font-[Urbanist]"
             style={{
               maxHeight:
                 "calc(100dvh - 24px)",
@@ -691,7 +691,7 @@ export default function Circular() {
                 py-3
                 sm:px-5
                 sm:py-4
-              "
+               font-[Urbanist]"
             >
               <h2
                 className="
@@ -714,7 +714,7 @@ export default function Circular() {
                   text-gray-500
                   hover:bg-gray-100
                   hover:text-gray-800
-                "
+                 font-[Urbanist]"
               >
                 <X size={20} />
               </button>
@@ -732,7 +732,7 @@ export default function Circular() {
                 overflow-x-hidden
                 p-4
                 sm:p-5
-              "
+               font-[Urbanist]"
             >
 
               {/* ================================================= */}
@@ -746,7 +746,7 @@ export default function Circular() {
                   grid-cols-1
                   gap-4
                   sm:grid-cols-2
-                "
+                 font-[Urbanist]"
               >
 
                 {/* ================================================= */}
@@ -757,7 +757,7 @@ export default function Circular() {
                   className="
                     min-w-0
                     w-full
-                  "
+                   font-[Urbanist]"
                 >
                   <label
                     className="
@@ -774,7 +774,7 @@ export default function Circular() {
                       className="
                         ml-1
                         text-red-500
-                      "
+                       font-[Urbanist]"
                     >
                       *
                     </span>
@@ -814,7 +814,7 @@ export default function Circular() {
                         mt-1
                         text-xs
                         text-red-500
-                      "
+                       font-[Urbanist]"
                     >
                       {
                         errors.circularName
@@ -831,7 +831,7 @@ export default function Circular() {
                   className="
                     min-w-0
                     w-full
-                  "
+                   font-[Urbanist]"
                 >
                   <label
                     className="
@@ -862,13 +862,13 @@ export default function Circular() {
                       resize-none
                       rounded-md
                       border
-                      border-gray-200
+                      border-black
                       px-3
                       py-2
                       text-sm
                       outline-none
-                      focus:border-purple-500
-                    "
+                      focus:border-black
+                     font-[Urbanist]"
                   />
                 </div>
 
@@ -886,7 +886,7 @@ export default function Circular() {
                   grid-cols-1
                   gap-4
                   sm:grid-cols-2
-                "
+                 font-[Urbanist]"
               >
 
                 {/* ================================================= */}
@@ -897,7 +897,7 @@ export default function Circular() {
                   className="
                     min-w-0
                     w-full
-                  "
+                   font-[Urbanist]"
                 >
                   <label
                     className="
@@ -915,9 +915,9 @@ export default function Circular() {
                     className="
                       relative
                       w-full
-                    "
+                     font-[Urbanist]"
                   >
-                    <div className="relative w-full">
+                    <div className="relative w-full font-[Urbanist]">
                       <button
                         type="button"
                         onClick={() =>
@@ -936,17 +936,17 @@ export default function Circular() {
                           justify-between
                           rounded-md
                           border
-                          border-gray-200
+                          border-black
                           bg-white
                           px-2
                           text-left
                           text-xs
                           text-gray-500
                           outline-none
-                          focus:border-purple-500
-                        "
+                          focus:border-black
+                         font-[Urbanist]"
                       >
-                        <span className="min-w-0 truncate">
+                        <span className="min-w-0 truncate font-[Urbanist]">
                           {formData.filter === "all"
                             ? "All Employees"
                             : formData.filter === "department"
@@ -958,7 +958,7 @@ export default function Circular() {
 
                         <ChevronDown
                           size={14}
-                          className="ml-2 shrink-0 text-gray-500"
+                          className="ml-2 shrink-0 text-gray-500 font-[Urbanist]"
                         />
                       </button>
 
@@ -978,11 +978,11 @@ export default function Circular() {
                             overflow-x-hidden
                             rounded-md
                             border
-                            border-gray-200
+                            border-black
                             bg-white
                             text-xs
                             shadow-lg
-                          "
+                           font-[Urbanist]"
                         >
                           {[
                             ["", "Select Select Filter"],
@@ -1013,7 +1013,7 @@ export default function Circular() {
                                 text-xs
                                 text-gray-600
                                 hover:bg-purple-50
-                              "
+                               font-[Urbanist]"
                             >
                               {label}
                             </button>
@@ -1033,7 +1033,7 @@ export default function Circular() {
                   className="
                     min-w-0
                     w-full
-                  "
+                   font-[Urbanist]"
                 >
                   <label
                     className="
@@ -1100,7 +1100,7 @@ export default function Circular() {
                   mt-4
                   min-w-0
                   w-full
-                "
+                 font-[Urbanist]"
               >
                 <label
                   className="
@@ -1118,9 +1118,9 @@ export default function Circular() {
                   className="
                     relative
                     w-full
-                  "
+                   font-[Urbanist]"
                 >
-                  <div className="relative w-full">
+                  <div className="relative w-full font-[Urbanist]">
                     <button
                       type="button"
                       onClick={() =>
@@ -1139,17 +1139,17 @@ export default function Circular() {
                         justify-between
                         rounded-md
                         border
-                        border-gray-200
+                        border-black
                         bg-white
                         px-2
                         text-left
                         text-xs
                         text-gray-500
                         outline-none
-                        focus:border-purple-500
-                      "
+                        focus:border-black
+                       font-[Urbanist]"
                     >
-                      <span className="min-w-0 truncate">
+                      <span className="min-w-0 truncate font-[Urbanist]">
                         {formData.acknowledgementType === "not-required"
                           ? "Not Required"
                           : formData.acknowledgementType === "read-only"
@@ -1163,7 +1163,7 @@ export default function Circular() {
 
                       <ChevronDown
                         size={14}
-                        className="ml-2 shrink-0 text-gray-500"
+                        className="ml-2 shrink-0 text-gray-500 font-[Urbanist]"
                       />
                     </button>
 
@@ -1183,11 +1183,11 @@ export default function Circular() {
                           overflow-x-hidden
                           rounded-md
                           border
-                          border-gray-200
+                          border-black
                           bg-white
                           text-xs
                           shadow-lg
-                        "
+                         font-[Urbanist]"
                       >
                         {[
                           ["", "Select Acknowledgement Type"],
@@ -1219,7 +1219,7 @@ export default function Circular() {
                               text-xs
                               text-gray-600
                               hover:bg-purple-50
-                            "
+                             font-[Urbanist]"
                           >
                             {label}
                           </button>
@@ -1239,7 +1239,7 @@ export default function Circular() {
                 className="
                   mt-5
                   min-w-0
-                "
+                 font-[Urbanist]"
               >
                 <label
                   htmlFor="circular-file"
@@ -1254,25 +1254,25 @@ export default function Circular() {
                     rounded-lg
                     border
                     border-dashed
-                    border-gray-300
+                    border-black
                     px-3
                     text-center
                     hover:bg-purple-50
-                  "
+                   font-[Urbanist]"
                 >
                   <Upload
                     size={24}
                     className="
                       mb-2
                       text-purple-500
-                    "
+                     font-[Urbanist]"
                   />
 
                   <span
                     className="
                       text-xs
                       text-gray-600
-                    "
+                     font-[Urbanist]"
                   >
                     Drag and drop - or -
 
@@ -1295,7 +1295,7 @@ export default function Circular() {
                         truncate
                         text-xs
                         text-green-600
-                      "
+                       font-[Urbanist]"
                     >
                       {
                         formData.file.name
@@ -1307,7 +1307,7 @@ export default function Circular() {
                 <input
                   id="circular-file"
                   type="file"
-                  className="hidden"
+                  className="hidden font-[Urbanist]"
                   onChange={
                     handleFileChange
                   }
@@ -1333,7 +1333,7 @@ export default function Circular() {
                 sm:justify-end
                 sm:px-5
                 sm:py-4
-              "
+               font-[Urbanist]"
             >
 
               <button
@@ -1345,16 +1345,16 @@ export default function Circular() {
                   w-full
                   rounded-md
                   border
-                  border-gray-200
+                  border-black
                   px-5
                   py-2
                   text-sm
                   text-gray-700
                   hover:bg-gray-50
                   sm:w-auto
-                "
+                 font-[Urbanist]"
               >
-                <span className="mr-2">
+                <span className="mr-2 font-[Urbanist]">
                   ×
                 </span>
 
@@ -1376,7 +1376,7 @@ export default function Circular() {
                   text-white
                   hover:bg-[#6D3FE8]
                   sm:w-auto
-                "
+                 font-[Urbanist]"
               >
                 ✓ Save
               </button>

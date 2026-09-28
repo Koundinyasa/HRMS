@@ -103,12 +103,12 @@ export default function ExportButtons({
   onHistoryClick,
 }: ExportButtonsProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="font-[Urbanist] flex items-center gap-3">
       <button
         type="button"
         onClick={onExportPdf}
         aria-label="Export PDF"
-        className="hover:opacity-75 transition-opacity"
+        className="font-[Urbanist] hover:opacity-75 transition-opacity"
         title="Export PDF"
       >
         <PdfIcon />
@@ -117,7 +117,7 @@ export default function ExportButtons({
         type="button"
         onClick={onExportExcel}
         aria-label="Export Excel"
-        className="hover:opacity-75 transition-opacity"
+        className="font-[Urbanist] hover:opacity-75 transition-opacity"
         title="Export Excel"
       >
         <ExcelIcon />
@@ -126,7 +126,7 @@ export default function ExportButtons({
         type="button"
         onClick={onHistoryClick}
         aria-label="Report history"
-        className="hover:opacity-75 transition-opacity"
+        className="font-[Urbanist] hover:opacity-75 transition-opacity"
         title="History"
       >
         <ClockIcon />

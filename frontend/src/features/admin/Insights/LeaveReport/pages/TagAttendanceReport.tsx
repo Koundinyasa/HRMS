@@ -44,7 +44,7 @@ export default function TagAttendanceReport() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Top Attendance"
         reportType="top-attendance"

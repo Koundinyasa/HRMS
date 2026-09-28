@@ -41,21 +41,21 @@ export default function ReportTable({
   // — no table header row, no Sl.No/Employee ID/Employee Name columns at all.
   if (hideHeaderOnEmpty && !loading && rows.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="font-[Urbanist] bg-white rounded-lg shadow-sm border border-[#8B5A2B]">
         <EmptyState message={emptyMessage} />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="font-[Urbanist] bg-white rounded-lg shadow-sm border border-[#8B5A2B] overflow-x-auto min-w-0 max-w-full">
+      <table className="font-[Urbanist] w-full text-sm">
         <thead>
-          <tr className="bg-orange-50">
+          <tr className="font-[Urbanist] bg-orange-50">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-3 font-semibold text-gray-800 whitespace-nowrap ${
+                className={`font-[Urbanist] px-4 py-3 font-semibold text-gray-800 whitespace-nowrap ${
                   col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"
                 }`}
               >
@@ -67,7 +67,7 @@ export default function ReportTable({
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-10 text-center text-gray-400">
+              <td colSpan={columns.length} className="font-[Urbanist] px-4 py-10 text-center text-gray-400">
                 Loading...
               </td>
             </tr>
@@ -79,11 +79,11 @@ export default function ReportTable({
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={row.slNo} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+              <tr key={row.slNo} className="font-[Urbanist] border-t border-[#8B5A2B] hover:bg-gray-50 transition-colors">
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={`px-4 py-3 text-gray-700 whitespace-nowrap ${
+                    className={`font-[Urbanist] px-4 py-3 text-gray-700 whitespace-nowrap ${
                       col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"
                     } ${col.key === "employeeId" ? "text-blue-600" : ""}`}
                   >
@@ -105,5 +105,5 @@ export const dragActionColumn = {
   key: "__action",
   label: "Action",
   align: "center" as const,
-  render: () => <GripVertical size={16} className="mx-auto text-gray-400 cursor-grab" />,
+  render: () => <GripVertical size={16} className="font-[Urbanist] mx-auto text-gray-400 cursor-grab" />,
 };

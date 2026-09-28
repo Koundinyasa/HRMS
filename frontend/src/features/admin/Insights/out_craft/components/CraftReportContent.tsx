@@ -11,8 +11,8 @@ export default function CraftReportContent({
     CRAFT_REPORT_TABS.find((tab) => tab.value === activeTab)?.label ?? "";
 
   return (
-    <div className="min-h-[400px] bg-white p-4">
-      <p className="text-sm font-medium text-slate-700">{activeLabel}</p>
+    <div className="font-[Urbanist] min-h-[400px] bg-white p-4">
+      <p className="font-[Urbanist] text-sm font-medium text-slate-700">{activeLabel}</p>
       {/* Report-specific table/content for this tab goes here later */}
     </div>
   );

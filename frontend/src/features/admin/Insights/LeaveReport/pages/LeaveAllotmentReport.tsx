@@ -49,7 +49,7 @@ export default function LeaveAllotmentReport() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Leave Allotment Report"
         reportType="leave-allotment-report"

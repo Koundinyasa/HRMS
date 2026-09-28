@@ -81,16 +81,16 @@ export default function SubSideBar() {
         h-[calc(100vh-64px)]
         overflow-y-auto
         border-r
-        border-gray-200
+        border-black
         bg-[#F7F3FF]
-      "
+       font-[Urbanist]"
     >
       {/* =====================================================
           COMPANY
       ===================================================== */}
 
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between">
+      <div className="px-4 pt-4 pb-2 font-[Urbanist]">
+        <div className="flex items-center justify-between font-[Urbanist]">
           <span className="text-sm font-medium text-slate-800">
             Koundinyasa Tech
           </span>
@@ -101,24 +101,24 @@ export default function SubSideBar() {
           ADMIN CENTER ITEMS
       ===================================================== */}
 
-      <div className="px-4">
-        <div className="py-2 text-sm text-slate-800">
+      <div className="px-4 font-[Urbanist]">
+        <div className="py-2 text-sm text-slate-800 font-[Urbanist]">
           Company
         </div>
 
-        <div className="py-2 text-sm text-slate-800">
+        <div className="py-2 text-sm text-slate-800 font-[Urbanist]">
           Settings
         </div>
 
-        <div className="py-2 text-sm text-slate-800">
+        <div className="py-2 text-sm text-slate-800 font-[Urbanist]">
           Classifications
         </div>
 
-        <div className="py-2 text-sm text-slate-800">
+        <div className="py-2 text-sm text-slate-800 font-[Urbanist]">
           User Management
         </div>
 
-        <div className="py-2 text-sm text-slate-800">
+        <div className="py-2 text-sm text-slate-800 font-[Urbanist]">
           Workflows
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function SubSideBar() {
           ESS DROPDOWN
       ===================================================== */}
 
-      <div className="mt-2">
+      <div className="mt-2 font-[Urbanist]">
         <button
           type="button"
           onClick={() => setEssOpen((prev) => !prev)}
@@ -164,7 +164,7 @@ export default function SubSideBar() {
         ===================================================== */}
 
         {essOpen && (
-          <nav className="flex flex-col">
+          <nav className="flex flex-col font-[Urbanist]">
             {ESS_LINKS.map((item) => {
               const Icon = (
                 Icons[
@@ -202,10 +202,10 @@ export default function SubSideBar() {
                 >
                   <Icon
                     size={15}
-                    className="shrink-0"
+                    className="shrink-0 font-[Urbanist]"
                   />
 
-                  <span className="truncate">
+                  <span className="truncate font-[Urbanist]">
                     {item.label}
                   </span>
                 </NavLink>

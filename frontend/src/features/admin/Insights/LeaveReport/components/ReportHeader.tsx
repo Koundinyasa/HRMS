@@ -64,21 +64,21 @@ export default function ReportHeader({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
+    <div className="font-[Urbanist] bg-white rounded-lg shadow-sm border border-[#8B5A2B] px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
       {/* Title — left */}
       {title && (
-        <span className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-orange-200 bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
+        <span className="font-[Urbanist] flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#8B5A2B] bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
           <FileText size={15} />
           {title}
         </span>
       )}
 
       {/* Month(s) + Groupby + Export icons — all pushed to the right */}
-      <div className="flex items-center gap-3 sm:gap-4 flex-wrap sm:ml-auto">
+      <div className="font-[Urbanist] flex items-center gap-3 sm:gap-4 flex-wrap sm:ml-auto">
         {showToMonth ? (
           <>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">From Month</span>
+            <div className="font-[Urbanist] flex items-center gap-2">
+              <span className="font-[Urbanist] text-sm font-medium text-gray-700 whitespace-nowrap">From Month</span>
               <MonthSelector
                 value={fromMonth}
                 options={monthOptions}
@@ -87,8 +87,8 @@ export default function ReportHeader({
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">To Month</span>
+            <div className="font-[Urbanist] flex items-center gap-2">
+              <span className="font-[Urbanist] text-sm font-medium text-gray-700 whitespace-nowrap">To Month</span>
               <MonthSelector
                 value={toMonth}
                 options={monthOptions}
@@ -98,7 +98,7 @@ export default function ReportHeader({
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="font-[Urbanist] flex items-center gap-2">
             <MonthSelector
               value={fromMonth}
               options={monthOptions}
@@ -118,12 +118,12 @@ export default function ReportHeader({
           />
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="font-[Urbanist] flex items-center gap-3">
           <button
             type="button"
             onClick={onExportPdf}
             aria-label="Export PDF"
-            className="hover:opacity-75 transition-opacity"
+            className="font-[Urbanist] hover:opacity-75 transition-opacity"
             title="Export PDF"
           >
             <PdfIcon />
@@ -132,7 +132,7 @@ export default function ReportHeader({
             type="button"
             onClick={onExportExcel}
             aria-label="Export Excel"
-            className="hover:opacity-75 transition-opacity"
+            className="font-[Urbanist] hover:opacity-75 transition-opacity"
             title="Export Excel"
           >
             <ExcelIcon />
@@ -142,7 +142,7 @@ export default function ReportHeader({
             onClick={handleHistoryClick}
             aria-label="View audit log"
             disabled={!reportType && !onHistoryClick}
-            className="hover:opacity-75 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className="font-[Urbanist] hover:opacity-75 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             title="History"
           >
             <ClockIcon />

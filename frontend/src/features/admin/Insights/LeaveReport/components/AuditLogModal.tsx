@@ -71,20 +71,20 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-2 sm:px-4"
+      className="font-[Urbanist] fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-2 sm:px-4"
     >
-      <div className="w-full max-w-5xl max-h-[90vh] sm:max-h-[85vh] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
+      <div className="font-[Urbanist] w-full max-w-5xl max-h-[90vh] sm:max-h-[85vh] bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-            Audit Log{title ? <span className="text-gray-400 font-normal"> — {title}</span> : null}
+        <div className="font-[Urbanist] flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-[#8B5A2B]">
+          <h2 className="font-[Urbanist] text-base sm:text-lg font-semibold text-gray-900 truncate">
+            Audit Log{title ? <span className="font-[Urbanist] text-gray-400 font-normal"> — {title}</span> : null}
           </h2>
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="font-[Urbanist] flex items-center gap-4 shrink-0">
             <button
               type="button"
               onClick={() => d.handleExport("pdf")}
               aria-label="Export audit log to PDF"
-              className="text-red-600 hover:opacity-75 transition-opacity"
+              className="font-[Urbanist] text-red-600 hover:opacity-75 transition-opacity"
             >
               <FileText size={20} />
             </button>
@@ -92,7 +92,7 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
               type="button"
               onClick={() => d.handleExport("excel")}
               aria-label="Export audit log to Excel"
-              className="text-green-600 hover:opacity-75 transition-opacity"
+              className="font-[Urbanist] text-green-600 hover:opacity-75 transition-opacity"
             >
               <FileSpreadsheet size={20} />
             </button>
@@ -100,7 +100,7 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
               type="button"
               disabled
               aria-label="Audit log history"
-              className="text-gray-400 opacity-40 cursor-default"
+              className="font-[Urbanist] text-gray-400 opacity-40 cursor-default"
             >
               <History size={18} />
             </button>
@@ -108,7 +108,7 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
               type="button"
               onClick={onClose}
               aria-label="Close audit log"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="font-[Urbanist] text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X size={20} />
             </button>
@@ -116,19 +116,19 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-gray-100 flex-wrap">
-          <div className="flex items-center gap-2 flex-1 min-w-[160px]">
-            <Search size={16} className="text-gray-400 shrink-0" />
+        <div className="font-[Urbanist] flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-[#8B5A2B] flex-wrap">
+          <div className="font-[Urbanist] flex items-center gap-2 flex-1 min-w-[160px]">
+            <Search size={16} className="font-[Urbanist] text-gray-400 shrink-0" />
             <input
               type="text"
               value={d.filters.search}
               onChange={(e) => d.setFilters({ ...d.filters, search: e.target.value })}
               placeholder="Start Typing..."
-              className="w-full outline-none text-sm placeholder:text-gray-400"
+              className="font-[Urbanist] w-full outline-none text-sm placeholder:text-gray-400"
             />
           </div>
 
-          <div className="relative">
+          <div className="font-[Urbanist] relative">
             <select
               value={d.filters.employee[0] ?? ""}
               onChange={(e) =>
@@ -137,7 +137,7 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
                   employee: e.target.value ? [e.target.value] : [],
                 })
               }
-              className="appearance-none text-sm text-gray-700 border border-gray-200 rounded-md pl-3 pr-7 py-1.5 outline-none cursor-pointer bg-white"
+              className="font-[Urbanist] appearance-none text-sm text-gray-700 border border-[#8B5A2B] rounded-md pl-3 pr-7 py-1.5 outline-none cursor-pointer bg-white"
             >
               <option value="">Employee</option>
               {employeeOptions.map((name) => (
@@ -146,10 +146,10 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
                 </option>
               ))}
             </select>
-            <ChevronDown size={14} className="text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown size={14} className="font-[Urbanist] text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
-          <div className="relative">
+          <div className="font-[Urbanist] relative">
             <select
               value={d.filters.action[0] ?? ""}
               onChange={(e) =>
@@ -158,7 +158,7 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
                   action: e.target.value ? [e.target.value] : [],
                 })
               }
-              className="appearance-none text-sm text-gray-700 border border-gray-200 rounded-md pl-3 pr-7 py-1.5 outline-none cursor-pointer bg-white"
+              className="font-[Urbanist] appearance-none text-sm text-gray-700 border border-[#8B5A2B] rounded-md pl-3 pr-7 py-1.5 outline-none cursor-pointer bg-white"
             >
               <option value="">Action</option>
               {actionOptions.map((action) => (
@@ -167,28 +167,28 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
                 </option>
               ))}
             </select>
-            <ChevronDown size={14} className="text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown size={14} className="font-[Urbanist] text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
         {/* Table */}
-        <div className="flex-1 overflow-auto">
-          <table className="w-full min-w-[720px] text-sm">
+        <div className="font-[Urbanist] flex-1 overflow-auto">
+          <table className="font-[Urbanist] w-full min-w-[720px] text-sm">
             <thead>
-              <tr className="bg-orange-50 sticky top-0">
-                <th className="px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
+              <tr className="font-[Urbanist] bg-orange-50 sticky top-0">
+                <th className="font-[Urbanist] px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
                   Record Details
                 </th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
+                <th className="font-[Urbanist] px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
                   Record Changes
                 </th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
+                <th className="font-[Urbanist] px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
                   Action Time
                 </th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
+                <th className="font-[Urbanist] px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
                   User
                 </th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
+                <th className="font-[Urbanist] px-4 py-3 text-left font-semibold text-gray-800 whitespace-nowrap">
                   Employee Name
                 </th>
               </tr>
@@ -196,7 +196,7 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
             <tbody>
               {d.loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                  <td colSpan={5} className="font-[Urbanist] px-4 py-10 text-center text-gray-400">
                     Loading...
                   </td>
                 </tr>
@@ -208,12 +208,12 @@ export default function AuditLogModal({ reportType, title, onClose }: AuditLogMo
                 </tr>
               ) : (
                 d.rows.map((row: AuditLogEntry) => (
-                  <tr key={row.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{row.recordDetails}</td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{row.recordChanges ?? "-"}</td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{formatActionTime(row.actionTime)}</td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{row.user}</td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{row.employeeName ?? "-"}</td>
+                  <tr key={row.id} className="font-[Urbanist] border-t border-[#8B5A2B] hover:bg-gray-50 transition-colors">
+                    <td className="font-[Urbanist] px-4 py-3 text-gray-700 whitespace-nowrap">{row.recordDetails}</td>
+                    <td className="font-[Urbanist] px-4 py-3 text-gray-700 whitespace-nowrap">{row.recordChanges ?? "-"}</td>
+                    <td className="font-[Urbanist] px-4 py-3 text-gray-700 whitespace-nowrap">{formatActionTime(row.actionTime)}</td>
+                    <td className="font-[Urbanist] px-4 py-3 text-gray-700 whitespace-nowrap">{row.user}</td>
+                    <td className="font-[Urbanist] px-4 py-3 text-gray-700 whitespace-nowrap">{row.employeeName ?? "-"}</td>
                   </tr>
                 ))
               )}

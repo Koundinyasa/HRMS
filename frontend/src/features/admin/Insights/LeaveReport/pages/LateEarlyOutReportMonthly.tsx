@@ -33,7 +33,7 @@ export default function LateEarlyOutReportMonthly() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Late In Early Out Report (Monthly)"
         reportType="late-in-early-out-report-monthly"

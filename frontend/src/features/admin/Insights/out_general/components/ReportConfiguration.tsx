@@ -106,7 +106,7 @@
 
 //   return (
 //     <>
-//       <div className="w-full min-w-0 bg-white">
+//       <div className="font-[Urbanist] w-full min-w-0 bg-white">
 
 //         {/* =====================================================
 //             SCROLLBAR STYLES
@@ -189,7 +189,7 @@
 //         ===================================================== */}
 
 //         {/* <div
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             items-center
 //             justify-between
@@ -197,11 +197,11 @@
 //             px-5
 //             pb-3
 //             pt-1
-//           "
+//            flex-wrap min-w-0"
 //         > */}
 
 //         <div
-//   className="
+//   className="font-[Urbanist] 
 //     mt-4
 //     flex
 //     flex-col
@@ -209,24 +209,24 @@
 //     justify-between
 //     gap-2
 //     border-b
-//     border-[#e5e7eb]
+//     border-black
 //     pb-3
 //     sm:flex-row
 //     sm:items-center
-//   "
+//    flex-wrap min-w-0"
 // >
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               min-w-0
 //               items-center
 //               gap-2
-//             "
+//              flex-wrap"
 //           >
 
 //             <h2
-//               className="
+//               className="font-[Urbanist] 
 //                 shrink-0
 //                 text-[13px]
 //                 font-semibold
@@ -237,7 +237,7 @@
 //             </h2>
 
 //             <span
-//               className="
+//               className="font-[Urbanist] 
 //                 hidden
 //                 text-[11px]
 //                 text-[#999]
@@ -259,7 +259,7 @@
 //             onClick={() =>
 //               setExpressionOpen(true)
 //             }
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               shrink-0
 //               items-center
@@ -269,7 +269,7 @@
 //               text-[#955847]
 //               transition-colors
 //               hover:text-[#7f493b]
-//             "
+//              flex-wrap min-w-0"
 //           >
 
 //             <Plus size={15} />
@@ -296,7 +296,7 @@
 //         ===================================================== */}
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             group-order-scroll
 //             max-h-[100px]
 //             overflow-y-auto
@@ -311,7 +311,7 @@
 //         >
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               grid
 //               grid-cols-1
 //               gap-5
@@ -324,14 +324,14 @@
 //             ================================================= */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 min-w-0
 //                 w-full
 //               "
 //             >
 
 //               <h3
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mb-2
 //                   text-[12px]
 //                   font-semibold
@@ -350,7 +350,7 @@
 //                     event.target.value
 //                   )
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   block
 //                   h-[32px]
 //                   w-full
@@ -389,14 +389,14 @@
 //             ================================================= */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 min-w-0
 //                 w-full
 //               "
 //             >
 
 //               <h3
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mb-2
 //                   text-[12px]
 //                   font-semibold
@@ -415,7 +415,7 @@
 //                     event.target.value
 //                   )
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   block
 //                   h-[32px]
 //                   w-full
@@ -462,7 +462,7 @@
 //       {expressionOpen && (
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             fixed
 //             inset-0
 //             z-[99999]
@@ -472,7 +472,7 @@
 //             bg-black/45
 //             px-4
 //             py-6
-//           "
+//            flex-wrap min-w-0"
 //         >
 
 //           {/* =====================================================
@@ -480,7 +480,7 @@
 //           ===================================================== */}
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               max-h-[90vh]
 //               w-full
@@ -490,7 +490,7 @@
 //               rounded-[8px]
 //               bg-white
 //               shadow-[0_10px_40px_rgba(0,0,0,0.25)]
-//             "
+//              min-w-0 max-w-full"
 //           >
 
 //             {/* =================================================
@@ -498,19 +498,19 @@
 //             ================================================= */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 h-[58px]
 //                 shrink-0
 //                 items-center
 //                 border-b
-//                 border-[#e5e7eb]
+//                 border-black
 //                 px-5
-//               "
+//                min-w-0"
 //             >
 
 //               <h2
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[20px]
 //                   font-semibold
 //                   text-[#202938]
@@ -527,7 +527,7 @@
 //             ================================================= */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 overflow-y-auto
 //                 px-5
 //                 py-5
@@ -539,7 +539,7 @@
 //               ============================================= */}
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mb-5
 //                   flex
 //                   items-start
@@ -550,12 +550,12 @@
 //                   bg-[#fffcf5]
 //                   px-4
 //                   py-4
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 
 //                 <AlertTriangle
 //                   size={22}
-//                   className="
+//                   className="font-[Urbanist] 
 //                     mt-0.5
 //                     shrink-0
 //                     text-[#e5c15c]
@@ -563,7 +563,7 @@
 //                 />
 
 //                 <p
-//                   className="
+//                   className="font-[Urbanist] 
 //                     text-[14px]
 //                     leading-5
 //                     text-[#77705f]
@@ -583,7 +583,7 @@
 //               ============================================= */}
 
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   grid
 //                   grid-cols-1
 //                   gap-4
@@ -601,10 +601,10 @@
 //                       FORMULA NAME
 //                   ======================================= */}
 
-//                   <div className="mb-4">
+//                   <div className="font-[Urbanist] mb-4">
 
 //                     <label
-//                       className="
+//                       className="font-[Urbanist] 
 //                         mb-2
 //                         block
 //                         text-[15px]
@@ -613,7 +613,7 @@
 //                       "
 //                     >
 //                       Formula Name
-//                       <span className="text-red-500">
+//                       <span className="font-[Urbanist] text-red-500">
 //                         *
 //                       </span>
 //                     </label>
@@ -626,7 +626,7 @@
 //                           event.target.value
 //                         )
 //                       }
-//                       className="
+//                       className="font-[Urbanist] 
 //                         h-[43px]
 //                         w-full
 //                         rounded-[5px]
@@ -651,7 +651,7 @@
 //                   <div>
 
 //                     <label
-//                       className="
+//                       className="font-[Urbanist] 
 //                         mb-2
 //                         block
 //                         text-[15px]
@@ -669,7 +669,7 @@
 //                           event.target.value
 //                         )
 //                       }
-//                       className="
+//                       className="font-[Urbanist] 
 //                         h-[165px]
 //                         w-full
 //                         resize-none
@@ -696,7 +696,7 @@
 //                 ========================================= */}
 
 //                 <div
-//                   className="
+//                   className="font-[Urbanist] 
 //                     min-h-[250px]
 //                     rounded-[6px]
 //                     bg-[#eeeafa]
@@ -706,7 +706,7 @@
 
 //                   <Info
 //                     size={24}
-//                     className="
+//                     className="font-[Urbanist] 
 //                       text-[#8d79e8]
 //                     "
 //                   />
@@ -723,18 +723,18 @@
 //             ================================================= */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
 //                 justify-end
 //                 gap-4
 //                 border-t
-//                 border-[#e5e7eb]
+//                 border-black
 //                 bg-[#f8f9fb]
 //                 px-5
 //                 py-3
-//               "
+//                flex-wrap min-w-0"
 //             >
 
 //               {/* =============================================
@@ -744,7 +744,7 @@
 //               <button
 //                 type="button"
 //                 onClick={closeExpression}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[43px]
 //                   min-w-[120px]
@@ -761,7 +761,7 @@
 //                   text-[#5b626b]
 //                   transition-colors
 //                   hover:bg-[#f5f5f5]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 
 //                 <X size={18} />
@@ -778,7 +778,7 @@
 //               <button
 //                 type="button"
 //                 onClick={saveExpression}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[43px]
 //                   min-w-[120px]
@@ -793,7 +793,7 @@
 //                   text-white
 //                   transition-colors
 //                   hover:bg-[#1687c1]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 
 //                 <Bookmark size={18} />
@@ -975,7 +975,7 @@ export default function ReportConfiguration() {
 
   return (
     <>
-      <div className="w-full min-w-0 max-w-full overflow-visible bg-white">
+      <div className="font-[Urbanist] w-full min-w-0 max-w-full overflow-visible bg-white">
 
         {/* =====================================================
             SCROLLBAR STYLES
@@ -1058,7 +1058,7 @@ export default function ReportConfiguration() {
         ===================================================== */}
 
         {/* <div
-          className="
+          className="font-[Urbanist] 
             flex
             items-center
             justify-between
@@ -1066,11 +1066,11 @@ export default function ReportConfiguration() {
             px-5
             pb-3
             pt-1
-          "
+           flex-wrap min-w-0"
         > */}
 
         <div
-  className="
+  className="font-[Urbanist] 
     mt-4
     flex
     w-full
@@ -1081,24 +1081,24 @@ export default function ReportConfiguration() {
     justify-between
     gap-2
     border-b
-    border-[#e5e7eb]
+    border-black
     pb-3
     sm:flex-row
     sm:items-center
-  "
+   flex-wrap"
 >
 
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               min-w-0
               items-center
               gap-2
-            "
+             flex-wrap"
           >
 
             <h2
-              className="
+              className="font-[Urbanist] 
                 shrink-0
                 text-[13px]
                 font-semibold
@@ -1109,7 +1109,7 @@ export default function ReportConfiguration() {
             </h2>
 
             <span
-              className="
+              className="font-[Urbanist] 
                 hidden
                 text-[11px]
                 text-[#999]
@@ -1131,7 +1131,7 @@ export default function ReportConfiguration() {
             onClick={() =>
               setExpressionOpen(true)
             }
-            className="
+            className="font-[Urbanist] 
               flex
               shrink-0
               items-center
@@ -1141,7 +1141,7 @@ export default function ReportConfiguration() {
               text-[#955847]
               transition-colors
               hover:text-[#7f493b]
-            "
+             flex-wrap min-w-0"
           >
 
             <Plus size={15} />
@@ -1169,7 +1169,7 @@ export default function ReportConfiguration() {
         ===================================================== */}
 
         <div
-          className="
+          className="font-[Urbanist] 
             relative
             z-30
             grid
@@ -1195,11 +1195,11 @@ export default function ReportConfiguration() {
 
           <div
             ref={groupDropdownRef}
-            className="w-full min-w-0"
+            className="font-[Urbanist] w-full min-w-0"
           >
 
             <h3
-              className="
+              className="font-[Urbanist] 
                 mb-2
                 text-[12px]
                 font-semibold
@@ -1220,7 +1220,7 @@ export default function ReportConfiguration() {
                     : "group",
                 )
               }
-              className="
+              className="font-[Urbanist] 
                 flex
                 h-[40px]
                 w-full
@@ -1239,9 +1239,9 @@ export default function ReportConfiguration() {
                 outline-none
                 transition-colors
                 focus:border-[#8f5142]
-              "
+               flex-wrap max-w-full"
             >
-              <span className="min-w-0 flex-1 truncate">
+              <span className="font-[Urbanist] min-w-0 flex-1 truncate">
                 {groupBy[0]}
               </span>
 
@@ -1263,7 +1263,7 @@ export default function ReportConfiguration() {
             {openDropdown === "group" && (
               <div
                 role="listbox"
-                className="
+                className="font-[Urbanist] 
                   mt-1
                   block
                   w-full
@@ -1310,7 +1310,7 @@ export default function ReportConfiguration() {
                         }
                       `}
                     >
-                      <span className="min-w-0 truncate">
+                      <span className="font-[Urbanist] min-w-0 truncate">
                         {option}
                       </span>
                     </button>
@@ -1328,11 +1328,11 @@ export default function ReportConfiguration() {
 
           <div
             ref={orderDropdownRef}
-            className="w-full min-w-0"
+            className="font-[Urbanist] w-full min-w-0"
           >
 
             <h3
-              className="
+              className="font-[Urbanist] 
                 mb-2
                 text-[12px]
                 font-semibold
@@ -1353,7 +1353,7 @@ export default function ReportConfiguration() {
                     : "order",
                 )
               }
-              className="
+              className="font-[Urbanist] 
                 flex
                 h-[40px]
                 w-full
@@ -1372,9 +1372,9 @@ export default function ReportConfiguration() {
                 outline-none
                 transition-colors
                 focus:border-[#8f5142]
-              "
+               flex-wrap max-w-full"
             >
-              <span className="min-w-0 flex-1 truncate">
+              <span className="font-[Urbanist] min-w-0 flex-1 truncate">
                 {orderBy[0]}
               </span>
 
@@ -1396,7 +1396,7 @@ export default function ReportConfiguration() {
             {openDropdown === "order" && (
               <div
                 role="listbox"
-                className="
+                className="font-[Urbanist] 
                   mt-1
                   block
                   w-full
@@ -1443,7 +1443,7 @@ export default function ReportConfiguration() {
                         }
                       `}
                     >
-                      <span className="min-w-0 truncate">
+                      <span className="font-[Urbanist] min-w-0 truncate">
                         {option}
                       </span>
                     </button>
@@ -1466,7 +1466,7 @@ export default function ReportConfiguration() {
       {expressionOpen && (
 
         <div
-          className="
+          className="font-[Urbanist] 
             fixed
             inset-0
             z-[99999]
@@ -1476,7 +1476,7 @@ export default function ReportConfiguration() {
             bg-black/45
             px-4
             py-6
-          "
+           flex-wrap min-w-0"
         >
 
           {/* =====================================================
@@ -1484,7 +1484,7 @@ export default function ReportConfiguration() {
           ===================================================== */}
 
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               max-h-[90vh]
               w-full
@@ -1494,7 +1494,7 @@ export default function ReportConfiguration() {
               rounded-[8px]
               bg-white
               shadow-[0_10px_40px_rgba(0,0,0,0.25)]
-            "
+             min-w-0 max-w-full"
           >
 
             {/* =================================================
@@ -1502,19 +1502,19 @@ export default function ReportConfiguration() {
             ================================================= */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 h-[58px]
                 shrink-0
                 items-center
                 border-b
-                border-[#e5e7eb]
+                border-black
                 px-5
-              "
+               min-w-0"
             >
 
               <h2
-                className="
+                className="font-[Urbanist] 
                   text-[20px]
                   font-semibold
                   text-[#202938]
@@ -1531,7 +1531,7 @@ export default function ReportConfiguration() {
             ================================================= */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 overflow-y-auto
                 px-5
                 py-5
@@ -1543,7 +1543,7 @@ export default function ReportConfiguration() {
               ============================================= */}
 
               <div
-                className="
+                className="font-[Urbanist] 
                   mb-5
                   flex
                   items-start
@@ -1554,12 +1554,12 @@ export default function ReportConfiguration() {
                   bg-[#fffcf5]
                   px-4
                   py-4
-                "
+                 flex-wrap min-w-0"
               >
 
                 <AlertTriangle
                   size={22}
-                  className="
+                  className="font-[Urbanist] 
                     mt-0.5
                     shrink-0
                     text-[#e5c15c]
@@ -1567,7 +1567,7 @@ export default function ReportConfiguration() {
                 />
 
                 <p
-                  className="
+                  className="font-[Urbanist] 
                     text-[14px]
                     leading-5
                     text-[#77705f]
@@ -1587,7 +1587,7 @@ export default function ReportConfiguration() {
               ============================================= */}
 
               <div
-                className="
+                className="font-[Urbanist] 
                   grid
                   grid-cols-1
                   gap-4
@@ -1605,10 +1605,10 @@ export default function ReportConfiguration() {
                       FORMULA NAME
                   ======================================= */}
 
-                  <div className="mb-4">
+                  <div className="font-[Urbanist] mb-4">
 
                     <label
-                      className="
+                      className="font-[Urbanist] 
                         mb-2
                         block
                         text-[15px]
@@ -1617,7 +1617,7 @@ export default function ReportConfiguration() {
                       "
                     >
                       Formula Name
-                      <span className="text-red-500">
+                      <span className="font-[Urbanist] text-red-500">
                         *
                       </span>
                     </label>
@@ -1630,7 +1630,7 @@ export default function ReportConfiguration() {
                           event.target.value
                         )
                       }
-                      className="
+                      className="font-[Urbanist] 
                         h-[43px]
                         w-full
                         rounded-[5px]
@@ -1655,7 +1655,7 @@ export default function ReportConfiguration() {
                   <div>
 
                     <label
-                      className="
+                      className="font-[Urbanist] 
                         mb-2
                         block
                         text-[15px]
@@ -1673,7 +1673,7 @@ export default function ReportConfiguration() {
                           event.target.value
                         )
                       }
-                      className="
+                      className="font-[Urbanist] 
                         h-[165px]
                         w-full
                         resize-none
@@ -1700,7 +1700,7 @@ export default function ReportConfiguration() {
                 ========================================= */}
 
                 <div
-                  className="
+                  className="font-[Urbanist] 
                     min-h-[250px]
                     rounded-[6px]
                     bg-[#eeeafa]
@@ -1710,7 +1710,7 @@ export default function ReportConfiguration() {
 
                   <Info
                     size={24}
-                    className="
+                    className="font-[Urbanist] 
                       text-[#8d79e8]
                     "
                   />
@@ -1727,18 +1727,18 @@ export default function ReportConfiguration() {
             ================================================= */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 shrink-0
                 items-center
                 justify-end
                 gap-4
                 border-t
-                border-[#e5e7eb]
+                border-black
                 bg-[#f8f9fb]
                 px-5
                 py-3
-              "
+               flex-wrap min-w-0"
             >
 
               {/* =============================================
@@ -1748,7 +1748,7 @@ export default function ReportConfiguration() {
               <button
                 type="button"
                 onClick={closeExpression}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[43px]
                   min-w-[120px]
@@ -1765,7 +1765,7 @@ export default function ReportConfiguration() {
                   text-[#5b626b]
                   transition-colors
                   hover:bg-[#f5f5f5]
-                "
+                 flex-wrap min-w-0"
               >
 
                 <X size={18} />
@@ -1782,7 +1782,7 @@ export default function ReportConfiguration() {
               <button
                 type="button"
                 onClick={saveExpression}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[43px]
                   min-w-[120px]
@@ -1797,7 +1797,7 @@ export default function ReportConfiguration() {
                   text-white
                   transition-colors
                   hover:bg-[#1687c1]
-                "
+                 flex-wrap min-w-0"
               >
 
                 <Bookmark size={18} />

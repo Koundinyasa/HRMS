@@ -597,7 +597,7 @@ export default function Notification() {
   // ============================================================
 
   return (
-    <div className="w-full min-h-full bg-white">
+    <div className="w-full min-h-full bg-white font-[Urbanist]">
 
       {/* ======================================================
           TOP TABS
@@ -616,7 +616,7 @@ export default function Notification() {
           justify-between
           max-[639px]:overflow-x-auto
           max-[639px]:overflow-y-hidden
-        "
+         font-[Urbanist]"
       >
         <div
           className="
@@ -626,7 +626,7 @@ export default function Notification() {
             gap-2
             min-w-max
             w-full
-          "
+           font-[Urbanist]"
         >
 
           {/* TABS */}
@@ -638,7 +638,7 @@ export default function Notification() {
               gap-2
               shrink-0
               whitespace-nowrap
-            "
+             font-[Urbanist]"
           >
             {tabs.map((tab) => (
               <button
@@ -672,7 +672,7 @@ export default function Notification() {
               flex
               items-center
               shrink-0
-            "
+             font-[Urbanist]"
           >
             <button
               type="button"
@@ -699,7 +699,7 @@ export default function Notification() {
 
             <Clock3
               size={18}
-              className="ml-4 text-gray-600 shrink-0"
+              className="ml-4 text-gray-600 shrink-0 font-[Urbanist]"
             />
           </div>
         </div>
@@ -709,12 +709,12 @@ export default function Notification() {
           EMPTY STATE
       ====================================================== */}
 
-      <div className="mx-5 mt-5 min-h-[500px]">
+      <div className="mx-5 mt-5 min-h-[500px] font-[Urbanist]">
 
         {activeTab === "Current Notification" ? (
-          <div className="flex justify-center items-center min-h-[450px]">
+          <div className="flex justify-center items-center min-h-[450px] font-[Urbanist]">
 
-            <div className="text-center">
+            <div className="text-center font-[Urbanist]">
 
               <img
                 src={feedsEmptyState}
@@ -725,10 +725,10 @@ export default function Notification() {
                   object-contain
                   mx-auto
                   mb-4
-                "
+                 font-[Urbanist]"
               />
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 font-[Urbanist]">
                 No Current Notifications
               </p>
 
@@ -737,9 +737,9 @@ export default function Notification() {
           </div>
         ) : (
 
-          <div className="flex justify-center items-center min-h-[450px]">
+          <div className="flex justify-center items-center min-h-[450px] font-[Urbanist]">
 
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 font-[Urbanist]">
               No {activeTab} available
             </p>
 
@@ -768,7 +768,7 @@ export default function Notification() {
             p-3
             sm:p-4
             overflow-y-auto
-          "
+           font-[Urbanist]"
         >
 
           {/* ==================================================
@@ -787,7 +787,7 @@ export default function Notification() {
               max-h-[calc(100vh-1.5rem)]
               sm:max-h-[calc(100vh-2rem)]
               overflow-hidden
-            "
+             font-[Urbanist]"
           >
 
             {/* =================================================
@@ -802,10 +802,10 @@ export default function Notification() {
                 px-5
                 py-4
                 border-b
-                border-gray-200
+                border-black
                 shrink-0
                 bg-white
-              "
+               font-[Urbanist]"
             >
 
               <h2 className="text-base font-semibold text-gray-800">
@@ -815,7 +815,7 @@ export default function Notification() {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-800"
+                className="text-gray-500 hover:text-gray-800 font-[Urbanist]"
               >
                 <X size={20} />
               </button>
@@ -836,7 +836,7 @@ export default function Notification() {
                 flex-1
                 min-h-0
                 scroll-smooth
-              "
+               font-[Urbanist]"
             >
 
               {/* =================================================
@@ -845,13 +845,13 @@ export default function Notification() {
 
               <div>
 
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 font-[Urbanist]">
 
                   <label className="text-xs font-medium text-gray-700">
 
                     Notification
 
-                    <span className="text-red-500 ml-1">
+                    <span className="text-red-500 ml-1 font-[Urbanist]">
                       *
                     </span>
 
@@ -867,7 +867,7 @@ export default function Notification() {
                       py-1
                       rounded-full
                       border
-                      border-green-400
+                      border-black
                       text-green-600
                       text-[10px]
                       font-medium
@@ -905,8 +905,8 @@ export default function Notification() {
                       px-3
                       bg-gray-50
                       border-b
-                      border-gray-200
-                    "
+                      border-black
+                     font-[Urbanist]"
                   >
 
                     <select
@@ -915,7 +915,7 @@ export default function Notification() {
                         text-[10px]
                         text-gray-600
                         outline-none
-                      "
+                       font-[Urbanist]"
                       defaultValue="Arial"
                     >
                       <option>Arial</option>
@@ -929,7 +929,7 @@ export default function Notification() {
                         text-[10px]
                         text-gray-600
                         outline-none
-                      "
+                       font-[Urbanist]"
                       defaultValue="Size 3"
                     >
                       <option>Size 3</option>
@@ -943,7 +943,7 @@ export default function Notification() {
                         text-[10px]
                         text-gray-600
                         outline-none
-                      "
+                       font-[Urbanist]"
                       defaultValue="Normal"
                     >
                       <option>Normal</option>
@@ -954,15 +954,15 @@ export default function Notification() {
                       B
                     </span>
 
-                    <span className="italic text-xs">
+                    <span className="italic text-xs font-[Urbanist]">
                       I
                     </span>
 
-                    <span className="underline text-xs">
+                    <span className="underline text-xs font-[Urbanist]">
                       U
                     </span>
 
-                    <span className="line-through text-xs">
+                    <span className="line-through text-xs font-[Urbanist]">
                       S
                     </span>
 
@@ -979,25 +979,25 @@ export default function Notification() {
                       px-3
                       bg-white
                       border-b
-                      border-gray-200
+                      border-black
                       text-gray-600
-                    "
+                     font-[Urbanist]"
                   >
 
-                    <span className="text-xs">☷</span>
-                    <span className="text-xs">☰</span>
-                    <span className="text-xs">≡</span>
-                    <span className="text-xs">☷</span>
-                    <span className="text-xs">X²</span>
-                    <span className="text-xs">X₂</span>
-                    <span className="text-xs">❞</span>
-                    <span className="text-xs">T</span>
-                    <span className="text-xs">◉</span>
-                    <span className="text-xs">🔗</span>
-                    <span className="text-xs">◇</span>
-                    <span className="text-xs">⊗</span>
-                    <span className="text-xs">↶</span>
-                    <span className="text-xs">↷</span>
+                    <span className="text-xs font-[Urbanist]">☷</span>
+                    <span className="text-xs font-[Urbanist]">☰</span>
+                    <span className="text-xs font-[Urbanist]">≡</span>
+                    <span className="text-xs font-[Urbanist]">☷</span>
+                    <span className="text-xs font-[Urbanist]">X²</span>
+                    <span className="text-xs font-[Urbanist]">X₂</span>
+                    <span className="text-xs font-[Urbanist]">❞</span>
+                    <span className="text-xs font-[Urbanist]">T</span>
+                    <span className="text-xs font-[Urbanist]">◉</span>
+                    <span className="text-xs font-[Urbanist]">🔗</span>
+                    <span className="text-xs font-[Urbanist]">◇</span>
+                    <span className="text-xs font-[Urbanist]">⊗</span>
+                    <span className="text-xs font-[Urbanist]">↶</span>
+                    <span className="text-xs font-[Urbanist]">↷</span>
 
                   </div>
 
@@ -1014,13 +1014,13 @@ export default function Notification() {
                       outline-none
                       text-xs
                       text-gray-700
-                    "
+                     font-[Urbanist]"
                   />
 
                 </div>
 
                 {errors.notification && (
-                  <p className="mt-1 text-[10px] text-red-500">
+                  <p className="mt-1 text-[10px] text-red-500 font-[Urbanist]">
                     {errors.notification}
                   </p>
                 )}
@@ -1031,7 +1031,7 @@ export default function Notification() {
                   ATTACHMENT
               ================================================= */}
 
-              <div className="mt-4">
+              <div className="mt-4 font-[Urbanist]">
 
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Attachment
@@ -1044,31 +1044,31 @@ export default function Notification() {
                     h-[105px]
                     border
                     border-dashed
-                    border-[#8b63ff]
+                    border-black
                     rounded-lg
                     cursor-pointer
                     hover:bg-purple-50/30
-                  "
+                   font-[Urbanist]"
                 >
 
                   <input
                     type="file"
-                    className="hidden"
+                    className="hidden font-[Urbanist]"
                     onChange={handleAttachmentChange}
                   />
 
-                  <div className="h-full flex flex-col items-center justify-center">
+                  <div className="h-full flex flex-col items-center justify-center font-[Urbanist]">
 
                     <Upload
                       size={24}
-                      className="text-[#7650e9] mb-2"
+                      className="text-[#7650e9] mb-2 font-[Urbanist]"
                     />
 
-                    <p className="text-xs text-gray-700">
+                    <p className="text-xs text-gray-700 font-[Urbanist]">
                       Drag and drop
                     </p>
 
-                    <p className="text-[11px] text-gray-400">
+                    <p className="text-[11px] text-gray-400 font-[Urbanist]">
                       or
                     </p>
 
@@ -1077,7 +1077,7 @@ export default function Notification() {
                     </span>
 
                     {attachment && (
-                      <p className="mt-1 text-[10px] text-green-600">
+                      <p className="mt-1 text-[10px] text-green-600 font-[Urbanist]">
                         {attachment.name}
                       </p>
                     )}
@@ -1092,13 +1092,13 @@ export default function Notification() {
                   EVENT NAME
               ================================================= */}
 
-              <div className="mt-4">
+              <div className="mt-4 font-[Urbanist]">
 
                 <label className="block text-xs font-medium text-gray-700 mb-1">
 
                   Event Name
 
-                  <span className="text-red-500 ml-1">
+                  <span className="text-red-500 ml-1 font-[Urbanist]">
                     *
                   </span>
 
@@ -1127,7 +1127,7 @@ export default function Notification() {
                 />
 
                 {errors.eventName && (
-                  <p className="mt-1 text-[10px] text-red-500">
+                  <p className="mt-1 text-[10px] text-red-500 font-[Urbanist]">
                     {errors.eventName}
                   </p>
                 )}
@@ -1138,20 +1138,20 @@ export default function Notification() {
                   FROM / TO DATE
               ================================================= */}
 
-              <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="grid grid-cols-2 gap-3 mt-4 font-[Urbanist]">
 
                 {/* FROM DATE */}
 
                 <div
                   ref={fromDateRef}
-                  className="relative"
+                  className="relative font-[Urbanist]"
                 >
 
                   <label className="block text-xs font-medium text-gray-700 mb-1">
 
                     From Date
 
-                    <span className="text-red-500 ml-1">
+                    <span className="text-red-500 ml-1 font-[Urbanist]">
                       *
                     </span>
 
@@ -1184,7 +1184,7 @@ export default function Notification() {
                   />
 
                   {errors.fromDate && (
-                    <p className="mt-1 text-[10px] text-red-500">
+                    <p className="mt-1 text-[10px] text-red-500 font-[Urbanist]">
                       {errors.fromDate}
                     </p>
                   )}
@@ -1195,7 +1195,7 @@ export default function Notification() {
 
                 <div
                   ref={toDateRef}
-                  className="relative"
+                  className="relative font-[Urbanist]"
                 >
 
                   <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -1235,13 +1235,13 @@ export default function Notification() {
                   SELECT FILTER
               ================================================= */}
 
-              <div className="mt-4">
+              <div className="mt-4 font-[Urbanist]">
 
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Select Filter
                 </label>
 
-                <div className="relative">
+                <div className="relative font-[Urbanist]">
 
                   <button
                     type="button"
@@ -1259,17 +1259,17 @@ export default function Notification() {
                       pr-8
                       rounded-md
                       border
-                      border-gray-200
+                      border-black
                       text-[10px]
                       sm:text-xs
                       text-gray-600
                       outline-none
-                      focus:border-purple-500
+                      focus:border-black
                       bg-white
                       text-left
-                    "
+                     font-[Urbanist]"
                   >
-                    <span className="truncate min-w-0">
+                    <span className="truncate min-w-0 font-[Urbanist]">
                       {filter}
                     </span>
 
@@ -1304,10 +1304,10 @@ export default function Notification() {
                         overflow-x-hidden
                         rounded-md
                         border
-                        border-gray-200
+                        border-black
                         bg-white
                         shadow-lg
-                      "
+                       font-[Urbanist]"
                     >
                       {filterOptions.map((option) => (
                         <button
@@ -1348,7 +1348,7 @@ export default function Notification() {
 
               {/* Extra bottom space so calendar has room */}
 
-              <div className="h-4 shrink-0" />
+              <div className="h-4 shrink-0 font-[Urbanist]" />
 
             </div>
 
@@ -1364,10 +1364,10 @@ export default function Notification() {
                 px-5
                 py-3
                 border-t
-                border-gray-200
+                border-black
                 bg-gray-50
                 shrink-0
-              "
+               font-[Urbanist]"
             >
 
               <button
@@ -1381,12 +1381,12 @@ export default function Notification() {
                   py-2
                   rounded-md
                   border
-                  border-gray-200
+                  border-black
                   bg-white
                   text-gray-600
                   text-xs
                   hover:bg-gray-100
-                "
+                 font-[Urbanist]"
               >
                 <X size={13} />
                 Close

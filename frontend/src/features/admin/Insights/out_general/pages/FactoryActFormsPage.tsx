@@ -103,14 +103,14 @@
 
 //   return (
 //     <section
-//       className="
+//       className="font-[Urbanist] 
 //         w-full
 //         bg-[#f5f6f8]
 //       "
 //     >
 //       {loading && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             min-h-[52px]
 //             w-full
 //             rounded-[4px]
@@ -128,7 +128,7 @@
 
 //       {!loading && error && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             min-h-[52px]
 //             w-full
 //             rounded-[4px]
@@ -150,7 +150,7 @@
 //           <button
 //             key={form.id}
 //             type="button"
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               min-h-[52px]
 //               w-full
@@ -165,7 +165,7 @@
 //               text-[#172033]
 //               transition
 //               hover:bg-[#dce3ee]
-//             "
+//              min-w-0 max-w-full"
 //           >
 //             {form.name}
 //           </button>
@@ -175,7 +175,7 @@
 //         !error &&
 //         forms.length === 0 && (
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               min-h-[52px]
 //               w-full
 //               rounded-[4px]
@@ -299,14 +299,14 @@ export default function FactoryActFormsPage() {
 
   return (
     <section
-      className="
+      className="font-[Urbanist] 
         w-full
         bg-[#f5f6f8]
       "
     >
       {loading && (
         <div
-          className="
+          className="font-[Urbanist] 
             min-h-[52px]
             w-full
             rounded-[4px]
@@ -327,7 +327,7 @@ export default function FactoryActFormsPage() {
           <button
             key={form.id}
             type="button"
-            className="
+            className="font-[Urbanist] 
               flex
               min-h-[52px]
               w-full
@@ -342,7 +342,7 @@ export default function FactoryActFormsPage() {
               text-[#172033]
               transition
               hover:bg-[#dce3ee]
-            "
+             min-w-0 max-w-full"
           >
             {form.name}
           </button>
@@ -351,7 +351,7 @@ export default function FactoryActFormsPage() {
       {!loading &&
         forms.length === 0 && (
           <div
-            className="
+            className="font-[Urbanist] 
               min-h-[52px]
               w-full
               rounded-[4px]

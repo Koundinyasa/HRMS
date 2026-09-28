@@ -354,21 +354,21 @@
 
 //   return (
 //     <div
-//       className="
+//       className="font-[Urbanist] 
 //         min-h-screen
 //         w-full
 //         bg-[#f5f6f8]
 //         p-3
 //         sm:p-4
 //         overflow-x-hidden
-//       "
+//        max-w-full"
 //     >
 //       {/* =====================================================
 //           TOP NAVIGATION
 //       ===================================================== */}
 
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           flex
 //           min-h-[58px]
 //           w-full
@@ -381,14 +381,14 @@
 //           bg-[#fff9f7]
 //           px-4
 //           py-2
-//         "
+//          flex-wrap min-w-0 max-w-full"
 //       >
 //         {/* =================================================
 //             LEFT NAVIGATION TABS
 //         ================================================= */}
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             min-w-0
 //             flex-1
@@ -397,7 +397,7 @@
 //             overflow-x-auto
 //             overflow-y-hidden
 //             scrollbar-none
-//           "
+//            flex-wrap"
 //         >
 //           {TABS.map(
 //             ({
@@ -474,19 +474,19 @@
 //         ================================================= */}
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             shrink-0
 //             items-center
 //             gap-3
-//           "
+//            flex-wrap min-w-0"
 //         >
 //           {showDiscardedReportWriter && activeTab === "Report Writer" ? (
 //             <>
 //               {/* PAYMONTH */}
 //               <button
 //                 type="button"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[38px]
 //                   items-center
@@ -499,7 +499,7 @@
 //                   font-medium
 //                   text-white
 //                   shadow-sm
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 Paymonth
 //                 <ChevronDown size={15} strokeWidth={2} />
@@ -509,7 +509,7 @@
 //               <button
 //                 type="button"
 //                 title="History"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[37px]
 //                   w-[32px]
@@ -517,7 +517,7 @@
 //                   items-center
 //                   justify-center
 //                   text-[#5d6268]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Clock size={18} strokeWidth={1.8} />
 //               </button>
@@ -526,7 +526,7 @@
 //               <button
 //                 type="button"
 //                 title="Filter"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[37px]
 //                   w-[28px]
@@ -534,7 +534,7 @@
 //                   items-center
 //                   justify-center
 //                   text-[#5d6268]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Filter size={17} strokeWidth={1.8} />
 //               </button>
@@ -543,7 +543,7 @@
 //               <button
 //                 type="button"
 //                 title="Copy"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[37px]
 //                   w-[28px]
@@ -551,7 +551,7 @@
 //                   items-center
 //                   justify-center
 //                   text-[#5d6268]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Copy size={17} strokeWidth={1.8} />
 //               </button>
@@ -561,7 +561,7 @@
 //               <button
 //                 type="button"
 //                 onClick={openStoreTemplates}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[38px]
 //                   items-center
@@ -574,7 +574,7 @@
 //                   shadow-sm
 //                   transition
 //                   hover:bg-[#e7e7e7]
-//                 "
+//                  min-w-0"
 //               >
 //                 Download Template From Store
 //               </button>
@@ -583,7 +583,7 @@
 //                 type="button"
 //                 title="Add Factory Act Form"
 //                 onClick={openCreateFile}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[38px]
 //                   w-[38px]
@@ -593,9 +593,9 @@
 //                   text-[#7e4031]
 //                   transition
 //                   hover:bg-[#f8eeeb]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
-//                 <span className="text-[25px] leading-none">
+//                 <span className="font-[Urbanist] text-[25px] leading-none">
 //                   +
 //                 </span>
 //               </button>
@@ -607,7 +607,7 @@
 //               <button
 //                 type="button"
 //                 onClick={handleBackClick}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[37px]
 //                   min-w-[84px]
@@ -622,7 +622,7 @@
 //                   text-white
 //                   transition-all
 //                   hover:bg-[#6c3428]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <ChevronLeft size={15} />
 //                 Back
@@ -634,7 +634,7 @@
 //                 type="button"
 //                 disabled={saving}
 //                 onClick={handleSave}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[37px]
 //                   min-w-[84px]
@@ -652,7 +652,7 @@
 //                   hover:bg-[#6c3428]
 //                   disabled:cursor-not-allowed
 //                   disabled:opacity-60
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Bookmark
 //                   size={15}
@@ -669,7 +669,7 @@
 //               <button
 //                 type="button"
 //                 title="History"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[37px]
 //                   w-[32px]
@@ -677,7 +677,7 @@
 //                   items-center
 //                   justify-center
 //                   text-[#5d6268]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Clock
 //                   size={18}
@@ -697,12 +697,12 @@
 //         /* =====================================================
 //            REPORT WRITER EMPTY STATE AFTER DISCARD
 //         ===================================================== */
-//         <div className="mt-4 w-full">
+//         <div className="font-[Urbanist] mt-4 w-full">
 //           {/* FILTER / QUERY AREA */}
-//           <div className="grid grid-cols-1 gap-3 lg:grid-cols-[198px_minmax(0,1fr)]">
+//           <div className="font-[Urbanist] grid grid-cols-1 gap-3 lg:grid-cols-[198px_minmax(0,1fr)]">
 //             {/* QUERY SIDEBAR */}
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 min-h-[614px]
 //                 rounded-[10px]
 //                 border
@@ -710,18 +710,18 @@
 //                 bg-white
 //               "
 //             >
-//               <div className="flex h-[50px] items-center justify-between border-b border-[#dedede] px-3">
-//                 <span className="text-[13px] font-medium text-[#202124]">
+//               <div className="font-[Urbanist] flex h-[50px] items-center justify-between border-b border-[#dedede] px-3 flex-wrap min-w-0">
+//                 <span className="font-[Urbanist] text-[13px] font-medium text-[#202124]">
 //                   Query
 //                 </span>
 //                 <button
 //                   type="button"
 //                   title="Add Query"
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex h-[25px] w-[25px] items-center justify-center
 //                     rounded-[6px] border border-[#b17869] bg-white
 //                     text-[#7e4031]
-//                   "
+//                    flex-wrap min-w-0"
 //                 >
 //                   <Plus size={17} strokeWidth={2} />
 //                 </button>
@@ -729,9 +729,9 @@
 //             </div>
 
 //             {/* RIGHT CONTENT */}
-//             <div className="min-w-0">
+//             <div className="font-[Urbanist] min-w-0">
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   rounded-[10px]
 //                   border
 //                   border-[#dedede]
@@ -741,7 +741,7 @@
 //                 "
 //               >
 //                 {/* FILTER BUTTONS */}
-//                 <div className="flex flex-wrap items-center gap-2">
+//                 <div className="font-[Urbanist] flex flex-wrap items-center gap-2 min-w-0">
 //                   {[
 //                     "Branch",
 //                     "Salary Structure",
@@ -753,11 +753,11 @@
 //                     <button
 //                       key={item}
 //                       type="button"
-//                       className="
+//                       className="font-[Urbanist] 
 //                         flex h-[28px] items-center gap-1.5 rounded-[6px]
 //                         border border-[#e4e8ef] bg-white px-2.5
 //                         text-[11px] font-medium text-[#344054]
-//                       "
+//                        flex-wrap min-w-0"
 //                     >
 //                       {item}
 //                       <ChevronDown size={12} strokeWidth={1.8} />
@@ -766,23 +766,23 @@
 
 //                   <button
 //                     type="button"
-//                     className="ml-1 text-[11px] font-medium text-[#7e4031]"
+//                     className="font-[Urbanist] ml-1 text-[11px] font-medium text-[#7e4031]"
 //                   >
-//                     <span className="mr-1 text-[15px]">×</span>Clear
+//                     <span className="font-[Urbanist] mr-1 text-[15px]">×</span>Clear
 //                   </button>
 //                 </div>
 
 //                 {/* SEARCH + ADD FILTER + QUERY */}
-//                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
-//                   <div className="relative min-w-[220px] flex-1">
+//                 <div className="font-[Urbanist] mt-2.5 flex flex-wrap items-center gap-2 min-w-0">
+//                   <div className="font-[Urbanist] relative min-w-[220px] flex-1 min-w-0">
 //                     <Search
 //                       size={15}
-//                       className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#98a2b3]"
+//                       className="font-[Urbanist] pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#98a2b3]"
 //                     />
 //                     <input
 //                       type="text"
 //                       placeholder="Search..."
-//                       className="
+//                       className="font-[Urbanist] 
 //                         h-[28px] w-full rounded-[6px] border border-[#dfe4ec]
 //                         bg-white pl-8 pr-3 text-[11px] text-[#344054]
 //                         outline-none
@@ -793,10 +793,10 @@
 
 //                   <button
 //                     type="button"
-//                     className="
+//                     className="font-[Urbanist] 
 //                       flex h-[28px] items-center gap-1.5 rounded-[6px]
 //                       bg-[#9b6656] px-3 text-[11px] font-medium text-white
-//                     "
+//                      flex-wrap min-w-0"
 //                   >
 //                     <Plus size={14} strokeWidth={2.2} />
 //                     Add Filter
@@ -804,11 +804,11 @@
 
 //                   <button
 //                     type="button"
-//                     className="
+//                     className="font-[Urbanist] 
 //                       flex h-[28px] items-center gap-1.5 rounded-[6px]
 //                       border border-[#e4e8ef] bg-white px-3
 //                       text-[11px] font-medium text-[#344054]
-//                     "
+//                      flex-wrap min-w-0"
 //                   >
 //                     Query
 //                     <ChevronDown size={12} strokeWidth={1.8} />
@@ -818,29 +818,29 @@
 
 //               {/* GROUP BY / ORDER BY */}
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mt-3 flex min-h-[47px] items-center justify-between
 //                   rounded-[10px] border border-[#dedede] bg-white px-2.5
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <button
 //                   type="button"
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex h-[28px] items-center rounded-[6px] border
 //                     border-[#e4e8ef] bg-white px-2.5 text-[11px]
 //                     font-medium text-[#344054]
-//                   "
+//                    min-w-0"
 //                 >
 //                   Group By :&nbsp; None
 //                 </button>
 
 //                 <button
 //                   type="button"
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex h-[28px] items-center rounded-[6px] border
 //                     border-[#e4e8ef] bg-white px-2.5 text-[11px]
 //                     font-medium text-[#344054]
-//                   "
+//                    min-w-0"
 //                 >
 //                   Order By :&nbsp; None
 //                 </button>
@@ -848,19 +848,19 @@
 
 //               {/* EMPTY REPORT WRITER CARD */}
 //               <div
-//                 className="
+//                 className="font-[Urbanist] 
 //                   mt-3 flex min-h-[440px] items-center justify-center
 //                   rounded-[12px] border border-[#dedede] bg-white
 //                   shadow-[0_2px_8px_rgba(0,0,0,0.16)]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
-//                 <div className="flex flex-col items-center justify-center text-center">
+//                 <div className="font-[Urbanist] flex flex-col items-center justify-center text-center flex-wrap min-w-0">
 //                   <img
 //                     src="/report-writer-empty.png"
 //                     alt=""
-//                     className="mb-1 h-[190px] w-[270px] object-contain"
+//                     className="font-[Urbanist] mb-1 h-[190px] w-[270px] object-contain"
 //                   />
-//                   <p className="text-[12px] font-medium text-[#333333]">
+//                   <p className="font-[Urbanist] text-[12px] font-medium text-[#333333]">
 //                     Did not find any report writer
 //                   </p>
 //                 </div>
@@ -871,7 +871,7 @@
 //       ) : activeTab ===
 //         "Report Writer" && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             mt-4
 //             grid
 //             grid-cols-1
@@ -883,7 +883,7 @@
 //           {/* LEFT REPORT PANEL */}
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               min-w-0
 //               w-full
 //               overflow-visible
@@ -892,7 +892,7 @@
 //               border-[#d9d9d9]
 //               bg-white
 //               shadow-[0_2px_7px_rgba(0,0,0,0.18)]
-//             "
+//              max-w-full"
 //           >
 //             <ReportHeader />
 
@@ -902,7 +902,7 @@
 //           {/* RIGHT SELECTED COLUMNS PANEL */}
 
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               min-w-0
 //               w-full
 //             "
@@ -923,7 +923,7 @@
 //       {activeTab ===
 //         "Form Master" && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             mt-4
 //             w-full
 //           "
@@ -942,7 +942,7 @@
 //       {activeTab ===
 //         "Mail Merge" && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             mt-4
 //             w-full
 //           "
@@ -961,7 +961,7 @@
 //       {activeTab ===
 //         "Factory Act Forms" && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             mt-0
 //             w-full
 //           "
@@ -976,7 +976,7 @@
 
 //       {showBackConfirm && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             fixed
 //             inset-0
 //             z-[10002]
@@ -987,13 +987,13 @@
 //             justify-center
 //             bg-black/45
 //             p-4
-//           "
+//            flex-wrap min-w-0"
 //           role="dialog"
 //           aria-modal="true"
 //           aria-labelledby="discard-confirm-title"
 //         >
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               w-[min(480px,92vw)]
 //               overflow-hidden
 //               rounded-[7px]
@@ -1004,7 +1004,7 @@
 //             {/* HEADER */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 items-center
 //                 gap-3
@@ -1013,17 +1013,17 @@
 //                 bg-[#f8f9fc]
 //                 px-5
 //                 py-4
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <Menu
 //                 size={24}
 //                 strokeWidth={2.5}
-//                 className="text-[#e6c542]"
+//                 className="font-[Urbanist] text-[#e6c542]"
 //               />
 
 //               <h2
 //                 id="discard-confirm-title"
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[20px]
 //                   font-semibold
 //                   text-[#e6c542]
@@ -1036,7 +1036,7 @@
 //             {/* MESSAGE */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 min-h-[95px]
 //                 items-center
@@ -1046,10 +1046,10 @@
 //                 bg-[#fffdf2]
 //                 px-5
 //                 text-center
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <p
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[19px]
 //                   font-semibold
 //                   leading-8
@@ -1065,19 +1065,19 @@
 //             {/* ACTIONS */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 justify-end
 //                 gap-3
 //                 bg-[#f8f9fc]
 //                 px-5
 //                 py-4
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <button
 //                 type="button"
 //                 onClick={handleCancelBack}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[49px]
 //                   min-w-[133px]
@@ -1094,7 +1094,7 @@
 //                   text-[#667085]
 //                   transition
 //                   hover:bg-[#f8f9fb]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <X size={21} />
 //                 Cancel
@@ -1103,7 +1103,7 @@
 //               <button
 //                 type="button"
 //                 onClick={handleDiscardBack}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[49px]
 //                   min-w-[140px]
@@ -1119,7 +1119,7 @@
 //                   shadow-sm
 //                   transition
 //                   hover:bg-[#f0c900]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Menu
 //                   size={21}
@@ -1138,7 +1138,7 @@
 
 //       {showCreateFile && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             fixed
 //             inset-0
 //             z-[10001]
@@ -1150,13 +1150,13 @@
 //             overflow-auto
 //             bg-black/45
 //             p-5
-//           "
+//            flex-wrap min-w-0"
 //           role="dialog"
 //           aria-modal="true"
 //           aria-label="Create New File"
 //         >
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               h-[min(620px,88vh)]
 //               max-h-[620px]
@@ -1169,12 +1169,12 @@
 //               border-[#d8dce5]
 //               bg-white
 //               shadow-[0_12px_35px_rgba(0,0,0,0.22)]
-//             "
+//              min-w-0"
 //           >
 //             {/* HEADER */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 min-h-[60px]
 //                 shrink-0
@@ -1183,10 +1183,10 @@
 //                 border-[#e6e8ec]
 //                 bg-[#f8f9fc]
 //                 px-5
-//               "
+//                min-w-0"
 //             >
 //               <h2
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[20px]
 //                   font-semibold
 //                   text-[#172033]
@@ -1199,20 +1199,20 @@
 //             {/* BODY */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 min-h-0
 //                 flex-1
 //                 overflow-y-auto
 //                 bg-white
 //                 px-6
 //                 py-5
-//               "
+//                min-w-0"
 //             >
 //               {/* SELECT STATE */}
 
-//               <div className="mb-5">
+//               <div className="font-[Urbanist] mb-5">
 //                 <label
-//                   className="
+//                   className="font-[Urbanist] 
 //                     mb-2
 //                     block
 //                     text-[15px]
@@ -1230,7 +1230,7 @@
 //                       event.target.value,
 //                     )
 //                   }
-//                   className="
+//                   className="font-[Urbanist] 
 //                     h-[46px]
 //                     w-full
 //                     rounded-[6px]
@@ -1254,9 +1254,9 @@
 
 //               {/* FILE NAME */}
 
-//               <div className="mb-6">
+//               <div className="font-[Urbanist] mb-6">
 //                 <label
-//                   className="
+//                   className="font-[Urbanist] 
 //                     mb-2
 //                     block
 //                     text-[15px]
@@ -1265,7 +1265,7 @@
 //                   "
 //                 >
 //                   File Name
-//                   <span className="text-[#c94a4a]">
+//                   <span className="font-[Urbanist] text-[#c94a4a]">
 //                     *
 //                   </span>
 //                 </label>
@@ -1278,7 +1278,7 @@
 //                     )
 //                   }
 //                   placeholder=""
-//                   className="
+//                   className="font-[Urbanist] 
 //                     h-[46px]
 //                     w-full
 //                     rounded-[6px]
@@ -1310,7 +1310,7 @@
 //                       null,
 //                   );
 //                 }}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   min-h-[285px]
 //                   cursor-pointer
@@ -1327,16 +1327,16 @@
 //                   transition
 //                   hover:border-[#b17869]
 //                   hover:bg-[#fffaf8]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <UploadCloud
 //                   size={31}
 //                   strokeWidth={1.8}
-//                   className="mb-3 text-[#b8b8b8]"
+//                   className="font-[Urbanist] mb-3 text-[#b8b8b8]"
 //                 />
 
 //                 <span
-//                   className="
+//                   className="font-[Urbanist] 
 //                     text-[17px]
 //                     font-medium
 //                     text-[#b8b8b8]
@@ -1346,7 +1346,7 @@
 //                 </span>
 
 //                 <span
-//                   className="
+//                   className="font-[Urbanist] 
 //                     my-1
 //                     text-[16px]
 //                     text-[#b8b8b8]
@@ -1356,7 +1356,7 @@
 //                 </span>
 
 //                 <span
-//                   className="
+//                   className="font-[Urbanist] 
 //                     text-[17px]
 //                     font-semibold
 //                     text-[#b17869]
@@ -1367,7 +1367,7 @@
 
 //                 {selectedFile && (
 //                   <span
-//                     className="
+//                     className="font-[Urbanist] 
 //                       mt-4
 //                       max-w-full
 //                       truncate
@@ -1383,7 +1383,7 @@
 //                 <input
 //                   id="factory-act-file-upload"
 //                   type="file"
-//                   className="hidden"
+//                   className="font-[Urbanist] hidden"
 //                   onChange={(event) => {
 //                     handleFileSelection(
 //                       event.target.files?.[0] ??
@@ -1397,7 +1397,7 @@
 //             {/* FOOTER */}
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 justify-end
@@ -1407,12 +1407,12 @@
 //                 bg-[#f8f9fc]
 //                 px-5
 //                 py-3
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <button
 //                 type="button"
 //                 onClick={closeCreateFile}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[42px]
 //                   min-w-[120px]
@@ -1429,7 +1429,7 @@
 //                   text-[#667085]
 //                   transition
 //                   hover:bg-[#f9fafb]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <X size={20} />
 //                 Close
@@ -1439,7 +1439,7 @@
 //                 type="button"
 //                 onClick={closeCreateFile}
 //                 disabled={!newFileName.trim()}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[42px]
 //                   min-w-[120px]
@@ -1457,7 +1457,7 @@
 //                   hover:bg-[#6c3428]
 //                   disabled:cursor-not-allowed
 //                   disabled:opacity-50
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <Bookmark
 //                   size={19}
@@ -1476,7 +1476,7 @@
 
 //       {showStoreTemplates && (
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             fixed
 //             inset-0
 //             z-[10000]
@@ -1488,13 +1488,13 @@
 //             overflow-auto
 //             bg-black/40
 //             p-6
-//           "
+//            flex-wrap min-w-0"
 //           role="dialog"
 //           aria-modal="true"
 //           aria-label="Store Template List"
 //         >
 //           <div
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               h-[min(680px,82vh)]
 //               max-h-[680px]
@@ -1508,11 +1508,11 @@
 //               border-[#d8dce5]
 //               bg-white
 //               shadow-[0_12px_35px_rgba(0,0,0,0.18)]
-//             "
+//              min-w-0"
 //           >
 //             {/* HEADER */}
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 min-h-[62px]
 //                 shrink-0
@@ -1522,10 +1522,10 @@
 //                 border-[#e6e8ec]
 //                 bg-[#f8f9fc]
 //                 px-5
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <h2
-//                 className="
+//                 className="font-[Urbanist] 
 //                   text-[19px]
 //                   font-semibold
 //                   text-[#172033]
@@ -1539,7 +1539,7 @@
 //                 onChange={(event) =>
 //                   setSelectedState(event.target.value)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[40px]
 //                   min-w-[190px]
 //                   rounded-[8px]
@@ -1563,7 +1563,7 @@
 
 //             {/* SEARCH + SELECT */}
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 items-center
@@ -1572,12 +1572,12 @@
 //                 border-[#e6e8ec]
 //                 px-4
 //                 py-3
-//               "
+//                flex-wrap min-w-0"
 //             >
-//               <div className="relative flex-1">
+//               <div className="font-[Urbanist] relative flex-1 min-w-0">
 //                 <Search
 //                   size={21}
-//                   className="
+//                   className="font-[Urbanist] 
 //                     pointer-events-none
 //                     absolute
 //                     left-4
@@ -1593,7 +1593,7 @@
 //                     setStoreSearch(event.target.value)
 //                   }
 //                   placeholder="Start Typing..."
-//                   className="
+//                   className="font-[Urbanist] 
 //                     h-[42px]
 //                     w-full
 //                     rounded-[7px]
@@ -1630,7 +1630,7 @@
 //                     setSelectedTemplateIds([]);
 //                   }
 //                 }}
-//                 className="
+//                 className="font-[Urbanist] 
 //                   h-[19px]
 //                   w-[19px]
 //                   shrink-0
@@ -1640,9 +1640,9 @@
 //             </div>
 
 //             {/* CONTENT */}
-//             <div className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-3">
+//             <div className="font-[Urbanist] min-h-0 flex-1 overflow-y-auto bg-white px-5 py-3 min-w-0">
 //               {storeLoading && (
-//                 <p className="text-[16px] text-[#667085]">
+//                 <p className="font-[Urbanist] text-[16px] text-[#667085]">
 //                   Loading...
 //                 </p>
 //               )}
@@ -1650,7 +1650,7 @@
 //               {!storeLoading &&
 //                 filteredStoreTemplates.length === 0 && (
 //                   <p
-//                     className="
+//                     className="font-[Urbanist] 
 //                       text-[17px]
 //                       font-medium
 //                       text-[#667085]
@@ -1664,7 +1664,7 @@
 //                 filteredStoreTemplates.map((template) => (
 //                   <label
 //                     key={template.id}
-//                     className="
+//                     className="font-[Urbanist] 
 //                       flex
 //                       min-h-[48px]
 //                       cursor-pointer
@@ -1674,7 +1674,7 @@
 //                       border-[#eef0f3]
 //                       text-[15px]
 //                       text-[#344054]
-//                     "
+//                      flex-wrap min-w-0"
 //                   >
 //                     <input
 //                       type="checkbox"
@@ -1684,7 +1684,7 @@
 //                       onChange={() =>
 //                         toggleTemplate(template.id)
 //                       }
-//                       className="
+//                       className="font-[Urbanist] 
 //                         h-[19px]
 //                         w-[19px]
 //                         accent-[#7e4031]
@@ -1698,7 +1698,7 @@
 
 //             {/* FOOTER */}
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 flex
 //                 shrink-0
 //                 justify-end
@@ -1708,14 +1708,14 @@
 //                 bg-[#f8f9fc]
 //                 px-5
 //                 py-3
-//               "
+//                flex-wrap min-w-0"
 //             >
 //               <button
 //                 type="button"
 //                 onClick={() =>
 //                   setShowStoreTemplates(false)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[42px]
 //                   min-w-[110px]
@@ -1731,7 +1731,7 @@
 //                   font-medium
 //                   text-[#667085]
 //                   hover:bg-[#f9fafb]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 <X size={20} />
 //                 Close
@@ -1742,7 +1742,7 @@
 //                 onClick={() =>
 //                   setShowStoreTemplates(false)
 //                 }
-//                 className="
+//                 className="font-[Urbanist] 
 //                   flex
 //                   h-[42px]
 //                   min-w-[110px]
@@ -1757,7 +1757,7 @@
 //                   text-white
 //                   shadow-sm
 //                   hover:bg-[#6c3428]
-//                 "
+//                  flex-wrap min-w-0"
 //               >
 //                 Save
 //               </button>
@@ -1825,7 +1825,7 @@ function MobileSafeStateDropdown({
   value,
   placeholder,
   onChange,
-  className = "",
+  className = "font-[Urbanist] ",
 }: MobileSafeStateDropdownProps) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -1889,7 +1889,7 @@ function MobileSafeStateDropdown({
           }
         `}
       >
-        <span className="min-w-0 flex-1 truncate">
+        <span className="font-[Urbanist] min-w-0 flex-1 truncate">
           {value || placeholder}
         </span>
 
@@ -1908,7 +1908,7 @@ function MobileSafeStateDropdown({
       {open && (
         <div
           role="listbox"
-          className="
+          className="font-[Urbanist] 
             mt-1
             max-h-[150px]
             w-full
@@ -1920,7 +1920,7 @@ function MobileSafeStateDropdown({
             border-[#b17869]
             bg-white
             shadow-[0_4px_12px_rgba(0,0,0,0.18)]
-          "
+           max-w-full"
         >
           <button
             type="button"
@@ -2280,7 +2280,7 @@ export default function GeneralReport() {
 
   return (
     <div
-      className="
+      className="font-[Urbanist] 
         min-h-screen
         w-full
         min-w-0
@@ -2296,7 +2296,7 @@ export default function GeneralReport() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           flex
           min-h-[58px]
           w-full
@@ -2306,7 +2306,7 @@ export default function GeneralReport() {
           items-stretch
           justify-between
           gap-2
-          overflow-hidden
+          overflow-visible
           rounded-[12px]
           border
           border-[#c9a79d]
@@ -2317,14 +2317,14 @@ export default function GeneralReport() {
           sm:items-center
           sm:gap-3
           sm:px-4
-        "
+         flex-wrap"
       >
         {/* =================================================
             LEFT NAVIGATION TABS
         ================================================= */}
 
         <div
-          className="
+          className="font-[Urbanist] 
             flex
             w-full
             min-w-0
@@ -2335,7 +2335,7 @@ export default function GeneralReport() {
             overflow-x-auto
             overflow-y-hidden
             scrollbar-none
-          "
+           flex-wrap"
         >
           {TABS.map(
             ({
@@ -2415,7 +2415,7 @@ export default function GeneralReport() {
         ================================================= */}
 
         <div
-          className="
+          className="font-[Urbanist] 
             flex
             w-full
             min-w-0
@@ -2431,12 +2431,12 @@ export default function GeneralReport() {
             sm:justify-end
             sm:border-t-0
             sm:pt-0
-          "
+           max-w-full"
         >
           {activeTab === "Mail Merge" ? (
             <>
               {/* SELECT DOCUMENT */}
-              <div className="relative z-[60]">
+              <div className="font-[Urbanist] relative z-[200]">
                 <button
                   type="button"
                   onClick={() =>
@@ -2462,11 +2462,11 @@ export default function GeneralReport() {
                     ${
                       openMailMergeDropdown === "document"
                         ? "border-[#7e4031] ring-1 ring-[#7e4031]"
-                        : "border-[#e1e4e8]"
+                        : "border-[#c9a79d]"
                     }
                   `}
                 >
-                  <span className="truncate text-[#555]">
+                  <span className="font-[Urbanist] truncate text-[#555]">
                     {selectedMailMergeDocument || "Select Document"}
                   </span>
                   <ChevronDown
@@ -2478,7 +2478,7 @@ export default function GeneralReport() {
                 </button>
 
                 {openMailMergeDropdown === "document" && (
-                  <div className="absolute left-0 top-[42px] z-[100] w-[190px] overflow-hidden rounded-[6px] border border-[#d8d8d8] bg-white shadow-[0_6px_16px_rgba(0,0,0,0.16)]">
+                  <div className="font-[Urbanist] absolute left-0 top-[42px] z-[300] w-[190px] max-h-[220px] overflow-y-auto overflow-x-hidden rounded-[6px] border border-[#c9a79d] bg-white shadow-[0_6px_16px_rgba(0,0,0,0.16)]">
                     <button
                       type="button"
                       onClick={() => {
@@ -2498,7 +2498,7 @@ export default function GeneralReport() {
               </div>
 
               {/* MONTH */}
-              <div className="relative z-[60]">
+              <div className="font-[Urbanist] relative z-[200]">
                 <button
                   type="button"
                   onClick={() =>
@@ -2525,7 +2525,7 @@ export default function GeneralReport() {
                     ${
                       openMailMergeDropdown === "month"
                         ? "border-[#7e4031] ring-1 ring-[#7e4031]"
-                        : "border-[#e1e4e8]"
+                        : "border-[#c9a79d]"
                     }
                   `}
                 >
@@ -2539,7 +2539,7 @@ export default function GeneralReport() {
                 </button>
 
                 {openMailMergeDropdown === "month" && (
-                  <div className="absolute left-0 top-[42px] z-[100] w-[155px] overflow-hidden rounded-[6px] border border-[#d8d8d8] bg-white shadow-[0_6px_16px_rgba(0,0,0,0.16)]">
+                  <div className="font-[Urbanist] absolute left-0 top-[42px] z-[300] w-[155px] max-h-[220px] overflow-y-auto overflow-x-hidden rounded-[6px] border border-[#c9a79d] bg-white shadow-[0_6px_16px_rgba(0,0,0,0.16)]">
                     {[
                       "Select",
                       "Sep/2026",
@@ -2580,7 +2580,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 disabled
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[38px]
                   w-[170px]
@@ -2593,7 +2593,7 @@ export default function GeneralReport() {
                   font-medium
                   leading-4
                   text-[#999]
-                "
+                 flex-wrap min-w-0"
               >
                 Attach Document To
                 <br />
@@ -2604,7 +2604,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 disabled
-                className="
+                className="font-[Urbanist] 
                   h-[38px]
                   min-w-[105px]
                   rounded-[7px]
@@ -2622,7 +2622,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 disabled
-                className="
+                className="font-[Urbanist] 
                   h-[38px]
                   min-w-[105px]
                   rounded-[7px]
@@ -2640,7 +2640,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 title="Filter"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   w-[28px]
@@ -2648,7 +2648,7 @@ export default function GeneralReport() {
                   items-center
                   justify-center
                   text-[#667085]
-                "
+                 flex-wrap min-w-0"
               >
                 <Filter size={18} strokeWidth={1.8} />
               </button>
@@ -2657,7 +2657,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 title="History"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   w-[28px]
@@ -2665,7 +2665,7 @@ export default function GeneralReport() {
                   items-center
                   justify-center
                   text-[#667085]
-                "
+                 flex-wrap min-w-0"
               >
                 <Clock size={19} strokeWidth={1.8} />
               </button>
@@ -2675,7 +2675,7 @@ export default function GeneralReport() {
               {/* PAYMONTH */}
               <button
                 type="button"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[38px]
                   items-center
@@ -2688,7 +2688,7 @@ export default function GeneralReport() {
                   font-medium
                   text-white
                   shadow-sm
-                "
+                 flex-wrap min-w-0"
               >
                 Paymonth
                 <ChevronDown size={15} strokeWidth={2} />
@@ -2698,7 +2698,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 title="History"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   w-[32px]
@@ -2706,7 +2706,7 @@ export default function GeneralReport() {
                   items-center
                   justify-center
                   text-[#5d6268]
-                "
+                 flex-wrap min-w-0"
               >
                 <Clock size={18} strokeWidth={1.8} />
               </button>
@@ -2715,7 +2715,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 title="Filter"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   w-[28px]
@@ -2723,7 +2723,7 @@ export default function GeneralReport() {
                   items-center
                   justify-center
                   text-[#5d6268]
-                "
+                 flex-wrap min-w-0"
               >
                 <Filter size={17} strokeWidth={1.8} />
               </button>
@@ -2732,7 +2732,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 title="Copy"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   w-[28px]
@@ -2740,7 +2740,7 @@ export default function GeneralReport() {
                   items-center
                   justify-center
                   text-[#5d6268]
-                "
+                 flex-wrap min-w-0"
               >
                 <Copy size={17} strokeWidth={1.8} />
               </button>
@@ -2750,7 +2750,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 onClick={openStoreTemplates}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[38px]
                   items-center
@@ -2763,7 +2763,7 @@ export default function GeneralReport() {
                   shadow-sm
                   transition
                   hover:bg-[#e7e7e7]
-                "
+                 min-w-0"
               >
                 Download Template From Store
               </button>
@@ -2772,7 +2772,7 @@ export default function GeneralReport() {
                 type="button"
                 title="Add Factory Act Form"
                 onClick={openCreateFile}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[38px]
                   w-[38px]
@@ -2782,9 +2782,9 @@ export default function GeneralReport() {
                   text-[#7e4031]
                   transition
                   hover:bg-[#f8eeeb]
-                "
+                 flex-wrap min-w-0"
               >
-                <span className="text-[25px] leading-none">+</span>
+                <span className="font-[Urbanist] text-[25px] leading-none">+</span>
               </button>
             </>
           ) : (
@@ -2793,7 +2793,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 onClick={handleBackClick}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   min-w-[84px]
@@ -2808,7 +2808,7 @@ export default function GeneralReport() {
                   text-white
                   transition-all
                   hover:bg-[#6c3428]
-                "
+                 flex-wrap min-w-0"
               >
                 <ChevronLeft size={15} />
                 Back
@@ -2819,7 +2819,7 @@ export default function GeneralReport() {
                 type="button"
                 disabled={saving}
                 onClick={handleSave}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   min-w-[84px]
@@ -2837,7 +2837,7 @@ export default function GeneralReport() {
                   hover:bg-[#6c3428]
                   disabled:cursor-not-allowed
                   disabled:opacity-60
-                "
+                 flex-wrap min-w-0"
               >
                 <Bookmark size={15} strokeWidth={1.8} />
                 {saving ? "Saving..." : "Save"}
@@ -2847,7 +2847,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 title="History"
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[37px]
                   w-[32px]
@@ -2855,7 +2855,7 @@ export default function GeneralReport() {
                   items-center
                   justify-center
                   text-[#5d6268]
-                "
+                 flex-wrap min-w-0"
               >
                 <Clock size={18} strokeWidth={1.8} />
               </button>
@@ -2872,12 +2872,12 @@ export default function GeneralReport() {
         /* =====================================================
            REPORT WRITER EMPTY STATE AFTER DISCARD
         ===================================================== */
-        <div className="mt-4 w-full">
+        <div className="font-[Urbanist] mt-4 w-full">
           {/* FILTER / QUERY AREA */}
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[198px_minmax(0,1fr)]">
+          <div className="font-[Urbanist] grid grid-cols-1 gap-3 lg:grid-cols-[198px_minmax(0,1fr)]">
             {/* QUERY SIDEBAR */}
             <div
-              className="
+              className="font-[Urbanist] 
                 min-h-[70px]
                 rounded-[10px]
                 border
@@ -2886,18 +2886,18 @@ export default function GeneralReport() {
                 lg:min-h-[614px]
               "
             >
-              <div className="flex h-[50px] items-center justify-between border-b border-[#dedede] px-3">
-                <span className="text-[13px] font-medium text-[#202124]">
+              <div className="font-[Urbanist] flex h-[50px] items-center justify-between border-b border-[#dedede] px-3 flex-wrap min-w-0">
+                <span className="font-[Urbanist] text-[13px] font-medium text-[#202124]">
                   Query
                 </span>
                 <button
                   type="button"
                   title="Add Query"
-                  className="
+                  className="font-[Urbanist] 
                     flex h-[25px] w-[25px] items-center justify-center
                     rounded-[6px] border border-[#b17869] bg-white
                     text-[#7e4031]
-                  "
+                   flex-wrap min-w-0"
                 >
                   <Plus size={17} strokeWidth={2} />
                 </button>
@@ -2905,9 +2905,9 @@ export default function GeneralReport() {
             </div>
 
             {/* RIGHT CONTENT */}
-            <div className="min-w-0">
+            <div className="font-[Urbanist] min-w-0">
               <div
-                className="
+                className="font-[Urbanist] 
                   rounded-[10px]
                   border
                   border-[#dedede]
@@ -2917,7 +2917,7 @@ export default function GeneralReport() {
                 "
               >
                 {/* FILTER BUTTONS */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="font-[Urbanist] flex flex-wrap items-center gap-2 min-w-0">
                   {[
                     "Branch",
                     "Salary Structure",
@@ -2929,11 +2929,11 @@ export default function GeneralReport() {
                     <button
                       key={item}
                       type="button"
-                      className="
+                      className="font-[Urbanist] 
                         flex h-[28px] items-center gap-1.5 rounded-[6px]
                         border border-[#e4e8ef] bg-white px-2.5
                         text-[11px] font-medium text-[#344054]
-                      "
+                       flex-wrap min-w-0"
                     >
                       {item}
                       <ChevronDown size={12} strokeWidth={1.8} />
@@ -2942,23 +2942,23 @@ export default function GeneralReport() {
 
                   <button
                     type="button"
-                    className="ml-1 text-[11px] font-medium text-[#7e4031]"
+                    className="font-[Urbanist] ml-1 text-[11px] font-medium text-[#7e4031]"
                   >
-                    <span className="mr-1 text-[15px]">×</span>Clear
+                    <span className="font-[Urbanist] mr-1 text-[15px]">×</span>Clear
                   </button>
                 </div>
 
                 {/* SEARCH + ADD FILTER + QUERY */}
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                  <div className="relative min-w-[220px] flex-1">
+                <div className="font-[Urbanist] mt-2.5 flex flex-wrap items-center gap-2 min-w-0">
+                  <div className="font-[Urbanist] relative min-w-[220px] flex-1 min-w-0">
                     <Search
                       size={15}
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#98a2b3]"
+                      className="font-[Urbanist] pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#98a2b3]"
                     />
                     <input
                       type="text"
                       placeholder="Search..."
-                      className="
+                      className="font-[Urbanist] 
                         h-[28px] w-full rounded-[6px] border border-[#dfe4ec]
                         bg-white pl-8 pr-3 text-[11px] text-[#344054]
                         outline-none
@@ -2969,10 +2969,10 @@ export default function GeneralReport() {
 
                   <button
                     type="button"
-                    className="
+                    className="font-[Urbanist] 
                       flex h-[28px] items-center gap-1.5 rounded-[6px]
                       bg-[#9b6656] px-3 text-[11px] font-medium text-white
-                    "
+                     flex-wrap min-w-0"
                   >
                     <Plus size={14} strokeWidth={2.2} />
                     Add Filter
@@ -2980,11 +2980,11 @@ export default function GeneralReport() {
 
                   <button
                     type="button"
-                    className="
+                    className="font-[Urbanist] 
                       flex h-[28px] items-center gap-1.5 rounded-[6px]
                       border border-[#e4e8ef] bg-white px-3
                       text-[11px] font-medium text-[#344054]
-                    "
+                     flex-wrap min-w-0"
                   >
                     Query
                     <ChevronDown size={12} strokeWidth={1.8} />
@@ -2994,29 +2994,29 @@ export default function GeneralReport() {
 
               {/* GROUP BY / ORDER BY */}
               <div
-                className="
+                className="font-[Urbanist] 
                   mt-3 flex min-h-[47px] items-center justify-between
                   rounded-[10px] border border-[#dedede] bg-white px-2.5
-                "
+                 flex-wrap min-w-0"
               >
                 <button
                   type="button"
-                  className="
+                  className="font-[Urbanist] 
                     flex h-[28px] items-center rounded-[6px] border
                     border-[#e4e8ef] bg-white px-2.5 text-[11px]
                     font-medium text-[#344054]
-                  "
+                   min-w-0"
                 >
                   Group By :&nbsp; None
                 </button>
 
                 <button
                   type="button"
-                  className="
+                  className="font-[Urbanist] 
                     flex h-[28px] items-center rounded-[6px] border
                     border-[#e4e8ef] bg-white px-2.5 text-[11px]
                     font-medium text-[#344054]
-                  "
+                   min-w-0"
                 >
                   Order By :&nbsp; None
                 </button>
@@ -3024,19 +3024,19 @@ export default function GeneralReport() {
 
               {/* EMPTY REPORT WRITER CARD */}
               <div
-                className="
+                className="font-[Urbanist] 
                   mt-3 flex min-h-[440px] items-center justify-center
                   rounded-[12px] border border-[#dedede] bg-white
                   shadow-[0_2px_8px_rgba(0,0,0,0.16)]
-                "
+                 flex-wrap min-w-0"
               >
-                <div className="flex flex-col items-center justify-center px-4 text-center">
+                <div className="font-[Urbanist] flex flex-col items-center justify-center px-4 text-center flex-wrap min-w-0">
                   <img
                     src="/report-writer-empty.png"
                     alt=""
-                    className="mb-1 h-auto max-h-[190px] w-[270px] max-w-full object-contain"
+                    className="font-[Urbanist] mb-1 h-auto max-h-[190px] w-[270px] max-w-full object-contain"
                   />
-                  <p className="text-[12px] font-medium text-[#333333]">
+                  <p className="font-[Urbanist] text-[12px] font-medium text-[#333333]">
                     Did not find any report writer
                   </p>
                 </div>
@@ -3047,7 +3047,7 @@ export default function GeneralReport() {
       ) : activeTab ===
         "Report Writer" && (
         <div
-          className="
+          className="font-[Urbanist] 
             mt-3
             grid
             w-full
@@ -3064,7 +3064,7 @@ export default function GeneralReport() {
           {/* LEFT REPORT PANEL */}
 
           <div
-            className="
+            className="font-[Urbanist] 
               order-1
               min-w-0
               w-full
@@ -3072,7 +3072,7 @@ export default function GeneralReport() {
               overflow-visible
               rounded-[14px]
               border
-              border-[#d9d9d9]
+              border-[#c9a79d]
               bg-white
               shadow-[0_2px_7px_rgba(0,0,0,0.18)]
             "
@@ -3085,7 +3085,7 @@ export default function GeneralReport() {
           {/* RIGHT SELECTED COLUMNS PANEL */}
 
           <div
-            className="
+            className="font-[Urbanist] 
               order-2
               min-w-0
               w-full
@@ -3109,7 +3109,7 @@ export default function GeneralReport() {
       {activeTab ===
         "Form Master" && (
         <div
-          className="
+          className="font-[Urbanist] 
             mt-4
             w-full
           "
@@ -3128,7 +3128,7 @@ export default function GeneralReport() {
       {activeTab ===
         "Mail Merge" && (
         <div
-          className="
+          className="font-[Urbanist] 
             mt-4
             w-full
           "
@@ -3147,7 +3147,7 @@ export default function GeneralReport() {
       {activeTab ===
         "Factory Act Forms" && (
         <div
-          className="
+          className="font-[Urbanist] 
             mt-0
             w-full
           "
@@ -3162,7 +3162,7 @@ export default function GeneralReport() {
 
       {showBackConfirm && (
         <div
-          className="
+          className="font-[Urbanist] 
             fixed
             inset-0
             z-[10002]
@@ -3173,13 +3173,13 @@ export default function GeneralReport() {
             justify-center
             bg-black/45
             p-4
-          "
+           flex-wrap min-w-0"
           role="dialog"
           aria-modal="true"
           aria-labelledby="discard-confirm-title"
         >
           <div
-            className="
+            className="font-[Urbanist] 
               w-[min(480px,92vw)]
               overflow-hidden
               rounded-[7px]
@@ -3190,7 +3190,7 @@ export default function GeneralReport() {
             {/* HEADER */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 items-center
                 gap-3
@@ -3201,17 +3201,17 @@ export default function GeneralReport() {
                 py-3
                 sm:px-5
                 sm:py-4
-              "
+               flex-wrap min-w-0"
             >
               <Menu
                 size={24}
                 strokeWidth={2.5}
-                className="text-[#e6c542]"
+                className="font-[Urbanist] text-[#e6c542]"
               />
 
               <h2
                 id="discard-confirm-title"
-                className="
+                className="font-[Urbanist] 
                   text-[20px]
                   font-semibold
                   text-[#e6c542]
@@ -3224,7 +3224,7 @@ export default function GeneralReport() {
             {/* MESSAGE */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 min-h-[95px]
                 items-center
@@ -3234,10 +3234,10 @@ export default function GeneralReport() {
                 bg-[#fffdf2]
                 px-5
                 text-center
-              "
+               flex-wrap min-w-0"
             >
               <p
-                className="
+                className="font-[Urbanist] 
                   text-[19px]
                   font-semibold
                   leading-8
@@ -3253,7 +3253,7 @@ export default function GeneralReport() {
             {/* ACTIONS */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 flex-wrap
                 justify-end
@@ -3261,12 +3261,12 @@ export default function GeneralReport() {
                 bg-[#f8f9fc]
                 px-5
                 py-4
-              "
+               min-w-0"
             >
               <button
                 type="button"
                 onClick={handleCancelBack}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[49px]
                   min-w-[133px]
@@ -3283,7 +3283,7 @@ export default function GeneralReport() {
                   text-[#667085]
                   transition
                   hover:bg-[#f8f9fb]
-                "
+                 flex-wrap min-w-0"
               >
                 <X size={21} />
                 Cancel
@@ -3292,7 +3292,7 @@ export default function GeneralReport() {
               <button
                 type="button"
                 onClick={handleDiscardBack}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[49px]
                   min-w-[140px]
@@ -3308,7 +3308,7 @@ export default function GeneralReport() {
                   shadow-sm
                   transition
                   hover:bg-[#f0c900]
-                "
+                 flex-wrap min-w-0"
               >
                 <Menu
                   size={21}
@@ -3327,7 +3327,7 @@ export default function GeneralReport() {
 
       {showCreateFile && (
         <div
-          className="
+          className="font-[Urbanist] 
             fixed
             inset-0
             z-[10001]
@@ -3340,13 +3340,13 @@ export default function GeneralReport() {
             bg-black/45
             p-3
             sm:p-5
-          "
+           flex-wrap min-w-0"
           role="dialog"
           aria-modal="true"
           aria-label="Create New File"
         >
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               h-[min(620px,90vh)]
               max-h-[620px]
@@ -3361,12 +3361,12 @@ export default function GeneralReport() {
               border-[#d8dce5]
               bg-white
               shadow-[0_12px_35px_rgba(0,0,0,0.22)]
-            "
+             min-w-0"
           >
             {/* HEADER */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 min-h-[56px]
                 shrink-0
@@ -3377,10 +3377,10 @@ export default function GeneralReport() {
                 px-4
                 sm:min-h-[60px]
                 sm:px-5
-              "
+               min-w-0"
             >
               <h2
-                className="
+                className="font-[Urbanist] 
                   text-[17px]
                   font-semibold
                   text-[#172033]
@@ -3394,7 +3394,7 @@ export default function GeneralReport() {
             {/* BODY */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 min-h-0
                 flex-1
                 overflow-y-auto
@@ -3403,13 +3403,13 @@ export default function GeneralReport() {
                 py-4
                 sm:px-6
                 sm:py-5
-              "
+               min-w-0"
             >
               {/* SELECT STATE */}
 
-              <div className="mb-5">
+              <div className="font-[Urbanist] mb-5">
                 <label
-                  className="
+                  className="font-[Urbanist] 
                     mb-2
                     block
                     text-[15px]
@@ -3424,15 +3424,15 @@ export default function GeneralReport() {
                   value={selectedState}
                   placeholder="Select State"
                   onChange={setSelectedState}
-                  className="w-full"
+                  className="font-[Urbanist] w-full"
                 />
               </div>
 
               {/* FILE NAME */}
 
-              <div className="mb-6">
+              <div className="font-[Urbanist] mb-6">
                 <label
-                  className="
+                  className="font-[Urbanist] 
                     mb-2
                     block
                     text-[15px]
@@ -3441,7 +3441,7 @@ export default function GeneralReport() {
                   "
                 >
                   File Name
-                  <span className="text-[#c94a4a]">
+                  <span className="font-[Urbanist] text-[#c94a4a]">
                     *
                   </span>
                 </label>
@@ -3454,7 +3454,7 @@ export default function GeneralReport() {
                     )
                   }
                   placeholder=""
-                  className="
+                  className="font-[Urbanist] 
                     h-[46px]
                     w-full
                     rounded-[6px]
@@ -3486,7 +3486,7 @@ export default function GeneralReport() {
                       null,
                   );
                 }}
-                className="
+                className="font-[Urbanist] 
                   flex
                   min-h-[285px]
                   cursor-pointer
@@ -3503,16 +3503,16 @@ export default function GeneralReport() {
                   transition
                   hover:border-[#b17869]
                   hover:bg-[#fffaf8]
-                "
+                 flex-wrap min-w-0"
               >
                 <UploadCloud
                   size={31}
                   strokeWidth={1.8}
-                  className="mb-3 text-[#b8b8b8]"
+                  className="font-[Urbanist] mb-3 text-[#b8b8b8]"
                 />
 
                 <span
-                  className="
+                  className="font-[Urbanist] 
                     text-[17px]
                     font-medium
                     text-[#b8b8b8]
@@ -3522,7 +3522,7 @@ export default function GeneralReport() {
                 </span>
 
                 <span
-                  className="
+                  className="font-[Urbanist] 
                     my-1
                     text-[16px]
                     text-[#b8b8b8]
@@ -3532,7 +3532,7 @@ export default function GeneralReport() {
                 </span>
 
                 <span
-                  className="
+                  className="font-[Urbanist] 
                     text-[17px]
                     font-semibold
                     text-[#b17869]
@@ -3543,7 +3543,7 @@ export default function GeneralReport() {
 
                 {selectedFile && (
                   <span
-                    className="
+                    className="font-[Urbanist] 
                       mt-4
                       max-w-full
                       truncate
@@ -3559,7 +3559,7 @@ export default function GeneralReport() {
                 <input
                   id="factory-act-file-upload"
                   type="file"
-                  className="hidden"
+                  className="font-[Urbanist] hidden"
                   onChange={(event) => {
                     handleFileSelection(
                       event.target.files?.[0] ??
@@ -3573,7 +3573,7 @@ export default function GeneralReport() {
             {/* FOOTER */}
 
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 shrink-0
                 flex-wrap
@@ -3586,12 +3586,12 @@ export default function GeneralReport() {
                 py-3
                 sm:gap-4
                 sm:px-5
-              "
+               min-w-0"
             >
               <button
                 type="button"
                 onClick={closeCreateFile}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[42px]
                   min-w-[120px]
@@ -3608,7 +3608,7 @@ export default function GeneralReport() {
                   text-[#667085]
                   transition
                   hover:bg-[#f9fafb]
-                "
+                 flex-wrap min-w-0"
               >
                 <X size={20} />
                 Close
@@ -3618,7 +3618,7 @@ export default function GeneralReport() {
                 type="button"
                 onClick={closeCreateFile}
                 disabled={!newFileName.trim()}
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[42px]
                   min-w-[120px]
@@ -3636,7 +3636,7 @@ export default function GeneralReport() {
                   hover:bg-[#6c3428]
                   disabled:cursor-not-allowed
                   disabled:opacity-50
-                "
+                 flex-wrap min-w-0"
               >
                 <Bookmark
                   size={19}
@@ -3655,7 +3655,7 @@ export default function GeneralReport() {
 
       {showStoreTemplates && (
         <div
-          className="
+          className="font-[Urbanist] 
             fixed
             inset-0
             z-[10000]
@@ -3668,13 +3668,13 @@ export default function GeneralReport() {
             bg-black/40
             p-3
             sm:p-6
-          "
+           flex-wrap min-w-0"
           role="dialog"
           aria-modal="true"
           aria-label="Store Template List"
         >
           <div
-            className="
+            className="font-[Urbanist] 
               flex
               h-[min(680px,90vh)]
               max-h-[680px]
@@ -3689,11 +3689,11 @@ export default function GeneralReport() {
               border-[#d8dce5]
               bg-white
               shadow-[0_12px_35px_rgba(0,0,0,0.18)]
-            "
+             min-w-0"
           >
             {/* HEADER */}
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 min-h-[56px]
                 w-full
@@ -3713,10 +3713,10 @@ export default function GeneralReport() {
                 sm:justify-between
                 sm:px-5
                 sm:py-0
-              "
+               flex-wrap max-w-full"
             >
               <h2
-                className="
+                className="font-[Urbanist] 
                   text-[17px]
                   font-semibold
                   text-[#172033]
@@ -3730,13 +3730,13 @@ export default function GeneralReport() {
                 value={selectedState}
                 placeholder="Select Select State"
                 onChange={setSelectedState}
-                className="w-full sm:w-[190px]"
+                className="font-[Urbanist] w-full sm:w-[190px]"
               />
             </div>
 
             {/* SEARCH + SELECT */}
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 shrink-0
                 items-center
@@ -3745,12 +3745,12 @@ export default function GeneralReport() {
                 border-[#e6e8ec]
                 px-4
                 py-3
-              "
+               flex-wrap min-w-0"
             >
-              <div className="relative flex-1">
+              <div className="font-[Urbanist] relative flex-1 min-w-0">
                 <Search
                   size={21}
-                  className="
+                  className="font-[Urbanist] 
                     pointer-events-none
                     absolute
                     left-4
@@ -3766,7 +3766,7 @@ export default function GeneralReport() {
                     setStoreSearch(event.target.value)
                   }
                   placeholder="Start Typing..."
-                  className="
+                  className="font-[Urbanist] 
                     h-[42px]
                     w-full
                     rounded-[7px]
@@ -3803,7 +3803,7 @@ export default function GeneralReport() {
                     setSelectedTemplateIds([]);
                   }
                 }}
-                className="
+                className="font-[Urbanist] 
                   h-[19px]
                   w-[19px]
                   shrink-0
@@ -3813,9 +3813,9 @@ export default function GeneralReport() {
             </div>
 
             {/* CONTENT */}
-            <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 py-3 sm:px-5">
+            <div className="font-[Urbanist] min-h-0 flex-1 overflow-y-auto bg-white px-4 py-3 sm:px-5 min-w-0">
               {storeLoading && (
-                <p className="text-[16px] text-[#667085]">
+                <p className="font-[Urbanist] text-[16px] text-[#667085]">
                   Loading...
                 </p>
               )}
@@ -3823,7 +3823,7 @@ export default function GeneralReport() {
               {!storeLoading &&
                 filteredStoreTemplates.length === 0 && (
                   <p
-                    className="
+                    className="font-[Urbanist] 
                       text-[17px]
                       font-medium
                       text-[#667085]
@@ -3837,7 +3837,7 @@ export default function GeneralReport() {
                 filteredStoreTemplates.map((template) => (
                   <label
                     key={template.id}
-                    className="
+                    className="font-[Urbanist] 
                       flex
                       min-h-[48px]
                       cursor-pointer
@@ -3847,7 +3847,7 @@ export default function GeneralReport() {
                       border-[#eef0f3]
                       text-[15px]
                       text-[#344054]
-                    "
+                     flex-wrap min-w-0"
                   >
                     <input
                       type="checkbox"
@@ -3857,7 +3857,7 @@ export default function GeneralReport() {
                       onChange={() =>
                         toggleTemplate(template.id)
                       }
-                      className="
+                      className="font-[Urbanist] 
                         h-[19px]
                         w-[19px]
                         accent-[#7e4031]
@@ -3871,7 +3871,7 @@ export default function GeneralReport() {
 
             {/* FOOTER */}
             <div
-              className="
+              className="font-[Urbanist] 
                 flex
                 shrink-0
                 flex-wrap
@@ -3884,14 +3884,14 @@ export default function GeneralReport() {
                 py-3
                 sm:gap-4
                 sm:px-5
-              "
+               min-w-0"
             >
               <button
                 type="button"
                 onClick={() =>
                   setShowStoreTemplates(false)
                 }
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[42px]
                   min-w-[110px]
@@ -3907,7 +3907,7 @@ export default function GeneralReport() {
                   font-medium
                   text-[#667085]
                   hover:bg-[#f9fafb]
-                "
+                 flex-wrap min-w-0"
               >
                 <X size={20} />
                 Close
@@ -3918,7 +3918,7 @@ export default function GeneralReport() {
                 onClick={() =>
                   setShowStoreTemplates(false)
                 }
-                className="
+                className="font-[Urbanist] 
                   flex
                   h-[42px]
                   min-w-[110px]
@@ -3933,7 +3933,7 @@ export default function GeneralReport() {
                   text-white
                   shadow-sm
                   hover:bg-[#6c3428]
-                "
+                 flex-wrap min-w-0"
               >
                 Save
               </button>

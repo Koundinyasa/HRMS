@@ -130,7 +130,7 @@
 //   return (
 
 //     <div
-//       className="
+//       className="font-[Urbanist] 
 //         w-full
 //         min-w-0
 //         max-w-full
@@ -146,7 +146,7 @@
 //       ===================================================== */}
 
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           flex
 //           h-[44px]
 //           w-full
@@ -167,7 +167,7 @@
 
 //         <div
 //           ref={tabsRef}
-//           className="
+//           className="font-[Urbanist] 
 //             field-tabs-scroll
 //             flex
 //             min-w-0
@@ -261,7 +261,7 @@
 //           onClick={
 //             scrollTabsRight
 //           }
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             h-[37px]
 //             w-[35px]
@@ -273,7 +273,7 @@
 //             bg-white
 //             text-[#555555]
 //             hover:bg-[#fafafa]
-//           "
+//            flex-wrap min-w-0"
 //         >
 
 //           <ChevronRight
@@ -291,7 +291,7 @@
 //       ===================================================== */}
 
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           flex
 //           w-full
 //           min-w-0
@@ -304,7 +304,7 @@
 //           sm:items-center
 //           sm:justify-between
 //           sm:px-4
-//         "
+//          flex-wrap max-w-full"
 //       >
 
 //         {/* =================================================
@@ -312,7 +312,7 @@
 //         ================================================= */}
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             relative
 //             w-full
 //             min-w-0
@@ -324,7 +324,7 @@
 
 //           <Search
 //             size={15}
-//             className="
+//             className="font-[Urbanist] 
 //               pointer-events-none
 //               absolute
 //               left-3
@@ -343,7 +343,7 @@
 //               )
 //             }
 //             placeholder="Search..."
-//             className="
+//             className="font-[Urbanist] 
 //               h-[34px]
 //               w-full
 //               min-w-0
@@ -369,7 +369,7 @@
 //         ================================================= */}
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             flex
 //             w-full
 //             min-w-0
@@ -380,13 +380,13 @@
 //             text-[#333333]
 //             sm:w-auto
 //             sm:shrink-0
-//           "
+//            flex-wrap max-w-full"
 //         >
 
 //           {/* Brown selected checkbox */}
 
 //           <span
-//             className="
+//             className="font-[Urbanist] 
 //               flex
 //               h-[18px]
 //               w-[18px]
@@ -394,7 +394,7 @@
 //               justify-center
 //               rounded-[4px]
 //               bg-[#8f5142]
-//             "
+//              flex-wrap min-w-0"
 //           >
 
 //             <svg
@@ -417,7 +417,7 @@
 //           </span>
 
 
-//           <span className="min-w-0 truncate">
+//           <span className="font-[Urbanist] min-w-0 truncate">
 //             Selected Columns :{" "}
 //             {selectedFields.length}
 //           </span>
@@ -436,7 +436,7 @@
 //       ===================================================== */}
 
 //       <div
-//         className="
+//         className="font-[Urbanist] 
 //           report-fields-scroll
 //           h-[250px]
 //           min-h-0
@@ -452,7 +452,7 @@
 //       >
 
 //         <div
-//           className="
+//           className="font-[Urbanist] 
 //             grid
 //             w-full
 //             min-w-0
@@ -476,7 +476,7 @@
 
 //                 <label
 //                   key={field}
-//                   className="
+//                   className="font-[Urbanist] 
 //                     flex
 //                     min-h-[30px]
 //                     w-full
@@ -486,7 +486,7 @@
 //                     gap-2
 //                     text-[11px]
 //                     text-[#4f5965]
-//                   "
+//                    flex-wrap max-w-full"
 //                 >
 
 //                   {/* =================================================
@@ -501,7 +501,7 @@
 //                         field
 //                       )
 //                     }
-//                     className="
+//                     className="font-[Urbanist] 
 //                       h-[15px]
 //                       w-[15px]
 //                       shrink-0
@@ -515,7 +515,7 @@
 //                   ================================================= */}
 
 //                   <span
-//                     className="
+//                     className="font-[Urbanist] 
 //                       min-w-0
 //                       truncate
 //                     "
@@ -540,7 +540,7 @@
 //           {filteredFields.length === 0 && (
 
 //             <div
-//               className="
+//               className="font-[Urbanist] 
 //                 col-span-full
 //                 py-8
 //                 text-center
@@ -773,7 +773,7 @@ export default function FieldSelector() {
   return (
 
     <div
-      className="
+      className="font-[Urbanist] 
         w-full
         min-w-0
         max-w-full
@@ -789,7 +789,7 @@ export default function FieldSelector() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           flex
           h-[44px]
           w-full
@@ -810,7 +810,7 @@ export default function FieldSelector() {
 
         <div
           ref={tabsRef}
-          className="
+          className="font-[Urbanist] 
             field-tabs-scroll
             flex
             min-w-0
@@ -904,7 +904,7 @@ export default function FieldSelector() {
           onClick={
             scrollTabsRight
           }
-          className="
+          className="font-[Urbanist] 
             flex
             h-[37px]
             w-[35px]
@@ -916,7 +916,7 @@ export default function FieldSelector() {
             bg-white
             text-[#555555]
             hover:bg-[#fafafa]
-          "
+           flex-wrap min-w-0"
         >
 
           <ChevronRight
@@ -934,7 +934,7 @@ export default function FieldSelector() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           flex
           w-full
           min-w-0
@@ -947,7 +947,7 @@ export default function FieldSelector() {
           sm:items-center
           sm:justify-between
           sm:px-4
-        "
+         flex-wrap max-w-full"
       >
 
         {/* =================================================
@@ -955,7 +955,7 @@ export default function FieldSelector() {
         ================================================= */}
 
         <div
-          className="
+          className="font-[Urbanist] 
             relative
             w-full
             min-w-0
@@ -967,7 +967,7 @@ export default function FieldSelector() {
 
           <Search
             size={15}
-            className="
+            className="font-[Urbanist] 
               pointer-events-none
               absolute
               left-3
@@ -986,7 +986,7 @@ export default function FieldSelector() {
               )
             }
             placeholder="Search..."
-            className="
+            className="font-[Urbanist] 
               h-[34px]
               w-full
               min-w-0
@@ -1012,7 +1012,7 @@ export default function FieldSelector() {
         ================================================= */}
 
         <div
-          className="
+          className="font-[Urbanist] 
             flex
             w-full
             min-w-0
@@ -1023,13 +1023,13 @@ export default function FieldSelector() {
             text-[#333333]
             sm:w-auto
             sm:shrink-0
-          "
+           flex-wrap max-w-full"
         >
 
           {/* Brown selected checkbox */}
 
           <span
-            className="
+            className="font-[Urbanist] 
               flex
               h-[18px]
               w-[18px]
@@ -1037,7 +1037,7 @@ export default function FieldSelector() {
               justify-center
               rounded-[4px]
               bg-[#8f5142]
-            "
+             flex-wrap min-w-0"
           >
 
             <svg
@@ -1060,7 +1060,7 @@ export default function FieldSelector() {
           </span>
 
 
-          <span className="min-w-0 truncate">
+          <span className="font-[Urbanist] min-w-0 truncate">
             Selected Columns :{" "}
             {selectedFields.length}
           </span>
@@ -1079,7 +1079,7 @@ export default function FieldSelector() {
       ===================================================== */}
 
       <div
-        className="
+        className="font-[Urbanist] 
           report-fields-scroll
           h-[250px]
           min-h-0
@@ -1094,7 +1094,7 @@ export default function FieldSelector() {
       >
 
         <div
-          className="
+          className="font-[Urbanist] 
             grid
             w-full
             min-w-0
@@ -1118,7 +1118,7 @@ export default function FieldSelector() {
 
                 <label
                   key={field}
-                  className="
+                  className="font-[Urbanist] 
                     flex
                     min-h-[30px]
                     w-full
@@ -1128,7 +1128,7 @@ export default function FieldSelector() {
                     gap-2
                     text-[11px]
                     text-[#4f5965]
-                  "
+                   flex-wrap max-w-full"
                 >
 
                   {/* =================================================
@@ -1143,7 +1143,7 @@ export default function FieldSelector() {
                         field
                       )
                     }
-                    className="
+                    className="font-[Urbanist] 
                       h-[15px]
                       w-[15px]
                       shrink-0
@@ -1157,7 +1157,7 @@ export default function FieldSelector() {
                   ================================================= */}
 
                   <span
-                    className="
+                    className="font-[Urbanist] 
                       min-w-0
                       truncate
                     "
@@ -1182,7 +1182,7 @@ export default function FieldSelector() {
           {filteredFields.length === 0 && (
 
             <div
-              className="
+              className="font-[Urbanist] 
                 col-span-full
                 py-8
                 text-center

@@ -34,7 +34,7 @@ export default function ExceptionReport() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Exception Report - Reconcile"
         reportType="exception-report-reconcile"

@@ -49,31 +49,31 @@ export default function AttendanceIntegrationReport() {
   });
 
   return (
-    <div className="space-y-3">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
-        <span className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-orange-200 bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
+    <div className="font-[Urbanist] space-y-3">
+      <div className="font-[Urbanist] bg-white rounded-lg shadow-sm border border-[#8B5A2B] px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
+        <span className="font-[Urbanist] flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#8B5A2B] bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap">
           <ClipboardList size={15} />
           Attendance Integration Report
         </span>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">From Date</span>
+        <div className="font-[Urbanist] flex items-center gap-2 w-full sm:w-auto">
+          <span className="font-[Urbanist] text-sm font-medium text-gray-700 whitespace-nowrap">From Date</span>
           <DatePicker id="fromDate" {...fromPicker.pickerProps} />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-sm font-medium text-gray-700 whitespace-nowrap">To Date</span>
+        <div className="font-[Urbanist] flex items-center gap-2 w-full sm:w-auto">
+          <span className="font-[Urbanist] text-sm font-medium text-gray-700 whitespace-nowrap">To Date</span>
           <DatePicker id="toDate" {...toPicker.pickerProps} />
         </div>
 
-        <div className="flex items-center gap-3 sm:ml-auto">
-          <button type="button" onClick={() => d.handleExport("pdf")} aria-label="Export PDF" className="hover:opacity-75 transition-opacity">
+        <div className="font-[Urbanist] flex items-center gap-3 sm:ml-auto">
+          <button type="button" onClick={() => d.handleExport("pdf")} aria-label="Export PDF" className="font-[Urbanist] hover:opacity-75 transition-opacity">
             <PdfIcon />
           </button>
-          <button type="button" onClick={() => d.handleExport("excel")} aria-label="Export Excel" className="hover:opacity-75 transition-opacity">
+          <button type="button" onClick={() => d.handleExport("excel")} aria-label="Export Excel" className="font-[Urbanist] hover:opacity-75 transition-opacity">
             <ExcelIcon />
           </button>
-          <button type="button" aria-label="History" className="hover:opacity-75 transition-opacity">
+          <button type="button" aria-label="History" className="font-[Urbanist] hover:opacity-75 transition-opacity">
             <ClockIcon />
           </button>
         </div>

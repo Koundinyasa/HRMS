@@ -32,7 +32,7 @@ export default function LeaveSummaryReport() {
   });
 
   return (
-    <div className="space-y-3">
+    <div className="font-[Urbanist] space-y-3">
       <ReportHeader
         title="Leave Summary Report"
         reportType="leave-summary-report"
