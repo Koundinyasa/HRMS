@@ -1,24 +1,24 @@
 import { z } from "zod";
-
+ 
 import {
   BACKDATE_ALLOWED_DAYS,
   MAX_REASON_LENGTH,
   isWeekendIso,
   minFromDateIso,
   maxApplyDateIso,
-  MIN_LEAVE_DATE_ISO,
+  countDaysExcludingHolidays, // 🔴 CHANGED (1 of 5): added import
 } from "../constants/leave.constants";
-
+ 
 // 🔴 CHANGED (2 of 5): schema is now a function that receives the holiday dates
 export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
   z
     .object({
       leaveType: z.string().min(1, "Please select a leave type."),
-
+ 
       fromDate: z.string().min(1, "From Date is required."),
-
+ 
       toDate: z.string().min(1, "To Date is required."),
-
+ 
       // Optional: may be left empty, and any length is accepted.
       reason: z
         .string()
@@ -27,13 +27,13 @@ export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
           MAX_REASON_LENGTH,
           `Reason cannot exceed ${MAX_REASON_LENGTH} characters.`,
         ),
-
+ 
       attachment: z.instanceof(File).nullable(),
-
+ 
       isHalfDay: z.boolean(),
-
+ 
       sessionFrom: z.string(),
-
+ 
       sessionTo: z.string(),
     })
     .refine((data) => !isWeekendIso(data.fromDate), {
@@ -70,7 +70,7 @@ export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
       path: ["toDate"],
       message: "To Date should be greater than or equal to From Date.",
     })
-
+ 
     .refine((data) => data.fromDate >= minFromDateIso(), {
       path: ["fromDate"],
       message: `You can select a date up to ${BACKDATE_ALLOWED_DAYS} days in the past.`,
@@ -97,7 +97,7 @@ export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
         data.toDate,
         holidayIsos,
       );
-
+ 
       // Maternity Leave - Maximum 180 days
       if (data.leaveType === "4" && totalDays > 180) {
         ctx.addIssue({
@@ -106,7 +106,7 @@ export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
           message: "Maternity Leave cannot exceed 180 days.",
         });
       }
-
+ 
       // Paternity Leave - Maximum 15 days
       if (data.leaveType === "5" && totalDays > 15) {
         ctx.addIssue({
@@ -115,7 +115,7 @@ export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
           message: "Paternity Leave cannot exceed 15 days.",
         });
       }
-
+ 
       // Sick Leave - Attachment required if more than 1 day
       if (data.leaveType === "2" && totalDays > 1 && !data.attachment) {
         ctx.addIssue({
@@ -126,8 +126,10 @@ export const makeLeaveApplySchema = (holidayIsos: Set<string>) =>
         });
       }
     });
-
+ 
 // 🔴 CHANGED (5 of 5): NEW -> keeps old imports of leaveApplySchema working (no holidays)
 export const leaveApplySchema = makeLeaveApplySchema(new Set());
-
+ 
 export type LeaveApplyFormData = z.infer<typeof leaveApplySchema>;
+ 
+ 
