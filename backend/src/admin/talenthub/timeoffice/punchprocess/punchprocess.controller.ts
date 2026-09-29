@@ -4,27 +4,29 @@ import {
   Post,
   Query,
   Body,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
+  Req,
 } from '@nestjs/common';
-
-import { FileInterceptor } from '@nestjs/platform-express';
 
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { PunchProcessService } from './punchprocess.service';
 
-import { ProcessDto } from './dto/process.dto';
-
-import { PunchDto } from './dto/punch.dto';
-
-import { AttendanceOverviewDto } from './dto/attendance-overview.dto';
-import { AttendanceMonthlySummaryDto } from './dto/attendance-monthly-summary.dto';
-import { AttendancePunchDetailsDto } from './dto/attendance-punch-details.dto';
-import { AttendanceRequestStatusDto } from './dto/attendance-request-status.dto';
-import { TaInsightsDto } from './dto/ta-insights.dto';
-import { TaInsightsDetailsDto } from './dto/ta-insights-details.dto';
+import { GetAttendanceDashboardDto } from './dto/get-attendance-dashboard.dto';
+import { GetYesterdayPresentCountDto } from './dto/get-yesterday-present-count.dto';
+import { GetYesterdayAbsentEmployeesDto } from './dto/get-yesterday-absent-employees.dto';
+import { GetOnLeaveEmployeesDto } from './dto/get-on-leave-employees.dto';
+import { GetLateInEmployeesDto } from './dto/get-late-in-employees.dto';
+import { GetEarlyInEmployeesDto } from './dto/get-early-in-employees.dto';
+import { GetEarlyOutEmployeesDto } from './dto/get-early-out-employees.dto';
+import { GetYetToLoginEmployeesDto } from './dto/get-yet-to-login-employees.dto';
+import { GetLoggedInEmployeesDto } from './dto/get-logged-in-employees.dto';
+import { GetAverageOtWorkHoursDto } from './dto/get-average-ot-work-hours.dto';
+import { GetAttendanceDashboardOverviewDto } from './dto/get-attendance-dashboard-overview.dto';
+import { GetLateInEarlyOutGraphDto } from './dto/get-late-in-early-out-graph.dto';
+import { GetMissedPunchEmployeesDto } from './dto/get-missed-punch-employees.dto';
+import { ProcessHistoryDto } from './dto/process-history.dto';
+import { AttendanceProcessingDashboardDto } from './dto/attendance-processing-dashboard.dto';
 
 @Controller('admin/timeattendance/timeoffice/punchprocess')
 @UseGuards(JwtAuthGuard)
@@ -32,214 +34,178 @@ export class PunchProcessController {
   constructor(private readonly punchProcessService: PunchProcessService) {}
 
   // =====================================================
-  // DASHBOARD
+  // Starts actual Sps from here
+  //======================================================
+  @Get('dashboard/counts')
+  async getAttendanceDashboardCounts(
+    @Query() dto: GetAttendanceDashboardDto,
+  ) {
+    return this.punchProcessService.getAttendanceDashboardCounts(dto);
+  }
+ 
+ 
   // =====================================================
-
-  // Dashboard Summary
-
-  @Get('dashboard/summary')
-  async getDashboardSummary() {
-    return this.punchProcessService.getDashboardSummary();
-  }
-
-  // Employees by status
-  // ON_LEAVE / EARLY_IN / ABSENT / EARLY_OUT
-
-  @Get('dashboard/employees')
-  async getDashboardEmployees(@Query('status') status: string) {
-    return this.punchProcessService.getDashboardEmployees(status);
-  }
-
-  // Attendance Overview Chart
-
-  @Get('dashboard/attendanceoverview')
-  async getAttendanceOverviewChart() {
-    return this.punchProcessService.getAttendanceOverviewChart();
-  }
-
-  // Punch Mode Distribution
-
-  @Get('dashboard/punchmodedistribution')
-  async getPunchModeDistribution() {
-    return this.punchProcessService.getPunchModeDistribution();
-  }
-
-  // Attendance Irregularities
-
-  @Get('dashboard/irregularities')
-  async getAttendanceIrregularities() {
-    return this.punchProcessService.getAttendanceIrregularities();
-  }
-
-  // Average Working Hours
-
-  @Get('dashboard/averageworkinghours')
-  async getAverageWorkingHours() {
-    return this.punchProcessService.getAverageWorkingHours();
-  }
-
-  // Average OT Hours
-
-  @Get('dashboard/averageothours')
-  async getAverageOtHours() {
-    return this.punchProcessService.getAverageOtHours();
-  }
-
-  // Policies / Shifts
-
-  @Get('dashboard/policies')
-  async getDashboardPolicies() {
-    return this.punchProcessService.getDashboardPolicies();
-  }
-
-  // Pending Requests
-
-  @Get('dashboard/pendingrequests')
-  async getPendingRequests() {
-    return this.punchProcessService.getPendingRequests();
-  }
-
+  // YESTERDAY PRESENT COUNT
   // =====================================================
-  // PROCESS
+ 
+  @Get('dashboard/yesterday-present-count')
+  async getYesterdayPresentCount(
+    @Query() dto: GetYesterdayPresentCountDto,
+  ) {
+    return this.punchProcessService.getYesterdayPresentCount(dto);
+  }
+ 
+ 
   // =====================================================
-
-  // Process Summary
-
-  @Get('process/summary')
-  async getProcessSummary(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getProcessSummary(dto);
-  }
-
-  // Process button
-
-  @Post('process')
-  async processAttendance(@Body() dto: ProcessDto) {
-    return this.punchProcessService.processAttendance(dto);
-  }
-
-  // Missed Punch
-
-  @Get('process/missedpunch')
-  async getMissedPunch(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getMissedPunch(dto);
-  }
-
-  // Shift Unassigned
-
-  @Get('process/shiftunassigned')
-  async getShiftUnassigned(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getShiftUnassigned(dto);
-  }
-
-  // Yet To Process
-
-  @Get('process/yettoprocess')
-  async getYetToProcess(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getYetToProcess(dto);
-  }
-
-  // Processed
-
-  @Get('process/processed')
-  async getProcessed(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getProcessed(dto);
-  }
-
-  // Re-Process Effective Date
-
-  @Get('process/reprocesseffectivedate')
-  async getReprocessEffectiveDate(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getReprocessEffectiveDate(dto);
-  }
-
-  // All Re-Process
-
-  @Get('process/allreprocess')
-  async getAllReprocess(@Query() dto: ProcessDto) {
-    return this.punchProcessService.getAllReprocess(dto);
-  }
-
-  // Punch Requests
-
-  @Get('process/punchrequests')
-  async getPunchRequests() {
-    return this.punchProcessService.getPunchRequests();
-  }
-
-  // Process History
-
-  @Get('process/history')
-  async getProcessHistory() {
-    return this.punchProcessService.getProcessHistory();
-  }
-
+  // YESTERDAY ABSENT EMPLOYEES
   // =====================================================
-  // PUNCH
+  @Get('yesterday-absent-employees')
+  async getYesterdayAbsentEmployees(
+    @Query() dto: GetYesterdayAbsentEmployeesDto,
+  ) {
+    return this.punchProcessService.getYesterdayAbsentEmployees(dto);
+  }
+ 
+ 
   // =====================================================
-
-  @Get('punch')
-  async getPunchDetails(@Query() dto: PunchDto) {
-    return this.punchProcessService.getPunchDetails(dto);
-  }
-
+  // ON LEAVE EMPLOYEES
   // =====================================================
-  // ATTENDANCE OVERVIEW
+ 
+  @Get('dashboard/on-leave-employees')
+  async getOnLeaveEmployees(
+    @Query() dto: GetOnLeaveEmployeesDto,
+  ) {
+    return this.punchProcessService.getOnLeaveEmployees(dto);
+  }
+ 
   // =====================================================
-
-  // Employee search/list
-
-  @Get('attendanceoverview/employees')
-  async getAttendanceEmployees(@Query('search') search?: string) {
-    return this.punchProcessService.getAttendanceEmployees(search);
-  }
-
-  // Daily Attendance Grid
-
-  @Get('attendanceoverview')
-  async getAttendanceOverview(@Query() dto: AttendanceOverviewDto) {
-    return this.punchProcessService.getAttendanceOverview(dto);
-  }
-
-  // Monthly Overview / Summary
-
-  @Get('attendanceoverview/monthlysummary')
-  async getAttendanceMonthlySummary(@Query() dto: AttendanceMonthlySummaryDto) {
-    return this.punchProcessService.getAttendanceMonthlySummary(dto);
-  }
-
-  // Punch Details
-
-  @Get('attendanceoverview/punchdetails')
-  async getAttendancePunchDetails(@Query() dto: AttendancePunchDetailsDto) {
-    return this.punchProcessService.getAttendancePunchDetails(dto);
-  }
-
-  // Request Status
-
-  @Get('attendanceoverview/requeststatus')
-  async getAttendanceRequestStatus(@Query() dto: AttendanceRequestStatusDto) {
-    return this.punchProcessService.getAttendanceRequestStatus(dto);
-  }
-  //====================================================
-  // TA INSIGHTS
-  //=============================================
-  //
-  @Get('tainsights')
-  async getTaInsights(@Query() dto: TaInsightsDto) {
-    return this.punchProcessService.getTaInsights(dto);
-  }
-  //
-  @Get('tainsights/details')
-  async getTaInsightsDetails(@Query() dto: TaInsightsDetailsDto) {
-    return this.punchProcessService.getTaInsightsDetails(dto);
-  }
+  // LATE IN EMPLOYEES
   // =====================================================
-  // IMPORT
+ 
+  @Get('dashboard/late-in-employees')
+  async getLateInEmployees(
+    @Query() dto: GetLateInEmployeesDto,
+  ) {
+    return this.punchProcessService.getLateInEmployees(dto);
+  }
+ 
   // =====================================================
-
-  @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadPunchFile(@UploadedFile() file: any) {
-    return this.punchProcessService.uploadPunchFile(file);
+  // EARLY IN EMPLOYEES
+  // =====================================================
+ 
+  @Get('dashboard/early-in-employees')
+  async getEarlyInEmployees(
+    @Query() dto: GetEarlyInEmployeesDto,
+  ) {
+    return this.punchProcessService.getEarlyInEmployees(dto);
+  }
+ 
+  // =====================================================
+  // EARLY OUT EMPLOYEES
+  // =====================================================
+ 
+  @Get('dashboard/early-out-employees')
+  async getEarlyOutEmployees(
+    @Query() dto: GetEarlyOutEmployeesDto,
+  ) {
+    return this.punchProcessService.getEarlyOutEmployees(dto);
+  }
+ 
+ 
+  // =====================================================
+  // YET TO LOGIN EMPLOYEES
+  // =====================================================
+  @Get('dashboard/yet-to-login')
+  async getYetToLoginEmployees(
+    @Query() dto: GetYetToLoginEmployeesDto,
+  ) {
+    return this.punchProcessService.getYetToLoginEmployees(dto);
+  }
+ 
+ 
+  // =====================================================
+  // LOGGED IN EMPLOYEES
+  // =====================================================
+ 
+  @Get('dashboard/logged-in-employees')
+  async getLoggedInEmployees(
+    @Query() dto: GetLoggedInEmployeesDto,
+  ) {
+    return this.punchProcessService.getLoggedInEmployees(dto);
+  }
+ 
+ 
+  // =====================================================
+  // AVERAGE OT WORK HOURS
+  // =====================================================
+ 
+  @Get('dashboard/average-ot-work-hours')
+  async getAverageOtWorkHours(
+    @Query() dto: GetAverageOtWorkHoursDto,
+  ) {
+    return this.punchProcessService.getAverageOtWorkHours(dto);
+  }
+ 
+ 
+  // =====================================================
+  // ATTENDANCE DASHBOARD OVERVIEW
+  // =====================================================
+ 
+  @Get('dashboard/overview')
+  async getAttendanceDashboardOverview(
+    @Query() dto: GetAttendanceDashboardOverviewDto,
+  ) {
+    return this.punchProcessService.getAttendanceDashboardOverview(dto);
+  }
+ 
+ 
+  // =====================================================
+  // LATE IN / EARLY OUT GRAPH
+  // =====================================================
+ 
+  @Get('dashboard/late-in-early-out-graph')
+  async getLateInEarlyOutGraph(
+    @Query() dto: GetLateInEarlyOutGraphDto,
+  ) {
+    return this.punchProcessService.getLateInEarlyOutGraph(dto);
+  }
+ 
+ 
+  // =====================================================
+  // MISSED PUNCH EMPLOYEES
+  // =====================================================
+ 
+  @Get('process/missed-punch-employees')
+  async getMissedPunchEmployees(
+    @Query() dto: GetMissedPunchEmployeesDto,
+  ) {
+    return this.punchProcessService.getMissedPunchEmployees(dto);
+  }
+ 
+  @Post('history')
+  async getProcessHistory(
+    @Req() req: Request,
+    @Body() dto: ProcessHistoryDto,
+  ) {
+    const companyId = (req as any).user.companyId;
+ 
+    return this.punchProcessService.getProcessHistory(
+      companyId,
+      dto,
+    );
+  }
+ 
+ 
+  @Get('dashboard/processing')
+  async getAttendanceProcessingDashboard(
+    @Req() req: Request,
+    @Query() dto: AttendanceProcessingDashboardDto,
+  ) {
+    const companyId = (req as any).user.companyId;
+ 
+    return this.punchProcessService.getAttendanceProcessingDashboard(
+      companyId,
+      dto,
+    );
   }
 }

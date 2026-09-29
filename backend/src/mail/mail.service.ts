@@ -18,7 +18,7 @@ export class MailService {
     });
   }
 
-  async sendTempPassword(
+ async sendTempPassword(
     email: string,
     tempPassword: string,
     applicationUrl: string,
@@ -147,6 +147,13 @@ export class MailService {
       letter-spacing: 8px;
     }
  
+    .application-url {
+      font-size: 25px;
+      line-height: 1.4;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+ 
     .important-title {
       font-size: 28px;
     }
@@ -222,20 +229,11 @@ export class MailService {
         width: 100% !important;
       }
  
-      .hero-left {
+      .hero-content {
         display: block !important;
         width: 100% !important;
-        max-width: 100% !important;
         text-align: center !important;
-        padding: 25px 15px 10px 15px !important;
-      }
- 
-      .hero-right {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        text-align: center !important;
-        padding: 10px 20px 28px 20px !important;
+        padding: 28px 15px 30px 15px !important;
         box-sizing: border-box !important;
       }
  
@@ -244,18 +242,20 @@ export class MailService {
         height: 70px !important;
         line-height: 70px !important;
         font-size: 34px !important;
-        margin: 0 auto !important;
+        margin: 0 auto 20px auto !important;
       }
  
       .hero-title {
         font-size: 28px !important;
         line-height: 1.25 !important;
+        text-align: center !important;
       }
  
       .hero-description {
         font-size: 17px !important;
         line-height: 1.5 !important;
         margin-top: 12px !important;
+        text-align: center !important;
       }
  
  
@@ -292,6 +292,7 @@ export class MailService {
  
       .credential-icon-cell {
         width: 78px !important;
+        min-width: 78px !important;
         padding: 18px 8px !important;
       }
  
@@ -557,64 +558,58 @@ export class MailService {
  
                 <tr>
  
-                  <!-- HERO ICON -->
- 
                   <td
-                    width="34%"
-                    class="hero-left"
+                    class="hero-content"
                     align="center"
                     valign="middle"
                     style="
-                      padding:38px 20px;
+                      padding:30px 20px 34px 20px;
+                      text-align:center;
                     "
                   >
+ 
+                    <!-- HERO ICON -->
  
                     <div
                       class="hero-icon"
                       style="
-                        width:145px;
-                        height:105px;
+                        width:90px;
+                        height:70px;
                         background:#287fd8;
                         border-radius:12px;
                         color:#ffffff;
-                        font-size:50px;
-                        line-height:105px;
+                        font-size:34px;
+                        line-height:70px;
                         text-align:center;
-                        margin:auto;
+                        margin:0 auto 22px auto;
                       "
                     >
                       ✉
                     </div>
  
-                  </td>
  
- 
-                  <!-- HERO CONTENT -->
- 
-                  <td
-                    width="66%"
-                    class="hero-right"
-                    valign="middle"
-                    style="
-                      padding:35px 25px 35px 0;
-                    "
-                  >
+                    <!-- HERO TITLE -->
  
                     <div
                       class="hero-title"
                       style="
                         font-weight:700;
                         color:#123f78;
+                        text-align:center;
                       "
                     >
                       🔒 HRMS Login Credentials
                     </div>
  
+ 
+                    <!-- HERO DESCRIPTION -->
+ 
                     <div
                       class="hero-description"
                       style="
-                        margin-top:20px;
+                        margin-top:12px;
                         color:#405b7d;
+                        text-align:center;
                       "
                     >
                       Your HRMS account has been successfully created.
@@ -705,6 +700,10 @@ export class MailService {
                     class="credential-icon-cell"
                     align="center"
                     valign="middle"
+                    style="
+                      width:150px;
+                      min-width:150px;
+                    "
                   >
  
                     <div
@@ -730,9 +729,11 @@ export class MailService {
  
                   <td
                     class="credential-content"
+                    valign="middle"
                     style="
                       border-left:2px solid #c7dff5;
                       padding:20px 35px;
+                      vertical-align:middle;
                     "
                   >
  
@@ -756,6 +757,111 @@ export class MailService {
                       "
                     >
                       ${email}
+                    </div>
+ 
+                  </td>
+ 
+                </tr>
+ 
+              </table>
+ 
+            </td>
+ 
+          </tr>
+ 
+ 
+          <!-- =================================
+               TEMPORARY PASSWORD
+          ================================== -->
+ 
+          <tr>
+ 
+            <td
+              class="credential-wrapper"
+              style="
+                padding:24px 44px 0 44px;
+              "
+            >
+ 
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                class="credential-table"
+                style="
+                  background:#fff1f1;
+                  border-radius:12px;
+                "
+              >
+ 
+                <tr>
+ 
+                  <!-- ICON -->
+ 
+                  <td
+                    width="150"
+                    class="credential-icon-cell"
+                    align="center"
+                    valign="middle"
+                    style="
+                      width:150px;
+                      min-width:150px;
+                    "
+                  >
+ 
+                    <div
+                      class="credential-icon"
+                      style="
+                        width:82px;
+                        height:82px;
+                        border-radius:50%;
+                        background:#ff4444;
+                        color:#ffffff;
+                        font-size:38px;
+                        line-height:82px;
+                        text-align:center;
+                      "
+                    >
+                      🔒
+                    </div>
+ 
+                  </td>
+ 
+ 
+                  <!-- PASSWORD -->
+ 
+                  <td
+                    class="credential-content"
+                    valign="middle"
+                    style="
+                      border-left:2px solid #f4cccc;
+                      padding:20px 35px;
+                      vertical-align:middle;
+                    "
+                  >
+ 
+                    <div
+                      class="credential-label"
+                      style="
+                        font-weight:700;
+                        letter-spacing:1px;
+                        color:#58708f;
+                        margin-bottom:10px;
+                      "
+                    >
+                      TEMPORARY PASSWORD
+                    </div>
+ 
+                    <div
+                      class="credential-value password-value"
+                      style="
+                        font-weight:700;
+                        color:#e6382c;
+                        word-break:break-word;
+                      "
+                    >
+                      ${tempPassword}
                     </div>
  
                   </td>
@@ -803,6 +909,10 @@ export class MailService {
                     class="credential-icon-cell"
                     align="center"
                     valign="middle"
+                    style="
+                      width:150px;
+                      min-width:150px;
+                    "
                   >
  
                     <div
@@ -828,9 +938,11 @@ export class MailService {
  
                   <td
                     class="credential-content"
+                    valign="middle"
                     style="
                       border-left:2px solid #c7dff5;
                       padding:20px 35px;
+                      vertical-align:middle;
                     "
                   >
  
@@ -851,6 +963,7 @@ export class MailService {
                       style="
                         font-weight:600;
                         color:#123f78;
+                        text-align:left;
                       "
                     >
  
@@ -860,110 +973,13 @@ export class MailService {
                         style="
                           color:#287fd8;
                           text-decoration:none;
+                          word-break:break-word;
+                          overflow-wrap:anywhere;
                         "
                       >
                         ${applicationUrl}
                       </a>
  
-                    </div>
- 
-                  </td>
- 
-                </tr>
- 
-              </table>
- 
-            </td>
- 
-          </tr>
- 
- 
-          <!-- =================================
-               PASSWORD
-          ================================== -->
- 
-          <tr>
- 
-            <td
-              class="credential-wrapper"
-              style="
-                padding:24px 44px 0 44px;
-              "
-            >
- 
-              <table
-                width="100%"
-                cellpadding="0"
-                cellspacing="0"
-                border="0"
-                class="credential-table"
-                style="
-                  background:#fff1f1;
-                  border-radius:12px;
-                "
-              >
- 
-                <tr>
- 
-                  <!-- ICON -->
- 
-                  <td
-                    width="150"
-                    class="credential-icon-cell"
-                    align="center"
-                    valign="middle"
-                  >
- 
-                    <div
-                      class="credential-icon"
-                      style="
-                        width:82px;
-                        height:82px;
-                        border-radius:50%;
-                        background:#ff4444;
-                        color:#ffffff;
-                        font-size:38px;
-                        line-height:82px;
-                        text-align:center;
-                      "
-                    >
-                      🔒
-                    </div>
- 
-                  </td>
- 
- 
-                  <!-- PASSWORD -->
- 
-                  <td
-                    class="credential-content"
-                    style="
-                      border-left:2px solid #f4cccc;
-                      padding:20px 35px;
-                    "
-                  >
- 
-                    <div
-                      class="credential-label"
-                      style="
-                        font-weight:700;
-                        letter-spacing:1px;
-                        color:#58708f;
-                        margin-bottom:10px;
-                      "
-                    >
-                      TEMPORARY PASSWORD
-                    </div>
- 
-                    <div
-                      class="credential-value password-value"
-                      style="
-                        font-weight:700;
-                        color:#e6382c;
-                        word-break:break-word;
-                      "
-                    >
-                      ${tempPassword}
                     </div>
  
                   </td>
@@ -1161,6 +1177,7 @@ export class MailService {
  
           </tr>
  
+ 
         </table>
  
       </td>
@@ -1200,6 +1217,287 @@ export class MailService {
             </div>
           </div>
         </div>`,
+    });
+  }
+
+  async sendCelebrationWish(
+    email: string,
+    employeeName: string,
+    eventType: 'BIRTHDAY' | 'WORK_ANNIVERSARY',
+    message: string,
+    senderName: string,
+    senderEmail: string,
+  ): Promise<void> {
+    const isBirthday = eventType === 'BIRTHDAY';
+
+    const title = isBirthday ? 'Happy Birthday!' : 'Happy Work Anniversary!';
+
+    const icon = isBirthday ? '🎂' : '🎉';
+
+    const safeEmployeeName = employeeName || 'Colleague';
+    const safeSenderName = senderName || 'HRMS Team';
+
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+
+      subject: isBirthday
+        ? `🎂 Birthday Wishes from ${safeSenderName}`
+        : `🎉 Work Anniversary Wishes from ${safeSenderName}`,
+
+      html: `
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>${title}</title>
+</head>
+ 
+<body
+  style="
+    margin:0;
+    padding:0;
+    background:#f4f6f9;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#1f2937;
+  "
+>
+ 
+  <!-- OUTER BACKGROUND -->
+  <table
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    border="0"
+    style="
+      background:#f4f6f9;
+      padding:28px 15px;
+    "
+  >
+    <tr>
+      <td align="center">
+ 
+        <!-- MAIN CARD -->
+        <table
+          width="840"
+          cellpadding="0"
+          cellspacing="0"
+          border="0"
+          style="
+            max-width:840px;
+            width:100%;
+            background:#ffffff;
+            border-radius:14px;
+            overflow:hidden;
+            box-shadow:0 6px 20px rgba(0,0,0,0.08);
+          "
+        >
+ 
+          <!-- HEADER -->
+          <tr>
+            <td
+              align="center"
+              style="
+                padding:42px 45px 30px;
+                background:#ffffff;
+              "
+            >
+ 
+              <!-- CELEBRATION ICON -->
+              <div
+                style="
+                  font-size:56px;
+                  line-height:1;
+                  margin-bottom:18px;
+                "
+              >
+                ${icon}
+              </div>
+ 
+              <!-- TITLE -->
+              <h1
+                style="
+                  margin:0;
+                  color:#2563eb;
+                  font-size:36px;
+                  line-height:1.3;
+                  font-weight:700;
+                "
+              >
+                ${title}
+              </h1>
+ 
+            </td>
+          </tr>
+ 
+ 
+          <!-- TOP DIVIDER -->
+          <tr>
+            <td style="padding:0 45px;">
+              <div
+                style="
+                  height:1px;
+                  background:#d9dee7;
+                "
+              ></div>
+            </td>
+          </tr>
+ 
+ 
+          <!-- MESSAGE CONTENT -->
+          <tr>
+            <td
+              style="
+                padding:28px 45px 30px;
+              "
+            >
+ 
+              <!-- GREETING -->
+              <p
+                style="
+                  margin:0 0 22px;
+                  font-size:23px;
+                  line-height:1.5;
+                  color:#222222;
+                "
+              >
+                Dear
+                <strong>${safeEmployeeName}</strong>,
+              </p>
+ 
+ 
+              <!-- MESSAGE BOX -->
+              <table
+                width="100%"
+                cellpadding="0"
+                cellspacing="0"
+                border="0"
+                style="
+                  background:#f8fafc;
+                  border-radius:6px;
+                  border-left:6px solid #2563eb;
+                  margin-bottom:34px;
+                "
+              >
+                <tr>
+                  <td
+                    style="
+                      padding:24px 30px;
+                    "
+                  >
+ 
+                    <p
+                      style="
+                        margin:0;
+                        font-size:21px;
+                        line-height:1.55;
+                        color:#355274;
+                      "
+                    >
+                      ${message}
+                    </p>
+ 
+                  </td>
+                </tr>
+              </table>
+ 
+ 
+              <!-- SENDER -->
+              <p
+                style="
+                  margin:0 0 3px;
+                  font-size:20px;
+                  line-height:1.5;
+                  color:#374151;
+                "
+              >
+                Best wishes,
+              </p>
+ 
+ 
+              <p
+                style="
+                  margin:0;
+                  font-size:20px;
+                  line-height:1.5;
+                  font-weight:700;
+                  color:#355274;
+                  text-transform:uppercase;
+                "
+              >
+                ${safeSenderName}
+              </p>
+ 
+            </td>
+          </tr>
+ 
+ 
+          <!-- BOTTOM DIVIDER -->
+          <tr>
+            <td style="padding:0 45px;">
+              <div
+                style="
+                  height:1px;
+                  background:#d9dee7;
+                "
+              ></div>
+            </td>
+          </tr>
+ 
+ 
+          <!-- FOOTER -->
+          <tr>
+            <td
+              align="center"
+              style="
+                padding:24px 45px 28px;
+              "
+            >
+ 
+              <!-- COPYRIGHT -->
+              <p
+                style="
+                  margin:0 0 12px;
+                  font-size:17px;
+                  line-height:1.5;
+                  color:#8da1bb;
+                "
+              >
+                © HRMS
+              </p>
+ 
+ 
+              <!-- AUTO GENERATED MESSAGE -->
+              <p
+                style="
+                  margin:0;
+                  font-size:16px;
+                  line-height:1.5;
+                  color:#8da1bb;
+                  font-style:italic;
+                "
+              >
+                This is an auto-generated email.
+                Please do not reply to this message.
+              </p>
+ 
+            </td>
+          </tr>
+ 
+        </table>
+ 
+      </td>
+    </tr>
+  </table>
+ 
+</body>
+</html>
+    `,
     });
   }
 }

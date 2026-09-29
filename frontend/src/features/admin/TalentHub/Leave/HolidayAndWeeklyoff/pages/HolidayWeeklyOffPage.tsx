@@ -7,7 +7,7 @@ export default function HolidayWeeklyOffPage() {
   const basePath = `/${domain}/admin/talent-hub/leave/holidayandweekOff`;
 
   return (
-    <div>
+    <div className="w-full min-w-0 space-y-3">
       <TabBar basePath={basePath} tabs={Holiday_WeeklyOff_Details_Tab} />
       <Outlet />
     </div>

@@ -10,7 +10,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { SendWishDto } from './dto/send-wish.dto';
+import { SendWishDto } from './dto/SendWish.dto';
  
 @Controller('auth')
 export class AuthController {
@@ -105,7 +105,8 @@ export class AuthController {
       dto,
     );
   }
-   @Post('send-wish')
+
+  @Post('send-wish')
   @UseGuards(JwtAuthGuard)
   async sendWish(
     @Req() req: any,
@@ -116,7 +117,4 @@ export class AuthController {
       dto,
     );
   }
- 
 }
- 
- 

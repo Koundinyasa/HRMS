@@ -54,7 +54,7 @@ export default function PolicyPage() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4">
+    <div className="grid w-full min-w-0 grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
       {/* Policy list */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
         <div className="flex items-center justify-between mb-3">
@@ -121,13 +121,13 @@ export default function PolicyPage() {
       </div>
 
       {/* Leave types table */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
-        <div className="flex items-center justify-end gap-2 mb-4">
+      <div className="min-w-0 overflow-hidden rounded-xl border border-slate-100 bg-white p-3 shadow-sm sm:p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => setLeaveTypeModalOpen(true)}
             disabled={!activePolicyId}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-emerald-500 text-emerald-600 text-sm font-medium hover:bg-emerald-50 disabled:opacity-50 transition-colors"
+            className="flex min-h-9 max-w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-500 px-3 py-2 text-left text-xs font-medium text-emerald-600 transition-colors hover:bg-emerald-50 disabled:opacity-50 sm:text-sm"
           >
             <Plus size={14} />
             Add Leaves To Employee Leave Policy
@@ -141,7 +141,8 @@ export default function PolicyPage() {
           </button>
         </div>
 
-        <table className="w-full text-sm">
+        <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 border-b border-slate-100">
               <th className="font-medium pb-3">Leave Name</th>
@@ -214,6 +215,7 @@ export default function PolicyPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {policyModalOpen && (

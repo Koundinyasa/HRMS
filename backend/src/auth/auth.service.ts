@@ -11,12 +11,8 @@ import { ResetForgotPasswordDto } from './dto/reset-forgot-password.dto';
 import { randomBytes } from 'crypto';
 import { DraftService } from '../chatbot/services/draft.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
-<<<<<<< HEAD
-import { SendWishDto } from './dto/send-wish.dto';
- 
-=======
+import { SendWishDto } from './dto/SendWish.dto';
 
->>>>>>> 38d7dc29e14dc62f39a4d72b9b623a61b60f4d15
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,7 +37,6 @@ export class AuthService {
   }
  
   // ================= LOGIN =================
-<<<<<<< HEAD
    async login(dto: LoginDto) {
      try {
        // ================= CAPTCHA VALIDATION =================
@@ -197,125 +192,16 @@ export class AuthService {
  
  
  
-=======
- 
-  async login(dto: LoginDto) {
-    try {
-      const captchaValid = this.captchaService.validate(
-        dto.captchaId,
-        dto.captchaAnswer,
-      );
- 
-      if (!captchaValid) {
-        throw new BadRequestException(
-          'Invalid or expired captcha. Please refresh and try again.',
-        );
-      }
 
-      const pool = await this.dbService.connect();
-
-      const result = await pool
-        .request()
-        .input('EmailID', dto.userId)
-        .execute('USP_Validateuser');
-
-      const user = result.recordset[0];
-
-      if (!user) {
-        throw new UnauthorizedException('Invalid UserID or Password');
-      }
- 
-      if (
-        user.IsAccountLocked === true ||
-        user.IsAccountLocked === 1
-      ) {
-        throw new UnauthorizedException(
-          'Account is locked. Contact administrator.',
-        );
-      }
- 
-      const isPasswordValid = await bcrypt.compare(
-        dto.password,
-        user.PasswordHash,
-      );
- 
-      if (!isPasswordValid) {
-        await pool
-          .request()
-          .input('EmployeeID', user.EmployeeID)
-          .input('flag', 1)
-          .execute('USP_UpdateLoginInfo');
- 
-        throw new UnauthorizedException(
-          'Invalid UserID or Password',
-        );
-      }
-
-      const isFirstLogin = user.LastLoginDateTime === null;
-
-      // update login ONLY after first login is completed
-      if (!isFirstLogin) {
-        await pool
-          .request()
-          .input('EmployeeID', user.EmployeeID)
-          .input('flag', 2)
-          .execute('USP_UpdateLoginInfo');
-      }
- 
-      const accessToken = this.jwtService.sign({
-        employeeId: user.EmployeeID,
-        userId: user.UserID,
-        roleId: user.RoleID,
-        companyId: user.CompanyID,
-        createdBy: user.Sessionuserid,
-        name: user.FullName,
-        role:
-          user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
-      });
- 
-      let loginMessage = 'Login successful';
- 
-      if (user.RoleID === 1) {
-        loginMessage = 'Super Admin login successful';
-      } else if (user.RoleID === 2) {
-        loginMessage = 'HR Admin login successful';
-      }
- 
-      // Fresh session boundary — wipe any chatbot flow left over
-      // from a previous session for this employee.
-      this.clearChatbotState(String(user.EmployeeID));
-
-      return {
-        success: true,
-        message: loginMessage,
-        accessToken,
-        isFirstLogin,
-        data: {
-          employeeId: user.EmployeeID,
-          userId: user.UserID,
-          roleId: user.RoleID,
-        },
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
->>>>>>> 38d7dc29e14dc62f39a4d72b9b623a61b60f4d15
   // ================= VERIFY COMPANY =================
  async verifyCompany(tenantCode: string) {
   try {
     const pool = await this.dbService.connect();
  
-<<<<<<< HEAD
+
     const result = await pool
       .request()
       .execute('USP_GetCompanyInfo');
-=======
-  async verifyCompany(tenantCode: string) {
-    try {
-      const pool = await this.dbService.connect();
->>>>>>> 38d7dc29e14dc62f39a4d72b9b623a61b60f4d15
  
     const company = result.recordset.find(
       (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
@@ -740,6 +626,68 @@ export class AuthService {
     throw error;
   }
 }
+
+async sendWish(
+    senderEmployeeId: string,
+    dto: SendWishDto,
+  ) {
+    try {
+      const pool = await this.dbService.connect();
  
  
+      // ================= RECIPIENT / WISHED PERSON =================
+      const recipientResult = await pool
+        .request()
+        .input('EmployeeID', dto.employeeId)
+        .execute('USP_GetUserInfo');
  
+ 
+      const recipient = recipientResult.recordset[0];
+      console.log('RECIPIENT EMPLOYEE ID:', dto.employeeId);
+      console.log('SENDER EMPLOYEE ID:', senderEmployeeId);
+ 
+      if (!recipient) {
+        throw new NotFoundException(
+          'Wished employee not found',
+        );
+      }
+ 
+      if (!recipient.Email) {
+        throw new BadRequestException(
+          'Wished employee email not found',
+        );
+      }
+ 
+      // ================= SENDER / PERSON SENDING WISH =================
+      const senderResult = await pool
+        .request()
+        .input('EmployeeID', senderEmployeeId)
+        .execute('USP_GetUserInfo');
+ 
+      const sender = senderResult.recordset[0];
+ 
+      if (!sender) {
+        throw new NotFoundException(
+          'Sender employee not found',
+        );
+      }
+ 
+      // ================= SEND EMAIL =================
+      await this.mailService.sendCelebrationWish(
+        recipient.Email,
+        recipient.FullName,
+        dto.eventType,
+        dto.message,
+        sender.FullName,
+        sender.Email,
+      );
+ 
+      return {
+        success: true,
+        message: 'Wish sent successfully',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+}

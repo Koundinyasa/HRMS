@@ -49,13 +49,13 @@ export default function AddLeavePolicyModal({ policyId, onClose }: AddLeavePolic
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="w-[520px] bg-white rounded-xl shadow-xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-3 sm:p-6">
+      <div className="my-auto w-full max-w-[520px] overflow-hidden rounded-xl bg-white shadow-xl">
         <div className="px-5 py-4 border-b border-slate-100">
           <h2 className="text-base font-semibold text-slate-800">Add Leave Policy</h2>
         </div>
 
-        <div className="p-5 grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-5">
           <div className="col-span-2">
             <label className="block text-xs font-medium text-slate-600 mb-1">
               Policy Name <span className="text-red-500">*</span>
@@ -110,7 +110,7 @@ export default function AddLeavePolicyModal({ policyId, onClose }: AddLeavePolic
             />
           </div>
 
-          <div className="flex items-center gap-4 col-span-2">
+          <div className="col-span-1 flex flex-wrap items-center gap-x-4 gap-y-2 sm:col-span-2">
             <label className="flex items-center gap-2 text-sm text-slate-600">
               <input
                 type="checkbox"
@@ -140,7 +140,7 @@ export default function AddLeavePolicyModal({ policyId, onClose }: AddLeavePolic
             </label>
           </div>
 
-          {error && <p className="col-span-2 text-xs text-red-500">{error}</p>}
+          {error && <p className="col-span-1 text-xs text-red-500 sm:col-span-2">{error}</p>}
         </div>
 
         <div className="flex justify-end gap-3 px-5 py-4 border-t border-slate-100 bg-slate-50">

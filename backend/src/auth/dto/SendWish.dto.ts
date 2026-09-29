@@ -1,5 +1,4 @@
 import { IsIn, IsNotEmpty, IsString } from 'class-validator';
- 
 export class SendWishDto {
   @IsNotEmpty()
   @IsString()
@@ -13,4 +12,3 @@ export class SendWishDto {
   @IsString()
   message!: string;
 }
- 

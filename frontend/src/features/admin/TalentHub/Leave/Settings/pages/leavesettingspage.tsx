@@ -7,7 +7,7 @@ export default function LeaveSettingsPage() {
   const basePath = `/${domain}/admin/talent-hub/leave/settings`;
 
   return (
-    <div>
+    <div className="w-full min-w-0 space-y-3">
       <TabBar basePath={basePath} tabs={Settings_Details_Tab} />
       <Outlet />
     </div>

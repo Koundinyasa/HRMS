@@ -1,271 +1,833 @@
 import { useMemo, useState } from "react";
-import { Filter, History, Check, X as XIcon } from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+  Check,
+  ChevronDown,
+  ClockFading,
+  FileSpreadsheet,
+  Filter,
+  MoreVertical,
+  Search,
+  X as XIcon,
+} from "lucide-react";
 import * as XLSX from "xlsx";
+
 import EmptyState from "./EmptyState";
-import FilterBar, { type FilterValues } from "@/features/admin/components/FilterBar";
-import { useGetBranchesQuery, useGetDesignationsQuery } from "@/features/admin/admincenter/classifications/api/classificationApi";
-import { LEAVE_POLICY_GROUPS } from "@/features/admin/admincenter/classifications/constants/leavePolicy.constants";
+import ForceLeaveApprovalTabs from "./ForceLeaveApprovalTabs";
+import ForceLeaveApprovalTable from "./ForceLeaveApprovalTable";
+import LeaveQueryFilter from "../../components/LeaveQueryFilter";
+
+import type { FilterValues } from "@/features/admin/components/FilterBar";
+
 import {
   useGetForceLeaveApprovalsQuery,
   useApproveLeavesMutation,
   useRejectLeavesMutation,
   type LeaveApprovalViewType,
   type LeaveApprovalMonthType,
-} from "../api/leaveApproval.api";
+} from "../api/forceleaveapprovalApi";
 
-const SALARY_STRUCTURE_OPTIONS = [
-  { value: "ctc", label: "CTC Salary Structure" },
-  { value: "new", label: "New Salary Structure" },
-];
-const EMP_STATUS_OPTIONS = [
-  { value: "current", label: "Current Employees" },
-  { value: "left", label: "Left Employees" },
-];
+/* ============================================================
+   TYPES
+   ============================================================ */
+
+/* ============================================================
+   COMPONENT
+   ============================================================ */
 
 export default function ForceLeaveApprovalPanel() {
-  const [viewType, setViewType] = useState<LeaveApprovalViewType>("applied");
-  const [monthType, setMonthType] = useState<LeaveApprovalMonthType>("current");
-  const [filters, setFilters] = useState<FilterValues>({});
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const branches = useGetBranchesQuery();
-  const designations = useGetDesignationsQuery({ page: 1, pageSize: 1000 });
+  /* ============================================================
+     MAIN TABS
+     ============================================================ */
 
-  const { data: rows, isFetching } = useGetForceLeaveApprovalsQuery({
+  const [viewType, setViewType] =
+    useState<LeaveApprovalViewType>("applied");
+
+  /* ============================================================
+     MONTH TABS
+     ============================================================ */
+
+  const [monthType, setMonthType] =
+    useState<LeaveApprovalMonthType>("current");
+
+  /* ============================================================
+     FILTERS
+     ============================================================ */
+
+  const [filters, setFilters] =
+    useState<FilterValues>({});
+
+  /* ============================================================
+     SEARCH
+     ============================================================ */
+
+  const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(true);
+
+  /* ============================================================
+     MORE MENU
+     ============================================================ */
+
+  const [showMoreMenu, setShowMoreMenu] =
+    useState(false);
+  const [moreMenuPosition, setMoreMenuPosition] = useState<{ top: number; left: number } | null>(null);
+
+  /* ============================================================
+     SELECTION
+     ============================================================ */
+
+  const [selectedIds, setSelectedIds] =
+    useState<Set<number>>(new Set());
+
+  /* ============================================================
+     API
+     ============================================================ */
+
+  const {
+    data: rows,
+    isFetching,
+  } = useGetForceLeaveApprovalsQuery({
     viewType,
     monthType,
-    branch: filters.branch as string[] | undefined,
-    salaryStructure: filters.salaryStructure as string[] | undefined,
-    leave: filters.leave as string[] | undefined,
-    attendance: filters.attendance as string[] | undefined,
-    designation: filters.designation as string[] | undefined,
-    empStatus: filters.empStatus as string[] | undefined,
+
+    search:
+      search.trim() || undefined,
+
+    branch:
+      filters.branch as
+        | string[]
+        | undefined,
+
+    salaryStructure:
+      filters.salaryStructure as
+        | string[]
+        | undefined,
+
+    leave:
+      filters.leave as
+        | string[]
+        | undefined,
+
+    attendance:
+      filters.attendance as
+        | string[]
+        | undefined,
+
+    designation:
+      filters.designation as
+        | string[]
+        | undefined,
+
+    empStatus:
+      filters.empStatus as
+        | string[]
+        | undefined,
   });
 
-  const [approveLeaves, { isLoading: isApproving }] = useApproveLeavesMutation();
-  const [rejectLeaves, { isLoading: isRejecting }] = useRejectLeavesMutation();
+  /* ============================================================
+     APPROVE MUTATION
+     ============================================================ */
 
-  const fieldOptions = {
-    branch: (branches.data ?? []).map((b) => ({ value: String(b.Id), label: b.BranchName })),
-    designation: (designations.data?.Designations ?? []).map((d) => ({ value: String(d.Id), label: d.DesignationName })),
-    leave: LEAVE_POLICY_GROUPS.map((g) => ({ value: g.code, label: g.name })),
-    attendance: [], // wire real options if/when an attendance-type source exists
-    salaryStructure: SALARY_STRUCTURE_OPTIONS,
-    empStatus: EMP_STATUS_OPTIONS,
-  };
+  const [
+    approveLeaves,
+    {
+      isLoading: isApproving,
+    },
+  ] = useApproveLeavesMutation();
 
-  const handleFilterChange = (key: string, value: string[] | string) =>
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  const clearAllFilters = () => setFilters({});
+  /* ============================================================
+     REJECT MUTATION
+     ============================================================ */
 
-  const switchView = (v: LeaveApprovalViewType) => {
-    setViewType(v);
+  const [
+    rejectLeaves,
+    {
+      isLoading: isRejecting,
+    },
+  ] = useRejectLeavesMutation();
+
+  /* ============================================================
+     CLEAR FILTERS
+     ============================================================ */
+
+  const clearAllFilters = () => {
+    setSearch("");
+    setFilters({});
+    setShowMoreMenu(false);
+    setMoreMenuPosition(null);
     setSelectedIds(new Set());
   };
-  const switchMonth = (m: LeaveApprovalMonthType) => {
-    setMonthType(m);
+
+  /* ============================================================
+     VIEW CHANGE
+     ============================================================ */
+
+  const switchView = (
+    value: LeaveApprovalViewType,
+  ) => {
+    setViewType(value);
     setSelectedIds(new Set());
   };
 
-  const toggleRow = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  /* ============================================================
+     MONTH CHANGE
+     ============================================================ */
+
+  const switchMonth = (
+    value: LeaveApprovalMonthType,
+  ) => {
+    setMonthType(value);
+    setSelectedIds(new Set());
   };
 
-  const toggleAll = () => {
-    if (!rows) return;
-    setSelectedIds((prev) =>
-      prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.id))
+  /* ============================================================
+     SEARCH CHANGE
+     ============================================================ */
+
+  const handleSearchChange = (
+    value: string,
+  ) => {
+    setSearch(value);
+    setSelectedIds(new Set());
+  };
+
+  /* ============================================================
+     SELECTION
+     ============================================================ */
+
+  const handleSelectionChange = (
+    ids: number[],
+  ) => {
+    setSelectedIds(new Set(ids));
+  };
+
+  const hasSelection =
+    selectedIds.size > 0;
+
+  /* ============================================================
+     APPROVE
+     ============================================================ */
+
+  const handleApprove = async () => {
+    if (!hasSelection) {
+      return;
+    }
+
+    try {
+      await approveLeaves({
+        leaveApplicationIds:
+          Array.from(selectedIds),
+      }).unwrap();
+
+      setSelectedIds(new Set());
+    } catch (error) {
+      console.error(
+        "Failed to approve leave applications:",
+        error,
+      );
+    }
+  };
+
+  /* ============================================================
+     REJECT
+     ============================================================ */
+
+  const handleReject = async () => {
+    if (!hasSelection) {
+      return;
+    }
+
+    try {
+      await rejectLeaves({
+        leaveApplicationIds:
+          Array.from(selectedIds),
+      }).unwrap();
+
+      setSelectedIds(new Set());
+    } catch (error) {
+      console.error(
+        "Failed to reject leave applications:",
+        error,
+      );
+    }
+  };
+
+  /* ============================================================
+     EXCEL EXPORT
+     ============================================================ */
+
+  const handleExcelDownload = () => {
+    const headers = [
+      "Approver Name",
+      "Employee Id",
+      "Employee Name",
+      "Leave Name",
+      "Date",
+      "Days",
+    ];
+    const exportRows = (rows ?? []).map((row) => [
+      row.approverName,
+      row.employeeId,
+      row.employeeName,
+      row.leaveName,
+      row.date,
+      row.days,
+    ]);
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...exportRows]);
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Leave Approval",
+    );
+
+    XLSX.writeFile(
+      workbook,
+      `leave-approval-${viewType}-${monthType}.xlsx`,
     );
   };
 
-  const hasSelection = selectedIds.size > 0;
+  /* ============================================================
+     EMPTY MESSAGE
+     ============================================================ */
 
-  const handleApprove = async () => {
-    if (!hasSelection) return;
-    await approveLeaves({ leaveApplicationIds: Array.from(selectedIds) });
-    setSelectedIds(new Set());
-  };
+  const emptyMessage =
+    useMemo(
+      () =>
+        viewType === "applied"
+          ? "No Data Found in - Leave approval"
+          : "No Data Found in - Leave Cancellation",
+      [viewType],
+    );
 
-  const handleReject = async () => {
-    if (!hasSelection) return;
-    await rejectLeaves({ leaveApplicationIds: Array.from(selectedIds) });
-    setSelectedIds(new Set());
-  };
-
-  const handleExcelDownload = () => {
-    const exportRows = (rows ?? []).map((r) => ({
-      "Approver Name": r.approverName,
-      "Employee Id": r.employeeId,
-      "Employee Name": r.employeeName,
-      "Leave Name": r.leaveName,
-      Date: r.date,
-      Days: r.days,
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(exportRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Leave Approval");
-    XLSX.writeFile(workbook, `leave-approval-${viewType}-${monthType}.xlsx`);
-  };
-
-  const emptyMessage = useMemo(
-    () =>
-      viewType === "applied"
-        ? "No Data Found in - Leave approval"
-        : "No Data Found in - Leave Cancellation",
-    [viewType]
-  );
+  /* ============================================================
+     RENDER
+     ============================================================ */
 
   return (
-    <div className="rounded-xl border border-slate-100 bg-white shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-        <h3 className="border-b-2 border-blue-500 pb-2 text-sm font-semibold text-blue-600">
-          Leave Approval
-        </h3>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleApprove}
-            disabled={!hasSelection || isApproving}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium ${
-              hasSelection
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "cursor-not-allowed bg-slate-100 text-slate-400"
-            }`}
-          >
-            <Check size={14} /> Approve
-          </button>
-          <button
-            onClick={handleReject}
-            disabled={!hasSelection || isRejecting}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium ${
-              hasSelection
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "cursor-not-allowed bg-slate-100 text-slate-400"
-            }`}
-          >
-            <XIcon size={14} /> Reject
-          </button>
-          <button
-            onClick={handleExcelDownload}
-            title="Download Excel"
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
-          >
-            X
-          </button>
-          <button title="Filter" className="text-slate-400 hover:text-slate-600">
-            <Filter size={18} />
-          </button>
-          <button title="History" className="text-slate-400 hover:text-slate-600">
-            <History size={18} />
-          </button>
+    <div className="w-full bg-[#F4F6FA] font-[Urbanist]">
+
+      {/* ======================================================
+          HEADER
+          ====================================================== */}
+
+      <div className="min-w-0 overflow-x-auto rounded-[10px] border border-[#df8d7c] bg-[#fff7f5] px-3 py-3 shadow-[0_1px_3px_rgba(15,23,42,0.04)] [scrollbar-color:#c58b7f_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#c58b7f] xl:overflow-x-visible sm:px-5">
+        <div className="flex min-h-[48px] w-max min-w-full flex-nowrap items-center justify-between gap-3 xl:w-full">
+
+          {/* TITLE */}
+
+          <h3 className="inline-flex min-h-[46px] w-fit max-w-full items-center rounded-[9px] border border-[#df8d7c] bg-white px-4 py-2 text-lg font-bold leading-7 text-[#9a5547] shadow-sm sm:text-[22px]">
+            Leave Approval
+          </h3>
+
+          {/* ACTIONS */}
+
+          <div className="flex shrink-0 flex-nowrap items-center gap-1">
+
+            {/* APPROVE */}
+
+            <button
+              type="button"
+              onClick={handleApprove}
+              disabled={
+                !hasSelection ||
+                isApproving
+              }
+              className={`h-12 rounded-l-lg px-5 text-[15px] font-medium ${
+                hasSelection
+                  ? "bg-[#914f3f] text-white hover:bg-[#7f4234]"
+                  : "cursor-not-allowed bg-[#E5E5E5] text-[#AAAAAA]"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Check size={15} />
+
+                {isApproving
+                  ? "Approving..."
+                  : "Approve"}
+              </span>
+            </button>
+
+            {/* REJECT */}
+
+            <button
+              type="button"
+              onClick={handleReject}
+              disabled={
+                !hasSelection ||
+                isRejecting
+              }
+              className={`h-12 border-l border-white/50 px-5 text-[15px] font-medium ${
+                hasSelection
+                  ? "bg-[#EF4444] text-white hover:bg-[#DC2626]"
+                  : "cursor-not-allowed bg-[#E5E5E5] text-[#AAAAAA]"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <XIcon size={15} />
+
+                {isRejecting
+                  ? "Rejecting..."
+                  : "Reject"}
+              </span>
+            </button>
+
+            {/* EXCEL */}
+
+            <button
+              type="button"
+              onClick={
+                handleExcelDownload
+              }
+              title="Download Excel"
+              className="ml-4 flex h-10 w-10 items-center justify-center text-[#378B35] transition hover:scale-105"
+            >
+              <FileSpreadsheet
+                size={23}
+                strokeWidth={2}
+              />
+            </button>
+
+            {/* FILTER */}
+
+            <button
+              type="button"
+              title="Filter"
+              onClick={() => setShowFilters(true)}
+              className="ml-3 flex h-10 w-10 items-center justify-center text-[#a45a4a] transition hover:text-[#914f3f]"
+            >
+              <Filter
+                size={22}
+                strokeWidth={2}
+              />
+            </button>
+
+            {/* HISTORY */}
+
+            <button
+              type="button"
+              title="History"
+              className="ml-2 flex h-10 w-10 items-center justify-center text-[#a45a4a] transition hover:text-[#914f3f]"
+            >
+              <ClockFading
+                size={22}
+                strokeWidth={2}
+              />
+            </button>
+
+          </div>
         </div>
       </div>
 
-      {/* Applied Leave / Leave Cancellation pills */}
-      <div className="border-b border-slate-100 px-5 py-4">
-        <div className="inline-flex rounded-lg bg-slate-50 p-1">
-          <button
-            onClick={() => switchView("applied")}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium ${
-              viewType === "applied" ? "bg-blue-100 text-blue-600" : "text-slate-500"
-            }`}
-          >
-            Applied Leave
-          </button>
-          <button
-            onClick={() => switchView("cancellation")}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium ${
-              viewType === "cancellation" ? "bg-blue-100 text-blue-600" : "text-slate-500"
-            }`}
-          >
-            Leave Cancellation
-          </button>
-        </div>
+      {/* ======================================================
+          APPLIED LEAVE / LEAVE CANCELLATION
+          ====================================================== */}
+
+      <div className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <ForceLeaveApprovalTabs
+          activeTab={viewType}
+          onTabChange={switchView}
+        />
       </div>
 
-      {/* Current / Non-Current Month pills */}
-      <div className="flex items-center gap-3 bg-slate-50 px-5 py-3">
+      {/* ======================================================
+          CURRENT / NON-CURRENT MONTH
+          ====================================================== */}
+
+      <div className="flex flex-wrap items-center gap-2 py-4 sm:py-5">
+
+        {/* CURRENT MONTH */}
+
         <button
-          onClick={() => switchMonth("current")}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium ${
-            monthType === "current" ? "bg-blue-100 text-blue-600" : "bg-slate-200 text-slate-600"
+          type="button"
+          onClick={() =>
+            switchMonth("current")
+          }
+          className={`rounded-full px-4 py-2 text-[15px] font-medium transition ${
+            monthType === "current"
+              ? "bg-[#914f3f] text-white"
+              : "bg-[#E1E3E7] text-[#172033] hover:bg-[#f8e4df] hover:text-[#9a5547]"
           }`}
         >
           Current Month Details
         </button>
+
+        {/* NON-CURRENT MONTH */}
+
         <button
-          onClick={() => switchMonth("non-current")}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium ${
-            monthType === "non-current" ? "bg-blue-100 text-blue-600" : "bg-slate-200 text-slate-600"
+          type="button"
+          onClick={() =>
+            switchMonth(
+              "non-current",
+            )
+          }
+          className={`rounded-full px-4 py-2 text-[15px] font-medium transition ${
+            monthType === "non-current"
+              ? "bg-[#914f3f] text-white"
+              : "bg-[#E1E3E7] text-[#172033] hover:bg-[#f8e4df] hover:text-[#9a5547]"
           }`}
         >
           Non-Current Month Details
         </button>
+
       </div>
 
-      {/* Filter bar */}
-      <div className="px-5 py-4">
-        <FilterBar
-          variant="chip"
-          fieldOptions={fieldOptions}
-          values={filters}
-          onChange={handleFilterChange}
-          onClearAll={clearAllFilters}
-        />
-      </div>
+      {/* ======================================================
+          FILTER BAR
+          ====================================================== */}
 
-      {/* Table / empty state */}
-      {isFetching ? (
-        <div className="py-16 text-center text-slate-400">Loading…</div>
-      ) : !rows || rows.length === 0 ? (
-        <EmptyState message={emptyMessage} />
-      ) : (
-        <div className="overflow-x-auto px-5 pb-5">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50 text-left text-slate-600">
-                <th className="px-3 py-2">Approver Name</th>
-                <th className="px-3 py-2">Employee Id</th>
-                <th className="px-3 py-2">Employee Name</th>
-                <th className="px-3 py-2">Leave Name</th>
-                <th className="px-3 py-2">Date</th>
-                <th className="px-3 py-2">Days</th>
-                <th className="px-3 py-2 text-right">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.size === rows.length && rows.length > 0}
-                    onChange={toggleAll}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-b border-slate-50">
-                  <td className="px-3 py-3 font-medium text-blue-600">{row.approverName}</td>
-                  <td className="px-3 py-3 text-slate-500">{row.employeeId}</td>
-                  <td className="px-3 py-3 text-slate-700">{row.employeeName}</td>
-                  <td className="px-3 py-3 text-slate-700">{row.leaveName}</td>
-                  <td className="px-3 py-3 text-slate-500">{row.date}</td>
-                  <td className="px-3 py-3 text-slate-500">{row.days}</td>
-                  <td className="px-3 py-3 text-right">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(row.id)}
-                      onChange={() => toggleRow(row.id)}
-                      className="h-4 w-4 rounded border-slate-300"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className={`relative min-w-0 overflow-x-auto rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm [scrollbar-color:#c58b7f_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#c58b7f] xl:overflow-x-visible ${showFilters ? "" : "hidden"}`}>
+
+        <div className="min-w-0 font-[Urbanist]">
+        <div className="flex min-h-[46px] w-max min-w-full flex-nowrap items-center gap-4 xl:w-full xl:flex-wrap">
+
+          {/* ==================================================
+              SEARCH
+              ================================================== */}
+
+          <div className="flex w-[220px] shrink-0 items-center">
+
+            <Search
+              size={21}
+              strokeWidth={1.8}
+              className="mr-2.5 shrink-0 text-[#8FA0C2]"
+            />
+
+            <input
+              type="text"
+              value={search}
+              onChange={(event) =>
+                handleSearchChange(
+                  event.target.value,
+                )
+              }
+              placeholder="Start Typing..."
+              className="
+                w-full
+                border-0
+                bg-transparent
+                text-[15px]
+                font-medium
+                text-[#27364F]
+                outline-none
+                placeholder:text-[#C8CFDA]
+              "
+            />
+
+          </div>
+
+          {/* ==================================================
+              ADD FILTER
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            <span className="text-[23px] font-light leading-none">
+              +
+            </span>
+
+            Add Filter
+          </button>
+
+          {/* ==================================================
+              QUERY
+              ================================================== */}
+
+          <LeaveQueryFilter value={search} onChange={handleSearchChange} />
+
+          {/* ==================================================
+              BRANCH
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            Branch
+
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+            />
+          </button>
+
+          {/* ==================================================
+              SALARY STRUCTURE
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            Salary Structure
+
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+            />
+          </button>
+
+          {/* ==================================================
+              LEAVE
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            Leave
+
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+            />
+          </button>
+
+          {/* ==================================================
+              ATTENDANCE
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            Attendance
+
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+            />
+          </button>
+
+          {/* ==================================================
+              DESIGNATION
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            Designation
+
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+            />
+          </button>
+
+          {/* ==================================================
+              EMP STATUS
+              ================================================== */}
+
+          <button
+            type="button"
+            className="
+              flex
+              shrink-0
+              items-center
+              gap-1.5
+              whitespace-nowrap
+              text-[15px]
+              font-medium
+              text-[#27364F]
+            "
+          >
+            Emp Status
+
+            <ChevronDown
+              size={16}
+              strokeWidth={2}
+            />
+          </button>
+
+          {/* ==================================================
+              MORE
+              ================================================== */}
+
+          <div className="relative shrink-0">
+
+            <button
+              type="button"
+              aria-label="More"
+              onClick={(event) => {
+                if (showMoreMenu) {
+                  setShowMoreMenu(false);
+                  setMoreMenuPosition(null);
+                  return;
+                }
+                const rect = event.currentTarget.getBoundingClientRect();
+                setMoreMenuPosition({
+                  top: Math.min(rect.bottom + 8, Math.max(8, window.innerHeight - 100)),
+                  left: Math.max(8, Math.min(rect.right - 168, window.innerWidth - 168)),
+                });
+                setShowMoreMenu(true);
+              }}
+              className="
+                flex
+                h-8
+                w-8
+                items-center
+                justify-center
+                text-[#91A1C4]
+              "
+            >
+              <MoreVertical
+                size={20}
+              />
+            </button>
+
+            {showMoreMenu && moreMenuPosition && createPortal(
+              <div style={{ top: moreMenuPosition.top, left: moreMenuPosition.left }} className="fixed z-[100] w-[160px] rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+
+                <span className="block px-3 py-2 text-[13px] text-slate-400">
+                  More filters
+                </span>
+
+              </div>,
+              document.body,
+            )}
+
+          </div>
+
+          {/* ==================================================
+              CLEAR
+              ================================================== */}
+
+          <button
+            type="button"
+            aria-label="Close filters"
+            title="Close filters"
+            onClick={() => {
+              clearAllFilters();
+              setShowFilters(false);
+            }}
+            className="
+              flex
+              h-8
+              w-8
+              shrink-0
+              cursor-pointer
+              items-center
+              justify-center
+              text-red-500
+              transition
+              hover:text-red-600
+            "
+          >
+            <XIcon size={21} />
+          </button>
+
         </div>
-      )}
+
+        </div>
+      </div>
+
+      {/* ======================================================
+          TABLE / EMPTY STATE
+          ====================================================== */}
+
+      <div className="mt-4 min-w-0 rounded-xl border border-slate-200 bg-white px-2 py-3 shadow-sm sm:px-4 sm:py-4">
+
+        {isFetching ? (
+
+          <div className="flex min-h-[300px] items-center justify-center">
+
+            <span className="text-[14px] text-slate-400">
+              Loading...
+            </span>
+
+          </div>
+
+        ) : (
+
+          <>
+            <ForceLeaveApprovalTable
+              rows={rows ?? []}
+              selectedIds={Array.from(
+                selectedIds,
+              )}
+              onSelectionChange={
+                handleSelectionChange
+              }
+              loading={false}
+            />
+
+            {(!rows ||
+              rows.length === 0) && (
+              <div className="pt-5">
+
+                <EmptyState
+                  message={
+                    emptyMessage
+                  }
+                />
+
+              </div>
+            )}
+          </>
+        )}
+
+      </div>
+
     </div>
   );
 }

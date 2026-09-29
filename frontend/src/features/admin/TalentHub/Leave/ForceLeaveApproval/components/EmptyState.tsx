@@ -1,4 +1,4 @@
-import { HelpCircle, Monitor } from "lucide-react";
+import noDataImage from "@/assets/images/no-data.png";
 
 interface EmptyStateProps {
   message: string;
@@ -7,10 +7,11 @@ interface EmptyStateProps {
 export default function EmptyState({ message }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-20">
-      <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-slate-50">
-        <Monitor size={40} className="text-slate-300" />
-        <HelpCircle size={18} className="absolute -left-2 top-2 text-pink-300" />
-      </div>
+      <img
+        src={noDataImage}
+        alt="No data found"
+        className="h-[200px] w-[200px] object-contain sm:h-[240px] sm:w-[240px] lg:h-[300px] lg:w-[300px]"
+      />
       <p className="text-sm font-medium text-rose-400">{message}</p>
     </div>
   );

@@ -48,8 +48,8 @@ export default function LeaveBehaviorPage() {
   const goBack = () => navigate(`/${domain}/admin/talent-hub/leave/settings/policy`);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full min-w-0">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div /> {/* left side reserved for breadcrumb if needed */}
         <div className="flex items-center gap-2">
           <button
@@ -79,7 +79,7 @@ export default function LeaveBehaviorPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-4">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
         {/* Left sub-nav */}
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-3">
           <div className="flex items-center gap-2 px-2 py-2 mb-2">
@@ -117,12 +117,12 @@ export default function LeaveBehaviorPage() {
         </div>
 
         {/* Right content */}
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+        <div className="min-w-0 rounded-xl border border-slate-100 bg-white p-3 shadow-sm sm:p-5">
           {isLoading ? (
             <div className="flex items-center justify-center py-20 text-slate-400 text-sm">Loading...</div>
           ) : activeTab === "behavior" ? (
             <>
-              <div className="flex items-center gap-6 pb-4 mb-4 border-b border-slate-100">
+              <div className="mb-4 flex flex-wrap items-end gap-x-6 gap-y-3 border-b border-slate-100 pb-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Effective From</label>
                   <select
@@ -138,7 +138,7 @@ export default function LeaveBehaviorPage() {
                   </select>
                 </div>
 
-                <label className="flex items-center gap-2 text-sm text-slate-600 mt-5">
+                <label className="flex items-center gap-2 text-sm text-slate-600">
                   <button
                     type="button"
                     role="switch"
@@ -157,7 +157,7 @@ export default function LeaveBehaviorPage() {
                   Active
                 </label>
 
-                <label className="flex items-center gap-2 text-sm text-slate-600 mt-5">
+                <label className="flex items-center gap-2 text-sm text-slate-600">
                   <button
                     type="button"
                     role="switch"
@@ -179,7 +179,7 @@ export default function LeaveBehaviorPage() {
 
               <div className="mb-4">
                 <p className="text-sm font-semibold text-slate-700 mb-3">Day Type</p>
-                <div className="flex items-center gap-6">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                   {(["full", "half", "quarter"] as const).map((type) => (
                     <label key={type} className="flex items-center gap-2 text-sm text-slate-600">
                       <input
