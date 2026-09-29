@@ -71,6 +71,36 @@ interface EmployeeLocationInfo {
   branchId: number | null;
 }
 
+// What the location card under the camera shows. Purely informational —
+// nothing here changes whether a punch is accepted or rejected.
+export interface LocationCheckResult {
+  enabled: boolean;
+  // Closest approved office geofence: how far the employee is from its
+  // centre, and its radius. Outside by (distanceMeters - radiusMeters).
+  // bearingDegrees: the direction of the employee from the fence centre
+  // (0 = north, 90 = east), so the on-screen radar can put the dot in the
+  // right place.
+  office: {
+    fenceId: number;
+    distanceMeters: number;
+    radiusMeters: number;
+    bearingDegrees: number;
+  } | null;
+  // WFH's 300m reference: today's first punch-in. null unless
+  // EXPOSE_WFH_COMPARISON is on — employees must not see this.
+  wfh:
+    | {
+        status: 'compared';
+        distanceMeters: number;
+        thresholdMeters: number;
+        bearingDegrees: number;
+      }
+    | { status: 'no-punch-in-today' }
+    | { status: 'first-punch-in-not-wfh' }
+    | { status: 'no-coordinates' }
+    | null;
+}
+
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -91,6 +121,16 @@ export class AttendanceService {
   // (both currently true and DO block — this one is deliberately kept
   // flag-only per an explicit decision, not an oversight).
   private readonly WFH_SELF_DISTANCE_THRESHOLD_METERS = 300;
+
+  // The location card under the camera (GET /employee/attendance/location-check)
+  // is a permanent feature: it shows the employee where they are and, for
+  // Office, how far they are from the approved location.
+  //
+  // The WFH comparison (distance from that day's first punch-in) must stay
+  // invisible to employees, so the server does NOT send it unless this is
+  // switched on. Turn it on only while you test the 300m check yourself;
+  // leave it false in production.
+  private readonly EXPOSE_WFH_COMPARISON = false;
 
   // Mst_Status IDs, confirmed against the real DB schema (2026-09-24).
   // Only WFH has real logic below right now — Remote and ClientSite
@@ -241,12 +281,10 @@ export class AttendanceService {
     const crossesMidnight = await this.employeeShiftCrossesMidnight(employeeId);
     if (crossesMidnight) return true;
 
-    const now = new Date();
-    const isSameCalendarDay =
-      last.timestamp.getFullYear() === now.getFullYear() &&
-      last.timestamp.getMonth() === now.getMonth() &&
-      last.timestamp.getDate() === now.getDate();
-    return isSameCalendarDay;
+    // "Today" is decided by the database's own clock (the same clock that
+    // stamps RawPunches), not this server's, so it stays correct no matter
+    // which timezone the backend is deployed in.
+    return last.isToday;
   }
 
   private async employeeShiftCrossesMidnight(
@@ -285,6 +323,9 @@ export class AttendanceService {
     punchMode?: number,
   ): Promise<PunchResult> {
     if (latitude === undefined || longitude === undefined) {
+      this.logger.warn(
+        `Punch rejected (no location sent) for ${employeeId} - mode: ${punchMode ?? 'not sent'}`,
+      );
       return {
         success: false,
         message:
@@ -292,9 +333,13 @@ export class AttendanceService {
       };
     }
 
-    if (accuracy !== undefined && accuracy > this.ACCURACY_THRESHOLD_METERS) {
+    if (
+      accuracy === undefined ||
+      Number.isNaN(accuracy) ||
+      accuracy > this.ACCURACY_THRESHOLD_METERS
+    ) {
       this.logger.warn(
-        `Low-confidence location on punch for ${employeeId} - accuracy: ${accuracy}m (threshold: ${this.ACCURACY_THRESHOLD_METERS}m), lat: ${latitude}, lon: ${longitude}`,
+        `Punch rejected (location accuracy) for ${employeeId} - accuracy: ${accuracy === undefined ? 'not sent' : accuracy + 'm'} (threshold: ${this.ACCURACY_THRESHOLD_METERS}m), lat: ${latitude}, lon: ${longitude}`,
       );
       if (this.ACCURACY_CHECK_REQUIRED) {
         return {
@@ -321,6 +366,7 @@ export class AttendanceService {
     }
 
     if (verify.noVectorOnFile) {
+      this.logger.warn(`Punch rejected (no face registered) for ${employeeId}`);
       return {
         success: false,
         message:
@@ -336,7 +382,10 @@ export class AttendanceService {
     // below instead (self-referential, against that session's own
     // punch-in location, not the office).
     const geoFenceId =
-      !isWfhPunch && latitude !== undefined && longitude !== undefined && locationInfo
+      !isWfhPunch &&
+      latitude !== undefined &&
+      longitude !== undefined &&
+      locationInfo
         ? await this.findMatchingGeoFence(
             locationInfo.companyId,
             latitude,
@@ -345,6 +394,9 @@ export class AttendanceService {
         : null;
 
     if (this.GEOFENCE_REQUIRED && !isWfhPunch && geoFenceId === null) {
+      this.logger.warn(
+        `Punch rejected (outside approved location) for ${employeeId} - lat: ${latitude}, lon: ${longitude}, accuracy: ${accuracy}m, mode: ${punchMode ?? 'not sent'}`,
+      );
       await this.recordVerificationAttempt(
         employeeId,
         verify,
@@ -427,39 +479,36 @@ export class AttendanceService {
     };
   }
 
-  // NEW — compares this WFH punch-OUT's coordinates against the most
-  // recent WFH punch already on record for this employee (their punch-IN
-  // for this same session). Flag only — logs a warning, never blocks or
-  // affects the punch's success in any way. Deliberately does NOT try to
-  // scope "same session" by date/shift — just "their most recent WFH
-  // punch, period" — mirroring the same simple, no-date-filter approach
-  // getLastPunch() already uses for the general punch-state logic.
+  // Compares this WFH punch-OUT's coordinates against TODAY'S FIRST
+  // punch-IN (the morning punch-in). Flag only — logs a warning, never
+  // blocks or affects the punch's success in any way.
+  //
+  // The comparison only happens if that first punch-in of the day was
+  // itself a WFH punch. If the day started in another mode (e.g. Office
+  // in, WFH out), or the punch-in has no coordinates, or there is no
+  // punch-in today at all, there is nothing to compare against — it
+  // skips quietly and the punch-out just goes through.
   private async checkWfhSelfDistance(
     employeeId: string,
     currentLat: number,
     currentLon: number,
   ): Promise<void> {
     try {
-      const pool = await this.databaseService.connect();
-      const result = await pool
-        .request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .input('PunchMode', sql.Int, AttendanceService.PUNCH_MODE.WFH).query(`
-          SELECT TOP 1 Latitude, Longitude
-          FROM RawPunches
-          WHERE EmployeeID = @EmployeeID
-            AND PunchMode = @PunchMode
-            AND Latitude IS NOT NULL AND Longitude IS NOT NULL
-          ORDER BY PunchTimestamp DESC
-        `);
-      const row = result.recordset?.[0];
-      if (!row) return; // no prior WFH punch-in on record — nothing to compare against
+      const first = await this.getTodaysFirstPunchIn(employeeId);
+      if (
+        !first ||
+        first.punchMode !== AttendanceService.PUNCH_MODE.WFH ||
+        first.latitude === null ||
+        first.longitude === null
+      ) {
+        return;
+      }
 
       const distance = AttendanceService.haversineMeters(
         currentLat,
         currentLon,
-        Number(row.Latitude),
-        Number(row.Longitude),
+        first.latitude,
+        first.longitude,
       );
 
       if (distance > this.WFH_SELF_DISTANCE_THRESHOLD_METERS) {
@@ -472,6 +521,169 @@ export class AttendanceService {
         `checkWfhSelfDistance failed for ${employeeId} - ${(err as Error).message}`,
       );
     }
+  }
+
+  // Today's first punch-IN for this employee — the reference point for the
+  // WFH 300m check. Shared by checkWfhSelfDistance (the real check) and
+  // getLocationCheck (the on-screen display), so the number an employee
+  // sees comes from exactly the same row the check uses.
+  private async getTodaysFirstPunchIn(employeeId: string): Promise<{
+    punchMode: number | null;
+    latitude: number | null;
+    longitude: number | null;
+  } | null> {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
+          SELECT TOP 1 PunchMode, Latitude, Longitude
+          FROM RawPunches
+          WHERE EmployeeID = @EmployeeID
+            AND PunchType = 60
+            AND PunchTimestamp >= CAST(GETDATE() AS DATE)
+            AND PunchTimestamp <  DATEADD(DAY, 1, CAST(GETDATE() AS DATE))
+          ORDER BY PunchTimestamp ASC
+        `);
+      const row = result.recordset?.[0];
+      if (!row) return null;
+      return {
+        punchMode: row.PunchMode ?? null,
+        latitude: row.Latitude == null ? null : Number(row.Latitude),
+        longitude: row.Longitude == null ? null : Number(row.Longitude),
+      };
+    } catch (err) {
+      this.logger.error(
+        `getTodaysFirstPunchIn failed for ${employeeId} - ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  // The approved office geofence the employee is closest to, judged by how
+  // far past its edge they are (distance - radius), so "inside" here means
+  // exactly what findMatchingGeoFence means by inside.
+  private async getNearestGeoFence(
+    companyId: number,
+    latitude: number,
+    longitude: number,
+  ): Promise<{
+    fenceId: number;
+    distanceMeters: number;
+    radiusMeters: number;
+    bearingDegrees: number;
+  } | null> {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool.request().input('CompanyID', sql.Int, companyId)
+        .query(`
+          SELECT ID, Latitude, Longitude, RadiusMeters
+          FROM GeoFences
+          WHERE CompanyID = @CompanyID AND IsActive = 1
+        `);
+
+      let best: {
+        fenceId: number;
+        distance: number;
+        radius: number;
+        margin: number;
+        bearing: number;
+      } | null = null;
+
+      for (const fence of result.recordset ?? []) {
+        if (fence.RadiusMeters == null) continue;
+        const distance = AttendanceService.haversineMeters(
+          latitude,
+          longitude,
+          Number(fence.Latitude),
+          Number(fence.Longitude),
+        );
+        const radius = Number(fence.RadiusMeters);
+        const margin = distance - radius;
+        if (!best || margin < best.margin) {
+          best = {
+            fenceId: fence.ID,
+            distance,
+            radius,
+            margin,
+            bearing: AttendanceService.bearingDegrees(
+              Number(fence.Latitude),
+              Number(fence.Longitude),
+              latitude,
+              longitude,
+            ),
+          };
+        }
+      }
+
+      return best
+        ? {
+            fenceId: best.fenceId,
+            distanceMeters: Math.round(best.distance),
+            radiusMeters: best.radius,
+            bearingDegrees: Math.round(best.bearing),
+          }
+        : null;
+    } catch (err) {
+      this.logger.error(
+        `getNearestGeoFence failed for company ${companyId} - ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  // Backs the coordinates/distance panel in the punch modal. Read-only:
+  // it never records anything and never affects a punch.
+  async getLocationCheck(
+    employeeId: string,
+    latitude: number,
+    longitude: number,
+  ): Promise<LocationCheckResult> {
+    const locationInfo = await this.resolveEmployeeLocation(employeeId);
+    const office = locationInfo
+      ? await this.getNearestGeoFence(
+          locationInfo.companyId,
+          latitude,
+          longitude,
+        )
+      : null;
+
+    // The WFH comparison is only worked out — and only sent — while
+    // EXPOSE_WFH_COMPARISON is on. Otherwise it is never even looked up.
+    let wfh: LocationCheckResult['wfh'] = null;
+    if (this.EXPOSE_WFH_COMPARISON) {
+      const first = await this.getTodaysFirstPunchIn(employeeId);
+      if (!first) {
+        wfh = { status: 'no-punch-in-today' };
+      } else if (first.punchMode !== AttendanceService.PUNCH_MODE.WFH) {
+        wfh = { status: 'first-punch-in-not-wfh' };
+      } else if (first.latitude === null || first.longitude === null) {
+        wfh = { status: 'no-coordinates' };
+      } else {
+        wfh = {
+          status: 'compared',
+          distanceMeters: Math.round(
+            AttendanceService.haversineMeters(
+              latitude,
+              longitude,
+              first.latitude,
+              first.longitude,
+            ),
+          ),
+          thresholdMeters: this.WFH_SELF_DISTANCE_THRESHOLD_METERS,
+          bearingDegrees: Math.round(
+            AttendanceService.bearingDegrees(
+              first.latitude,
+              first.longitude,
+              latitude,
+              longitude,
+            ),
+          ),
+        };
+      }
+    }
+
+    return { enabled: true, office, wfh };
   }
 
   private static readonly PUNCH_TYPE_CODE: Record<'IN' | 'OUT', string> = {
@@ -488,13 +700,17 @@ export class AttendanceService {
 
   private async getLastPunch(
     employeeId: string,
-  ): Promise<{ typeCode: number; timestamp: Date } | null> {
+  ): Promise<{ typeCode: number; timestamp: Date; isToday: boolean } | null> {
     try {
       const pool = await this.databaseService.connect();
       const result = await pool
         .request()
         .input('EmployeeID', sql.VarChar(25), employeeId).query(`
-          SELECT TOP 1 PunchType, PunchTimestamp
+          SELECT TOP 1
+            PunchType,
+            PunchTimestamp,
+            CASE WHEN CAST(PunchTimestamp AS DATE) = CAST(GETDATE() AS DATE)
+                 THEN 1 ELSE 0 END AS IsToday
           FROM RawPunches
           WHERE EmployeeID = @EmployeeID
           ORDER BY PunchTimestamp DESC
@@ -504,6 +720,7 @@ export class AttendanceService {
       return {
         typeCode: row.PunchType,
         timestamp: new Date(row.PunchTimestamp),
+        isToday: row.IsToday === 1,
       };
     } catch (err) {
       this.logger.error(
@@ -759,6 +976,23 @@ export class AttendanceService {
       );
       return null;
     }
+  }
+
+  // Compass direction from point 1 to point 2, in degrees: 0 = north,
+  // 90 = east, 180 = south, 270 = west.
+  private static bearingDegrees(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const dLon = toRad(lon2 - lon1);
+    const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+    const x =
+      Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+      Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
   }
 
   private static haversineMeters(

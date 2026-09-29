@@ -4,6 +4,7 @@ import {
   Get,
   Req,
   Body,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
@@ -33,8 +34,10 @@ interface PunchLocationBody {
   latitude?: string;
   longitude?: string;
   accuracy?: string;
-  punchMode?: string; // NEW — sent as a stringified Mst_Status.ID (69/70/71/72),
-                       // not a text label — see PUNCH_MODE_ID in useAttendance.ts
+  // The numeric Mst_Status.ID (69=Office, 70=WFH, 71=Remote, 72=ClientSite),
+  // sent as text like everything else in this multipart body — see
+  // PUNCH_MODE_ID in useAttendance.ts.
+  punchMode?: string;
 }
 
 // Small, dependency-free parse — just enough to produce a friendly
@@ -53,12 +56,11 @@ function parseDeviceLabel(userAgent: string | undefined): string {
   else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/'))
     browser = 'Safari';
 
-  let os = 'Unknown OS';
+    let os = 'Unknown OS';
   if (userAgent.includes('Windows')) os = 'Windows';
+  else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
   else if (userAgent.includes('Mac OS X')) os = 'macOS';
   else if (userAgent.includes('Android')) os = 'Android';
-  else if (userAgent.includes('iPhone') || userAgent.includes('iPad'))
-    os = 'iOS';
   else if (userAgent.includes('Linux')) os = 'Linux';
 
   return `${browser}, ${os}`;
@@ -122,14 +124,12 @@ export class AttendanceController {
       body.accuracy !== undefined ? Number(body.accuracy) : undefined;
     const hasValidAccuracy = accuracy !== undefined && !Number.isNaN(accuracy);
 
-
-
-    // NEW — punchMode is the numeric Mst_Status.ID, same defensive
-    // parse pattern as everything else in this body: malformed/absent
+    // punchMode — same defensive parse as the rest: malformed or absent
     // just becomes undefined, never throws at this layer.
-    const punchMode = body.punchMode !== undefined ? Number(body.punchMode) : undefined;
-    const hasValidPunchMode = punchMode !== undefined && !Number.isNaN(punchMode);
-
+    const punchMode =
+      body.punchMode !== undefined ? Number(body.punchMode) : undefined;
+    const hasValidPunchMode =
+      punchMode !== undefined && !Number.isNaN(punchMode);
 
     const device = parseDeviceLabel(req.headers['user-agent']);
 
@@ -161,6 +161,27 @@ export class AttendanceController {
   async registrationStatus(@Req() req: any) {
     const employeeId = req.user.employeeId;
     return this.attendanceService.getRegistrationStatus(employeeId);
+  }
+
+  // Development aid: powers the coordinates/distance panel in the punch
+  // modal. Read-only. See LOCATION_DEBUG_ENABLED in attendance.service.ts.
+  @UseGuards(JwtAuthGuard)
+  @Get('location-check')
+  async locationCheck(
+    @Req() req: any,
+    @Query('latitude') latitude?: string,
+    @Query('longitude') longitude?: string,
+  ) {
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    if (!latitude || !longitude || Number.isNaN(lat) || Number.isNaN(lon)) {
+      throw new BadRequestException('latitude and longitude are required.');
+    }
+    return this.attendanceService.getLocationCheck(
+      req.user.employeeId,
+      lat,
+      lon,
+    );
   }
 
   // REMOVED — today-summary endpoint. That data now comes from the

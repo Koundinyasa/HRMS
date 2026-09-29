@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Camera,
   CameraOff,
@@ -9,14 +9,27 @@ import {
   MapPin,
   Home,
   Building2,
-  ChevronRight,
   Pencil,
+  Sunrise,
+  Sunset,
 } from "lucide-react";
 import { useAttendance, type PunchMode } from "../hooks/useAttendance";
 import {
   useLazyGetFaceStatusQuery,
   useLazyGetRecentPunchesQuery,
 } from "../api/attendanceApi";
+import {
+  useLazyGetLocationCheckQuery,
+  type LocationCheckResponse,
+} from "../api/locationCheckApi";
+import { useSkyTheme } from "../sky/useSkyTheme";
+import {
+  HomeScene,
+  LocationReadout,
+  OfficeScene,
+  SkyHeader,
+  type Readout,
+} from "../sky/SkyParts";
 
 interface FacePunchModalProps {
   onClose: () => void;
@@ -24,37 +37,125 @@ interface FacePunchModalProps {
   onNeedsEnrollment: () => void;
 }
 
-// Sized to fit the front face with real breathing room, not scrolling —
-// bumped from the original 640 after adding the mode-indicator accent
-// strip below, which added roughly 30px of real content height (a
-// bordered, padded strip replacing what used to be a single line of
-// plain text) that the original value didn't have slack for.
+// The front face is a fixed height so the 3D flip has two equal faces. The
+// punch screen is laid out to fit a rejection message of up to about four
+// lines under the camera without scrolling.
 const CARD_HEIGHT = 680;
 
+// The location card under the camera (radar, distance, coordinates) is a
+// permanent part of the punch screen. What employees must NOT see is that a
+// WFH punch-out is compared with that day's first punch-in — so in WFH mode
+// the card only ever says "location captured", and the server doesn't send
+// the comparison at all (see EXPOSE_WFH_COMPARISON in attendance.service.ts,
+// which you switch on only while testing the 300m check yourself).
+
+const fmtMeters = (m: number) =>
+  m >= 10000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`;
+
+// Splits a distance for the big number: 223 → "223" "m", 25000 → "25.0" "km".
+const splitMeters = (m: number) =>
+  m >= 10000
+    ? { big: (m / 1000).toFixed(1), unit: "km" }
+    : { big: String(m), unit: "m" };
+
+// Turns the server's answer into what the readout card shows, depending on
+// the mode. Office is the strict rule (blocking), so outside is red. WFH shows
+// a plain "location captured" unless the server chose to send the comparison
+// (it doesn't, except while you're testing) — and even then it never explains
+// why there is nothing to compare.
+function readoutFor(
+  mode: PunchMode,
+  check: LocationCheckResponse | undefined,
+  loading: boolean,
+  failed: boolean,
+): Readout {
+  // A plain "location captured" card — says nothing about any comparison.
+  const captured = (): Readout => ({
+    state: "idle",
+    tone: "ok",
+    big: mode === "WFH" ? "Home" : "✓",
+    unit: "",
+    pill: "Captured",
+    sub:
+      mode === "WFH"
+        ? "Working from home · location saved"
+        : "Location captured",
+  });
+
+  if (mode === "OFFICE") {
+    if (loading) {
+      return {
+        state: "loading",
+        tone: "neutral",
+        big: "…",
+        unit: "",
+        pill: "Checking",
+        sub: "Checking distance…",
+      };
+    }
+    if (failed || !check) {
+      return {
+        state: "unavailable",
+        tone: "neutral",
+        big: "—",
+        unit: "",
+        pill: "Unavailable",
+        sub: "Distance check unavailable",
+      };
+    }
+    if (!check.office) {
+      return {
+        state: "idle",
+        tone: "neutral",
+        big: "—",
+        unit: "",
+        pill: "No check",
+        sub: "No office location found for your company",
+      };
+    }
+    const { distanceMeters: d, radiusMeters: r, bearingDegrees } = check.office;
+    const inside = d <= r;
+    return {
+      state: "measured",
+      tone: inside ? "ok" : "over",
+      ...splitMeters(d),
+      pill: inside ? "Inside" : `Outside +${fmtMeters(d - r)}`,
+      sub: `from the office · limit ${fmtMeters(r)}`,
+      distance: d,
+      limit: r,
+      bearing: bearingDegrees ?? 0,
+    };
+  }
+
+  if (mode === "WFH") {
+    const w = check?.wfh;
+    // While loading, on failure, or with nothing to compare: just "captured".
+    if (loading || failed || !w || w.status !== "compared") return captured();
+    const { distanceMeters: d, thresholdMeters: t, bearingDegrees } = w;
+    const within = d <= t;
+    return {
+      state: "measured",
+      tone: within ? "ok" : "warn",
+      ...splitMeters(d),
+      pill: within ? "Within" : `Over +${fmtMeters(d - t)}`,
+      sub: `from morning punch-in · limit ${fmtMeters(t)}`,
+      distance: d,
+      limit: t,
+      bearing: bearingDegrees ?? 0,
+    };
+  }
+
+  return captured();
+}
+
 // Display label for every mode — kept as one map so REMOTE/CLIENT_SITE
-// (not yet clickable in the selector below) still display correctly
-// anywhere a label is needed, rather than a ternary handling only 2 of
-// the 4 real values.
+// (not yet clickable in the picker below) still display correctly anywhere
+// a label is needed.
 const PUNCH_MODE_LABEL: Record<PunchMode, string> = {
   OFFICE: "Office",
   WFH: "Work from home",
   REMOTE: "Remote",
   CLIENT_SITE: "Client Site",
-};
-
-// Per-mode accent colors for the active-mode strip (indicator Option 2)
-// and the selector cards' hover-left-border (selector Option A). Inline
-// rgba values, not Tailwind classes — these exact tints aren't in the
-// project's Tailwind palette, same reasoning as the flip-card's own
-// inline transform styles above.
-const PUNCH_MODE_ACCENT: Record<
-  PunchMode,
-  { bg: string; border: string; icon: string; text: string; hoverBorder: string }
-> = {
-  WFH: { bg: "rgba(16,185,129,0.1)", border: "rgba(16,185,129,0.25)", icon: "#34d399", text: "#a7f3d0", hoverBorder: "#10b981" },
-  OFFICE: { bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.25)", icon: "#60a5fa", text: "#bfdbfe", hoverBorder: "#3b82f6" },
-  REMOTE: { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", icon: "#fbbf24", text: "#fde68a", hoverBorder: "#f59e0b" },
-  CLIENT_SITE: { bg: "rgba(168,85,247,0.1)", border: "rgba(168,85,247,0.25)", icon: "#c084fc", text: "#e9d5ff", hoverBorder: "#a855f7" },
 };
 
 export default function FacePunchModal({
@@ -74,6 +175,7 @@ export default function FacePunchModal({
     isCapturingSequence,
     captureProgress,
     locationStatus,
+    currentLocation,
     openCamera,
     captureAndSubmit,
     cancelCamera,
@@ -84,13 +186,44 @@ export default function FacePunchModal({
 
   const [flipped, setFlipped] = useState(false);
 
+  // The sky: sun/moon position, colours and scenes, worked out from the
+  // time and the employee's location (see sky/skyTheme.ts).
+  const sky = useSkyTheme(currentLocation);
+
+  // The punch screen's scrollbar is hidden (see the content area below), so
+  // if a long error message ever lands below the visible area, scroll just
+  // enough to show it rather than leaving it cut off with no bar to hint
+  // that there's more.
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  // Development aid: distance from the required location, fetched each
+  // time a fresh location fix comes in.
+  const [
+    triggerLocationCheck,
+    {
+      data: locationCheck,
+      isFetching: isCheckingDistance,
+      isError: locationCheckFailed,
+    },
+  ] = useLazyGetLocationCheckQuery();
+
   // Gates the whole front face — camera flow and footer CTA don't render
   // until a mode is picked. Reset to null happens naturally on remount
   // (modal unmounts on close), so every fresh punch asks again — both
-  // punch-in AND punch-out. WFH's 300m self-check (vs. that same
-  // session's punch-in location) and Office's existing geofence check
-  // are both flag-only, never blocking.
+  // punch-in AND punch-out. WFH's 300m check (against today's first
+  // punch-in) and Office's geofence are handled on the server.
   const [punchMode, setPunchMode] = useState<PunchMode | null>(null);
+
+  // Ask the server how far this fresh location fix is from where it needs
+  // to be. (The server only includes the WFH comparison while it's being
+  // tested — see EXPOSE_WFH_COMPARISON — so asking is harmless in any mode.)
+  useEffect(() => {
+    if (!currentLocation) return;
+    triggerLocationCheck({
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+    });
+  }, [currentLocation, triggerLocationCheck]);
 
   const [
     triggerRecentPunches,
@@ -111,8 +244,17 @@ export default function FacePunchModal({
     onClose();
   };
 
+  useEffect(() => {
+    if (!cameraError && !resultMessage) return;
+    messageRef.current?.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }, [cameraError, resultMessage]);
+
   const busy = isCapturingSequence || isSubmitting;
   const punchSucceeded = Boolean(lastAction);
+  const selecting = !punchSucceeded && !punchMode;
 
   const toggleFlip = () => {
     const goingToBack = !flipped;
@@ -137,7 +279,30 @@ export default function FacePunchModal({
   };
 
   const backgroundTapEnabled = !isCameraOpen && !busy;
-  const modeAccent = punchMode ? PUNCH_MODE_ACCENT[punchMode] : null;
+
+  // Whether the location card should show under the camera (see the slot
+  // below the camera box).
+  const showReadout =
+    !!punchMode &&
+    locationStatus === "captured" &&
+    !!currentLocation &&
+    locationCheck?.enabled !== false;
+  const readout: Readout | null =
+    showReadout && punchMode
+      ? readoutFor(
+          punchMode,
+          locationCheck,
+          isCheckingDistance,
+          locationCheckFailed,
+        )
+      : null;
+
+  const ModeIcon =
+    punchMode === "OFFICE" || punchMode === "CLIENT_SITE"
+      ? Building2
+      : punchMode === "REMOTE"
+      ? MapPin
+      : Home;
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4">
@@ -192,7 +357,7 @@ export default function FacePunchModal({
               transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
             }}
           >
-            {/* FRONT FACE — mode select, then camera flow, or post-punch details */}
+            {/* FRONT FACE — mode picker, then the camera flow, or the result */}
             <div
               style={{
                 position: "absolute",
@@ -201,145 +366,171 @@ export default function FacePunchModal({
               }}
               className="rounded-2xl bg-[#0f1420] border border-[#1f2a3d] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1f2a3d]">
-                <h3 className="text-white text-base font-medium">Attendance</h3>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={toggleFlip}
-                    aria-label="View recent punches"
-                    className="text-slate-400 hover:text-emerald-400 transition-colors"
-                  >
-                    <RotateCw size={17} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    aria-label="Close"
-                    className="text-slate-400 hover:text-white transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
+              <SkyHeader
+                sky={sky}
+                variant={selecting ? "tall" : "wide"}
+                title="Attendance"
+                onFlip={toggleFlip}
+                flipLabel="View recent punches"
+                onClose={handleClose}
+                left={
+                  selecting ? (
+                    <div className="leading-tight">
+                      <div className="text-[17px] font-medium text-white">
+                        {sky.greeting}
+                      </div>
+                      <div className="text-[11px] text-amber-100">
+                        {sky.dateText}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/25"
+                        style={{ background: sky.gradient }}
+                      >
+                        <ModeIcon size={18} className="text-white" />
+                      </span>
+                      <span className="leading-tight">
+                        <span className="block text-[14px] font-medium text-white">
+                          {punchMode ? PUNCH_MODE_LABEL[punchMode] : ""}
+                        </span>
+                        {!punchSucceeded && (
+                          <button
+                            type="button"
+                            onClick={handleChangeMode}
+                            disabled={busy}
+                            className="flex items-center gap-1 text-[10.5px] text-amber-100 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Pencil size={10} />
+                            {faceStatus?.punchedIn
+                              ? "Punching out"
+                              : "Punching in"}{" "}
+                            · Change
+                          </button>
+                        )}
+                      </span>
+                    </div>
+                  )
+                }
+                right={
+                  selecting ? null : (
+                    <span className="text-[22px] font-light leading-none text-white">
+                      {sky.timeText}
+                    </span>
+                  )
+                }
+              />
 
-              {/* SELECTOR — Option A: refined cards, colored hover-left-
-                  border matching each mode's own accent. Gates everything
-                  below it. Only WFH/OFFICE are clickable right now —
-                  REMOTE/CLIENT_SITE are built below, wrapped in a comment
-                  block, ready to turn on by deleting the two markers. */}
-              {!punchSucceeded && !punchMode ? (
-                <div className="p-5 flex-1 flex flex-col items-center justify-center">
-                  <p className="text-white text-base font-medium mb-1.5">
+              {selecting ? (
+                // ── MODE PICKER — two little scenes that follow the sky.
+                // Only WFH/OFFICE are clickable right now.
+                <div className="flex flex-1 flex-col justify-center gap-3 px-4 pb-4 pt-3">
+                  <p className="text-center text-[12px] text-slate-300">
                     Where are you punching in from?
                   </p>
-                  <p className="text-slate-500 text-xs mb-8">
-                    We'll check your location differently depending on which one you pick.
-                  </p>
-                  <div className="w-full flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
                       onClick={() => setPunchMode("WFH")}
-                      style={{ borderLeftColor: "transparent" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.borderLeftColor = PUNCH_MODE_ACCENT.WFH.hoverBorder)}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderLeftColor = "transparent")}
-                      className="group flex items-center gap-4 px-5 py-5 rounded-xl border border-[#1f2a3d] border-l-[3px] bg-[#131a2b] hover:bg-[#161e33] text-left transition-colors"
+                      className="relative h-[240px] overflow-hidden rounded-2xl border border-white/10 text-left transition duration-200 hover:-translate-y-0.5 hover:border-white/35"
+                      style={{ background: sky.gradient }}
                     >
-                      <span className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                        <Home size={22} className="text-emerald-400" />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[15px] font-medium text-slate-100">
+                      <HomeScene sky={sky} />
+                      <span
+                        className="absolute inset-x-0 bottom-0 px-3 pb-2.5 pt-9"
+                        style={{
+                          background:
+                            "linear-gradient(transparent, rgba(0,0,0,0.74))",
+                        }}
+                      >
+                        <span className="block text-[14px] font-medium text-white">
                           Work from home
                         </span>
-                        <span className="block text-[12px] text-slate-500 mt-0.5">
-                          Checked against where you punch out from
+                        <span className="block text-[10px] leading-snug text-slate-200">
+                          Compared with your morning punch-in
                         </span>
                       </span>
-                      <ChevronRight
-                        size={18}
-                        className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors"
-                      />
                     </button>
                     <button
                       type="button"
                       onClick={() => setPunchMode("OFFICE")}
-                      style={{ borderLeftColor: "transparent" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.borderLeftColor = PUNCH_MODE_ACCENT.OFFICE.hoverBorder)}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderLeftColor = "transparent")}
-                      className="group flex items-center gap-4 px-5 py-5 rounded-xl border border-[#1f2a3d] border-l-[3px] bg-[#131a2b] hover:bg-[#161e33] text-left transition-colors"
+                      className="relative h-[240px] overflow-hidden rounded-2xl border border-white/10 text-left transition duration-200 hover:-translate-y-0.5 hover:border-white/35"
+                      style={{ background: sky.gradient }}
                     >
-                      <span className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                        <Building2 size={22} className="text-blue-400" />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[15px] font-medium text-slate-100">
+                      <OfficeScene sky={sky} />
+                      <span
+                        className="absolute inset-x-0 bottom-0 px-3 pb-2.5 pt-9"
+                        style={{
+                          background:
+                            "linear-gradient(transparent, rgba(0,0,0,0.74))",
+                        }}
+                      >
+                        <span className="block text-[14px] font-medium text-white">
                           Office
                         </span>
-                        <span className="block text-[12px] text-slate-500 mt-0.5">
+                        <span className="block text-[10px] leading-snug text-slate-200">
                           Checked against the office location
                         </span>
                       </span>
-                      <ChevronRight
-                        size={18}
-                        className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors"
-                      />
                     </button>
+                  </div>
 
-                    {/* NOT YET ENABLED — Remote and Client Site. To turn
-                        them on: delete the opening comment-start marker
-                        directly below this note, and the matching
-                        comment-end marker right after the Client Site
-                        button below. Kept in place, not deleted, so
-                        nothing needs rebuilding later. */}
-                    {/*
-                    <button
-                      type="button"
-                      onClick={() => setPunchMode("REMOTE")}
-                      className="group flex items-center gap-4 px-5 py-5 rounded-xl border border-[#1f2a3d] bg-[#131a2b] hover:border-amber-500/50 hover:bg-[#161e33] text-left transition-colors"
-                    >
-                      <span className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin size={22} className="text-amber-400" />
+                  {/* NOT YET ENABLED — Remote and Client Site (older row
+                      style; they'd sit under the two scenes). To turn them
+                      on: delete the opening comment-start marker directly
+                      below this note, and the matching comment-end marker
+                      right after the Client Site button below. Kept in
+                      place so nothing needs rebuilding later. */}
+                  {/*
+                  <button
+                    type="button"
+                    onClick={() => setPunchMode("REMOTE")}
+                    className="flex items-center gap-4 px-5 py-4 rounded-xl border border-[#1f2a3d] bg-[#131a2b] hover:border-amber-500/50 hover:bg-[#161e33] text-left transition-colors"
+                  >
+                    <span className="w-11 h-11 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                      <MapPin size={20} className="text-amber-400" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[15px] font-medium text-slate-100">Remote</span>
+                      <span className="block text-[12px] text-slate-500 mt-0.5">
+                        Working from somewhere other than home or the office
                       </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[15px] font-medium text-slate-100">
-                          Remote
-                        </span>
-                        <span className="block text-[12px] text-slate-500 mt-0.5">
-                          Working from somewhere other than home or the office
-                        </span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPunchMode("CLIENT_SITE")}
+                    className="flex items-center gap-4 px-5 py-4 rounded-xl border border-[#1f2a3d] bg-[#131a2b] hover:border-purple-500/50 hover:bg-[#161e33] text-left transition-colors"
+                  >
+                    <span className="w-11 h-11 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                      <Building2 size={20} className="text-purple-400" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[15px] font-medium text-slate-100">Client Site</span>
+                      <span className="block text-[12px] text-slate-500 mt-0.5">
+                        At a client's office or location
                       </span>
-                      <ChevronRight
-                        size={18}
-                        className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors"
-                      />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPunchMode("CLIENT_SITE")}
-                      className="group flex items-center gap-4 px-5 py-5 rounded-xl border border-[#1f2a3d] bg-[#131a2b] hover:border-purple-500/50 hover:bg-[#161e33] text-left transition-colors"
-                    >
-                      <span className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                        <Building2 size={22} className="text-purple-400" />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[15px] font-medium text-slate-100">
-                          Client Site
-                        </span>
-                        <span className="block text-[12px] text-slate-500 mt-0.5">
-                          At a client's office or location
-                        </span>
-                      </span>
-                      <ChevronRight
-                        size={18}
-                        className="text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors"
-                      />
-                    </button>
-                    */}
+                    </span>
+                  </button>
+                  */}
+
+                  <div className="flex items-center justify-center gap-4 pt-1 text-[10.5px] text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <Sunrise size={13} className="text-amber-300" />
+                      {sky.sunriseText}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Sunset size={13} className="text-orange-300" />
+                      {sky.sunsetText}
+                    </span>
                   </div>
                 </div>
               ) : (
-                <div className="p-5 flex-1 overflow-y-auto">
+                <div
+                  className="flex-1 overflow-y-auto px-5 pb-2 pt-4"
+                  style={{ scrollbarWidth: "none" }}
+                >
                   {punchSucceeded ? (
                     <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/25 p-4">
                       <div className="flex items-center gap-2.5 mb-3">
@@ -406,48 +597,14 @@ export default function FacePunchModal({
                     </div>
                   ) : (
                     <>
-                      {/* INDICATOR — Option 2: full-width accent strip,
-                          colored per mode, stays visible even once the
-                          camera's open. Replaces the old plain "← change"
-                          text link. */}
-                      {modeAccent && (
-                        <button
-                          type="button"
-                          onClick={handleChangeMode}
-                          disabled={busy}
-                          style={{
-                            background: modeAccent.bg,
-                            borderColor: modeAccent.border,
-                          }}
-                          className="w-full flex items-center gap-2 px-3.5 py-2 rounded-lg border mb-3 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                        >
-                          {punchMode === "OFFICE" ? (
-                            <Building2 size={14} style={{ color: modeAccent.icon }} />
-                          ) : (
-                            <Home size={14} style={{ color: modeAccent.icon }} />
-                          )}
-                          <span
-                            className="text-[12px] flex-1 text-left"
-                            style={{ color: modeAccent.text }}
-                          >
-                            Punching in as {punchMode ? PUNCH_MODE_LABEL[punchMode] : ""}
-                          </span>
-                          <span
-                            className="text-[10.5px] flex items-center gap-1"
-                            style={{ color: modeAccent.icon }}
-                          >
-                            <Pencil size={10} />
-                            Change
-                          </span>
-                        </button>
-                      )}
-
-                      <div className="flex gap-2 mb-4">
+                      <div className="flex gap-2 mb-3">
                         <button
                           type="button"
                           onClick={openCamera}
                           disabled={
-                            isCameraOpen || busy || locationStatus === "checking"
+                            isCameraOpen ||
+                            busy ||
+                            locationStatus === "checking"
                           }
                           className="flex-1 h-9 rounded-lg text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-colors"
                         >
@@ -485,7 +642,8 @@ export default function FacePunchModal({
                             {isCapturingSequence && (
                               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3 px-6">
                                 <p className="text-white text-sm font-medium text-center">
-                                  Please look at the camera and blink naturally...
+                                  Please look at the camera and blink
+                                  naturally...
                                 </p>
                                 <div className="w-full max-w-[200px] h-1.5 rounded-full bg-white/20 overflow-hidden">
                                   <div
@@ -513,7 +671,11 @@ export default function FacePunchModal({
                       </div>
                       <canvas ref={canvasRef} className="hidden" />
 
-                      {locationStatus !== "idle" && (
+                      {/* The plain "Location captured" line: only while the
+                          readout above isn't showing (it already carries the
+                          pin and the coordinates). Also covers 'checking' and
+                          'unavailable'. */}
+                      {locationStatus !== "idle" && !showReadout && (
                         <div
                           className={`mt-3 flex items-center justify-center gap-1.5 text-[11px] ${
                             locationStatus === "captured"
@@ -532,16 +694,33 @@ export default function FacePunchModal({
                         </div>
                       )}
 
-                      {cameraError && (
-                        <p className="mt-3 text-sm text-rose-400 text-center">
-                          {cameraError}
-                        </p>
-                      )}
-                      {resultMessage && (
-                        <p className="mt-3 text-sm text-center text-rose-400">
-                          {resultMessage}
-                        </p>
-                      )}
+                      {/* One slot under the camera, two uses. Normally it holds
+                          the location readout (radar, distance, coordinates)
+                          on a solid card, so it's always clearly legible. When
+                          an error message appears it takes the slot instead,
+                          then the readout comes back once the message clears.
+                          Nothing is drawn over the camera picture. */}
+                      <div ref={messageRef}>
+                        {cameraError && (
+                          <p className="mt-3 text-sm text-rose-400 text-center">
+                            {cameraError}
+                          </p>
+                        )}
+                        {resultMessage && (
+                          <p className="mt-3 text-sm text-center text-rose-400">
+                            {resultMessage}
+                          </p>
+                        )}
+                        {!cameraError &&
+                          !resultMessage &&
+                          readout &&
+                          currentLocation && (
+                            <LocationReadout
+                              readout={readout}
+                              coords={currentLocation}
+                            />
+                          )}
+                      </div>
                     </>
                   )}
                 </div>
@@ -575,31 +754,34 @@ export default function FacePunchModal({
               }}
               className="rounded-2xl bg-[#0f1420] border border-[#1f2a3d] shadow-2xl overflow-hidden flex flex-col"
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1f2a3d]">
-                <h3 className="text-white text-base font-medium">
-                  Recent Punches
-                </h3>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={toggleFlip}
-                    aria-label="Back to punch screen"
-                    className="text-slate-400 hover:text-emerald-400 transition-colors"
-                  >
-                    <RotateCw size={17} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    aria-label="Close"
-                    className="text-slate-400 hover:text-white transition-colors"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
+              <SkyHeader
+                sky={sky}
+                variant="wide"
+                title="Attendance"
+                onFlip={toggleFlip}
+                flipLabel="Back to punch screen"
+                onClose={handleClose}
+                left={
+                  <div className="leading-tight">
+                    <div className="text-[16px] font-medium text-white">
+                      Recent Punches
+                    </div>
+                    <div className="text-[10.5px] text-amber-100">
+                      Your last 10 punches
+                    </div>
+                  </div>
+                }
+                right={
+                  <span className="text-[22px] font-light leading-none text-white">
+                    {sky.timeText}
+                  </span>
+                }
+              />
 
-              <div className="flex-1 overflow-y-auto">
+              <div
+                className="flex-1 overflow-y-auto"
+                style={{ scrollbarWidth: "none" }}
+              >
                 {isLoadingRecent ? (
                   <p className="text-slate-400 text-xs text-center py-10">
                     Loading...
@@ -641,9 +823,6 @@ export default function FacePunchModal({
                               Location pending…
                             </span>
                           )}
-                        </div>
-                        <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                          {p.mode}
                         </div>
                         <div className="text-[10px] font-mono text-slate-500 mt-0.5">
                           {p.mode}
