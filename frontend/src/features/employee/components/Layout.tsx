@@ -18,6 +18,7 @@ export default function Layout() {
   const mainRef = useRef<HTMLElement>(null);
   const location = useLocation();
   const isDashboard = location.pathname.endsWith("/employee/dashboard");
+  const isPunchPage = location.pathname.endsWith("/employee/Punch");
 
   const handleMainScroll = () => {
     const main = mainRef.current;
@@ -40,7 +41,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col overflow-hidden">
+    <div className="h-dvh w-full flex flex-col overflow-hidden">
 
       <Navbar
         isSidebarOpen={isSidebarOpen}
@@ -56,17 +57,12 @@ export default function Layout() {
         <main
           ref={mainRef}
           onScroll={handleMainScroll}
-          className="
-    flex-1
-    min-w-0
-    min-h-0
-    overflow-y-auto
-    overflow-x-hidden
-    bg-slate-100
-    p-3
-    sm:p-4
-    lg:p-5
-  "
+          className={`flex-1 min-w-0 min-h-0 ${
+            isPunchPage
+              ? "punch-scroll-container overflow-y-scroll"
+              : "overflow-y-auto"
+          } overflow-x-hidden bg-slate-100 p-3 sm:p-4 lg:p-5`}
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           {isDashboard ? (
             <Outlet />

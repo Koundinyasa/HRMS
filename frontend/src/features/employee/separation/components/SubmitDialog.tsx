@@ -22,6 +22,9 @@ export default function SubmitDialog({
             <DialogContent
                 className="w-[calc(100%-24px)]
           max-w-[520px]
+          min-h-[190px]
+          flex
+          flex-col
           overflow-hidden
           rounded-2xl
           border

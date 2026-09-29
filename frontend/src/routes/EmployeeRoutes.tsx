@@ -41,7 +41,7 @@ import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
 import PunchPage from "@/features/employee/review/timeOffice/punch/pages/PunchPage";
 import MissedPunchPage from "@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage";
 import TAInsightsPage from "@/features/employee/review/timeOffice/taInsights/pages/TAInsightsPage";
-import AttendanceOverview from "@/features/employee/review/Attandance overview/timeOffice/pages/AttendanceOverview";
+import AttendanceOverview from "@/features/employee/review/attendanceOverview/pages/AttendanceOverview";
 import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendance/components/LeaveCalendarHistory";
 import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
 import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
@@ -49,7 +49,10 @@ import RequisitionPage from "@/features/employee/review/requisition/pages/Requis
  
 // Attendance Module — NEW
 import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
- 
+import AssetRequestsApprovalPage from "@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage";
+import ResignationRequestPage from "@/features/employee/review/resignationRequest/pages/ResignationRequestPage";
+import HelpdeskRequestsPage from "@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage";
+
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {
   const { domain } = useParams();
@@ -137,7 +140,24 @@ export default function EmployeeRoutes() {
         />
  
         <Route path="review/requisition/appliedleave" element={<RequisitionPage />} />
- 
+        <Route path="review/asset-requests" element={<AssetRequestsApprovalPage />} />
+        <Route
+          path="Review/requisition/Assetrequests"
+          element={<AssetRequestsApprovalPage />}
+        />
+        <Route
+          path="Review/requisition/Resignationrequests"
+          element={<ResignationRequestPage />}
+        />
+        <Route
+          path="TA/HelpdeskRequests"
+          element={<HelpdeskRequestsPage />}
+        />
+        <Route
+          path="Review/requisition/Resignationrequests"
+          element={<ResignationRequestPage />}
+        />
+
         <Route path="Punch" element={<PunchPage />} />
  
         <Route path="MissedPunch" element={<MissedPunchPage />} />

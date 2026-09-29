@@ -123,7 +123,7 @@ export default function RequisitionPage() {
             role="status"
             className="rounded-md border border-black bg-green-50 p-4 text-sm font-medium text-green-700 font-[Urbanist]"
           >
-            REQUEST IS APPROVED SUCCESSFULLY
+            Approve has been selected successfully.
           </div>
         )}
 
@@ -181,8 +181,11 @@ export default function RequisitionPage() {
           <RequisitionRemarksPage
             requisitions={rejectedRequests}
             onBack={() => setRejectedRequests([])}
-            onSubmit={async () => {
-              await updateSelected("rejected");
+            onSubmit={async (remarks) => {
+              const rejectionRemarks = Object.fromEntries(
+                rejectedRequests.map(({ id }) => [id, remarks]),
+              );
+              await updateSelected("rejected", rejectionRemarks);
             }}
           />
         )}

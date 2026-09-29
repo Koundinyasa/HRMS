@@ -68,8 +68,13 @@ import { toast } from "react-toastify";
 import { useApplyLeaveMutation } from "../api/leaveApi";
 
 import type {
+  ApplyLeaveResponse,
   ApplyLeavePayload,
 } from "../types/leave.types";
+
+const getApplyLeaveResult = (
+    response: ApplyLeaveResponse,
+) => Array.isArray(response) ? response[0] : response;
 
 export const useApplyLeave = () => {
   const [
@@ -94,9 +99,7 @@ export const useApplyLeave = () => {
       );
 
       // Same approach used in HR apply leave
-      const result = Array.isArray(response)
-        ? response[0]
-        : response;
+      const result = getApplyLeaveResult(response);
 
       if (
         result?.StatusCode !== undefined &&

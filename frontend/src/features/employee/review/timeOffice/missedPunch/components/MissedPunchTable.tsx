@@ -10,13 +10,13 @@ export default function MissedPunchTable({
   onAction,
 }: MissedPunchTableProps) {
   return (
-    <div className="mt-3 overflow-x-auto font-[Urbanist]">
-      <div className="min-w-0 space-y-3 font-[Urbanist]">
-        <div className="grid grid-cols-2 items-center gap-2 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554] sm:grid-cols-4 sm:gap-4 sm:py-5 font-[Urbanist]">
+    <div className="punch-horizontal-scroll mt-3 w-full min-w-0 overflow-x-auto">
+      <div className="w-full min-w-[760px] space-y-3">
+        <div className="grid w-full grid-cols-[90px_minmax(0,1fr)_110px_50px] items-center gap-3 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554]">
           <div>Employee ID</div>
           <div>Employee Name</div>
           <div>Punch Date</div>
-          <div>Action</div>
+          <div className="text-right">Action</div>
         </div>
 
         {isLoading ? (

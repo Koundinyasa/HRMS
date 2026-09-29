@@ -1,4 +1,5 @@
 import {
+  ChevronDown,
   MoreVertical,
   Search,
   SlidersHorizontal,
@@ -20,11 +21,11 @@ export default function MissedPunchFilters({
           SEARCH / FILTER BAR
       ===================================================== */}
 
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e0e5ec] bg-white px-3 py-3 sm:px-4 xl:flex-nowrap xl:flex-row font-[Urbanist]">
+      <div className="punch-horizontal-scroll flex w-full min-w-0 items-center justify-between gap-3 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-3 py-3 sm:px-4">
 
         {/* SEARCH */}
 
-        <div className="flex min-w-0 w-full flex-1 items-center gap-3 xl:w-auto font-[Urbanist]">
+        <div className="flex w-[150px] shrink-0 items-center gap-3">
 
           <Search
             size={20}
@@ -42,92 +43,89 @@ export default function MissedPunchFilters({
               )
             }
             placeholder="Start Typing..."
-            className="w-full bg-transparent text-sm text-[#374151] outline-none placeholder:text-[#9aa9bd] font-[Urbanist]"
+            className="min-w-0 w-full bg-transparent text-sm text-[#374151] outline-none placeholder:text-[#9aa9bd]"
           />
 
         </div>
 
-        {/* ADD FILTER */}
-
-        <button
-          type="button"
-          className="flex items-center gap-2 text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          <SlidersHorizontal
-            size={17}
-          />
-          Add Filter
-        </button>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {/* ADD FILTER */}
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            <SlidersHorizontal size={14} />
+            Add Filter
+          </button>
 
         {/* QUERY */}
 
-        <button
-          type="button"
-          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          Query⌄
-        </button>
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            Query <ChevronDown size={12} />
+          </button>
 
         {/* T&A POLICY */}
 
-        <button
-          type="button"
-          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          T&A Policy⌄
-        </button>
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            T&A Policy <ChevronDown size={12} />
+          </button>
 
         {/* PATTERN */}
 
-        <button
-          type="button"
-          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          Pattern⌄
-        </button>
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            Pattern <ChevronDown size={12} />
+          </button>
 
         {/* TA SUPERVISOR */}
 
-        <button
-          type="button"
-          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          TA Supervisor⌄
-        </button>
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            TA Supervisor <ChevronDown size={12} />
+          </button>
 
         {/* ATTENDANCE */}
 
-        <button
-          type="button"
-          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          Attendance⌄
-        </button>
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            Attendance <ChevronDown size={12} />
+          </button>
 
         {/* LEAVE */}
 
-        <button
-          type="button"
-          className="text-sm font-semibold text-[#68758a] font-[Urbanist]"
-        >
-          Leave⌄
-        </button>
+          <button
+            type="button"
+            className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-xs font-medium text-[#68758a]"
+          >
+            Leave <ChevronDown size={12} />
+          </button>
 
-        <MoreVertical
-          size={20}
-          className="hidden shrink-0 text-[#7f94b5] xl:block font-[Urbanist]"
-        />
+          <MoreVertical
+            size={16}
+            className="hidden shrink-0 text-[#7f94b5] xl:block font-[Urbanist]"
+          />
 
-        <button
-          type="button"
-          title="Clear"
-          onClick={() =>
-            onSearchChange("")
-          }
-          className="shrink-0 text-red-500 hover:text-red-600 font-[Urbanist]"
-        >
-          <X size={21} />
-        </button>
+          <button
+            type="button"
+            title="Clear"
+            onClick={() => onSearchChange("")}
+            className="shrink-0 text-red-500 hover:text-red-600 font-[Urbanist]"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
       </div>
     </div>

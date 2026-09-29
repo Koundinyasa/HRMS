@@ -1,28 +1,21 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { Requisition } from "../types/requisition.types";
 
 interface RequisitionRemarksPageProps {
   requisitions: Requisition[];
   onBack: () => void;
+  onSubmit: (remarks: Record<string, string>) => void | Promise<void>;
 }
 
 export default function RequisitionRemarksPage({
   requisitions,
   onBack,
+  onSubmit,
 }: RequisitionRemarksPageProps) {
   const requisition = requisitions[0];
 
-  const [remarks, setRemarks] = useState<Record<string, string>>(() => {
-    try {
-      const saved = window.localStorage.getItem(
-        "requisition-rejection-remarks"
-      );
-
-      return saved ? (JSON.parse(saved) as Record<string, string>) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [remarks, setRemarks] = useState<Record<string, string>>({});
 
   const updateRemarks = (id: string, value: string) => {
     setRemarks((previous) => ({
@@ -32,22 +25,19 @@ export default function RequisitionRemarksPage({
   };
 
   const submitRemarks = () => {
-    window.localStorage.setItem(
-      "requisition-rejection-remarks",
-      JSON.stringify(remarks)
-    );
-    onBack();
+    void onSubmit(remarks);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 font-[Urbanist]">
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-slate-900/50 p-3 sm:p-4">
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="reject-leave-title"
-        className="w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl font-[Urbanist]"
+        className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto overscroll-contain rounded-xl bg-white p-4 shadow-2xl sm:p-6"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <div className="flex items-start justify-between font-[Urbanist]">
+        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex items-start justify-between bg-white px-4 pt-4 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6">
           <div>
             <h2
               id="reject-leave-title"
@@ -70,12 +60,12 @@ export default function RequisitionRemarksPage({
           </button>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 font-[Urbanist]">
+        <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
           <div>
             <p className="mb-1 text-sm font-medium text-slate-800 font-[Urbanist]">
               Leave Type
             </p>
-            <div className="rounded-md border border-black/80 bg-slate-50 px-3 py-3 text-sm text-slate-800 font-[Urbanist]">
+            <div className="rounded-md border border-slate-900/80 bg-slate-50 px-3 py-2 text-sm text-slate-800 sm:py-3">
               {requisition.leaveName}
             </div>
           </div>
@@ -83,7 +73,7 @@ export default function RequisitionRemarksPage({
             <p className="mb-1 text-sm font-medium text-slate-800 font-[Urbanist]">
               Leave ID
             </p>
-            <div className="rounded-md border border-black/80 bg-slate-50 px-3 py-3 text-sm text-slate-800 font-[Urbanist]">
+            <div className="rounded-md border border-slate-900/80 bg-slate-50 px-3 py-2 text-sm text-slate-800 sm:py-3">
               {requisition.leaveId}
             </div>
           </div>
@@ -91,7 +81,7 @@ export default function RequisitionRemarksPage({
             <p className="mb-1 text-sm font-medium text-slate-800 font-[Urbanist]">
               Employee Name
             </p>
-            <div className="rounded-md border border-black/80 bg-slate-50 px-3 py-3 text-sm text-slate-800 font-[Urbanist]">
+            <div className="rounded-md border border-slate-900/80 bg-slate-50 px-3 py-2 text-sm text-slate-800 sm:py-3">
               {requisition.employeeName}
             </div>
           </div>
@@ -99,7 +89,7 @@ export default function RequisitionRemarksPage({
             <p className="mb-1 text-sm font-medium text-slate-800 font-[Urbanist]">
               Date
             </p>
-            <div className="rounded-md border border-black/80 bg-slate-50 px-3 py-3 text-sm text-slate-800 font-[Urbanist]">
+            <div className="rounded-md border border-slate-900/80 bg-slate-50 px-3 py-2 text-sm text-slate-800 sm:py-3">
               {requisition.date}
             </div>
           </div>
@@ -119,10 +109,10 @@ export default function RequisitionRemarksPage({
           }
           rows={5}
           placeholder="Enter rejection remarks..."
-          className="mt-1 w-full resize-none rounded-md border border-black/80 px-3 py-3 text-sm text-slate-700 outline-none focus:border-black focus:ring-2 focus:ring-sky-100 font-[Urbanist]"
+          className="mt-1 w-full resize-none rounded-md border border-slate-900/80 px-3 py-2 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 sm:py-3"
         />
 
-        <div className="mt-6 flex justify-end gap-2 border-t border-black pt-5 font-[Urbanist]">
+        <div className="sticky bottom-0 mt-4 flex justify-end gap-2 border-t border-slate-300 bg-white pt-3 sm:mt-6 sm:pt-5">
           <button
             type="button"
             onClick={onBack}
@@ -139,6 +129,7 @@ export default function RequisitionRemarksPage({
           </button>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -452,7 +452,8 @@ export const useRequisition = () => {
   };
 
   const updateSelected = async (
-    action: "approved" | "rejected"
+    action: "approved" | "rejected",
+    rejectionRemarks: Record<string, string> = {},
   ): Promise<Requisition[]> => {
     setActionError("");
     setSuccessMessage("");
@@ -485,6 +486,13 @@ export const useRequisition = () => {
       for (const item of selectedRequests) {
         const payload = {
           approvalId: item.approvalId,
+          ...(action === "rejected"
+            ? {
+                remarks:
+                  rejectionRemarks[item.id]?.trim() ||
+                  item.reason,
+              }
+            : {}),
         };
 
         if (action === "approved") {

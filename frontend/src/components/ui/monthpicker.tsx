@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import { Calendar, Clock3, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
  
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr",
@@ -12,9 +12,15 @@ interface MonthPickerProps {
   value: string; // e.g. "Feb/2026", or "" if unset
   onChange: (value: string) => void;
   className?: string;
+  compact?: boolean;
 }
  
-export function MonthPicker({ value, onChange, className = "" }: MonthPickerProps) {
+export function MonthPicker({
+  value,
+  onChange,
+  className = "",
+  compact = false,
+}: MonthPickerProps) {
   const [open, setOpen] = React.useState(false);
  
   const [selectedMonth, selectedYear] = value ? value.split("/") : [null, null];
@@ -51,12 +57,15 @@ export function MonthPicker({ value, onChange, className = "" }: MonthPickerProp
       <PopoverPrimitive.Trigger asChild>
         <button
           type="button"
-          className={`relative h-10 w-full rounded-xl border border-gray-200 bg-gray-50 pl-3 pr-14 text-left text-sm text-gray-800 outline-none focus:border-violet-500 data-[state=open]:border-violet-500 ${className}`}
+          className={`relative w-full rounded-xl border border-gray-200 bg-gray-50 text-left text-gray-800 outline-none focus:border-violet-500 data-[state=open]:border-violet-500 ${
+            compact
+              ? "h-8 rounded-md pl-2 pr-10 text-xs"
+              : "h-10 pl-3 pr-14 text-sm"
+          } ${className}`}
         >
           {value || <span className="text-gray-400">Select month</span>}
-          <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-400" />
-            <Clock3 className="h-4 w-4 text-gray-400" />
+          <span className={`absolute right-3 top-1/2 flex -translate-y-1/2 items-center ${compact ? "right-2" : ""}`}>
+            <Calendar className={compact ? "h-3.5 w-3.5 text-gray-400" : "h-4 w-4 text-gray-400"} />
           </span>
         </button>
       </PopoverPrimitive.Trigger>

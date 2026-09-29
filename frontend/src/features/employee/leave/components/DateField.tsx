@@ -384,6 +384,7 @@ export default function DateField({
   max,
   id,
   isInvalid,
+  readOnly,
   initialMonth,
   holidays,
   inputClassName,
@@ -721,6 +722,7 @@ export default function DateField({
       onTextChange={handleTextChange}
       onBlur={handleBlur}
       isInvalid={isInvalid}
+      readOnly={readOnly}
       inputClassName={inputClassName}
       open={open}
       onOpenChange={handleOpenChange} // 🔴 CHANGED: also hides the popup when the calendar closes

@@ -6,9 +6,28 @@ import {
   useGetPendingAssetRequestsQuery,
 } from "../api/assetApi";
 function getBackendMessage(err: unknown): string | undefined {
-  if (err && typeof err === "object" && "data" in err) {
-    return (err as { data?: { Message?: string } }).data?.Message;
+  if (!err || typeof err !== "object" || !("data" in err)) {
+    return undefined;
   }
+
+  const data = err.data;
+  if (!data || typeof data !== "object") return undefined;
+
+  const response = data as {
+    Message?: unknown;
+    message?: unknown;
+    errors?: unknown;
+  };
+  const message = response.Message ?? response.message;
+  if (typeof message === "string" && message.trim()) return message;
+
+  if (Array.isArray(response.errors)) {
+    const firstError = response.errors.find(
+      (item): item is string => typeof item === "string" && item.trim().length > 0,
+    );
+    if (firstError) return firstError;
+  }
+
   return undefined;
 }
 export const useAssetApproval = () => {
@@ -29,7 +48,11 @@ const requests = pendingSection?.records ?? [];
   const [rejectTargetId, setRejectTargetId] = useState<number | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
 
-  const approve = async (requestId: number, stageOrder: number, remarks = "Approved") => {
+  const approve = async (
+    requestId: number,
+    stageOrder: number,
+    remarks = "Approved",
+  ): Promise<boolean> => {
     try {
       await approveAssetStage({
         requestId,
@@ -38,19 +61,21 @@ const requests = pendingSection?.records ?? [];
         remarks,
       }).unwrap();
       toast.success("Request approved to the next stage.");
+      return true;
     } catch (err) {
       toast.error(getBackendMessage(err) || "Unable to approve the request. Please try again.");
+      return false;
     }
   };
 
   const openReject = (requestId: number) => setRejectTargetId(requestId);
   const closeReject = () => setRejectTargetId(null);
 
-  const reject = async (remarks: string, stageOrder: number) => {
-    if (rejectTargetId === null) return;
+  const reject = async (remarks: string, stageOrder: number): Promise<boolean> => {
+    if (rejectTargetId === null) return false;
     if (!remarks.trim()) {
       toast.error("Please provide a reason for rejection.");
-      return;
+      return false;
     }
     setIsRejecting(true);
     try {
@@ -62,8 +87,10 @@ const requests = pendingSection?.records ?? [];
       }).unwrap();
       toast.success("Request rejected.");
       closeReject();
+      return true;
     } catch (err) {
       toast.error(getBackendMessage(err) || "Unable to reject the request. Please try again.");
+      return false;
     } finally {
       setIsRejecting(false);
     }

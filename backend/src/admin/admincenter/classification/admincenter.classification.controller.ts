@@ -89,10 +89,19 @@ export class AdmincenterClassificationController {
   }
 
   @Post('leave-policy')
-  async addLeavePolicy(@Body() dto: CreateLeavePolicyDto, @Req() req) {
-    console.log(req.user);
-    return this.classificationService.addLeavePolicy(dto, req.user.createdBy);
+  async addLeavePolicy(
+    @Body() dto: CreateLeavePolicyDto,
+    @Req() req,
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 10,
+  ) {
+    return this.classificationService.getDesignations(
+      req.user.companyId,
+      Number(page),
+      Number(pageSize),
+    );
   }
+
 
   @Put('leave-policy')
   async updateLeavePolicy(@Body() dto: UpdateLeavePolicyDto, @Req() req) {

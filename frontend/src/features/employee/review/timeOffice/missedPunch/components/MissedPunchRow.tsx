@@ -15,7 +15,7 @@ export default function MissedPunchRow({
   onAction,
 }: MissedPunchRowProps) {
   return (
-    <div className="grid grid-cols-2 items-center gap-2 rounded-lg bg-white px-3 py-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sm:grid-cols-4 sm:gap-4 sm:py-5 font-[Urbanist]">
+    <div className="grid w-full grid-cols-[90px_minmax(0,1fr)_110px_50px] items-center gap-3 rounded-lg bg-white px-3 py-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
 
       {/* EMPLOYEE ID */}
 
@@ -41,7 +41,7 @@ export default function MissedPunchRow({
 
       {/* ACTION */}
 
-      <div className="flex justify-end sm:justify-center font-[Urbanist]">
+      <div className="flex justify-end">
         <button
           type="button"
           title="Open missed punch"

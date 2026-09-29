@@ -1,4 +1,8 @@
-
+// 🟡🟡🟡 CHANGED (START) 🟡🟡🟡
+// NEW FILE: decides who can open "Apply Leave for Employee" from the SIDEBAR MENU
+// data (the same menu API the sidebar uses) instead of a hardcoded employee ID list.
+// If the backend sends the "Apply Leave for Employee" menu item for this user
+// -> access is allowed. If not -> no access.
 import { useGetMenusQuery } from "../../dashboard/api/dashboardApi";
 import type { MenuItem } from "../../dashboard/types/dashboard.types";
  

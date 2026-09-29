@@ -28,7 +28,7 @@ const TAInsightsPage: React.FC = () => {
   } = useTAInsights();
 
   return (
-    <div className="min-h-screen bg-[#f4f5fa] p-3 md:p-5 font-[Urbanist]">
+    <div className="min-h-full w-full min-w-0 bg-[#f4f5fa] p-3 md:p-5">
       <TAInsightsHeader
         onAddFilter={() => setShowFilters((prev) => !prev)}
         filters={filters}

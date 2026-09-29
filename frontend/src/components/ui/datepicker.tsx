@@ -45,7 +45,6 @@ export function DatePicker({
   id,
   text,
   align = "left",
-  onTextChange,
   onBlur,
   isInvalid,
   placeholder = "dd-mm-yyyy",
@@ -138,9 +137,7 @@ export function DatePicker({
        ${align === "right" ? "right-0" : "left-0"}
       top-full
       z-[9999]
-      mt-3
-      w-[min(20rem,calc(100vw-1.5rem))]
-      max-w-[calc(100vw-1.5rem)]
+      w-[min(16.5rem,calc(100vw-1.5rem))]
       overflow-hidden
       rounded-[22px]
       border

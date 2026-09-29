@@ -134,12 +134,16 @@ export interface ApplyLeavePayload {
   attachment: File | null;
 }
 
-export interface ApplyLeaveResponse {
+export interface ApplyLeaveResult {
   StatusCode: number;
   Message: string;
   LeaveApplicationId: number;
   NotificationId: number;
 }
+
+export type ApplyLeaveResponse =
+  | ApplyLeaveResult
+  | ApplyLeaveResult[];
 // ===============================
 // Apply For Employee (manager / HR)
 // ===============================
@@ -218,6 +222,7 @@ export interface DateFieldProps {
   max?: string;
   isInvalid?: boolean;
   disablePreviousYears?: boolean;
+  readOnly?: boolean;
   initialMonth?: string;
   holidays?: Map<string, { name: string; isOptional: boolean }>;
   inputClassName?: string;
@@ -305,4 +310,3 @@ export interface LeaveHistoryTableProps {
 export interface LeaveBalanceCardProps {
   balances: LeaveBalanceSection | null;
 }
-

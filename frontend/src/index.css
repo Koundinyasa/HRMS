@@ -13,7 +13,7 @@
   --primary-gradient: linear-gradient(90deg,#2563EB,#00C2FF);
   --card-bg: #FFFFFF;
   --dashboard-heading: #0F172A;
-  --dashboard-subheading: #1F2A37;
+  --dashboard-subheading: var(--primary-color);
   --dashboard-label: #475569;
   --dashboard-muted: #64748B;
 }
@@ -113,6 +113,43 @@ ol {
   background: #f8fbff;
   border: 0;
   border-radius: 0;
+}
+
+.punch-scroll-container {
+  scrollbar-color: #94a3b8 #e2e8f0;
+  scrollbar-width: thin;
+}
+
+.punch-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.punch-scroll-container::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.punch-scroll-container::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #94a3b8;
+}
+
+.punch-horizontal-scroll {
+  scrollbar-color: #94a3b8 #e2e8f0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.punch-horizontal-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.punch-horizontal-scroll::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.punch-horizontal-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #94a3b8;
 }
 
 .module-content-shell {

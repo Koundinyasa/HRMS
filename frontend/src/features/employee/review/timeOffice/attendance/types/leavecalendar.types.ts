@@ -102,6 +102,7 @@ export interface LeaveCalendarHeaderProps {
 
 export interface LeaveCalendarSearchProps {
   searchTerm: string;
+  compact?: boolean;
   setSearchTerm: Dispatch<
     SetStateAction<string>
   >;

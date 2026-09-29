@@ -75,7 +75,7 @@ export default function MissedPunchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 font-[Urbanist]">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-3 sm:p-6">
       {/* Header / Navigation */}
       <MissedPunchNavbar
         filters={filters}

@@ -434,6 +434,7 @@ export default function ApplyLeaveForEmployee() {
                           id="fromDate"
                           value={field.value}
                           onChange={field.onChange}
+                          readOnly
                           min={minFromDateIso()}
                           max={maxApplyDateIso()}
                           holidays={holidayDates}
@@ -466,6 +467,7 @@ export default function ApplyLeaveForEmployee() {
                           min={minToDate}
                           max={maxApplyDateIso()}
                           onChange={field.onChange}
+                          readOnly
                           disablePreviousYears
                           initialMonth={fromDate}
                           holidays={holidayDates}
