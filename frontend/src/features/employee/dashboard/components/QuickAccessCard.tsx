@@ -216,11 +216,14 @@ export default function QuickAccessCard() {
       title: "Payslip Report",
       subtitle: "View Payslip",
       icon: ReceiptText,
+      path: `/${domain}/employee/reports/payslip`,
+      
     },
     {
       title: "STI Reports",
       subtitle: "Performance & Statistics",
       icon: BarChart3,
+      path: `/${domain}/employee/reports/sti`,
     },
     {
       title: "Holiday List",

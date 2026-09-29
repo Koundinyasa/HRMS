@@ -255,6 +255,7 @@ import {
   LayoutDashboard,
   CalendarCheck,
   ClipboardCheck,
+  ChartNoAxesColumnIncreasing,
 } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import type { MenuItem } from "../dashboard/types/dashboard.types";
@@ -272,6 +273,7 @@ const MODULE_COLORS: Record<string, string> = {
   learning: "#06B6D4",
   dashboard: "#0F172A",
   review: "#994d00",
+  reports: "#26cab7",
 };
  
 const DEFAULT_ICON_COLOR = "#0F172A";
@@ -291,6 +293,9 @@ const getActiveModuleKey = (pathname: string): string | null => {
   if (path.includes("/separation")) return "separation";
   if (path.includes("/learning") || path.includes("/lnd")) return "learning";
   if (path.includes("/review")) return "review";
+  if (path.includes("/reports")) {
+    return "reports";
+  }
   if (path.includes("/dashboard")) return "dashboard";
 
   return null;
@@ -308,7 +313,9 @@ const menuIcons: Record<string, React.ReactNode> = {
   "Help Desk": <LifeBuoy size={20} strokeWidth={2.2} />,
   "Learning & Development": <GraduationCap size={20} strokeWidth={2.2} />,
   Separation: <LogOut size={20} strokeWidth={2.2} />,
-  Review: <UserRound size={20} strokeWidth={2.2} />,
+  Review: <ClipboardCheck size={20} strokeWidth={2.2} />,
+  Reports: (<ChartNoAxesColumnIncreasing size={20} strokeWidth={2.2}/>
+  ),
 };
 
 const getMenuIcon = (menuName: string) => {
@@ -634,5 +641,3 @@ export default function Sidebar({
     </>
   );
 }
- 
- 

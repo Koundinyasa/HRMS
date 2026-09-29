@@ -52,6 +52,7 @@ import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegist
 import AssetRequestsApprovalPage from "@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage";
 import ResignationRequestPage from "@/features/employee/review/resignationRequest/pages/ResignationRequestPage";
 import HelpdeskRequestsPage from "@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage";
+import ReportsComingSoon from "@/features/employee/reports/pages/ReportsComingSoon";
 
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {
@@ -207,6 +208,7 @@ export default function EmployeeRoutes() {
           path="attendance/face-registration"
           element={<FaceRegistrationPage />}
         />
+        <Route path="reports/*" element={<ReportsComingSoon />} />
       </Route>
     </Routes>
   );

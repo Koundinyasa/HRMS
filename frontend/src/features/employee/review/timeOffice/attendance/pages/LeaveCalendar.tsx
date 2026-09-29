@@ -1,7 +1,4 @@
-
-
 import { useEffect, useMemo, useState } from "react";
-
 import TimeOfficeNavbar from "../../components/TimeOfficeNavbar";
 import LeaveCalendarSearch from "../components/LeaveCalendarSearch";
 import LeaveCalendarTable from "../components/LeaveCalendarTable";
@@ -600,9 +597,9 @@ const LeaveCalendar = () => {
   // =========================================================
 
   return (
-    <div className="min-h-full w-full min-w-0 bg-gray-50 p-2 sm:p-3 md:p-4 md:h-full md:overflow-hidden">
-      <div className="flex h-auto min-h-0 w-full flex-col overflow-visible rounded-lg bg-white p-2 shadow-sm sm:p-4 md:h-full md:overflow-hidden">
-        <TimeOfficeNavbar compact className="mb-2 shrink-0">
+    <div className="min-h-full w-full min-w-0 bg-gray-50 p-0.5 md:h-full md:overflow-hidden">
+      <div className="flex h-auto min-h-0 w-full flex-col overflow-visible rounded-lg bg-white p-0.5 shadow-sm md:h-full md:overflow-hidden">
+        <TimeOfficeNavbar compact className="mb-1 shrink-0">
           <MonthPicker
             compact
             value={`${new Date(2000, selectedMonth, 1).toLocaleDateString("en-US", { month: "short" })}/${selectedYear}`}
@@ -610,14 +607,14 @@ const LeaveCalendar = () => {
               const monthIndex = new Date(`${value.split("/")[0]} 1, 2000`).getMonth();
               if (!Number.isNaN(monthIndex)) setSelectedMonth(monthIndex);
             }}
-            className="w-[96px] border-slate-300 bg-white font-[Urbanist]"
+            className="w-[68px] border-slate-300 bg-white font-[Urbanist]"
           />
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             <select
               aria-label="Select Leave Type"
               value={leaveType}
               onChange={(event) => setLeaveType(event.target.value)}
-              className="h-8 w-[120px] rounded-md border border-slate-300 bg-white px-2 text-xs text-slate-600"
+              className="h-4 w-[68px] rounded-md border border-slate-300 bg-white px-0.5 text-[7px] text-slate-600"
             >
               <option value="">Select Leave Type</option>
               <option value="P">Present</option>
@@ -625,31 +622,31 @@ const LeaveCalendar = () => {
               <option value="W">Week Off</option>
               <option value="H">Holiday</option>
             </select>
-            <button type="button" title="Export attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-200 text-emerald-600">
-              <FileSpreadsheet size={16} />
+            <button type="button" title="Export attendance" className="flex h-4 w-4 items-center justify-center rounded-md border border-emerald-200 text-emerald-600">
+              <FileSpreadsheet size={9} />
             </button>
-            <button type="button" title="Filter attendance" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500">
-              <Filter size={16} />
+            <button type="button" title="Filter attendance" className="flex h-4 w-4 items-center justify-center rounded-md border border-slate-200 text-slate-500">
+              <Filter size={9} />
             </button>
-            <button type="button" title="Attendance history" className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500">
-              <History size={16} />
+            <button type="button" title="Attendance history" className="flex h-4 w-4 items-center justify-center rounded-md border border-slate-200 text-slate-500">
+              <History size={9} />
             </button>
           </div>
         </TimeOfficeNavbar>
 
-        <div className="punch-horizontal-scroll flex shrink-0 items-center justify-end gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2">
+        <div className="punch-horizontal-scroll flex shrink-0 items-center justify-end gap-1 overflow-x-auto border-b border-slate-200 bg-white px-2 py-1">
           {["Half Day Status", "Revert", "Bulk Correction", "Exception", "Process"].map(
             (label) => (
               <button
                 key={label}
                 type="button"
-                className={`inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border px-3 text-xs font-medium ${
+                className={`inline-flex h-4 shrink-0 items-center gap-0.5 whitespace-nowrap rounded-md border px-1 text-[7px] font-medium ${
                   label === "Half Day Status" || label === "Exception"
                     ? "border-[#1997e8] bg-[#1997e8] text-white"
                     : "border-slate-200 bg-slate-100 text-slate-400"
                 }`}
               >
-                <Bookmark size={13} />
+                <Bookmark size={8} />
                 {label}
               </button>
             ),
@@ -658,7 +655,7 @@ const LeaveCalendar = () => {
 
         {/* SEARCH */}
 
-        <div className="punch-horizontal-scroll flex min-h-10 min-w-full shrink-0 items-center justify-between gap-4 overflow-x-auto border-b border-slate-200 bg-white px-3 py-1.5">
+        <div className="punch-horizontal-scroll flex min-h-6 min-w-full shrink-0 items-center justify-between gap-1 overflow-x-auto border-b border-slate-200 bg-white px-1.5 py-0.5">
           <LeaveCalendarSearch
             searchTerm={
               searchTerm
@@ -668,19 +665,19 @@ const LeaveCalendar = () => {
               setSearchTerm
             }
           />
-          <div className="ml-auto flex shrink-0 items-center gap-5">
-            <button type="button" className="flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-slate-600">
-              <Plus size={14} /> Add Filter
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            <button type="button" className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[7px] text-slate-600">
+              <Plus size={8} /> Add Filter
             </button>
             {["Query", "TA Policy", "Pattern", "TA Supervisor", "Attendance", "Leave"].map(
               (label) => (
-                <button key={label} type="button" className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs text-slate-500">
-                  {label} <ChevronDown size={12} />
+                <button key={label} type="button" className="inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[7px] text-slate-500">
+                  {label} <ChevronDown size={8} />
                 </button>
               ),
             )}
             <button type="button" title="More filters" className="shrink-0 text-slate-500">
-              <MoreVertical size={16} />
+              <MoreVertical size={9} />
             </button>
             <button
               type="button"
@@ -691,7 +688,7 @@ const LeaveCalendar = () => {
               }}
               className="shrink-0 text-red-400"
             >
-              <X size={17} />
+              <X size={9} />
             </button>
           </div>
         </div>
