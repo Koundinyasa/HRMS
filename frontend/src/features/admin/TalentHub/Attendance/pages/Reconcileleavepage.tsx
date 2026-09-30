@@ -8,7 +8,7 @@ const RECONCILE_LEAVE_TABS = [
 
 export default function ReconcileLeavePage() {
   const { domain } = useParams();
-  const basePath = `/${domain}/admin/talent-hub/attendance/integrations/reconcileleave`;
+  const basePath = `/${domain}/admin/time-office/attendance/integrations/reconcileleave`;
 
   return (
     <div>

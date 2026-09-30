@@ -4,7 +4,7 @@ import { Settings_Details_Tab } from "../constants/settings.constants";
 
 export default function LeaveSettingsPage() {
   const { domain } = useParams();
-  const basePath = `/${domain}/admin/talent-hub/leave/settings`;
+  const basePath = `/${domain}/admin/time-office/leave/settings`;
 
   return (
     <div className="w-full min-w-0 space-y-3">

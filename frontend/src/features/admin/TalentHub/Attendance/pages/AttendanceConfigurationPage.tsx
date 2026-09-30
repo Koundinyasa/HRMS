@@ -4,7 +4,7 @@ import { Configurations_Details_Tab } from "../constants/attendance.constants";
 
 export default function AttendanceConfigurationPage() {
   const { domain } = useParams();
-  const basePath = `/${domain}/admin/talent-hub/attendance/configuration`;
+  const basePath = `/${domain}/admin/time-office/attendance/configuration`;
 
   return (
     <div>

@@ -4,7 +4,7 @@ import { Holiday_WeeklyOff_Details_Tab } from "../constants/holidayweeklyoff.con
 
 export default function HolidayWeeklyOffPage() {
   const { domain } = useParams();
-  const basePath = `/${domain}/admin/talent-hub/leave/holidayandweekOff`;
+  const basePath = `/${domain}/admin/time-office/leave/holidayandweekOff`;
 
   return (
     <div className="w-full min-w-0 space-y-3">

@@ -19,3 +19,7 @@ export const TALENT_HUB_SUB_NAV:SubNavItem[] = [
     },
     {label:'TimeOffice',path:'timeoffice'}
 ]
+
+export const RECRUITMENT_SUB_NAV: SubNavItem[] = [
+    { label: 'Recruitment', path: 'recruitment' }
+]

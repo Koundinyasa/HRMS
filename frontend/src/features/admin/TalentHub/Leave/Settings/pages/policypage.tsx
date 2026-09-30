@@ -49,7 +49,7 @@ export default function PolicyPage() {
   const openLeaveSettings = (leaveId: number) => {
     if (!activePolicyId) return;
     navigate(
-      `/${domain}/admin/talent-hub/leave/settings/policy/${activePolicyId}/leave/${leaveId}/behavior`
+      `/${domain}/admin/time-office/leave/settings/policy/${activePolicyId}/leave/${leaveId}/behavior`
     );
   };
 

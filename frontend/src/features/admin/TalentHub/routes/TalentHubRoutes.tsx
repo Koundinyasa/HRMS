@@ -56,7 +56,7 @@
 // import AssignImportPage from "../TimeOffice/pages/assign/AssignImportPage";
 
 // export const TalentHubRoutes = (
-//   <Route path="talent-hub" element={<TalentHubPage />}>
+//   <Route path="time-office" element={<TalentHubPage />}>
 //     <Route path="attendance" element={<AttendancePage1 />}>
 //       <Route index element={<Navigate to="configuration" replace />} />
 //       <Route path="configuration" element={<AttendanceConfigurationPage />}>
@@ -260,9 +260,15 @@ import GeoLocationAssignPage from "../TimeOffice/pages/assign/GeoLocationAssignP
 import PolicyUpdateAssignPage from "../TimeOffice/pages/assign/PolicyUpdateAssignPage";
 import FaceTemplateAssignPage from "../TimeOffice/pages/assign/FaceTemplateAssignPage";
 import AssignImportPage from "../TimeOffice/pages/assign/AssignImportPage";
+import RecruitmentPage from "../pages/RecruitmentPage";
  
 export const TalentHubRoutes = (
+  <>
   <Route path="talent-hub" element={<TalentHubPage />}>
+    <Route index element={<Navigate to="recruitment" replace />} />
+    <Route path="recruitment" element={<RecruitmentPage />} />
+  </Route>
+  <Route path="time-office" element={<TalentHubPage />}>
     <Route path="attendance" element={<AttendancePage1 />}>
       <Route index element={<Navigate to="configuration" replace />} />
       <Route path="configuration" element={<AttendanceConfigurationPage />}>
@@ -326,7 +332,6 @@ export const TalentHubRoutes = (
         <Route path="import" element={<HolidayImportPanel />} />
       </Route>
     </Route>
- 
     <Route path="timeoffice">
       <Route index element={<Navigate to="punch-process" replace />} />
       <Route path="punch-process">
@@ -412,4 +417,5 @@ export const TalentHubRoutes = (
       </Route>
     </Route>
   </Route>
+  </>
 );

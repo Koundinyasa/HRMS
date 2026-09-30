@@ -4,7 +4,7 @@ import { Integrations_Details_Tab } from "../constants/attendance.constants";
 
 export default function AttendanceIntegrationsPage() {
   const { domain } = useParams();
-  const basePath = `/${domain}/admin/talent-hub/attendance/integration`;
+  const basePath = `/${domain}/admin/time-office/attendance/integration`;
 
   return (
     <div>

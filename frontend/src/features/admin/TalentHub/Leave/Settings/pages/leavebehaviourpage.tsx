@@ -45,7 +45,7 @@ export default function LeaveBehaviorPage() {
     await updateDetail({ policyId: Number(policyId), leaveId: Number(leaveId), body: form });
   };
 
-  const goBack = () => navigate(`/${domain}/admin/talent-hub/leave/settings/policy`);
+  const goBack = () => navigate(`/${domain}/admin/time-office/leave/settings/policy`);
 
   return (
     <div className="w-full min-w-0">

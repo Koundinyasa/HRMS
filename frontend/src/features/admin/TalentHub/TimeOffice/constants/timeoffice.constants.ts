@@ -14,7 +14,7 @@ import type {
   TaReportCategory,
 } from "../types/timeoffice.types";
 
-export const TIME_OFFICE_SECTION_PATH = "talent-hub/timeoffice/punch-process";
+export const TIME_OFFICE_SECTION_PATH = "time-office/timeoffice/punch-process";
 
 export const PUNCH_PROCESS_TABS: { label: string; path: PunchProcessTab }[] = [
   { label: "Dashboard", path: "dashboard" },
@@ -25,7 +25,7 @@ export const PUNCH_PROCESS_TABS: { label: string; path: PunchProcessTab }[] = [
   { label: "Import", path: "import" },
 ];
 
-export const REGULARIZATION_SECTION_PATH = "talent-hub/timeoffice/regularization";
+export const REGULARIZATION_SECTION_PATH = "time-office/timeoffice/regularization";
 
 export const REGULARIZATION_TABS: { label: string; path: RegularizationTab }[] = [
   { label: "Punch", path: "punch" },
@@ -34,9 +34,9 @@ export const REGULARIZATION_TABS: { label: string; path: RegularizationTab }[] =
   { label: "TA Insights", path: "ta-insights" },
 ];
 
-export const TA_REPORTS_SECTION_PATH = "talent-hub/timeoffice/ta-reports";
+export const TA_REPORTS_SECTION_PATH = "time-office/timeoffice/ta-reports";
 
-export const FORCE_APPROVAL_SECTION_PATH = "talent-hub/timeoffice/force-approval";
+export const FORCE_APPROVAL_SECTION_PATH = "time-office/timeoffice/force-approval";
 
 export const FORCE_APPROVAL_TABS: { label: string; path: ForceApprovalTab }[] = [
   { label: "Punch", path: "punch" },
@@ -48,7 +48,7 @@ export const FORCE_APPROVAL_TABS: { label: string; path: ForceApprovalTab }[] = 
   { label: "Face Template", path: "face-template" },
 ];
 
-export const MASTERS_SECTION_PATH = "talent-hub/timeoffice/masters";
+export const MASTERS_SECTION_PATH = "time-office/timeoffice/masters";
 
 export const MASTERS_TABS: { label: string; path: MastersTab }[] = [
   { label: "Policy", path: "policy" },
@@ -58,7 +58,7 @@ export const MASTERS_TABS: { label: string; path: MastersTab }[] = [
   { label: "Import", path: "import" },
 ];
 
-export const SETTINGS_SECTION_PATH = "talent-hub/timeoffice/settings";
+export const SETTINGS_SECTION_PATH = "time-office/timeoffice/settings";
 
 export const SETTINGS_TABS: { label: string; path: SettingsTab }[] = [
   { label: "General Settings", path: "general-settings" },
@@ -67,7 +67,7 @@ export const SETTINGS_TABS: { label: string; path: SettingsTab }[] = [
   { label: "Punch Integration", path: "punch-integration" },
 ];
 
-export const ASSIGN_SECTION_PATH = "talent-hub/timeoffice/assign";
+export const ASSIGN_SECTION_PATH = "time-office/timeoffice/assign";
 
 export const ASSIGN_TABS: { label: string; path: AssignTab }[] = [
   { label: "Geo-Location", path: "geo-location" },

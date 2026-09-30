@@ -12,7 +12,6 @@ import { randomBytes } from 'crypto';
 import { DraftService } from '../chatbot/services/draft.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { SendWishDto } from './dto/SendWish.dto';
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -37,168 +36,114 @@ export class AuthService {
   }
  
   // ================= LOGIN =================
-   async login(dto: LoginDto) {
-     try {
-       // ================= CAPTCHA VALIDATION =================
-       const captchaValid = this.captchaService.validate(
-         dto.captchaId,
-         dto.captchaAnswer,
-       );
-
-       if (!captchaValid) {
-         throw new BadRequestException(
-           'Invalid or expired captcha. Please refresh and try again.',
-         );
-       }
-
-       // ================= DATABASE CONNECTION =================
-       const pool = await this.dbService.connect();
-
-       // ================= VALIDATE USER =================
-       const result = await pool
-         .request()
-         .input('EmailID', dto.userId)
-         .execute('USP_Validateuser');
-
-       const user = result.recordset?.[0];
-
-       // ================= USER NOT FOUND =================
-       if (!user) {
-         throw new UnauthorizedException('Invalid UserID or Password');
-       }
-
-       // ================= ACCOUNT ALREADY LOCKED =================
-       if (user.IsAccountLocked === true || user.IsAccountLocked === 1) {
-         throw new UnauthorizedException(
-           'Account is locked. Contact administrator.',
-         );
-       }
-
-       // ================= PASSWORD VALIDATION =================
-       const isPasswordValid = await bcrypt.compare(
-         dto.password,
-         user.PasswordHash,
-       );
-
-       // ========================================================
-       // WRONG PASSWORD
-       // ========================================================
-       if (!isPasswordValid) {
-         const updateResult = await pool
-           .request()
-           .input('EmployeeID', sql.VarChar(100), user.EmployeeID)
-           .input('flag', sql.Int, 1)
-           .output('StatusCode', sql.Int)
-           .output('StatusMessage', sql.NVarChar(200))
-           .execute('USP_UpdateLoginInfo');
-
-         // Read OUTPUT parameters returned by SP
-         const statusCode = updateResult.output?.StatusCode;
-         const statusMessage = updateResult.output?.StatusMessage;
-
-         console.log('🔥 LOGIN FAILED UPDATE:', {
-           EmployeeID: user.EmployeeID,
-           StatusCode: statusCode,
-           StatusMessage: statusMessage,
-         });
-
-         // ================= ACCOUNT LOCKED =================
-         if (statusCode === 2) {
-           throw new UnauthorizedException(
-             statusMessage || 'Account is locked. Contact administrator.',
-           );
-         }
-
-         // ================= INVALID PASSWORD =================
-         throw new UnauthorizedException(
-           statusMessage || 'Invalid UserID or Password',
-         );
-       }
-
-       // ========================================================
-       // FIRST LOGIN CHECK
-       // ========================================================
-       const isFirstLogin = user.LastLoginDateTime === null;
-
-       // ========================================================
-       // SUCCESSFUL LOGIN
-       // ========================================================
-       // Update login information only after first login
-       // has already been completed.
-       if (!isFirstLogin) {
-         const loginUpdateResult = await pool
-           .request()
-           .input('EmployeeID', sql.VarChar(100), user.EmployeeID)
-           .input('flag', sql.Int, 2)
-           .output('StatusCode', sql.Int)
-           .output('StatusMessage', sql.NVarChar(200))
-           .execute('USP_UpdateLoginInfo');
-
-         console.log('🔥 SUCCESS LOGIN UPDATE:', {
-           EmployeeID: user.EmployeeID,
-           StatusCode: loginUpdateResult.output?.StatusCode,
-           StatusMessage: loginUpdateResult.output?.StatusMessage,
-         });
-       }
-
-       // ========================================================
-       // GENERATE JWT
-       // ========================================================
-       const accessToken = this.jwtService.sign({
-         employeeId: user.EmployeeID,
-         userId: user.UserID,
-         roleId: user.RoleID,
-         companyId: user.CompanyID,
-         createdBy: user.Sessionuserid,
-         name: user.FullName,
-         role:
-           user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
-       });
-
-       // ========================================================
-       // LOGIN MESSAGE
-       // ========================================================
-       let loginMessage = 'Login successful';
-
-       if (user.RoleID === 1) {
-         loginMessage = 'Super Admin login successful';
-       } else if (user.RoleID === 2) {
-         loginMessage = 'HR Admin login successful';
-       }
-
-       // ========================================================
-       // CLEAR PREVIOUS CHATBOT SESSION
-       // ========================================================
-       this.clearChatbotState(String(user.EmployeeID));
-
-       // ========================================================
-       // SUCCESS RESPONSE
-       // ========================================================
-       return {
-         success: true,
-         message: loginMessage,
-         accessToken,
-         isFirstLogin,
-         data: {
-           employeeId: user.EmployeeID,
-           userId: user.UserID,
-           roleId: user.RoleID,
-         },
-       };
-     } catch (error) {
-       throw error;
-     }
-   }
  
+  async login(dto: LoginDto) {
+    try {
+      const captchaValid = this.captchaService.validate(
+        dto.captchaId,
+        dto.captchaAnswer,
+      );
  
+      if (!captchaValid) {
+        throw new BadRequestException(
+          'Invalid or expired captcha. Please refresh and try again.',
+        );
+      }
+
+      const pool = await this.dbService.connect();
+
+      const result = await pool
+        .request()
+        .input('EmailID', dto.userId)
+        .execute('USP_Validateuser');
+
+      const user = result.recordset[0];
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid UserID or Password');
+      }
  
+      if (
+        user.IsAccountLocked === true ||
+        user.IsAccountLocked === 1
+      ) {
+        throw new UnauthorizedException(
+          'Account is locked. Contact administrator.',
+        );
+      }
+ 
+      const isPasswordValid = await bcrypt.compare(
+        dto.password,
+        user.PasswordHash,
+      );
+ 
+      if (!isPasswordValid) {
+        await pool
+          .request()
+          .input('EmployeeID', user.EmployeeID)
+          .input('flag', 1)
+          .execute('USP_UpdateLoginInfo');
+ 
+        throw new UnauthorizedException(
+          'Invalid UserID or Password',
+        );
+      }
+
+      const isFirstLogin = user.LastLoginDateTime === null;
+
+      // update login ONLY after first login is completed
+      if (!isFirstLogin) {
+        await pool
+          .request()
+          .input('EmployeeID', user.EmployeeID)
+          .input('flag', 2)
+          .execute('USP_UpdateLoginInfo');
+      }
+ 
+      const accessToken = this.jwtService.sign({
+        employeeId: user.EmployeeID,
+        userId: user.UserID,
+        roleId: user.RoleID,
+        companyId: user.CompanyID,
+        createdBy: user.Sessionuserid,
+        name: user.FullName,
+        role:
+          user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
+      });
+ 
+      let loginMessage = 'Login successful';
+ 
+      if (user.RoleID === 1) {
+        loginMessage = 'Super Admin login successful';
+      } else if (user.RoleID === 2) {
+        loginMessage = 'HR Admin login successful';
+      }
+ 
+      // Fresh session boundary — wipe any chatbot flow left over
+      // from a previous session for this employee.
+      this.clearChatbotState(String(user.EmployeeID));
+
+      return {
+        success: true,
+        message: loginMessage,
+        accessToken,
+        isFirstLogin,
+        data: {
+          employeeId: user.EmployeeID,
+          userId: user.UserID,
+          roleId: user.RoleID,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 
   // ================= VERIFY COMPANY =================
  async verifyCompany(tenantCode: string) {
   try {
     const pool = await this.dbService.connect();
  
-
     const result = await pool
       .request()
       .execute('USP_GetCompanyInfo');
@@ -363,12 +308,12 @@ export class AuthService {
     }
   }
  
-  async testMail() {
-    return this.mailService.sendTempPassword(
-      'test@gmail.com',
-      'TEST1234',
-    );
-  }
+  // async testMail() {
+  //   return this.mailService.sendTempPassword(
+  //     'test@gmail.com',
+  //     'TEST1234',
+  //   );
+  // }
  
   // async testMail() {
   //   return this.mailService.sendTempPassword(
@@ -632,69 +577,42 @@ export class AuthService {
   } catch (error) {
     throw error;
   }
-}
+  }
 
-async sendWish(
-    senderEmployeeId: string,
-    dto: SendWishDto,
-  ) {
-    try {
-      const pool = await this.dbService.connect();
- 
- 
-      // ================= RECIPIENT / WISHED PERSON =================
-      const recipientResult = await pool
-        .request()
-        .input('EmployeeID', dto.employeeId)
-        .execute('USP_GetUserInfo');
- 
- 
-      const recipient = recipientResult.recordset[0];
-      console.log('RECIPIENT EMPLOYEE ID:', dto.employeeId);
-      console.log('SENDER EMPLOYEE ID:', senderEmployeeId);
- 
-      if (!recipient) {
-        throw new NotFoundException(
-          'Wished employee not found',
-        );
-      }
- 
-      if (!recipient.Email) {
-        throw new BadRequestException(
-          'Wished employee email not found',
-        );
-      }
- 
-      // ================= SENDER / PERSON SENDING WISH =================
-      const senderResult = await pool
-        .request()
-        .input('EmployeeID', senderEmployeeId)
-        .execute('USP_GetUserInfo');
- 
-      const sender = senderResult.recordset[0];
- 
-      if (!sender) {
-        throw new NotFoundException(
-          'Sender employee not found',
-        );
-      }
- 
-      // ================= SEND EMAIL =================
-      await this.mailService.sendCelebrationWish(
-        recipient.Email,
-        recipient.FullName,
-        dto.eventType,
-        dto.message,
-        sender.FullName,
-        sender.Email,
-      );
- 
-      return {
-        success: true,
-        message: 'Wish sent successfully',
-      };
-    } catch (error) {
-      throw error;
+  async sendWish(senderEmployeeId: string, dto: SendWishDto) {
+    const pool = await this.dbService.connect();
+    const result = await pool
+      .request()
+      .input('EmployeeID', dto.employeeId)
+      .execute('USP_GetUserInfo');
+
+    const employee = result.recordset?.[0];
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
     }
+    if (!employee.Email) {
+      throw new BadRequestException('Employee does not have an email address');
+    }
+
+    const senderResult = await pool
+      .request()
+      .input('EmployeeID', senderEmployeeId)
+      .execute('USP_GetUserInfo');
+    const sender = senderResult.recordset?.[0];
+    if (!sender) {
+      throw new NotFoundException('Sender not found');
+    }
+
+    await this.mailService.sendWish(
+      employee.Email,
+      dto.eventType,
+      dto.message,
+      sender.FullName,
+    );
+
+    return {
+      success: true,
+      message: 'Wish sent successfully',
+    };
   }
 }

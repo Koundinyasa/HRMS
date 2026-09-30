@@ -47,6 +47,7 @@ export const SIDEBAR_LINKS = [
   { label: 'Admin Center', icon: 'LayoutGrid', path: 'admin-center' },
   { label: 'Enrollment', icon: 'ClipboardList', path: 'enrollment' },
   { label: 'Talent Hub', icon: 'Users2', path: 'talent-hub' },
+  { label: 'Time & Office', icon: 'Users2', path: 'time-office' },
   { label: 'Payroll', icon: 'Wallet', path: 'payroll' },
   { label: 'Insights', icon: 'BarChart3', path: 'insights' },
   { label: 'Organizations', icon: 'Building2', path: 'organizations' },
