@@ -1,6 +1,7 @@
 import type { SubNavItem } from "../../components/sidebar.types";
 
 export const ADMIN_CENTER_SUB_NAV: SubNavItem[] = [
+  { label: "Applied Leave", path: "applied-leave" },
   { label: "Add Employee", path: "add-employee" },
   {
     label: "Company",
@@ -14,19 +15,21 @@ export const ADMIN_CENTER_SUB_NAV: SubNavItem[] = [
   { label: "Classifications", path: "classifications" },
   { label: "User Management", path: "user-management" },
   { label: "Workflows", path: "workflows" },
-  { label: "ESS", path: "ess",
-    children:[
-      { label:"Circular",path:"circular"},
-      { label:"Policy",path:"policy"},
-      { label:"Notification",path:"notification"},
-      { label:"Flash News",path:"flash-news"},
-      { label:"Help Desk",path:"help-desk"},
-      { label:"Poll",path:"poll"},
-      { label:"Feeds",path:"feeds"},
-      { label:"Memories",path:"memories"},
-      { label:"Wall of Fame",path:"wall-of-fame"}
-    ]
-   },
+  {
+    label: "ESS",
+    path: "ess",
+    children: [
+      { label: "Circular", path: "circular" },
+      { label: "Policy", path: "policy" },
+      { label: "Notification", path: "notification" },
+      { label: "Flash News", path: "flash-news" },
+      { label: "Help Desk", path: "help-desk" },
+      { label: "Poll", path: "poll" },
+      { label: "Feeds", path: "feeds" },
+      { label: "Memories", path: "memories" },
+      { label: "Wall of Fame", path: "wall-of-fame" },
+    ],
+  },
   { label: "Other Config", path: "other-config" },
   { label: "API Source", path: "api-source" },
 ];

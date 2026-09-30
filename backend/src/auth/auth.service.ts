@@ -363,6 +363,13 @@ export class AuthService {
     }
   }
  
+  async testMail() {
+    return this.mailService.sendTempPassword(
+      'test@gmail.com',
+      'TEST1234',
+    );
+  }
+ 
   // async testMail() {
   //   return this.mailService.sendTempPassword(
   //     'test@gmail.com',

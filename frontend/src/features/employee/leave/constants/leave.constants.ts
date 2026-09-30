@@ -1,7 +1,6 @@
 
 
  
- 
 export const MAX_REASON_LENGTH = 500;
  
  
@@ -108,5 +107,4 @@ export const ALLOWED_FILE_TYPES = [
   "image/png",
   "image/jpeg",
 ];
- 
  
