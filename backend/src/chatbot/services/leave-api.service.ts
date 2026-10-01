@@ -60,6 +60,16 @@ export class LeaveApiService {
     return res.data;
   }
 
+  async getEmployeeLeaveDetails(user: Record<string, unknown>) {
+    const res = await firstValueFrom(
+      this.http.get(`${BASE_URL}/employee-details`, {
+        params: { employeeId: String(user.employeeId ?? '') },
+        headers: this.mintCookieHeader(user),
+      }),
+    );
+    return res.data;
+  }
+
   async getLeaveStatus(user: Record<string, any>) {
     const res = await firstValueFrom(
       this.http.get(`${BASE_URL}/status`, {

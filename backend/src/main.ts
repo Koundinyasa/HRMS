@@ -16,10 +16,7 @@ async function bootstrap() {
   app
     .getHttpAdapter()
     .getInstance()
-    .use(
-      '/documents',
-      express.static(join(process.cwd(), 'documents')),
-    );
+    .use('/documents', express.static(join(process.cwd(), 'documents')));
 
   const configService = app.get(ConfigService);
 
@@ -30,9 +27,7 @@ async function bootstrap() {
   // --- Swagger Setup Start ---
   const config = new DocumentBuilder()
     .setTitle('People360 HRMS API')
-    .setDescription(
-      'Core backend API documentation for KTS-People360 HRMS',
-    )
+    .setDescription('Core backend API documentation for KTS-People360 HRMS')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -54,7 +49,10 @@ async function bootstrap() {
   const configuredFrontendUrl =
     configService.get<string>('frontendUrl') ?? 'http://localhost:5173';
   const allowedFrontendOrigins = new Set([
-    ...configuredFrontendUrl.split(',').map((origin) => origin.trim()).filter(Boolean),
+    ...configuredFrontendUrl
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     'http://localhost:5173',
     'http://localhost:5174',
   ]);
@@ -66,7 +64,10 @@ async function bootstrap() {
         return;
       }
 
-      callback(new Error(`Origin ${requestOrigin} is not allowed by CORS`), false);
+      callback(
+        new Error(`Origin ${requestOrigin} is not allowed by CORS`),
+        false,
+      );
     },
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],

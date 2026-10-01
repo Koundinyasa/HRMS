@@ -34,7 +34,15 @@ export interface ChatWidget {
   step?: string;
   minDate?: string;
   holidays?: { date: string; name?: string }[];
-  leaveDates?: { date: string; leaveType: string; status: string }[];
+  leaveDates?: {
+    date: string;
+    leaveType: string;
+    status: string;
+    leaveId?: number;
+    sessionFrom?: string;
+    sessionTo?: string;
+    isHalfDay?: boolean;
+  }[];
   options?: ChatLeaveTypeOption[];
   url?: string;
   filename?: string;

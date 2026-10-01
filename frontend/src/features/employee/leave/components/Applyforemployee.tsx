@@ -31,7 +31,7 @@ import LeaveHistoryTable from "../components/LeaveHistoryTable";
 // backend sends the "Apply Leave for Employee" menu item for this user,
 // they're a team lead -> access allowed. If not, they're bounced back to
 // the normal Apply Leave page.
-import { useApplyForEmployeeMenu } from "../hooks/Useapplyforemployeemenu";
+import { useApplyForEmployeeMenu } from "../hooks/useApplyForEmployeeMenu";
 
 import { leaveApplySchema } from "../validation/leaveValidation";
 import { minFromDateIso, maxApplyDateIso } from "../constants/leave.constants";

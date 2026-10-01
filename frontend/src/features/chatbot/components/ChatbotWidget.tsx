@@ -163,7 +163,11 @@ function pruneOtherWidgetStorage(employeeId?: string): void {
 
   for (let i = 0; i < window.localStorage.length; i++) {
     const key = window.localStorage.key(i);
-    if (key && key.startsWith("hrmsChatbotWidgetMessages-") && key !== currentKey) {
+    if (
+      key &&
+      key.startsWith("hrmsChatbotWidgetMessages-") &&
+      key !== currentKey
+    ) {
       keysToRemove.push(key);
     }
   }
@@ -529,7 +533,9 @@ export default function ChatbotWidget({
   useEffect(() => {
     return () => {
       if (employeeIdRef.current) {
-        window.localStorage.removeItem(getWidgetStorageKey(employeeIdRef.current));
+        window.localStorage.removeItem(
+          getWidgetStorageKey(employeeIdRef.current),
+        );
       }
     };
   }, []);
@@ -559,14 +565,14 @@ export default function ChatbotWidget({
     }
   }, [messages]);
   useEffect(() => {
-  pruneOtherWidgetStorage(employeeId);
+    pruneOtherWidgetStorage(employeeId);
 
-  const saved = loadWidgetMessages(employeeId);
+    const saved = loadWidgetMessages(employeeId);
 
-  setMessages(saved ?? []);
+    setMessages(saved ?? []);
 
-  menuShownRef.current = false;
-}, [employeeId, employeeName]);
+    menuShownRef.current = false;
+  }, [employeeId, employeeName]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -1618,40 +1624,53 @@ function formatIsoDateLabel(iso: string): string {
 }
 
 type CalendarLeave = NonNullable<ChatWidget["leaveDates"]>[number];
+type LeaveHalf = "first" | "second" | "unknown" | null;
 
 const LEAVE_COLOR_CLASSES = {
   orange: {
     marker: "bg-orange-500",
     background: "bg-orange-200",
-    text: "text-orange-800",
+    text: "text-white-800",
   },
   green: {
     marker: "bg-emerald-500",
     background: "bg-emerald-200",
-    text: "text-emerald-800",
+    text: "text-white-800",
   },
   red: {
-    marker: "bg-red-500",
-    background: "bg-red-200",
-    text: "text-red-800",
+    marker: "bg-red-700",
+    background: "bg-red-300",
+    text: "text-white-800",
   },
   gray: {
     marker: "bg-gray-500",
     background: "bg-gray-200",
-    text: "text-gray-700",
+    text: "text-white-800",
+  },
+  slate: {
+    marker: "bg-violet-500",
+    background: "bg-violet-400",
+    text: "text-white-800",
   },
 } as const;
 
 type LeaveColor = keyof typeof LEAVE_COLOR_CLASSES;
 
-type LeaveStatus = "pending" | "approved" | "withdrawn" | "rejected" | "other";
+type LeaveStatus = "pending" | "approved" | "rejected" | "withdrawn" | "other";
 
 function getLeaveStatus(status: string): LeaveStatus {
   const normalized = status.trim().toLowerCase();
+  if (normalized.includes("reject")) return "rejected";
+  if (normalized.includes("approve") || normalized.includes("scheduled")) {
+    return "approved";
+  }
+  // Selected and Interviewing are HRMS in-progress states; cancelled and
+  // withdrawn are retained as raw statuses but use the existing Other color.
   if (normalized.includes("pending")) return "pending";
-  if (normalized.includes("approved")) return "approved";
   if (normalized.includes("withdrawn")) return "withdrawn";
-  if (normalized.includes("rejected")) return "rejected";
+  if (normalized.includes("selected") || normalized.includes("interview")) {
+    return "pending";
+  }
   return "other";
 }
 
@@ -1663,10 +1682,33 @@ function getLeaveStatusColor(status: string): LeaveColor {
       return "green";
     case "rejected":
       return "red";
-    case "withdrawn":
     case "other":
       return "gray";
+    case "withdrawn":
+      return "slate";
   }
+}
+
+function getLeaveHalf(leave: CalendarLeave): LeaveHalf {
+  const sessions = [leave.sessionFrom, leave.sessionTo]
+    .filter((session): session is string => Boolean(session))
+    .map((session) => session.replace(/\s+/g, "").toLowerCase());
+  const hasFirst = sessions.some((session) => session.includes("first"));
+  const hasSecond = sessions.some((session) => session.includes("second"));
+
+  if (hasFirst && hasSecond) return null;
+  if (hasFirst) return "first";
+  if (hasSecond) return "second";
+  if (leave.isHalfDay) return "unknown";
+  return null;
+}
+
+function getSessionLabel(leave: CalendarLeave): string {
+  const half = getLeaveHalf(leave);
+  if (half === "first") return "First Half";
+  if (half === "second") return "Second Half";
+  if (half === "unknown") return "Half Day";
+  return "Full Day";
 }
 
 function ChatWidgetRenderer({
@@ -1678,7 +1720,7 @@ function ChatWidgetRenderer({
   onOpenTeamPreview,
 }: ChatWidgetRendererProps) {
   const [dateValue, setDateValue] = useState("");
-  const [selectedLeave, setSelectedLeave] = useState<CalendarLeave | null>(null);
+  const [selectedLeaves, setSelectedLeaves] = useState<CalendarLeave[]>([]);
   const [dateError, setDateError] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -1723,7 +1765,10 @@ function ChatWidgetRenderer({
   // keeps the relevant part on-screen either way.
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
-      widgetRowRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      widgetRowRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     });
     return () => cancelAnimationFrame(raf);
   }, [showCalendar, dateValue]);
@@ -1752,7 +1797,9 @@ function ChatWidgetRenderer({
       leaveDates.set(date, dateLeaves);
     }
     const leaveStatuses = Array.from(
-      new Set((widget.leaveDates ?? []).map((leave) => getLeaveStatus(leave.status))),
+      new Set(
+        (widget.leaveDates ?? []).map((leave) => getLeaveStatus(leave.status)),
+      ),
     );
     const isWeekend = (iso: string) => {
       const day = new Date(`${iso}T00:00:00Z`).getUTCDay();
@@ -1777,6 +1824,7 @@ function ChatWidgetRenderer({
       day.setDate(calendarStart.getDate() + index);
       return day;
     });
+    const todayIso = getLocalIsoDate();
     const monthLabel = calendarMonth.toLocaleDateString([], {
       month: "long",
       year: "numeric",
@@ -1833,7 +1881,10 @@ function ChatWidgetRenderer({
     };
 
     return (
-      <div ref={widgetRowRef} className="flex flex-wrap gap-2 mt-2.5 items-center">
+      <div
+        ref={widgetRowRef}
+        className="flex flex-wrap gap-2 mt-2.5 items-center"
+      >
         <div className="relative flex items-center">
           <input
             type="text"
@@ -1889,15 +1940,46 @@ function ChatWidgetRenderer({
                 )}
                 {calendarDays.map((day) => {
                   const iso = localDateToIso(day);
+                  const isToday = iso === todayIso;
                   const outsideMonth =
                     day.getMonth() !== calendarMonth.getMonth();
                   const weekend = isWeekend(iso);
                   const holiday = isHoliday(iso);
                   const leaves = leaveDates.get(iso) ?? [];
-                  const leave = leaves[0];
-                  const leaveColors = leaves.map((item) =>
-                    LEAVE_COLOR_CLASSES[getLeaveStatusColor(item.status)],
+                  const activeLeaves = leaves.filter((item) => {
+                    const status = getLeaveStatus(item.status);
+                    return status === "pending" || status === "approved";
+                  });
+                  const rejectedLeaves = leaves.filter(
+                    (item) => getLeaveStatus(item.status) === "rejected",
                   );
+                  const visualLeaves = activeLeaves.length
+                    ? activeLeaves
+                    : rejectedLeaves.length
+                    ? rejectedLeaves
+                    : leaves;
+                  const fullDayLeave = visualLeaves.find(
+                    (item) => getLeaveHalf(item) === null,
+                  );
+                  const unknownSessionLeave = visualLeaves.find(
+                    (item) => getLeaveHalf(item) === "unknown",
+                  );
+                  const firstHalfLeave = visualLeaves.find(
+                    (item) => getLeaveHalf(item) === "first",
+                  );
+                  const secondHalfLeave = visualLeaves.find(
+                    (item) => getLeaveHalf(item) === "second",
+                  );
+                  const markerLeave =
+                    fullDayLeave ??
+                    unknownSessionLeave ??
+                    firstHalfLeave ??
+                    secondHalfLeave;
+                  const markerColor = markerLeave
+                    ? LEAVE_COLOR_CLASSES[
+                        getLeaveStatusColor(markerLeave.status)
+                      ]
+                    : undefined;
                   const selected =
                     iso === dateValue.split("-").reverse().join("-");
                   const startDateReference = widget.minDate === iso;
@@ -1908,8 +1990,15 @@ function ChatWidgetRenderer({
                       type="button"
                       disabled={!selectable}
                       title={
-                        leave
-                          ? `${leaves.map((item) => `${item.leaveType} (${item.status})`).join("\n")}\n${formatIsoDateLabel(iso)}`
+                        leaves.length
+                          ? `${leaves
+                              .map(
+                                (item) =>
+                                  `${item.leaveType} (${
+                                    item.status
+                                  }; ${getSessionLabel(item)})`,
+                              )
+                              .join("\n")}\n${formatIsoDateLabel(iso)}`
                           : holiday
                           ? holidayDates.get(iso)
                           : weekend
@@ -1918,79 +2007,122 @@ function ChatWidgetRenderer({
                       }
                       onClick={() => {
                         handleDateChange(isoToDisplayDate(iso));
-                        setSelectedLeave(leave ?? null);
+                        setSelectedLeaves(leaves);
                         setShowCalendar(leaves.length > 0);
                       }}
-                      className={`mx-auto my-0.5 flex h-7 w-7 items-center justify-center rounded-full border-none text-[12px] ${
+                      className={`relative mx-auto my-0.5 flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-none text-[12px] ${
                         outsideMonth ? "text-[#b7bdc9]" : "text-[#1f2430]"
-                      } ${weekend ? "bg-[#ffe0e3] text-[#e33b49]" : ""} ${
+                      } ${weekend ? "bg-rose-100 text-rose-500" : ""} ${
                         holiday ? "bg-[#2f68df] text-white" : ""
                       } ${
                         startDateReference && !holiday && !weekend
                           ? "bg-[#dbeafe] text-[#1d4ed8]"
                           : ""
                       } ${
-                        leave && !holiday && !weekend
-                          ? `${leaveColors[0].background} ${leaveColors[0].text}`
+                        isToday
+                          ? "ring-2 ring-blue-500 ring-offset-2"
+                          : selected
+                          ? "ring-2 ring-[#1f5bd8] ring-offset-1"
                           : ""
-                      } ${
-                        selected ? "ring-2 ring-[#1f5bd8] ring-offset-1" : ""
                       } ${
                         selectable
                           ? "cursor-pointer hover:bg-[var(--primary-light)]"
                           : "cursor-not-allowed opacity-75"
                       }`}
                     >
-                      <span className="relative">
-                        {day.getDate()}
-                      </span>
+                      {!weekend && !holiday && markerColor && (
+                        <span className="pointer-events-none absolute inset-0">
+                          {fullDayLeave || unknownSessionLeave ? (
+                            <span
+                              className={`absolute inset-0 ${markerColor.background}`}
+                            />
+                          ) : (
+                            <>
+                              {firstHalfLeave && (
+                                <span
+                                  className={`absolute inset-0 ${
+                                    LEAVE_COLOR_CLASSES[
+                                      getLeaveStatusColor(firstHalfLeave.status)
+                                    ].background
+                                  }`}
+                                  style={{ clipPath: "inset(0 50% 0 0)" }}
+                                />
+                              )}
+                              {secondHalfLeave && (
+                                <span
+                                  className={`absolute inset-0 ${
+                                    LEAVE_COLOR_CLASSES[
+                                      getLeaveStatusColor(
+                                        secondHalfLeave.status,
+                                      )
+                                    ].background
+                                  }`}
+                                  style={{ clipPath: "inset(0 0 0 50%)" }}
+                                />
+                              )}
+                            </>
+                          )}
+                        </span>
+                      )}
+                      <span className="relative z-10">{day.getDate()}</span>
                     </button>
                   );
                 })}
               </div>
-              {selectedLeave && (
+              {selectedLeaves.length > 0 && (
                 <div className="mt-2 rounded-lg border border-[#f6d08a] bg-[#fffaf0] px-3 py-2 text-[11px] text-[#526079]">
                   <div className="font-semibold text-[#b45309]">My Leave</div>
                   <div className="mt-1 font-medium text-[#1f2430]">
-                    {formatIsoDateLabel(selectedLeave.date)}
+                    {formatIsoDateLabel(selectedLeaves[0].date)}
                   </div>
-                  <div className="mt-1">
-                    Leave Type: <span className="font-medium text-[#1f2430]">{selectedLeave.leaveType}</span>
-                  </div>
-                  <div>
-                    Status: <span className="font-medium text-[#1f2430]">{selectedLeave.status}</span>
-                  </div>
+                  {selectedLeaves.map((leave, index) => (
+                    <div
+                      key={`${leave.leaveId ?? leave.leaveType}-${index}`}
+                      className="mt-2 border-t border-[#f6d08a] pt-2"
+                    >
+                      <div className="font-medium text-[#1f2430]">
+                        {leave.leaveType}
+                      </div>
+                      <div>Status: {leave.status}</div>
+                      <div>Session: {getSessionLabel(leave)}</div>
+                    </div>
+                  ))}
                 </div>
               )}
               <div className="mt-2 grid grid-cols-3 items-start gap-x-2 gap-y-2 border-t border-[#eceef5] pt-2 text-[10px] leading-[1.15] text-[#526079]">
                 <span className="flex min-w-0 flex-col items-center text-center">
-                  <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-[#e33b49]" />
-                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">Weekend</span>
+                  <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-rose-300" />
+                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
+                    Weekend
+                  </span>
                 </span>
                 <span className="flex min-w-0 flex-col items-center text-center">
                   <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-[#2f68df]" />
-                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">Holiday</span>
+                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
+                    Holiday
+                  </span>
                 </span>
                 {leaveStatuses.map((status) => {
-                  const statusColors = LEAVE_COLOR_CLASSES[
-                    getLeaveStatusColor(status)
-                  ];
+                  const statusColors =
+                    LEAVE_COLOR_CLASSES[getLeaveStatusColor(status)];
                   const label =
                     status === "pending"
                       ? "Pending Leave"
                       : status === "approved"
                       ? "Approved Leave"
-                      : status === "withdrawn"
-                      ? "Withdrawn Leave"
                       : status === "rejected"
                       ? "Rejected Leave"
+                      : status === "withdrawn"
+                      ? "Withdrawn Leave"
                       : "Other Leave";
                   return (
                     <span
                       key={status}
                       className="flex min-w-0 flex-col items-center text-center"
                     >
-                      <i className={`mb-1 h-2 w-2 shrink-0 rounded-full ${statusColors.marker}`} />
+                      <i
+                        className={`mb-1 h-2 w-2 shrink-0 rounded-full ${statusColors.marker}`}
+                      />
                       <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
                         {label}
                       </span>
@@ -2004,7 +2136,7 @@ function ChatWidgetRenderer({
                   onClick={() => {
                     setDateValue("");
                     setDateError(false);
-                    setSelectedLeave(null);
+                    setSelectedLeaves([]);
                     setShowCalendar(false);
                   }}
                   className="border-none bg-transparent px-1 text-[12px] font-medium text-[#1677d2] cursor-pointer hover:text-[#125eaa]"
@@ -2017,7 +2149,7 @@ function ChatWidgetRenderer({
                   onClick={() => {
                     const today = getLocalIsoDate();
                     handleDateChange(isoToDisplayDate(today));
-                    setSelectedLeave(leaveDates.get(today)?.[0] ?? null);
+                    setSelectedLeaves(leaveDates.get(today) ?? []);
                     setCalendarMonth(isoToMonthStart(today));
                     setShowCalendar(false);
                   }}

@@ -31,32 +31,27 @@ export class LeaveController {
   constructor(private readonly leaveService: LeaveService) {}
 
   @UseGuards(JwtAuthGuard)
- @Get('leavetypes')
+  @Get('leavetypes')
   @UseGuards(JwtAuthGuard)
   async getLeaveTypes(
     @Req() req: any,
     @Query('employeeId') employeeId?: string,
   ) {
     const targetEmployeeId =
-      employeeId?.trim() ||
-      String(req.user?.employeeId ?? '').trim();
- 
+      employeeId?.trim() || String(req.user?.employeeId ?? '').trim();
+
     const companyId = Number(req.user?.companyId);
- 
+
     if (!targetEmployeeId) {
       throw new BadRequestException('Invalid employeeId');
     }
- 
+
     if (!Number.isInteger(companyId) || companyId <= 0) {
       throw new BadRequestException('Invalid companyId');
     }
- 
-    return this.leaveService.getLeaveTypes(
-      targetEmployeeId,
-      companyId,
-    );
+
+    return this.leaveService.getLeaveTypes(targetEmployeeId, companyId);
   }
- 
 
   // Holiday List
   @Get('holidaylist')

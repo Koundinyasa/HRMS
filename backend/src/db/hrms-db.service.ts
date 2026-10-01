@@ -68,6 +68,32 @@ export class HrmsDbService {
     return { self, holidays };
   }
 
+  async getEmployeeLeaveSessionDetails(
+    employeeId: string,
+    companyId?: number,
+  ) {
+    const normalizedEmployeeId = employeeId.trim();
+    if (!normalizedEmployeeId) return [];
+
+    const pool = await this.getPool();
+    const request = pool
+      .request()
+      .input('EmployeeID', sql.VarChar(100), normalizedEmployeeId);
+    let query = `
+      SELECT Id, IsHalfDay, SessionFrom, SessionTo
+      FROM LeaveApplication
+      WHERE EmployeeId = @EmployeeID
+    `;
+
+    if (companyId !== undefined) {
+      request.input('CompanyId', sql.Int, companyId);
+      query += ' AND CompanyId = @CompanyId';
+    }
+
+    const result = await request.query(query);
+    return result.recordset;
+  }
+
   // ─── HRMSDEV: fetch user by email for login (USP_Validateuser) ────────────────
   async validateUser(email: string) {
     const pool = await this.getPool();

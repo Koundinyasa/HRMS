@@ -33,7 +33,15 @@ export interface ResponseWidget {
   step?: string;
   minDate?: string;
   holidays?: { date: string; name?: string }[];
-  leaveDates?: { date: string; leaveType: string; status: string }[];
+  leaveDates?: {
+    date: string;
+    leaveType: string;
+    status: string;
+    leaveId?: number;
+    sessionFrom?: string;
+    sessionTo?: string;
+    isHalfDay?: boolean;
+  }[];
   options?: LeaveTypeOption[];
   url?: string;
   filename?: string;

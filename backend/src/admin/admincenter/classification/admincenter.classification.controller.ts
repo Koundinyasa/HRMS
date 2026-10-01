@@ -27,7 +27,6 @@ import { CreateDesignationDto } from './dto/create-designation.dto';
 import { UpdateDesignationDto } from './dto/update-designation.dto';
 import { UpdateDesignationStatusDto } from './dto/update-designation-status.dto';
 
-
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
@@ -165,11 +164,16 @@ export class AdmincenterClassificationController {
     @Body() dto: CreateDesignationDto | UpdateDesignationDto,
   ) {
     if ('id' in dto) {
-      return this.classificationService.updateDesignation(req.user.createdBy, dto);
+      return this.classificationService.updateDesignation(
+        req.user.createdBy,
+        dto,
+      );
     }
-    return this.classificationService.createDesignation(req.user.createdBy, dto);
+    return this.classificationService.createDesignation(
+      req.user.createdBy,
+      dto,
+    );
   }
-
 
   @Post('designation/status')
   updateDesignationStatus(
@@ -182,11 +186,8 @@ export class AdmincenterClassificationController {
     );
   }
 
-
   @Get('bank/info')
-  async getBankInfo(
-    @Req() req: any,
-  ) {
+  async getBankInfo(@Req() req: any) {
     return this.classificationService.getBankInfo(
       req.query.ifsc,
       req.user.createdBy,
