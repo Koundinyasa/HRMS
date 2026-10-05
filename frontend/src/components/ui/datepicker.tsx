@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CalendarDays,
   ChevronLeft,
@@ -61,17 +62,78 @@ export function DatePicker({
   onToday,
 }: DatePickerProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [popupPosition, setPopupPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    const updatePosition = () => {
+      const anchor = wrapperRef.current?.getBoundingClientRect();
+      const popup = popupRef.current;
+      if (!anchor || !popup) return;
+
+      const viewport = window.visualViewport;
+      const viewportLeft = viewport?.offsetLeft ?? 0;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportWidth =
+        viewport?.width ?? document.documentElement.clientWidth;
+      const viewportHeight =
+        viewport?.height ?? document.documentElement.clientHeight;
+      const margin = 8;
+      const popupWidth = popup.offsetWidth;
+      const popupHeight = popup.offsetHeight;
+      const minLeft = viewportLeft + margin;
+      const maxLeft = Math.max(
+        minLeft,
+        viewportLeft + viewportWidth - popupWidth - margin,
+      );
+      const desiredLeft =
+        align === "right" ? anchor.right - popupWidth : anchor.left;
+      const left = Math.min(Math.max(desiredLeft, minLeft), maxLeft);
+      const fitsBelow =
+        anchor.bottom + popupHeight + margin <=
+        viewportTop + viewportHeight;
+      const fitsAbove = anchor.top - popupHeight >= viewportTop + margin;
+      const top = fitsBelow
+        ? anchor.bottom
+        : fitsAbove
+          ? anchor.top - popupHeight
+          : Math.max(
+              viewportTop + margin,
+              viewportTop + viewportHeight - popupHeight - margin,
+            );
+
+      setPopupPosition({ top, left });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    window.visualViewport?.addEventListener("resize", updatePosition);
+    window.visualViewport?.addEventListener("scroll", updatePosition);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      window.visualViewport?.removeEventListener("resize", updatePosition);
+      window.visualViewport?.removeEventListener("scroll", updatePosition);
+    };
+  }, [align, cells.length, monthLabel, open]);
 
   useEffect(() => {
     if (!open) return;
 
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
+        !wrapperRef.current?.contains(target) &&
+        !popupRef.current?.contains(target)
       ) {
-        // onOpenChange(false);
-        onOpenChange?.(false);
+        onOpenChange(false);
       }
     };
 
@@ -130,29 +192,25 @@ export function DatePicker({
         <CalendarDays className="h-4 w-4" />
       </Button>
 
-      {open && (
-        <div
-          className={`
-      absolute
-       ${align === "right" ? "right-0" : "left-0"}
-      top-full
-      z-[9999]
-      w-[min(16.5rem,calc(100vw-1.5rem))]
-      overflow-hidden
-      rounded-[22px]
-      border
-      border-slate-100
-      bg-white
-      shadow-[0_20px_50px_-12px_rgba(124,58,237,0.35)]
-      ring-1
-      ring-black/5
-      animate-in
-      fade-in
-      zoom-in-95
-      slide-in-from-top-2
-      duration-200
-    `}
-        >
+      {open &&
+        createPortal(
+          <div
+            ref={popupRef}
+            className="
+              fixed z-[9999] w-[min(16.5rem,calc(100vw-1.5rem))]
+              overflow-x-hidden overflow-y-auto rounded-[22px]
+              border border-slate-100 bg-white
+              shadow-[0_20px_50px_-12px_rgba(124,58,237,0.35)]
+              ring-1 ring-black/5 animate-in fade-in zoom-in-95
+              slide-in-from-top-2 duration-200
+            "
+            style={{
+              top: popupPosition?.top ?? 0,
+              left: popupPosition?.left ?? 0,
+              maxHeight: "calc(100dvh - 1rem)",
+              visibility: popupPosition ? "visible" : "hidden",
+            }}
+          >
           {/* ✅ STYLING CHANGE — header is now a full purple gradient band (brand color), white text, replacing the plain flex row */}
           <div
             className="flex items-center justify-between px-3 py-3 sm:px-4"
@@ -274,8 +332,9 @@ export function DatePicker({
               </Button>
             </div>
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

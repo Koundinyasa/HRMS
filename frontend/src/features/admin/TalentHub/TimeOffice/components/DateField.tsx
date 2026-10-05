@@ -98,16 +98,23 @@ interface DateFieldProps {
   value: string;
   onChange: (iso: string) => void;
   className?: string;
+  align?: "left" | "right";
 }
 
 /** Wraps the shared DatePicker + useDatePicker so callers just pass an ISO value/onChange, like a native date input. */
-export default function DateField({ label, value, onChange, className }: DateFieldProps) {
+export default function DateField({
+  label,
+  value,
+  onChange,
+  className,
+  align,
+}: DateFieldProps) {
   const picker = useDatePicker(value, onChange);
 
   return (
     <label className={className ?? "flex items-center gap-2 text-sm text-slate-600"}>
       {label}
-      <DatePicker {...picker} />
+      <DatePicker {...picker} align={align} />
     </label>
   );
 }

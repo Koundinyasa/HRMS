@@ -34,6 +34,7 @@ export default function MissedPunchNavbar(
           value={filters.toDate}
           onChange={onToDateChange}
           className="w-[132px] shrink-0"
+          align="right"
         />
       </label>
 
