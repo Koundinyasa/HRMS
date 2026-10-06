@@ -260,14 +260,8 @@ import GeoLocationAssignPage from "../TimeOffice/pages/assign/GeoLocationAssignP
 import PolicyUpdateAssignPage from "../TimeOffice/pages/assign/PolicyUpdateAssignPage";
 import FaceTemplateAssignPage from "../TimeOffice/pages/assign/FaceTemplateAssignPage";
 import AssignImportPage from "../TimeOffice/pages/assign/AssignImportPage";
-import RecruitmentPage from "../pages/RecruitmentPage";
  
 export const TalentHubRoutes = (
-  <>
-  <Route path="talent-hub" element={<TalentHubPage />}>
-    <Route index element={<Navigate to="recruitment" replace />} />
-    <Route path="recruitment" element={<RecruitmentPage />} />
-  </Route>
   <Route path="time-office" element={<TalentHubPage />}>
     <Route path="attendance" element={<AttendancePage1 />}>
       <Route index element={<Navigate to="configuration" replace />} />
@@ -417,5 +411,4 @@ export const TalentHubRoutes = (
       </Route>
     </Route>
   </Route>
-  </>
 );

@@ -16,7 +16,7 @@
 // import autoTable from "jspdf-autotable";
 // import * as XLSX from "xlsx";
 
-// import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+// import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 
 // interface TimeOfficeReportHeaderProps {
 //   title: string;
@@ -1252,7 +1252,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 
 interface TimeOfficeReportHeaderProps {
   title: string;

@@ -16,11 +16,11 @@ import {
   Plus,
   Bookmark,
 } from "lucide-react";
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 
 import PunchRecordCard from "../components/PunchRecordCard";
 import TimeOfficeTabs from "../../components/TimeOfficeTabs";
-import PunchEntryModal from "@/features/admin/TalentHub/TimeOffice/components/PunchEntryModal";
+import PunchEntryModal from "@/features/admin/Time & Office/TimeOffice/components/PunchEntryModal";
 import {
   Select,
   SelectContent,
@@ -39,7 +39,7 @@ import {
 import {
   usePunchEditor,
 } from "../hooks/usePunchEditor";
-import { useAddDailyLogPunchMutation } from "@/features/admin/TalentHub/TimeOffice/api/regularizationApi";
+import { useAddDailyLogPunchMutation } from "@/features/admin/Time & Office/TimeOffice/api/regularizationApi";
 
 import type {
   PunchPageProps,

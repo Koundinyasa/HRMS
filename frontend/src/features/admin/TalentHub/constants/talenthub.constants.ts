@@ -1,25 +1,45 @@
-import type {SubNavItem} from '../../components/sidebar.types'
-
-export const TALENT_HUB_SUB_NAV:SubNavItem[] = [
-    {label:'Attendance',path:'attendance',
-        children:[
-            {label:'Configuration',path:'configuration'},
-            {label:'Integration',path:'integration'}
-        ]
-    },
-    {label:'Leave',path:'leave',
-        children:[
-            {label:'Settings',path:'settings'},
-            {label:'Holiday & Weekly Off',path:'holidayandweekOff'},
-            {label:'Adjustment',path:'adjustment'},
-            {label:'Daily',path:'daily'},
-            {label:'ForceLeaveApproval',path:'forceleaveapproval'},
-            {label:'Report',path:'report'},
-        ]
-    },
-    {label:'TimeOffice',path:'timeoffice'}
-]
+import type { SubNavItem } from "../../components/sidebar.types";
+import {
+  BadgeCheck,
+  Briefcase,
+  BriefcaseBusiness,
+  CalendarDays,
+  ClipboardCheck,
+  ClipboardList,
+  FileSearch,
+  FileUp,
+  Handshake,
+  Laptop,
+  LayoutDashboard,
+  MessagesSquare,
+  ShieldCheck,
+  Users,
+  UserRoundPlus,
+  UsersRound,
+} from "lucide-react";
 
 export const RECRUITMENT_SUB_NAV: SubNavItem[] = [
-    { label: 'Recruitment', path: 'recruitment' }
-]
+  { label: "Dashboard", path: "recruitment", icon: LayoutDashboard },
+  { label: "Upload Resume", path: "recruitment/upload-resume", number: "01", icon: FileUp },
+  { label: "Job Requisition", path: "recruitment/job-requisition", number: "02", icon: BriefcaseBusiness },
+  {
+    label: "Requisition Approval",
+    path: "recruitment/requisition-approval",
+    number: "03",
+    icon: ClipboardCheck,
+    badgeCount: 3,
+  },
+  { label: "Job Openings", path: "recruitment/job-openings", number: "04", icon: Briefcase },
+  { label: "Candidate Applications", path: "recruitment/candidate-applications", number: "05", icon: UsersRound },
+  { label: "Resume Screening", path: "recruitment/resume-screening", number: "06", icon: FileSearch },
+  { label: "Assessment / Test", path: "recruitment/assessment-test", number: "07", icon: ClipboardList },
+  { label: "Interview Process", path: "recruitment/interview-process", number: "08", icon: MessagesSquare },
+  { label: "Final Interview Approval", path: "recruitment/final-interview-approval", number: "09", icon: BadgeCheck },
+  { label: "Offer Management", path: "recruitment/offer-management", number: "10", icon: Handshake },
+  { label: "Verification / BGV", path: "recruitment/verification-bgv", number: "11", icon: ShieldCheck },
+  { label: "Onboarding", path: "recruitment/onboarding", number: "12", icon: ClipboardCheck },
+  { label: "Induction", path: "recruitment/induction", number: "13", icon: CalendarDays },
+  { label: "Joining", path: "recruitment/joining", number: "14", icon: UserRoundPlus },
+  { label: "Team Assignment", path: "recruitment/team-assignment", number: "15", icon: Users },
+  { label: "Asset Assignment", path: "recruitment/asset-assignment", number: "16", icon: Laptop },
+];

@@ -15,6 +15,7 @@ import { ChatbotModule } from './chatbot/chatbot.module';
 // import { LogsModule } from './logs/logs.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { ReviewModule } from './review/review.module';
+import { RecruitmentModule } from './recruitment/recruitment.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ReviewModule } from './review/review.module';
 
     // Review Module
     ReviewModule,
+    RecruitmentModule,
 
     LoggerModule,
     ReviewModule,

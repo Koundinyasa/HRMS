@@ -18,7 +18,12 @@ import { useLeave } from "../hooks/useLeave";
 import { useApplyLeave } from "../hooks/useApplyLeave";
 
 import { leaveApplySchema } from "../validation/leaveValidation";
-import { minFromDateIso, maxApplyDateIso } from "../constants/leave.constants";
+import {
+  MATERNITY_LEAVE_ID,
+  minFromDateIso,
+  maxApplyDateIso,
+} from "../constants/leave.constants";
+import { getMaternityLeaveLimitError } from "../validation/maternityLeaveLimit";
 
 import type { LeaveApplyForm } from "../types/leave.types";
 
@@ -42,6 +47,8 @@ export default function LeaveApply() {
     leaveTypes,
     leaveTypesLoading,
     leaveBalance,
+    leaveHistory,
+    historyLoading,
     holidayDates,
     refetchLeaveBalance,
     refetchLeaveHistory,
@@ -75,6 +82,7 @@ export default function LeaveApply() {
     reset,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<LeaveApplyForm>({
     resolver: zodResolver(leaveApplySchema),
@@ -110,6 +118,26 @@ export default function LeaveApply() {
   const minToDate = fromDate || minFromDate;
 
   const onSubmit = async (data: LeaveApplyForm) => {
+    if (data.leaveType === MATERNITY_LEAVE_ID) {
+      if (historyLoading) {
+        setError("toDate", {
+          type: "manual",
+          message: "Maternity Leave history is still loading. Please try again.",
+        });
+        return;
+      }
+
+      const maternityLimitError = getMaternityLeaveLimitError(
+        data.fromDate,
+        data.toDate,
+        leaveHistory?.records ?? [],
+      );
+      if (maternityLimitError) {
+        setError("toDate", { type: "manual", message: maternityLimitError });
+        return;
+      }
+    }
+
     const isHalfDay =
       data.sessionFrom === "First Half" || data.sessionFrom === "Second Half";
 

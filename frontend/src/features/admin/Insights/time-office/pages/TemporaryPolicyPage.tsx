@@ -16,7 +16,7 @@ import {
   validateDateRange,
 } from "../validations/timeOffice.validation";
 
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 
 import {
   exportTimeOfficeExcel,

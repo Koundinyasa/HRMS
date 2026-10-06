@@ -17,7 +17,7 @@
 // } from "react-icons/fa";
 
 // import TimeOfficeEmptyState from "../components/TimeOfficeEmptyState";
-// import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+// import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 // import { useTimeOfficeFilters } from "../hooks/useTimeOfficeFilters";
 // import { validateDateRange } from "../validations/timeOffice.validation";
 // import {
@@ -2061,7 +2061,7 @@ import { FaFileExcel, FaFilePdf } from "react-icons/fa";
 
 import TimeOfficeEmptyState from "../components/TimeOfficeEmptyState";
 import TimeOfficeFilters from "../components/TimeOfficeFilters";
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 import { useTimeOfficeFilters } from "../hooks/useTimeOfficeFilters";
 import { validateDateRange } from "../validations/timeOffice.validation";
 import {

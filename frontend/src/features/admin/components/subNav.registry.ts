@@ -1,10 +1,8 @@
 
 import { ADMIN_CENTER_SUB_NAV } from "../admincenter/constants/admincenter.constants";
 import { ENROLLMENT_SUB_NAV } from "../Enrollment/constants/enrollment.constants";
-import {
-  RECRUITMENT_SUB_NAV,
-  TALENT_HUB_SUB_NAV,
-} from "../TalentHub/constants/talenthub.constants";
+import { RECRUITMENT_SUB_NAV } from "../TalentHub/constants/talenthub.constants";
+import { TALENT_HUB_SUB_NAV } from "../Time & Office/constants/talenthub.constants";
 // import { PAYROLL_SUB_NAV } from "../payroll/constants/payroll.constants";
 import { INSIGHTS_SUB_NAV } from "../Insights/constants/reports.constants";
 // import { ORG_SUB_NAV } from "../org/constants/org.constants";

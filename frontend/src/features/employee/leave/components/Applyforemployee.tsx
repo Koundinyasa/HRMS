@@ -31,10 +31,15 @@ import LeaveHistoryTable from "../components/LeaveHistoryTable";
 // backend sends the "Apply Leave for Employee" menu item for this user,
 // they're a team lead -> access allowed. If not, they're bounced back to
 // the normal Apply Leave page.
-import { useApplyForEmployeeMenu } from "../hooks/useApplyForEmployeeMenu";
+import { useApplyForEmployeeMenu } from "../hooks/useapplyforemployeemenu";
 
 import { leaveApplySchema } from "../validation/leaveValidation";
-import { minFromDateIso, maxApplyDateIso } from "../constants/leave.constants";
+import {
+  MATERNITY_LEAVE_ID,
+  minFromDateIso,
+  maxApplyDateIso,
+} from "../constants/leave.constants";
+import { getMaternityLeaveLimitError } from "../validation/maternityLeaveLimit";
 
 import type { LeaveApplyForm } from "../types/leave.types";
 
@@ -128,6 +133,7 @@ export default function ApplyLeaveForEmployee() {
     reset,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<LeaveApplyForm>({
     resolver: zodResolver(leaveApplySchema),
@@ -180,6 +186,26 @@ export default function ApplyLeaveForEmployee() {
   });
 
   const onSubmit = async (data: LeaveApplyForm) => {
+    if (data.leaveType === MATERNITY_LEAVE_ID) {
+      if (employeeDetailsLoading || !employeeDetails) {
+        setError("toDate", {
+          type: "manual",
+          message: "Employee leave history is still loading. Please try again.",
+        });
+        return;
+      }
+
+      const maternityLimitError = getMaternityLeaveLimitError(
+        data.fromDate,
+        data.toDate,
+        employeeDetails?.employeeLeaveHistory ?? [],
+      );
+      if (maternityLimitError) {
+        setError("toDate", { type: "manual", message: maternityLimitError });
+        return;
+      }
+    }
+
     const isHalfDay =
       data.sessionFrom === "First Half" || data.sessionFrom === "Second Half";
 

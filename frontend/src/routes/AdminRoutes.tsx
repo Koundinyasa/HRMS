@@ -1,9 +1,10 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import AdminLayout from "@/features/admin/components/AdminLayout";
 import { AdminCenterRoutes } from "@/features/admin/admincenter/routes/AdminCenterRoutes";
 import {EnrollmentRoutes} from "@/features/admin/Enrollment/routes/EnrollmentRoutes";
-import { TalentHubRoutes } from "@/features/admin/TalentHub/routes/TalentHubRoutes";
+import { TalentHubRoutes } from "@/features/admin/Time & Office/routes/TalentHubRoutes";
+import { RecruitmentRoutes } from "@/features/admin/TalentHub/routes/RecruitmentRoutes";
 import { InsightsRoutes } from "@/features/admin/Insights/routes/InsightRoutes";
 import { OrganizationsRoutes } from "@/features/admin/organizations/routes/organizationsRoutes"
 import DashboardPage from "@/features/admin/dashboard/pages/DashboardPage";
@@ -15,6 +16,7 @@ export default function AdminRoutes() {
         <Route path="dashboard" element={<DashboardPage />} />
         {AdminCenterRoutes}
         {EnrollmentRoutes}
+        {RecruitmentRoutes}
         {TalentHubRoutes}
         {InsightsRoutes}
         {OrganizationsRoutes}

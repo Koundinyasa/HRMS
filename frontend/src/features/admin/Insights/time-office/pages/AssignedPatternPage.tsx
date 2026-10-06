@@ -19,7 +19,7 @@ import {
 
 import TimeOfficeEmptyState from "../components/TimeOfficeEmptyState";
 import TimeOfficeFilters from "../components/TimeOfficeFilters";
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 
 import { useTimeOfficeFilters } from "../hooks/useTimeOfficeFilters";
 

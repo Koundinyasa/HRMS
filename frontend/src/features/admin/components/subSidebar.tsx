@@ -261,8 +261,19 @@ export default function SubSidebar({
   return (
     <>
       {/* Desktop and tablet */}
-      <aside className="hidden md:flex flex-col w-[220px] lg:w-[240px] shrink-0 min-h-full bg-[#EDEBFB] pt-4 px-3">
-        <nav className="flex flex-col gap-1">
+      <aside
+        className={`hidden md:flex h-full min-h-0 shrink-0 flex-col overflow-hidden pt-4 px-3 ${
+          sectionPath === "talent-hub"
+            ? "w-[280px] lg:w-[300px] bg-white"
+            : "w-[220px] lg:w-[240px] bg-[#EDEBFB]"
+        }`}
+      >
+        {sectionPath === "talent-hub" && (
+          <p className="mb-3 shrink-0 px-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+            Recruitment
+          </p>
+        )}
+        <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#cbd5e1_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
           {items.map((item) => (
             <NavItem
               key={item.path}
@@ -270,6 +281,7 @@ export default function SubSidebar({
               basePath={basePath}
               isOpen={openKeys.has(item.path)}
               onToggle={toggle}
+              recruitmentStyle={sectionPath === "talent-hub"}
             />
           ))}
         </nav>
@@ -289,7 +301,7 @@ export default function SubSidebar({
           fixed inset-y-0 left-0 z-50
           flex flex-col
           w-[260px]
-          bg-[#EDEBFB]
+          ${sectionPath === "talent-hub" ? "bg-white" : "bg-[#EDEBFB]"}
           pt-4 px-3
           shadow-xl
           transition-transform duration-300 ease-in-out
@@ -301,9 +313,11 @@ export default function SubSidebar({
           }
         `}
       >
-        <div className="flex items-center justify-between px-2 mb-4">
+        <div className="mb-4 flex shrink-0 items-center justify-between px-2">
           <span className="text-sm font-semibold text-slate-700 capitalize">
-            {sectionPath.replace("-", " ")}
+            {sectionPath === "talent-hub"
+              ? "Recruitment"
+              : sectionPath.replace("-", " ")}
           </span>
 
           <button
@@ -315,7 +329,7 @@ export default function SubSidebar({
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 overflow-y-auto">
+        <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#cbd5e1_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
           {items.map((item) =>
             item.children?.length ? (
               <div key={item.path}>
@@ -375,21 +389,31 @@ export default function SubSidebar({
               <NavLink
                 key={item.path}
                 to={`${basePath}/${item.path}`}
+                end
                 onClick={closeSubSidebar}
                 className={({ isActive }) =>
-                  `
-                    rounded-lg px-3 py-2.5
-                    text-sm font-medium
-                    transition-colors
-                    ${
-                      isActive
-                        ? "bg-indigo-600 text-white"
-                        : "text-slate-700 hover:bg-white/60"
-                    }
-                  `
+                  sectionPath === "talent-hub"
+                    ? `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                        isActive
+                          ? "bg-[#fff4dc] font-semibold text-[#8a5a0a]"
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`
+                    : `rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-indigo-600 text-white"
+                          : "text-slate-700 hover:bg-white/60"
+                      }`
                 }
               >
-                {item.label}
+                {sectionPath === "talent-hub" && (
+                  <SubNavPrefix item={item} />
+                )}
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {item.badgeCount !== undefined && item.badgeCount > 0 && (
+                  <span className="rounded-full bg-[#fff0d6] px-2 py-0.5 text-xs font-semibold text-[#b86a00]">
+                    {item.badgeCount}
+                  </span>
+                )}
               </NavLink>
             )
           )}
@@ -404,30 +428,42 @@ function NavItem({
   basePath,
   isOpen,
   onToggle,
+  recruitmentStyle = false,
 }: {
   item: SubNavItem;
   basePath: string;
   isOpen: boolean;
   onToggle: (key: string) => void;
+  recruitmentStyle?: boolean;
 }) {
   if (!item.children?.length) {
     return (
       <NavLink
         to={`${basePath}/${item.path}`}
+        end
         className={({ isActive }) =>
-          `
-            rounded-lg px-3 py-2
-            text-sm font-medium
-            transition-colors
-            ${
-              isActive
-                ? "text-indigo-600"
-                : "text-slate-700 hover:bg-white/60"
-            }
-          `
+          recruitmentStyle
+            ? `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "bg-[#fff4dc] font-semibold text-[#8a5a0a]"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`
+            : `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? "text-indigo-600"
+                  : "text-slate-700 hover:bg-white/60"
+              }`
         }
       >
-        {item.label}
+        {recruitmentStyle && <SubNavPrefix item={item} />}
+        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+        {recruitmentStyle &&
+          item.badgeCount !== undefined &&
+          item.badgeCount > 0 && (
+            <span className="rounded-full bg-[#fff0d6] px-2 py-0.5 text-xs font-semibold text-[#b86a00]">
+              {item.badgeCount}
+            </span>
+          )}
       </NavLink>
     );
   }
@@ -485,5 +521,24 @@ function NavItem({
         </div>
       )}
     </div>
+  );
+}
+
+function SubNavPrefix({ item }: { item: SubNavItem }) {
+  const Icon = item.icon;
+  if (Icon) {
+    return (
+      <Icon
+        size={16}
+        className="shrink-0"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <span className="w-6 shrink-0 text-xs text-slate-500">
+      {item.number}
+    </span>
   );
 }

@@ -48,9 +48,16 @@ export class AdmincenterClassificationService {
         BranchName: String(row.BranchName ?? row.Name ?? ''),
         Address: String(row.Address1 ?? row.Address ?? ''),
         State: String(row.StateName ?? row.State ?? row.StateCode ?? ''),
-        IsActive: row.IsActive ? 1 : 0,
+        IsActive: this.isBranchActive(row.IsActive ?? row.Active ?? row.Status),
       })),
     };
+  }
+
+  private isBranchActive(status: unknown): 0 | 1 {
+    if (status === undefined || status === null || status === '') return 1;
+    if (status === true || status === 1) return 1;
+    if (typeof status === 'string' && status.toLowerCase() === 'active') return 1;
+    return status === '1' ? 1 : 0;
   }
 
   async getDesignations(companyId: number, page: number, pageSize: number) {

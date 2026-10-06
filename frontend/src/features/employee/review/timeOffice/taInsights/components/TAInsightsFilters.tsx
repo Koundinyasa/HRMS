@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 import type { TAInsightFilters } from "../types/taInsightsTypes";
 
 interface TAInsightsFiltersProps {
@@ -44,6 +44,7 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
           <DateField
             value={filters.fromDate || ""}
             onChange={(fromDate) => onChange({ ...filters, fromDate })}
+            align="right"
           />
         </div>
 
@@ -55,6 +56,7 @@ const TAInsightsFilters: React.FC<TAInsightsFiltersProps> = ({
           <DateField
             value={filters.toDate || ""}
             onChange={(toDate) => onChange({ ...filters, toDate })}
+            align="right"
           />
         </div>
 

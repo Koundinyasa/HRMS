@@ -1,7 +1,7 @@
 import React from "react";
 import { Filter, RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import DateField from "@/features/admin/TalentHub/TimeOffice/components/DateField";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 import TimeOfficeNavbar from "../../components/TimeOfficeNavbar";
 import type { TAInsightFilters } from "../types/taInsightsTypes";
 
