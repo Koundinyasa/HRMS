@@ -6,28 +6,22 @@ import {
   Req,
   UseGuards,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   UnauthorizedException,
   UploadedFile,
   UseInterceptors,
+  FileTypeValidator,
+  MaxFileSizeValidator,
   BadRequestException,
   StreamableFile,
-<<<<<<< HEAD
-  Query,
-=======
->>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { createReadStream } from 'fs';
 import path from 'path';
-
 import { RecruitmentService } from './recruitment.service';
 import { RecruitmentResumeStorageService } from './recruitment-resume-storage.service';
-<<<<<<< HEAD
-import { RecruitmentCandidateDocumentStorageService } from './recruitment-candidate-document-storage.service';
-=======
->>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 import { RequisitionActionDto } from './dto/requisition-action.dto';
 import { CreateJobOpeningDto } from './dto/create-job-opening.dto';
 import { PublishJobOpeningDto } from './dto/publish-job-opening.dto';
@@ -45,24 +39,17 @@ import { UploadCandidateDocumentDto } from './dto/upload-candidate-document.dto'
 import { BgvCandidateDto } from './dto/bgv-candidate.dto';
 import { ApproveCandidateJoiningDto } from './dto/approve-candidate-joining.dto';
 import { SkipCandidateAssessmentDto } from "./dto/skip-candidate-assessment.dto";
-<<<<<<< HEAD
 import { MailService } from '../mail/mail.service';
 import { SendWelcomeEmailDto } from './dto/send-welcome-email.dto';
 import { SendJoiningEmailDto } from './dto/send-joining-email.dto';
 import { SendTeamAssignmentEmailDto } from './dto/send-team-assignment-email.dto';
-=======
->>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
+
 
 @Controller('recruitment')
 export class RecruitmentController {
   constructor(
     private readonly recruitmentService: RecruitmentService,
     private readonly resumeStorage: RecruitmentResumeStorageService,
-<<<<<<< HEAD
-    private readonly candidateDocumentStorage: RecruitmentCandidateDocumentStorageService,
-    private readonly mailService: MailService,
-=======
->>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -118,10 +105,54 @@ export class RecruitmentController {
     );
   }
   @UseGuards(JwtAuthGuard)
-  @Post('candidateapplication')
-  async createCandidateApplication(@Body() dto: CreateCandidateApplicationDto) {
-    return this.recruitmentService.createCandidateApplication(dto);
+ @Post('candidateapplication')
+  @UseInterceptors(
+    FileInterceptor('resume', {
+      dest: './uploads/recruitment/resumes',
+ 
+      fileFilter: (req, file, callback) => {
+        const allowedMimeTypes = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+ 
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return callback(
+            new BadRequestException(
+              'Only PDF, DOC, and DOCX resume files are allowed.',
+            ),
+            false,
+          );
+        }
+ 
+        callback(null, true);
+      },
+ 
+      // Optional: also enforce at Multer level
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5 MB
+      },
+    }),
+  )
+  async createCandidateApplication(
+    @Body() dto: CreateCandidateApplicationDto,
+ 
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [
+          new MaxFileSizeValidator({
+            maxSize: 5 * 1024 * 1024, // 5 MB
+          }),
+        ],
+      }),
+    )
+    resume: Express.Multer.File,
+  ) {
+    return this.recruitmentService.createCandidateApplication(dto, resume);
   }
+ 
   @UseGuards(JwtAuthGuard)
   @Post('resumes')
   @UseInterceptors(
@@ -157,7 +188,6 @@ export class RecruitmentController {
     @Param('fileName') fileName: string,
   ): Promise<StreamableFile> {
     const filePath = await this.resumeStorage.getPath(fileName);
-<<<<<<< HEAD
     const extension = path.extname(fileName).toLowerCase();
     const contentType =
       extension === '.pdf'
@@ -242,20 +272,48 @@ export class RecruitmentController {
     });
   }
 
-=======
     return new StreamableFile(createReadStream(filePath), {
-      type: 'application/octet-stream',
-      disposition: `attachment; filename="${fileName}"`,
+      type: contentType,
+      disposition: `inline; filename="${fileName}"`,
     });
   }
->>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
   @UseGuards(JwtAuthGuard)
+  @Get('candidate-documents/:fileName')
+  async downloadCandidateDocument(
+    @Param('fileName') fileName: string,
+  ): Promise<StreamableFile> {
+    const filePath = await this.candidateDocumentStorage.getPath(fileName);
+    const extension = path.extname(fileName).toLowerCase();
+    const contentType =
+      extension === '.pdf'
+        ? 'application/pdf'
+        : extension === '.png'
+          ? 'image/png'
+          : 'image/jpeg';
+    return new StreamableFile(createReadStream(filePath), {
+      type: contentType,
+      disposition: `inline; filename="${fileName}"`,
+    });
+  }
+
+  /* @UseGuards(JwtAuthGuard)
   @Get('candidatescreening/:jobOpeningId')
   async getCandidatesForScreening(
     @Param('jobOpeningId', ParseIntPipe) jobOpeningId: number,
     @Req() req: any,
   ) {
     return this.recruitmentService.getCandidatesForScreening(
+      jobOpeningId,
+      req.user.employeeId,
+    );
+  } */
+  @UseGuards(JwtAuthGuard)
+  @Get('candidateapplications/:jobOpeningId')
+  async getCandidateApplications(
+    @Param('jobOpeningId', ParseIntPipe) jobOpeningId: number,
+    @Req() req: any,
+  ) {
+    return this.recruitmentService.getCandidateApplications(
       jobOpeningId,
       req.user.employeeId,
     );
@@ -450,6 +508,5 @@ export class RecruitmentController {
   @Get('dashboard')
   async getRecruitmentDashboard(@Query('stage') stage: string = 'ALL') {
     return this.recruitmentService.getRecruitmentDashboard(stage);
-  }
- 
+  } 
 }

@@ -1,11 +1,10 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, FileUp, LoaderCircle, Upload, X } from "lucide-react";
 import { recruitmentApi } from "../api/recruitment.api";
-import type { JobOpening } from "../types/recruitment.types";
 
-interface ResumeUploadScreenProps {
-  openings: JobOpening[];
-  isLoading: boolean;
+interface LookupOption {
+  value: string;
+  label: string;
 }
 
 const MAX_RESUME_SIZE = 10 * 1024 * 1024;
@@ -17,10 +16,94 @@ const ACCEPTED_RESUME_TYPES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
-export function ResumeUploadScreen({
-  openings,
-  isLoading,
-}: ResumeUploadScreenProps) {
+function normalizeKey(key: string) {
+  return key.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function readLookupValue(
+  record: Record<string, unknown>,
+  aliases: string[],
+): string {
+  const normalizedAliases = new Set(aliases.map(normalizeKey));
+  const entry = Object.entries(record).find(([key]) =>
+    normalizedAliases.has(normalizeKey(key)),
+  );
+  const value = entry?.[1];
+  return value === null || value === undefined || value === ""
+    ? ""
+    : String(value);
+}
+
+function getLookupRows(response: unknown, description: string): unknown[] {
+  if (
+    !response ||
+    typeof response !== "object" ||
+    !("success" in response) ||
+    !response.success ||
+    !("data" in response) ||
+    !Array.isArray(response.data)
+  ) {
+    const message =
+      response && typeof response === "object" && "message" in response
+        ? response.message
+        : undefined;
+    throw new Error(
+      typeof message === "string"
+        ? message
+        : `Recruitment API returned an invalid ${description} list.`,
+    );
+  }
+  return response.data;
+}
+
+function mapJobOpening(record: unknown): JobOpeningOption {
+  if (!record || typeof record !== "object" || Array.isArray(record)) {
+    throw new Error("Recruitment API returned an invalid job opening.");
+  }
+  const row = record as Record<string, unknown>;
+  const value = readLookupValue(row, [
+    "JobOpeningID",
+    "OpeningID",
+    "JobID",
+    "ID",
+  ]);
+  const label = readLookupValue(row, [
+    "JobTitle",
+    "OpeningTitle",
+    "Title",
+    "JobOpeningName",
+  ]);
+  if (!value || !label) {
+    throw new Error(
+      "Recruitment API returned a job opening without its ID or title.",
+    );
+  }
+  return {
+    value,
+    label,
+    location: readLookupValue(row, ["Location", "BranchName"]),
+  };
+}
+
+function mapRecruitmentSource(record: unknown): LookupOption {
+  if (!record || typeof record !== "object" || Array.isArray(record)) {
+    throw new Error("Recruitment API returned an invalid source.");
+  }
+  const row = record as Record<string, unknown>;
+  const name = readLookupValue(row, [
+    "SourceName",
+    "RecruitmentSourceName",
+    "RecruitmentSource",
+    "Source",
+    "Name",
+  ]);
+  if (!name) {
+    throw new Error("Recruitment API returned a source without its name.");
+  }
+  return { value: name, label: name };
+}
+
+export function ResumeUploadScreen() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [resumeUrl, setResumeUrl] = useState("");
@@ -29,13 +112,60 @@ export function ResumeUploadScreen({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [openings, setOpenings] = useState<JobOpeningOption[]>([]);
+  const [sources, setSources] = useState<LookupOption[]>([]);
+  const [isLoadingLookups, setIsLoadingLookups] = useState(true);
+  const [lookupError, setLookupError] = useState("");
 
-  const activeOpenings = openings.filter((opening) => opening.status === "Open");
+  useEffect(() => {
+    let isCurrent = true;
+
+    const loadLookups = async () => {
+      try {
+        const [openingsResponse, sourcesResponse] = await Promise.all([
+          recruitmentApi.getJobOpeningMaster(),
+          recruitmentApi.getRecruitmentSources(),
+        ]);
+        const loadedOpenings = getLookupRows(
+          openingsResponse,
+          "job opening",
+        ).map(mapJobOpening);
+        const loadedSources = getLookupRows(
+          sourcesResponse,
+          "recruitment source",
+        ).map(mapRecruitmentSource);
+        if (!isCurrent) return;
+        setOpenings(loadedOpenings);
+        setSources(loadedSources);
+        setSource(
+          loadedSources.find(
+            (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
+          )?.value ?? "",
+        );
+      } catch (lookupLoadError) {
+        if (!isCurrent) return;
+        setLookupError(
+          lookupLoadError instanceof Error
+            ? lookupLoadError.message
+            : "Unable to load job openings and recruitment sources.",
+        );
+      } finally {
+        if (isCurrent) setIsLoadingLookups(false);
+      }
+    };
+
+    void loadLookups();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  const isEmployeeReferral =
+    source.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
 
   const handleFileChange = (selectedFile?: File) => {
     setError("");
     setSuccess("");
-    setResumeUrl("");
     if (!selectedFile) {
       setFile(null);
       return;
@@ -51,7 +181,7 @@ export function ResumeUploadScreen({
     }
     if (selectedFile.size > MAX_RESUME_SIZE) {
       setFile(null);
-      setError("Resume file must be 10 MB or smaller.");
+      setError("Resume file must be 5 MB or smaller.");
       return;
     }
     setFile(selectedFile);
@@ -78,14 +208,7 @@ export function ResumeUploadScreen({
     }
 
     setIsSubmitting(true);
-    let savedResumeUrl = resumeUrl;
     try {
-      if (!savedResumeUrl && file) {
-        savedResumeUrl = (
-          await recruitmentApi.uploadCandidateResume(file)
-        ).resumeUrl;
-      }
-      setResumeUrl(savedResumeUrl);
       await recruitmentApi.createCandidateApplication({
         jobOpeningId,
         fullName: String(formData.get("fullName")).trim(),
@@ -105,14 +228,10 @@ export function ResumeUploadScreen({
       setReferralName("");
       form.reset();
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : "Resume could not be submitted. Please try again.";
       setError(
-        savedResumeUrl
-          ? `Resume is uploaded, but the application was not created: ${message} Submit again to retry without re-uploading.`
-          : `Resume upload failed: ${message}`,
+        submitError instanceof Error
+          ? `Candidate application could not be submitted: ${submitError.message}`
+          : "Candidate application could not be submitted. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -163,15 +282,18 @@ export function ResumeUploadScreen({
                 name="jobOpeningId"
                 required
                 defaultValue=""
-                disabled={isLoading || activeOpenings.length === 0}
+                disabled={isLoadingLookups || openings.length === 0}
                 className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:bg-slate-50"
               >
                 <option value="" disabled>
-                  {isLoading ? "Loading openings..." : "Select an active opening"}
+                  {isLoadingLookups
+                    ? "Loading openings..."
+                    : "Select an active opening"}
                 </option>
-                {activeOpenings.map((opening) => (
-                  <option key={opening.id} value={opening.id}>
-                    {opening.title} · {opening.location}
+                {openings.map((opening) => (
+                  <option key={opening.value} value={opening.value}>
+                    {opening.label}
+                    {opening.location ? ` · ${opening.location}` : ""}
                   </option>
                 ))}
               </select>
@@ -214,11 +336,14 @@ export function ResumeUploadScreen({
                 }}
                 className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
               >
-                <option>Employee Referral</option>
-                <option>Careers Page</option>
-                <option>Job Portal</option>
-                <option>Recruitment Agency</option>
-                <option>Other</option>
+                <option value="">
+                  {isLoadingLookups ? "Loading sources..." : "Select a source"}
+                </option>
+                {sources.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
@@ -259,7 +384,7 @@ export function ResumeUploadScreen({
         <section className="rounded-2xl border border-[#e6e8e3] bg-white p-5 shadow-[0_8px_24px_rgba(39,48,41,0.04)] sm:p-7">
           <h2 className="font-semibold text-[#26332c]">Resume document</h2>
           <p className="mt-1 text-sm text-[#7b8981]">
-            PDF, DOC, or DOCX · maximum size 10 MB
+            PDF, DOC, or DOCX · maximum size 5 MB
           </p>
           <input
             ref={fileInput}
@@ -310,13 +435,19 @@ export function ResumeUploadScreen({
             {error}
           </p>
         )}
+        {lookupError && (
+          <p role="alert" className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            {lookupError}
+          </p>
+        )}
         {success && (
           <p role="status" className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
             {success}
           </p>
         )}
-        {activeOpenings.length === 0 && !isLoading && (
+        {openings.length === 0 && !isLoadingLookups && !lookupError && (
           <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             No active job openings are available. Publish a job opening before uploading a candidate resume.
           </p>
@@ -325,7 +456,13 @@ export function ResumeUploadScreen({
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={isSubmitting || isLoading || activeOpenings.length === 0}
+            disabled={
+              isSubmitting ||
+              isLoadingLookups ||
+              Boolean(lookupError) ||
+              openings.length === 0 ||
+              sources.length === 0
+            }
             className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#e5a538] px-5 text-sm font-semibold text-[#342712] shadow-sm transition hover:bg-[#d99a2b] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin" />}

@@ -137,10 +137,7 @@ export default function RecruitmentPage() {
             }
           />
         ) : view === "upload-resume" ? (
-          <ResumeUploadScreen
-            openings={openings}
-            isLoading={isRecruitmentLoading}
-          />
+          <ResumeUploadScreen />
         ) : view === "resume-screening" ? (
           <ResumeScreeningPanel
             candidates={candidates}

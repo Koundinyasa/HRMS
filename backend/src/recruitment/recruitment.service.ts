@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-=======
 import { Injectable } from '@nestjs/common';
->>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 import * as sql from 'mssql';
 import { DatabaseService } from '../database/database.service';
 import { CreateRequisitionDto } from './dto/create-requisition.dto';
@@ -13,6 +9,7 @@ import { CreateCandidateOfferDto } from './dto/create-candidate-offer.dto';
 import { UploadCandidateDocumentDto } from './dto/upload-candidate-document.dto';
 import { BgvCandidateDto } from './dto/bgv-candidate.dto';
 import { ApproveCandidateJoiningDto } from './dto/approve-candidate-joining.dto';
+import { extname } from 'path';
 @Injectable()
 export class RecruitmentService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -122,24 +119,24 @@ export class RecruitmentService {
     return result.recordset;
   }
 
-  async createCandidateApplication(dto: CreateCandidateApplicationDto) {
-    const pool = await this.databaseService.connect();
+  // async createCandidateApplication(dto: CreateCandidateApplicationDto) {
+  //   const pool = await this.databaseService.connect();
 
-    const result = await pool
-      .request()
-      .input('JobOpeningID', sql.Int, dto.jobOpeningId)
-      .input('FullName', sql.VarChar(200), dto.fullName)
-      .input('Email', sql.VarChar(150), dto.email)
-      .input('Phone', sql.VarChar(20), dto.phone)
-      .input('Address', sql.VarChar(500), dto.address ?? null)
-      .input('ResumeURL', sql.VarChar(500), dto.resumeUrl ?? null)
-      .input('Source', sql.VarChar(100), dto.source ?? null)
-      .execute('USP_CreateCandidateApplication');
+  //   const result = await pool
+  //     .request()
+  //     .input('JobOpeningID', sql.Int, dto.jobOpeningId)
+  //     .input('FullName', sql.VarChar(200), dto.fullName)
+  //     .input('Email', sql.VarChar(150), dto.email)
+  //     .input('Phone', sql.VarChar(20), dto.phone)
+  //     .input('Address', sql.VarChar(500), dto.address ?? null)
+  //     .input('ResumeURL', sql.VarChar(500), dto.resumeUrl ?? null)
+  //     .input('Source', sql.VarChar(100), dto.source ?? null)
+  //     .execute('USP_CreateCandidateApplication');
 
-    return result.recordset;
-  }
+  //   return result.recordset;
+  // }
 
-  async getCandidatesForScreening(jobOpeningId: number, employeeId: string) {
+  /* async getCandidatesForScreening(jobOpeningId: number, employeeId: string) {
     const pool = await this.databaseService.connect();
 
     const result = await pool
@@ -149,6 +146,28 @@ export class RecruitmentService {
       .execute('USP_GetCandidatesForScreening');
 
     return result.recordset;
+  } */
+
+  async getCandidateApplications(jobOpeningId: number, employeeId: string) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('JobOpeningID', sql.Int, jobOpeningId)
+        .input('ActionBy', sql.VarChar(25), employeeId)
+        .execute('USP_GetCandidateApplication');
+
+      return result.recordset;
+    } catch (error) {
+      console.error('Error in getCandidateApplications:', error);
+
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve candidate applications.',
+      );
+    }
   }
 
   async resumeScreening(

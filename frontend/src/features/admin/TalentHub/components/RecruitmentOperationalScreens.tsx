@@ -5,6 +5,7 @@ import { recruitmentApi } from "../api/recruitment.api";
 import type { JobOpening } from "../types/recruitment.types";
 
 type WorkflowRow = Record<string, string>;
+type DropdownOption = { value: string; label: string };
 const EMPTY_WORKFLOW_ROWS: WorkflowRow[] = [];
 
 type WorkflowFormField = {

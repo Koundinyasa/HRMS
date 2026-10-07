@@ -39,8 +39,24 @@ export interface CandidateApplicationRequest {
   email: string;
   phone: string;
   address?: string;
-  resumeUrl?: string;
+  resume?: File;
   source?: string;
+  referredBy?: string;
+}
+
+export interface RecruitmentDashboardResponse {
+  success: boolean;
+  data: {
+    applications: unknown[];
+    summary: Record<string, number>;
+  };
+  message?: string;
+}
+
+export interface RecruitmentLookupResponse {
+  success: boolean;
+  data: unknown[];
+  message?: string;
 }
 
 export interface RecruitmentDashboardResponse {
@@ -84,6 +100,18 @@ export const recruitmentApi = {
     ).data,
   getJobOpenings: async () =>
     (await recruitmentClient.get<unknown[]>("/recruitment/jobopenings")).data,
+  getJobOpeningMaster: async () =>
+    (
+      await recruitmentClient.get<RecruitmentLookupResponse>(
+        "/recruitment/jobopeningmaster",
+      )
+    ).data,
+  getRecruitmentSources: async () =>
+    (
+      await recruitmentClient.get<RecruitmentLookupResponse>(
+        "/recruitment/sources",
+      )
+    ).data,
   getRequisitionMaster: async () =>
     (
       await recruitmentClient.get<RequisitionMasterResponse>(
@@ -99,27 +127,27 @@ export const recruitmentApi = {
     ).data,
   createCandidateApplication: async (
     request: CandidateApplicationRequest,
-  ) =>
-    (
+  ) => {
+    const formData = new FormData();
+    formData.append("jobOpeningId", String(request.jobOpeningId));
+    formData.append("fullName", request.fullName);
+    formData.append("email", request.email);
+    formData.append("phone", request.phone);
+    if (request.address) formData.append("address", request.address);
+    if (request.resume) formData.append("resume", request.resume);
+    if (request.source) formData.append("source", request.source);
+    if (request.referredBy) formData.append("referredBy", request.referredBy);
+    return (
       await recruitmentClient.post<unknown>(
         "/recruitment/candidateapplication",
-        request,
-      )
-    ).data,
-  uploadCandidateResume: async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    return (
-      await recruitmentClient.post<{ resumeUrl: string }>(
-        "/recruitment/resumes",
         formData,
       )
     ).data;
   },
-  getCandidatesForScreening: async (jobOpeningId: number) =>
+  getCandidateApplications: async (jobOpeningId: number) =>
     (
       await recruitmentClient.get<unknown[]>(
-        `/recruitment/candidatescreening/${jobOpeningId}`,
+        `/recruitment/candidateapplications/${jobOpeningId}`,
       )
     ).data,
   updateResumeScreening: async (request: {
