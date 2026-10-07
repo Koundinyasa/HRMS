@@ -14,7 +14,9 @@ import {
 import type {
   Approval,
   ApprovalStatus,
+  Candidate,
   CandidateStage,
+  InterviewSchedule,
   JobOpening,
   RecruitmentTab,
 } from "../types/recruitment.types";
@@ -93,11 +95,65 @@ function mapOpening(row: RecruitmentRow): JobOpening {
   };
 }
 
-function mapPendingRequisition(row: RecruitmentRow): Approval {
+function mapDashboardCandidate(row: RecruitmentRow): Candidate | null {
+  const id = readNumber(row, ["ApplicationID"]);
+  const name = readText(row, ["CandidateName"], "");
+  const role = readText(row, ["JobTitle"], "");
+  if (!id || !name || !role) {
+    throw new Error(
+      "Recruitment dashboard application is missing its ID, candidate name, or job title.",
+    );
+  }
+
+  const status = readText(row, ["StatusName"], "Applied").toLowerCase();
+  if (status.includes("reject") || status.includes("withdraw")) return null;
+
+  let stage: CandidateStage = "Applied";
+  if (
+    status.includes("shortlist") ||
+    status.includes("assessment") ||
+    status.includes("screen")
+  ) {
+    stage = "Screening";
+  } else if (
+    status.includes("interview") ||
+    status.includes("scheduled")
+  ) {
+    stage = "Interview";
+  } else if (status.includes("offer")) {
+    stage = "Offer";
+  } else if (status.includes("hired") || status.includes("joined")) {
+    stage = "Hired";
+  }
+
+  const stageDuration = readText(row, ["StageDuration"], "");
+  const durationMatch = stageDuration.match(/(\d+)\s*d/i);
+
+  return {
+    id,
+    name,
+    candidateCode: readText(row, ["CandidateID", "CandidateCode"], ""),
+    role,
+    stage,
+    rating: 0,
+    daysInStage: durationMatch ? Number(durationMatch[1]) : 0,
+    resumeUrl: readText(
+      row,
+      ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
+      "",
+    ),
+  };
+}
+
+function mapPendingRequisition(row: RecruitmentRow): Approval | null {
   const id = readNumber(row, ["RequisitionID", "ID"]);
-  const title = readText(row, ["JobTitle", "Title"], "");
+  const title = readText(
+    row,
+    ["JobTitle", "Title", "DesignationName", "Position"],
+    "",
+  );
   if (!id || !title) {
-    throw new Error("Requisition response is missing its ID or job title.");
+    return null;
   }
 
   const salaryMin = readValue(row, "SalaryRangeMin", "SalaryMin");
@@ -132,6 +188,9 @@ export function useRecruitment() {
   const [selectedDepartment, setSelectedDepartment] =
     useState<(typeof OPENING_DEPARTMENTS)[number]>("All");
   const [candidates, setCandidates] = useState(INITIAL_CANDIDATES);
+  const [interviewSchedules, setInterviewSchedules] = useState<
+    Record<number, InterviewSchedule>
+  >({});
   const [openings, setOpenings] = useState<JobOpening[]>([]);
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [recruitmentError, setRecruitmentError] = useState("");
@@ -182,27 +241,119 @@ export function useRecruitment() {
   const refreshRecruitment = useCallback(async () => {
     setIsRecruitmentLoading(true);
     setRecruitmentError("");
-    try {
-      const [openingResponse, requisitionResponse] = await Promise.all([
+    const [openingResult, requisitionResult, dashboardResult] =
+      await Promise.allSettled([
         recruitmentApi.getJobOpenings(),
         recruitmentApi.getPendingRequisitions(),
+        recruitmentApi.getRecruitmentDashboard(),
       ]);
-      setOpenings(toRows(openingResponse).map(mapOpening));
-      setApprovals(toRows(requisitionResponse).map(mapPendingRequisition));
-    } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(
-            error.response?.data?.message ??
-              error.message ??
-              "Unable to load recruitment data.",
-          )
+    const errors: string[] = [];
+    const getErrorMessage = (error: unknown, fallback: string) =>
+      axios.isAxiosError(error)
+        ? String(error.response?.data?.message ?? error.message ?? fallback)
         : error instanceof Error
           ? error.message
-          : "Unable to load recruitment data.";
-      setRecruitmentError(message);
-    } finally {
-      setIsRecruitmentLoading(false);
+          : fallback;
+
+    if (dashboardResult.status === "fulfilled") {
+      try {
+        const dashboardResponse = dashboardResult.value;
+        if (
+          !dashboardResponse.success ||
+          !Array.isArray(dashboardResponse.data?.applications)
+        ) {
+          throw new Error(
+            dashboardResponse.message ??
+              "Recruitment dashboard returned an invalid application list.",
+          );
+        }
+        setCandidates(
+          toRows(dashboardResponse.data.applications)
+            .map(mapDashboardCandidate)
+            .filter((candidate): candidate is Candidate => candidate !== null),
+        );
+      } catch (error) {
+        errors.push(
+          getErrorMessage(error, "Unable to load recruitment applications."),
+        );
+      }
+    } else {
+      errors.push(
+        getErrorMessage(
+          dashboardResult.reason,
+          "Unable to load recruitment applications.",
+        ),
+      );
     }
+
+    if (openingResult.status === "fulfilled") {
+      try {
+        const loadedOpenings = toRows(openingResult.value).map(mapOpening);
+        setOpenings(loadedOpenings);
+
+        const screeningResults = await Promise.allSettled(
+          loadedOpenings.map((opening) =>
+            recruitmentApi.getCandidatesForScreening(opening.id),
+          ),
+        );
+        const resumesByApplicationId = new Map<number, string>();
+        screeningResults.forEach((result) => {
+          if (result.status !== "fulfilled") return;
+          toRows(result.value).forEach((row) => {
+            const applicationId = readNumber(row, [
+              "ApplicationID",
+              "CandidateApplicationID",
+              "ApplicationId",
+            ]);
+            const resumeUrl = readText(
+              row,
+              ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
+              "",
+            );
+            if (applicationId > 0 && resumeUrl) {
+              resumesByApplicationId.set(applicationId, resumeUrl);
+            }
+          });
+        });
+        setCandidates((previous) =>
+          previous.map((candidate) => ({
+            ...candidate,
+            resumeUrl:
+              candidate.resumeUrl ||
+              resumesByApplicationId.get(candidate.id) ||
+              "",
+          })),
+        );
+      } catch (error) {
+        errors.push(getErrorMessage(error, "Unable to load job openings."));
+      }
+    } else {
+      errors.push(
+        getErrorMessage(openingResult.reason, "Unable to load job openings."),
+      );
+    }
+
+    if (requisitionResult.status === "fulfilled") {
+      try {
+        setApprovals(
+          toRows(requisitionResult.value)
+            .map(mapPendingRequisition)
+            .filter((approval): approval is Approval => approval !== null),
+        );
+      } catch (error) {
+        errors.push(getErrorMessage(error, "Unable to load requisitions."));
+      }
+    } else {
+      errors.push(
+        getErrorMessage(
+          requisitionResult.reason,
+          "Unable to load requisitions.",
+        ),
+      );
+    }
+
+    setRecruitmentError(errors.join(" "));
+    setIsRecruitmentLoading(false);
   }, []);
 
   useEffect(() => {
@@ -309,6 +460,16 @@ export function useRecruitment() {
     );
   };
 
+  const scheduleCandidateInterview = (
+    candidateId: number,
+    schedule: InterviewSchedule,
+  ) => {
+    setInterviewSchedules((previous) => ({
+      ...previous,
+      [candidateId]: schedule,
+    }));
+  };
+
   return {
     activeTab,
     setActiveTab,
@@ -319,6 +480,7 @@ export function useRecruitment() {
     selectedDepartment,
     setSelectedDepartment,
     candidates,
+    interviewSchedules,
     filteredCandidates,
     openings,
     filteredOpenings,
@@ -341,5 +503,6 @@ export function useRecruitment() {
     refreshRecruitment,
     createJobOpening,
     updateCandidateStage,
+    scheduleCandidateInterview,
   };
 }

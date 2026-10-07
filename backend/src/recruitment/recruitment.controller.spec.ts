@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RecruitmentController } from './recruitment.controller';
 import { RecruitmentService } from './recruitment.service';
 import { RecruitmentResumeStorageService } from './recruitment-resume-storage.service';
+import { RecruitmentCandidateDocumentStorageService } from './recruitment-candidate-document-storage.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { MailService } from '../mail/mail.service';
 
 describe('RecruitmentController', () => {
   let controller: RecruitmentController;
@@ -18,6 +20,18 @@ describe('RecruitmentController', () => {
         {
           provide: RecruitmentResumeStorageService,
           useValue: {},
+        },
+        {
+          provide: RecruitmentCandidateDocumentStorageService,
+          useValue: {},
+        },
+        {
+          provide: MailService,
+          useValue: {
+            sendWelcomeEmail: jest.fn(),
+            sendJoiningEmail: jest.fn(),
+            sendTeamAssignmentEmail: jest.fn(),
+          },
         },
       ],
     })

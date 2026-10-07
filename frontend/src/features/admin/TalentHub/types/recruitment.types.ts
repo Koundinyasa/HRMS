@@ -13,10 +13,18 @@ export type CandidateStage =
 export type Candidate = {
   id: number;
   name: string;
+  candidateCode?: string;
   role: string;
   stage: CandidateStage;
   rating: number;
   daysInStage: number;
+  resumeUrl?: string;
+};
+
+export type InterviewSchedule = {
+  interviewerName: string;
+  date: string;
+  time: string;
 };
 
 export type JobOpening = {

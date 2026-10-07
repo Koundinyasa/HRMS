@@ -5,6 +5,7 @@ interface RecruitmentHeaderProps {
   search: string;
   setSearch: (search: string) => void;
   showActions?: boolean;
+  showNewOpening?: boolean;
   onNewOpening: () => void;
 }
 
@@ -13,6 +14,7 @@ export function RecruitmentHeader({
   search,
   setSearch,
   showActions = true,
+  showNewOpening = true,
   onNewOpening,
 }: RecruitmentHeaderProps) {
   return (
@@ -39,14 +41,16 @@ export function RecruitmentHeader({
                 className="h-11 w-full rounded-xl border border-[#dce4de] bg-white pl-10 pr-4 text-sm outline-none transition focus:border-[#537b65] focus:ring-2 focus:ring-[#537b65]/15"
               />
             </label>
-            <button
-              type="button"
-              onClick={onNewOpening}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#e5a538] px-5 text-sm font-semibold text-[#342712] transition hover:bg-[#d99a2b] focus:outline-none focus:ring-2 focus:ring-[#e5a538]/40"
-            >
-              <Plus className="h-4 w-4" />
-              New job opening
-            </button>
+            {showNewOpening && (
+              <button
+                type="button"
+                onClick={onNewOpening}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#e5a538] px-5 text-sm font-semibold text-[#342712] transition hover:bg-[#d99a2b] focus:outline-none focus:ring-2 focus:ring-[#e5a538]/40"
+              >
+                <Plus className="h-4 w-4" />
+                New job opening
+              </button>
+            )}
           </div>
         )}
       </div>

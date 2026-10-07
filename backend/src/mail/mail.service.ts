@@ -18,6 +18,76 @@ export class MailService {
     });
   }
 
+  async sendWelcomeEmail(
+    email: string,
+    candidateName: string,
+    position: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Welcome to ${position}`,
+      text: [
+        `Dear ${candidateName},`,
+        '',
+        `Welcome to ${position}! We are excited to have you join us.`,
+        '',
+        'Please contact the HR team if you have any questions before your joining date.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
+  async sendJoiningEmail(
+    email: string,
+    candidateName: string,
+    position: string,
+    joiningDate: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Joining Details - ${position}`,
+      text: [
+        `Dear ${candidateName},`,
+        '',
+        `We are pleased to confirm your joining for ${position} on ${joiningDate}.`,
+        '',
+        'Please contact the HR team if you have any questions before your joining date.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
+  async sendTeamAssignmentEmail(
+    email: string,
+    employeeName: string,
+    department: string,
+    team: string,
+    manager: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Your Team Assignment - ${team}`,
+      text: [
+        `Dear ${employeeName},`,
+        '',
+        `You have been assigned to the ${team} team in the ${department} department.`,
+        `Your reporting manager is ${manager}.`,
+        '',
+        'Please contact the HR team if you have any questions.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
  async sendTempPassword(
     email: string,
     tempPassword: string,

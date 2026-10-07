@@ -9,6 +9,8 @@ interface ResumeUploadScreenProps {
 }
 
 const MAX_RESUME_SIZE = 10 * 1024 * 1024;
+const DEFAULT_SOURCE = "Employee Referral";
+const MAX_REFERRAL_NAME_LENGTH = 75;
 const ACCEPTED_RESUME_TYPES = new Set([
   "application/pdf",
   "application/msword",
@@ -22,6 +24,8 @@ export function ResumeUploadScreen({
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [resumeUrl, setResumeUrl] = useState("");
+  const [source, setSource] = useState(DEFAULT_SOURCE);
+  const [referralName, setReferralName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -64,6 +68,10 @@ export function ResumeUploadScreen({
       setError("Select an active job opening.");
       return;
     }
+    if (source === DEFAULT_SOURCE && !referralName.trim()) {
+      setError("Enter the referring employee's name.");
+      return;
+    }
     if (!file && !resumeUrl) {
       setError("Choose a resume file before submitting.");
       return;
@@ -84,12 +92,17 @@ export function ResumeUploadScreen({
         email: String(formData.get("email")).trim(),
         phone: String(formData.get("phone")).trim(),
         address: String(formData.get("address")).trim() || undefined,
-        source: String(formData.get("source")),
+        source:
+          source === DEFAULT_SOURCE
+            ? `${source} - ${referralName.trim()}`
+            : source,
         resumeUrl: savedResumeUrl,
       });
       setSuccess("Resume uploaded and candidate application created.");
       setFile(null);
       setResumeUrl("");
+      setSource(DEFAULT_SOURCE);
+      setReferralName("");
       form.reset();
     } catch (submitError) {
       const message =
@@ -191,7 +204,14 @@ export function ResumeUploadScreen({
               Source
               <select
                 name="source"
-                defaultValue="Employee Referral"
+                value={source}
+                onChange={(event) => {
+                  const selectedSource = event.target.value;
+                  setSource(selectedSource);
+                  if (selectedSource !== DEFAULT_SOURCE) {
+                    setReferralName("");
+                  }
+                }}
                 className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
               >
                 <option>Employee Referral</option>
@@ -200,6 +220,28 @@ export function ResumeUploadScreen({
                 <option>Recruitment Agency</option>
                 <option>Other</option>
               </select>
+            </label>
+            <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+              Referring employee name
+              {source === DEFAULT_SOURCE && (
+                <span className="text-rose-600"> *</span>
+              )}
+              <input
+                name="referralName"
+                type="text"
+                value={referralName}
+                onChange={(event) => setReferralName(event.target.value)}
+                required={source === DEFAULT_SOURCE}
+                disabled={source !== DEFAULT_SOURCE}
+                maxLength={MAX_REFERRAL_NAME_LENGTH}
+                autoComplete="name"
+                className="h-11 w-full rounded-lg border border-[#dfe4df] px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f3f5f3] disabled:text-[#87938c]"
+                placeholder={
+                  source === DEFAULT_SOURCE
+                    ? "Enter referring employee name"
+                    : "Available for Employee Referral only"
+                }
+              />
             </label>
             <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
               Address

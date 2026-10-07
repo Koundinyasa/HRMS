@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+=======
 import { Injectable } from '@nestjs/common';
+>>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 import * as sql from 'mssql';
 import { DatabaseService } from '../database/database.service';
 import { CreateRequisitionDto } from './dto/create-requisition.dto';
@@ -407,6 +411,33 @@ export class RecruitmentService {
     } catch (error) {
       console.error('Error in getRequisitionMaster:', error);
       throw error;
+    }
+  }
+   async getRecruitmentDashboard(stage: string = 'ALL') {
+    try {
+      const pool = await this.databaseService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('Stage', sql.VarChar(30), stage)
+        .execute('USP_GetRecruitmentDashboard');
+ 
+      return {
+        success: true,
+        data: {
+          applications: result.recordsets[0] || [],
+          summary: result.recordsets[1]?.[0] || {},
+        },
+        message:
+          result.recordsets[2]?.[0]?.Message ||
+          'Recruitment pipeline data retrieved successfully.',
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve recruitment dashboard.',
+      );
     }
   }
  

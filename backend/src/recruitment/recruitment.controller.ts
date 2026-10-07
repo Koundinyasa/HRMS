@@ -12,6 +12,10 @@ import {
   UseInterceptors,
   BadRequestException,
   StreamableFile,
+<<<<<<< HEAD
+  Query,
+=======
+>>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -20,6 +24,10 @@ import path from 'path';
 
 import { RecruitmentService } from './recruitment.service';
 import { RecruitmentResumeStorageService } from './recruitment-resume-storage.service';
+<<<<<<< HEAD
+import { RecruitmentCandidateDocumentStorageService } from './recruitment-candidate-document-storage.service';
+=======
+>>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 import { RequisitionActionDto } from './dto/requisition-action.dto';
 import { CreateJobOpeningDto } from './dto/create-job-opening.dto';
 import { PublishJobOpeningDto } from './dto/publish-job-opening.dto';
@@ -37,12 +45,24 @@ import { UploadCandidateDocumentDto } from './dto/upload-candidate-document.dto'
 import { BgvCandidateDto } from './dto/bgv-candidate.dto';
 import { ApproveCandidateJoiningDto } from './dto/approve-candidate-joining.dto';
 import { SkipCandidateAssessmentDto } from "./dto/skip-candidate-assessment.dto";
+<<<<<<< HEAD
+import { MailService } from '../mail/mail.service';
+import { SendWelcomeEmailDto } from './dto/send-welcome-email.dto';
+import { SendJoiningEmailDto } from './dto/send-joining-email.dto';
+import { SendTeamAssignmentEmailDto } from './dto/send-team-assignment-email.dto';
+=======
+>>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
 
 @Controller('recruitment')
 export class RecruitmentController {
   constructor(
     private readonly recruitmentService: RecruitmentService,
     private readonly resumeStorage: RecruitmentResumeStorageService,
+<<<<<<< HEAD
+    private readonly candidateDocumentStorage: RecruitmentCandidateDocumentStorageService,
+    private readonly mailService: MailService,
+=======
+>>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -137,11 +157,98 @@ export class RecruitmentController {
     @Param('fileName') fileName: string,
   ): Promise<StreamableFile> {
     const filePath = await this.resumeStorage.getPath(fileName);
+<<<<<<< HEAD
+    const extension = path.extname(fileName).toLowerCase();
+    const contentType =
+      extension === '.pdf'
+        ? 'application/pdf'
+        : extension === '.doc'
+          ? 'application/msword'
+          : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    return new StreamableFile(createReadStream(filePath), {
+      type: contentType,
+      disposition: `inline; filename="${fileName}"`,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('candidate-documents')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (_req, file, callback) => {
+        const extension = path.extname(file.originalname).toLowerCase();
+        const supportedMimeTypes: Record<string, string> = {
+          '.pdf': 'application/pdf',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.png': 'image/png',
+        };
+        if (supportedMimeTypes[extension] !== file.mimetype) {
+          callback(
+            new BadRequestException(
+              'Upload a PDF, JPG, JPEG, or PNG document.',
+            ),
+            false,
+          );
+          return;
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async uploadCandidateDocumentFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('applicationId', ParseIntPipe) applicationId: number,
+    @Body('documentType', ParseIntPipe) documentType: number,
+  ) {
+    if (applicationId <= 0 || documentType < 1 || documentType > 9) {
+      throw new BadRequestException(
+        'Choose a valid candidate and document type.',
+      );
+    }
+
+    const documentUrl = await this.candidateDocumentStorage.save(file);
+    try {
+      const result = await this.recruitmentService.uploadCandidateDocument({
+        applicationId,
+        documentType,
+        documentUrl,
+      });
+      return { documentUrl, result };
+    } catch (error) {
+      await this.candidateDocumentStorage.remove(documentUrl);
+      throw error;
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('candidate-documents/:fileName')
+  async downloadCandidateDocument(
+    @Param('fileName') fileName: string,
+  ): Promise<StreamableFile> {
+    const filePath = await this.candidateDocumentStorage.getPath(fileName);
+    const extension = path.extname(fileName).toLowerCase();
+    const contentType =
+      extension === '.pdf'
+        ? 'application/pdf'
+        : extension === '.png'
+          ? 'image/png'
+          : 'image/jpeg';
+    return new StreamableFile(createReadStream(filePath), {
+      type: contentType,
+      disposition: `inline; filename="${fileName}"`,
+    });
+  }
+
+=======
     return new StreamableFile(createReadStream(filePath), {
       type: 'application/octet-stream',
       disposition: `attachment; filename="${fileName}"`,
     });
   }
+>>>>>>> 2cbd7b52227a122381ddbda8b9f09199185fbe7e
   @UseGuards(JwtAuthGuard)
   @Get('candidatescreening/:jobOpeningId')
   async getCandidatesForScreening(
@@ -278,6 +385,39 @@ export class RecruitmentController {
     return this.recruitmentService.getCandidatesForJoining(hrManagerEmployeeId);
   }
   @UseGuards(JwtAuthGuard)
+  @Post('send-welcome-email')
+  async sendWelcomeEmail(@Body() dto: SendWelcomeEmailDto) {
+    await this.mailService.sendWelcomeEmail(
+      dto.email,
+      dto.candidateName,
+      dto.position,
+    );
+    return { success: true, message: 'Welcome email sent successfully.' };
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('send-joining-email')
+  async sendJoiningEmail(@Body() dto: SendJoiningEmailDto) {
+    await this.mailService.sendJoiningEmail(
+      dto.email,
+      dto.candidateName,
+      dto.position,
+      dto.joiningDate,
+    );
+    return { success: true, message: 'Joining email sent successfully.' };
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('send-team-assignment-email')
+  async sendTeamAssignmentEmail(@Body() dto: SendTeamAssignmentEmailDto) {
+    await this.mailService.sendTeamAssignmentEmail(
+      dto.email,
+      dto.employeeName,
+      dto.department,
+      dto.team,
+      dto.manager,
+    );
+    return { success: true, message: 'Team assignment email sent successfully.' };
+  }
+  @UseGuards(JwtAuthGuard)
   @Post('approvecandidatejoining')
   async approveCandidateJoining(
     @Body() dto: ApproveCandidateJoiningDto,
@@ -306,4 +446,10 @@ export class RecruitmentController {
   async getRequisitionMaster(@Req() req: any) {
     return this.recruitmentService.getRequisitionMaster(req.user.companyId);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('dashboard')
+  async getRecruitmentDashboard(@Query('stage') stage: string = 'ALL') {
+    return this.recruitmentService.getRecruitmentDashboard(stage);
+  }
+ 
 }

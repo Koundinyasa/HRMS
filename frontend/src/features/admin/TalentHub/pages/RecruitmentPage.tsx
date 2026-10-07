@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ApprovalsPanel } from "../components/ApprovalsPanel";
+import { CandidateDocumentUploadScreen } from "../components/CandidateDocumentUploadScreen";
 import { InterviewsPanel } from "../components/InterviewsPanel";
 import { JobOpeningsPanel } from "../components/JobOpeningsPanel";
 import { NewRequisitionScreen } from "../components/NewRequisitionScreen";
@@ -9,6 +10,7 @@ import { RecruitmentHeader } from "../components/RecruitmentHeader";
 import { ResumeUploadScreen } from "../components/ResumeUploadScreen";
 import {
   AssessmentManagementPanel,
+  InterviewSchedulePanel,
   ResumeScreeningPanel,
 } from "../components/RecruitmentWorkflowPanels";
 import { RecruitmentOperationalScreen } from "../components/RecruitmentOperationalScreens";
@@ -28,8 +30,10 @@ const WORKFLOW_TITLES: Record<string, string> = {
   "job-requisition": "Job Requisition",
   "candidate-applications": "Candidate Applications",
   "resume-screening": "Resume Screening",
+  "interview-schedule": "Interview Schedule",
   "assessment-test": "Assessment / Test",
   "final-interview-approval": "Final Interview Approval",
+  "document-upload": "Document Upload",
   "offer-management": "Offer Management",
   "verification-bgv": "Verification / BGV",
   onboarding: "Onboarding",
@@ -57,6 +61,7 @@ export default function RecruitmentPage() {
     selectedDepartment,
     setSelectedDepartment,
     candidates,
+    interviewSchedules,
     filteredCandidates,
     openings,
     filteredOpenings,
@@ -67,12 +72,11 @@ export default function RecruitmentPage() {
     setSelectedApprovalStatus,
     approvalComments,
     setApprovalComments,
-    completedFeedbackTasks,
-    setCompletedFeedbackTasks,
     approveOpening,
     sendBackOpening,
     refreshRecruitment,
     updateCandidateStage,
+    scheduleCandidateInterview,
   } = recruitment;
   const routeTab = view ? VIEW_TABS[view] : "pipeline";
   const isOperationalWorkflowView =
@@ -80,6 +84,7 @@ export default function RecruitmentPage() {
     view === "job-requisition" ||
     view === "candidate-applications" ||
     view === "final-interview-approval" ||
+    view === "document-upload" ||
     view === "offer-management" ||
     view === "verification-bgv" ||
     view === "joining" ||
@@ -89,6 +94,7 @@ export default function RecruitmentPage() {
     view === "asset-assignment";
   const isDedicatedWorkflowView =
     view === "resume-screening" ||
+    view === "interview-schedule" ||
     view === "assessment-test" ||
     isOperationalWorkflowView;
   const isWorkflowPlaceholder = Boolean(
@@ -111,6 +117,7 @@ export default function RecruitmentPage() {
           search={search}
           setSearch={setSearch}
           showActions={!isDedicatedWorkflowView}
+          showNewOpening={view !== "interview-process"}
           onNewOpening={() =>
             navigate(
               `/${domain}/admin/talent-hub/recruitment/job-requisition/new`,
@@ -121,6 +128,7 @@ export default function RecruitmentPage() {
       <main className="space-y-6 px-5 py-6 sm:px-8">
         {view === "job-requisition" ? (
           <RecruitmentOperationalScreen
+            key={view}
             view={view}
             onCreateAction={() =>
               navigate(
@@ -138,10 +146,22 @@ export default function RecruitmentPage() {
             candidates={candidates}
             updateCandidateStage={updateCandidateStage}
           />
+        ) : view === "interview-schedule" ? (
+          <InterviewSchedulePanel
+            candidates={candidates}
+            schedules={interviewSchedules}
+            onSchedule={scheduleCandidateInterview}
+          />
+        ) : view === "document-upload" ? (
+          <CandidateDocumentUploadScreen />
         ) : view === "assessment-test" ? (
           <AssessmentManagementPanel candidates={candidates} />
         ) : isDedicatedWorkflowView && view ? (
-          <RecruitmentOperationalScreen view={view} />
+          <RecruitmentOperationalScreen
+            key={view}
+            view={view}
+            openings={openings}
+          />
         ) : isWorkflowPlaceholder ? (
           <section>
             <h2 className="mb-4 text-xl font-bold">
@@ -168,8 +188,6 @@ export default function RecruitmentPage() {
         {(view === "interview-process" || (!view && activeTab === "interviews")) && (
           <InterviewsPanel
             search={search}
-            completedFeedbackTasks={completedFeedbackTasks}
-            setCompletedFeedbackTasks={setCompletedFeedbackTasks}
           />
         )}
         {(view === "requisition-approval" || (!view && activeTab === "approvals")) && (

@@ -1,17 +1,30 @@
 import { useState, type FormEvent } from "react";
 import { ArrowUpRight, CalendarDays, X } from "lucide-react";
 import type { ReactNode } from "react";
-import type { Candidate, CandidateStage } from "../types/recruitment.types";
+import type {
+  Candidate,
+  CandidateStage,
+  InterviewSchedule,
+} from "../types/recruitment.types";
 import { EmptyState } from "./RecruitmentShared";
 
 type ReviewDecision = "Reviewing" | "Shortlisted" | "Rejected";
 
 function candidateCode(candidate: Candidate) {
-  return `CAND-2026-${String(candidate.id + 77).padStart(3, "0")}`;
+  return (
+    candidate.candidateCode ||
+    `CAND-2026-${String(candidate.id + 77).padStart(3, "0")}`
+  );
 }
 
-function resumeUrl(candidate: Candidate) {
-  return `https://example.com/resumes/${candidateCode(candidate).toLowerCase()}.pdf`;
+function resumeHref(candidate: Candidate) {
+  const url = candidate.resumeUrl?.trim();
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+
+  const apiBaseUrl =
+    import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
+  return `${apiBaseUrl.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
 }
 
 function PanelCard({
@@ -137,17 +150,25 @@ export function ResumeScreeningPanel({
                   </TableCell>
                   <TableCell>{candidate.role}</TableCell>
                   <TableCell>
-                    <a
-                      href={resumeUrl(candidate)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold text-[#a87519] hover:text-[#80540d]"
-                    >
-                      View Resume <ArrowUpRight className="h-3.5 w-3.5" />
-                    </a>
-                    <span className="mt-1 block text-[11px] text-[#939b95]">
-                      {resumeUrl(candidate)}
-                    </span>
+                    {candidate.resumeUrl ? (
+                      <>
+                        <a
+                          href={resumeHref(candidate)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 font-semibold text-[#a87519] hover:text-[#80540d]"
+                        >
+                          View Resume <ArrowUpRight className="h-3.5 w-3.5" />
+                        </a>
+                        <span className="mt-1 block max-w-xs truncate text-[11px] text-[#939b95]">
+                          {candidate.resumeUrl}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-xs text-[#939b95]">
+                        Resume not available
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {decision === "Reviewing" ? (
@@ -176,6 +197,144 @@ export function ResumeScreeningPanel({
             })}
           </tbody>
         </TableFrame>
+      )}
+    </PanelCard>
+  );
+}
+
+export function InterviewSchedulePanel({
+  candidates,
+  schedules,
+  onSchedule,
+}: {
+  candidates: Candidate[];
+  schedules: Record<number, InterviewSchedule>;
+  onSchedule: (candidateId: number, schedule: InterviewSchedule) => void;
+}) {
+  const shortlistedCandidates = candidates.filter(
+    (candidate) => candidate.stage === "Screening",
+  );
+  const [drafts, setDrafts] = useState<
+    Record<number, Partial<InterviewSchedule>>
+  >({});
+
+  const updateDraft = (
+    candidateId: number,
+    field: keyof InterviewSchedule,
+    value: string,
+  ) => {
+    setDrafts((previous) => ({
+      ...previous,
+      [candidateId]: { ...previous[candidateId], [field]: value },
+    }));
+  };
+
+  return (
+    <PanelCard title="Interview Schedule">
+      {shortlistedCandidates.length === 0 ? (
+        <div className="p-5">
+          <EmptyState message="Shortlist candidates in Resume Screening to schedule interviews." />
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+            <thead>
+              <tr>
+                <TableHeading>Candidate</TableHeading>
+                <TableHeading>Name</TableHeading>
+                <TableHeading>Job</TableHeading>
+                <TableHeading>Assigned Interviewer</TableHeading>
+                <TableHeading>Interview Date</TableHeading>
+                <TableHeading>Interview Time</TableHeading>
+                <TableHeading>Action</TableHeading>
+              </tr>
+            </thead>
+            <tbody>
+              {shortlistedCandidates.map((candidate) => {
+                const schedule = schedules[candidate.id];
+                const draft = drafts[candidate.id];
+                const interviewerName =
+                  draft?.interviewerName ?? schedule?.interviewerName ?? "";
+                const date = draft?.date ?? schedule?.date ?? "";
+                const time = draft?.time ?? schedule?.time ?? "";
+
+                return (
+                  <tr
+                    key={candidate.id}
+                    className="transition-colors hover:bg-[#fdfcf9]"
+                  >
+                    <TableCell>
+                      <span className="font-medium text-[#59665d]">
+                        {candidateCode(candidate)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-semibold text-[#303d34]">
+                        {candidate.name}
+                      </span>
+                    </TableCell>
+                    <TableCell>{candidate.role}</TableCell>
+                    <TableCell>
+                      <input
+                        type="text"
+                        value={interviewerName}
+                        onChange={(event) =>
+                          updateDraft(
+                            candidate.id,
+                            "interviewerName",
+                            event.target.value,
+                          )
+                        }
+                        maxLength={150}
+                        placeholder="Interviewer name"
+                        aria-label={`Assigned interviewer for ${candidate.name}`}
+                        className="h-9 w-44 rounded-lg border border-[#dfe4df] px-2.5 text-xs outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(event) =>
+                          updateDraft(candidate.id, "date", event.target.value)
+                        }
+                        aria-label={`Interview date for ${candidate.name}`}
+                        className="h-9 rounded-lg border border-[#dfe4df] px-2 text-xs outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <input
+                        type="time"
+                        value={time}
+                        onChange={(event) =>
+                          updateDraft(candidate.id, "time", event.target.value)
+                        }
+                        aria-label={`Interview time for ${candidate.name}`}
+                        className="h-9 rounded-lg border border-[#dfe4df] px-2 text-xs outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <button
+                        type="button"
+                        disabled={!interviewerName.trim() || !date || !time}
+                        onClick={() =>
+                          onSchedule(candidate.id, {
+                            interviewerName: interviewerName.trim(),
+                            date,
+                            time,
+                          })
+                        }
+                        className="whitespace-nowrap rounded-lg bg-[#e8f4ec] px-3 py-2 text-xs font-semibold text-[#39724f] transition hover:bg-[#d9ecdf] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {schedule ? "Update Schedule" : "Schedule Interview"}
+                      </button>
+                    </TableCell>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </PanelCard>
   );

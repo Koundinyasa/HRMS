@@ -43,7 +43,22 @@ export interface CandidateApplicationRequest {
   source?: string;
 }
 
+export interface RecruitmentDashboardResponse {
+  success: boolean;
+  data: {
+    applications: unknown[];
+    summary: Record<string, number>;
+  };
+  message?: string;
+}
+
 export const recruitmentApi = {
+  getRecruitmentDashboard: async () =>
+    (
+      await recruitmentClient.get<RecruitmentDashboardResponse>(
+        "/recruitment/dashboard",
+      )
+    ).data,
   getPendingRequisitions: async () =>
     (await recruitmentClient.get<unknown[]>("/recruitment/pendingrequisitions"))
       .data,
@@ -221,6 +236,28 @@ export const recruitmentApi = {
         request,
       )
     ).data,
+  uploadCandidateDocumentFile: async (request: {
+    applicationId: number;
+    documentType: number;
+    file: File;
+  }) => {
+    const formData = new FormData();
+    formData.append("applicationId", String(request.applicationId));
+    formData.append("documentType", String(request.documentType));
+    formData.append("file", request.file);
+    return (
+      await recruitmentClient.post<{ documentUrl: string }>(
+        "/recruitment/candidate-documents",
+        formData,
+      )
+    ).data;
+  },
+  getCandidateDocumentFile: async (documentUrl: string) =>
+    (
+      await recruitmentClient.get<Blob>(documentUrl, {
+        responseType: "blob",
+      })
+    ).data,
   performCandidateBgv: async (request: {
     applicationId: number;
     isClear: boolean;
@@ -229,6 +266,42 @@ export const recruitmentApi = {
     (
       await recruitmentClient.post<unknown>(
         "/recruitment/bgvcandidate",
+        request,
+      )
+    ).data,
+  sendWelcomeEmail: async (request: {
+    email: string;
+    candidateName: string;
+    position: string;
+  }) =>
+    (
+      await recruitmentClient.post<{ success: boolean; message: string }>(
+        "/recruitment/send-welcome-email",
+        request,
+      )
+    ).data,
+  sendJoiningEmail: async (request: {
+    email: string;
+    candidateName: string;
+    position: string;
+    joiningDate: string;
+  }) =>
+    (
+      await recruitmentClient.post<{ success: boolean; message: string }>(
+        "/recruitment/send-joining-email",
+        request,
+      )
+    ).data,
+  sendTeamAssignmentEmail: async (request: {
+    email: string;
+    employeeName: string;
+    department: string;
+    team: string;
+    manager: string;
+  }) =>
+    (
+      await recruitmentClient.post<{ success: boolean; message: string }>(
+        "/recruitment/send-team-assignment-email",
         request,
       )
     ).data,
