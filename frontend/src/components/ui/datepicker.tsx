@@ -61,7 +61,6 @@ export function DatePicker({
   onToday,
 }: DatePickerProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
- 
   useEffect(() => {
     if (!open) return;
  
@@ -129,7 +128,6 @@ export function DatePicker({
       >
         <CalendarDays className="h-4 w-4" />
       </Button>
- 
       {open && (
         <div
           className={`
@@ -279,6 +277,5 @@ export function DatePicker({
     </div>
   );
 }
- 
+
 export default DatePicker;
- 

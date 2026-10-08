@@ -23,7 +23,7 @@ export default function TimeOfficeTabs({
     <nav
       aria-label="Time office navigation"
       className={`punch-horizontal-scroll flex min-w-0 items-center overflow-x-auto ${
-      compact ? "gap-4" : "gap-6"
+      compact ? "gap-3" : "gap-4 sm:gap-6"
       } ${className}`}
     >
       {tabs.map((tab) => (
@@ -34,7 +34,7 @@ export default function TimeOfficeTabs({
             `shrink-0 whitespace-nowrap border-b-2 font-semibold ${
               compact
                 ? "px-1 py-2 text-[13px]"
-                : "px-1 py-4 text-[13px] sm:py-5 sm:text-[15px]"
+                : "px-1 py-2.5 text-[12px] sm:py-3 sm:text-[15px]"
             } ${
               isActive
                 ? "border-[#1997e8] text-[#1997e8]"

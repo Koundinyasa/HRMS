@@ -13,6 +13,7 @@ export type CandidateStage =
 export type Candidate = {
   id: number;
   name: string;
+  email?: string;
   candidateCode?: string;
   role: string;
   stage: CandidateStage;

@@ -1,12 +1,179 @@
 import { useEffect, useMemo, useState } from "react";
 import { Mail, Plus, RotateCcw, Search, X } from "lucide-react";
 import axios from "axios";
-import { recruitmentApi } from "../api/recruitment.api";
-import type { JobOpening } from "../types/recruitment.types";
+import {
+  recruitmentApi,
+  recruitmentFileUrl,
+} from "../api/recruitment.api";
 
 type WorkflowRow = Record<string, string>;
 type DropdownOption = { value: string; label: string };
 const EMPTY_WORKFLOW_ROWS: WorkflowRow[] = [];
+
+function readLookupText(record: Record<string, unknown>, aliases: string[]) {
+  const normalizedAliases = new Set(
+    aliases.map((alias) => alias.toLowerCase().replace(/[^a-z0-9]/g, "")),
+  );
+  const entry = Object.entries(record).find(([key]) =>
+    normalizedAliases.has(key.toLowerCase().replace(/[^a-z0-9]/g, "")),
+  );
+  const value = entry?.[1];
+  return value === null || value === undefined || value === ""
+    ? ""
+    : String(value);
+}
+
+function mapLookupRows(
+  response: unknown,
+  aliases: { value: string[]; label: string[] },
+  description: string,
+): DropdownOption[] {
+  if (
+    !response ||
+    typeof response !== "object" ||
+    !("success" in response) ||
+    !response.success ||
+    !("data" in response) ||
+    !Array.isArray(response.data)
+  ) {
+    const message =
+      response && typeof response === "object" && "message" in response
+        ? response.message
+        : undefined;
+    throw new Error(
+      typeof message === "string"
+        ? message
+        : `Recruitment API returned an invalid ${description} list.`,
+    );
+  }
+
+  return response.data.map((record) => {
+    if (!record || typeof record !== "object" || Array.isArray(record)) {
+      throw new Error(`Recruitment API returned an invalid ${description}.`);
+    }
+    const row = record as Record<string, unknown>;
+    const value = readLookupText(row, aliases.value);
+    const label = readLookupText(row, aliases.label);
+    if (!value || !label) {
+      throw new Error(
+        `Recruitment API returned a ${description} without its value or name.`,
+      );
+    }
+    return { value, label };
+  });
+}
+
+function mapCandidateApplication(record: unknown): WorkflowRow {
+  if (!record || typeof record !== "object" || Array.isArray(record)) {
+    throw new Error("Recruitment API returned an invalid candidate record.");
+  }
+
+  const candidate = record as Record<string, unknown>;
+  const value = (...aliases: string[]) => {
+    const normalizeKey = (key: string) =>
+      key.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const aliasSet = new Set(aliases.map(normalizeKey));
+    const entry = Object.entries(candidate).find(([key]) =>
+      aliasSet.has(normalizeKey(key)),
+    );
+    const field = entry?.[1];
+    return field === null || field === undefined || field === ""
+      ? "—"
+      : String(field);
+  };
+  const rawSource = value("Source", "ApplicationSource", "SourceName");
+  const referralMatch = rawSource.match(/^Employee Referral\s*-\s*(.+)$/i);
+
+  const resumeUrl = value(
+    "ResumeURL",
+    "ResumeUrl",
+    "ResumePath",
+    "ResumeFilePath",
+    "ResumeFileURL",
+  );
+  const resumeExtension = value(
+    "FileExtension",
+    "ResumeFileExtension",
+    "ResumeExtension",
+    "ActualFileName",
+  );
+
+  return {
+    application: value(
+      "ApplicationID",
+      "CandidateApplicationID",
+      "ApplicationId",
+      "ApplicationNumber",
+      "ApplicationNo",
+    ),
+    candidateId: value(
+      "CandidateID",
+      "CandidateId",
+      "ApplicantID",
+      "ApplicantId",
+      "CandidateCode",
+    ),
+    candidate: value(
+      "FullName",
+      "CandidateName",
+      "CandidateFullName",
+      "ApplicantName",
+      "Name",
+    ),
+    position: value(
+      "JobTitle",
+      "Position",
+      "OpeningTitle",
+      "JobOpeningTitle",
+      "JobOpeningName",
+      "Designation",
+    ),
+    opening: value("JobOpeningID", "OpeningID", "JobId", "JobOpeningNumber"),
+    appliedDate: value(
+      "AppliedDate",
+      "ApplicationDate",
+      "DateApplied",
+      "ApplicationCreatedDate",
+      "CreatedDate",
+      "CreatedOn",
+      "CreatedAt",
+    ),
+    source: referralMatch
+      ? "Employee Referral"
+      : rawSource,
+    referringEmployee:
+      value(
+        "ReferringEmployee",
+        "ReferralName",
+        "ReferredBy",
+        "ReferrerName",
+        "ReferredByName",
+      ) !== "—"
+        ? value(
+            "ReferringEmployee",
+            "ReferralName",
+            "ReferredBy",
+            "ReferrerName",
+            "ReferredByName",
+          )
+        : referralMatch?.[1].trim() ?? "—",
+    status: value(
+      "ApplicationStatus",
+      "CandidateStatus",
+      "CurrentStage",
+      "Status",
+      "StatusName",
+      "Stage",
+    ),
+    resume:
+      resumeUrl === "—"
+        ? "—"
+        : recruitmentFileUrl(
+            resumeUrl,
+            resumeExtension === "—" ? undefined : resumeExtension,
+          ),
+  };
+}
 
 type WorkflowFormField = {
   key: string;
@@ -331,11 +498,9 @@ function statusClasses(status: string) {
 export function RecruitmentOperationalScreen({
   view,
   onCreateAction,
-  openings = [],
 }: {
   view: string;
   onCreateAction?: () => void;
-  openings?: JobOpening[];
 }) {
   const config = WORKFLOW_SCREENS[view];
   const [search, setSearch] = useState("");
@@ -391,6 +556,26 @@ export function RecruitmentOperationalScreen({
     useState(false);
   const [candidateApplicationsError, setCandidateApplicationsError] =
     useState("");
+  const [showCandidateApplicationForm, setShowCandidateApplicationForm] =
+    useState(false);
+  const [isSubmittingCandidateApplication, setIsSubmittingCandidateApplication] =
+    useState(false);
+  const [candidateApplicationsRefreshKey, setCandidateApplicationsRefreshKey] =
+    useState(0);
+  const [jobOpeningOptions, setJobOpeningOptions] = useState<DropdownOption[]>(
+    [],
+  );
+  const [sourceOptions, setSourceOptions] = useState<DropdownOption[]>([]);
+  const [candidateApplicationDropdownsLoading, setCandidateApplicationDropdownsLoading] =
+    useState(false);
+  const [candidateApplicationDropdownsError, setCandidateApplicationDropdownsError] =
+    useState("");
+  const [candidateApplicationSource, setCandidateApplicationSource] =
+    useState("");
+  const [candidateApplicationReferrer, setCandidateApplicationReferrer] =
+    useState("");
+  const isEmployeeReferral =
+    candidateApplicationSource.toLowerCase() === "employee referral";
 
   const rows =
     view === "candidate-applications"
@@ -405,143 +590,15 @@ export function RecruitmentOperationalScreen({
 
     const loadApplications = async () => {
       try {
-        const results = await Promise.all(
-          openings.map(async (opening) => {
-            const response = await recruitmentApi.getCandidatesForScreening(
-              opening.id,
-            );
-            if (!Array.isArray(response)) {
-              throw new Error(
-                "Recruitment API returned an invalid candidate list.",
-              );
-            }
-
-            return response.map((record) => {
-              if (
-                !record ||
-                typeof record !== "object" ||
-                Array.isArray(record)
-              ) {
-                throw new Error(
-                  "Recruitment API returned an invalid candidate record.",
-                );
-              }
-              const candidate = record as Record<string, unknown>;
-              const value = (...aliases: string[]) => {
-                const normalizeKey = (key: string) =>
-                  key.toLowerCase().replace(/[^a-z0-9]/g, "");
-                const aliasSet = new Set(aliases.map(normalizeKey));
-                const entry = Object.entries(candidate).find(([key]) =>
-                  aliasSet.has(normalizeKey(key)),
-                );
-                const field = entry?.[1];
-                return field === null || field === undefined || field === ""
-                  ? "—"
-                  : String(field);
-              };
-              const rawSource = value("Source", "ApplicationSource", "SourceName");
-              const referralMatch = rawSource.match(
-                /^Employee Referral\s*-\s*(.+)$/i,
-              );
-
-              return {
-                application:
-                  value(
-                    "ApplicationID",
-                    "CandidateApplicationID",
-                    "ApplicationId",
-                    "ApplicationNumber",
-                    "ApplicationNo",
-                  ) === "—"
-                    ? "—"
-                    : value(
-                        "ApplicationID",
-                        "CandidateApplicationID",
-                        "ApplicationId",
-                        "ApplicationNumber",
-                        "ApplicationNo",
-                      ),
-                candidateId: value(
-                  "CandidateID",
-                  "CandidateId",
-                  "ApplicantID",
-                  "ApplicantId",
-                  "CandidateCode",
-                ),
-                candidate: value(
-                  "FullName",
-                  "CandidateName",
-                  "CandidateFullName",
-                  "ApplicantName",
-                  "Name",
-                ),
-                position: value(
-                  "JobTitle",
-                  "Position",
-                  "OpeningTitle",
-                  "JobOpeningTitle",
-                  "Designation",
-                ),
-                opening: value(
-                  "JobOpeningID",
-                  "OpeningID",
-                  "JobId",
-                  "JobOpeningNumber",
-                ) === "—"
-                  ? String(opening.id)
-                  : value(
-                      "JobOpeningID",
-                      "OpeningID",
-                      "JobId",
-                      "JobOpeningNumber",
-                    ),
-                appliedDate: value(
-                  "AppliedDate",
-                  "ApplicationDate",
-                  "DateApplied",
-                  "ApplicationCreatedDate",
-                  "CreatedDate",
-                  "CreatedOn",
-                  "CreatedAt",
-                ),
-                source: referralMatch
-                  ? "Employee Referral"
-                  : value("Source", "ApplicationSource", "SourceName"),
-                referringEmployee:
-                  value(
-                    "ReferringEmployee",
-                    "ReferralName",
-                    "ReferredBy",
-                    "ReferrerName",
-                    "ReferredByName",
-                  ) !== "—"
-                    ? value(
-                        "ReferringEmployee",
-                        "ReferralName",
-                        "ReferredBy",
-                        "ReferrerName",
-                        "ReferredByName",
-                      )
-                    : referralMatch?.[1].trim() ?? "—",
-                status: value(
-                  "ApplicationStatus",
-                  "CandidateStatus",
-                  "CurrentStage",
-                  "Status",
-                  "Stage",
-                ),
-                resume: value(
-                  "ResumeURL",
-                  "ResumeUrl",
-                  "ResumePath",
-                  "ResumeFilePath",
-                  "ResumeFileURL",
-                ),
-              };
-            });
-          }),
-        );
-        if (isCurrent) setCandidateApplicationRows(results.flat());
+        const records = await recruitmentApi.getCandidateApplications();
+        if (!Array.isArray(records)) {
+          throw new Error("Recruitment API returned an invalid application list.");
+        }
+        if (isCurrent) {
+          setCandidateApplicationRows(
+            records.map(mapCandidateApplication),
+          );
+        }
       } catch (error) {
         if (!isCurrent) return;
         const message = axios.isAxiosError(error)
@@ -564,7 +621,121 @@ export function RecruitmentOperationalScreen({
     return () => {
       isCurrent = false;
     };
-  }, [view, openings]);
+  }, [
+    view,
+    candidateApplicationsRefreshKey,
+  ]);
+
+  useEffect(() => {
+    if (view !== "candidate-applications") return;
+
+    let isCurrent = true;
+
+    const loadDropdowns = async () => {
+      try {
+        const [openingsResponse, sourcesResponse] = await Promise.all([
+          recruitmentApi.getJobOpeningMaster(),
+          recruitmentApi.getRecruitmentSources(),
+        ]);
+        const loadedOpenings = mapLookupRows(
+          openingsResponse,
+          {
+            value: ["JobOpeningID", "OpeningID", "JobID", "ID"],
+            label: ["JobTitle", "OpeningTitle", "Title", "JobOpeningName"],
+          },
+          "job opening",
+        );
+        const loadedSources = mapLookupRows(
+          sourcesResponse,
+          {
+            value: [
+              "SourceName",
+              "RecruitmentSource",
+              "Source",
+              "Name",
+              "SourceID",
+              "ID",
+            ],
+            label: [
+              "SourceName",
+              "RecruitmentSource",
+              "Source",
+              "Name",
+              "SourceID",
+              "ID",
+            ],
+          },
+          "recruitment source",
+        );
+        if (isCurrent) {
+          setJobOpeningOptions(loadedOpenings);
+          setSourceOptions(loadedSources);
+        }
+      } catch (error) {
+        if (!isCurrent) return;
+        const message = axios.isAxiosError(error)
+          ? String(error.response?.data?.message ?? error.message)
+          : error instanceof Error
+            ? error.message
+            : "Unable to load candidate application dropdowns.";
+        setCandidateApplicationDropdownsError(message);
+      } finally {
+        if (isCurrent) setCandidateApplicationDropdownsLoading(false);
+      }
+    };
+
+    void Promise.resolve().then(() => {
+      if (!isCurrent) return;
+      setCandidateApplicationDropdownsLoading(true);
+      setCandidateApplicationDropdownsError("");
+      return loadDropdowns();
+    });
+    return () => {
+      isCurrent = false;
+    };
+  }, [view]);
+
+  const submitCandidateApplication = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const resume = formData.get("resume");
+    setCandidateApplicationsError("");
+    setIsSubmittingCandidateApplication(true);
+
+    try {
+      await recruitmentApi.createCandidateApplication({
+        jobOpeningId: Number(formData.get("jobOpeningId")),
+        fullName: String(formData.get("fullName") ?? "").trim(),
+        email: String(formData.get("email") ?? "").trim(),
+        phone: String(formData.get("phone") ?? "").trim(),
+        address: String(formData.get("address") ?? "").trim() || undefined,
+        source: candidateApplicationSource || undefined,
+        referredBy:
+          isEmployeeReferral && candidateApplicationReferrer.trim()
+            ? candidateApplicationReferrer.trim()
+            : undefined,
+        resume: resume instanceof File && resume.size > 0 ? resume : undefined,
+      });
+      form.reset();
+      setCandidateApplicationSource("");
+      setCandidateApplicationReferrer("");
+      setShowCandidateApplicationForm(false);
+      setActionMessage("Candidate application submitted successfully.");
+      setCandidateApplicationsRefreshKey((current) => current + 1);
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? String(error.response?.data?.message ?? error.message)
+        : error instanceof Error
+          ? error.message
+          : "Unable to submit the candidate application.";
+      setCandidateApplicationsError(message);
+    } finally {
+      setIsSubmittingCandidateApplication(false);
+    }
+  };
 
   const statuses = useMemo(
     () => Array.from(new Set(rows.map((row) => row[statusKey]))),
@@ -939,12 +1110,16 @@ export function RecruitmentOperationalScreen({
             </h2>
             <p className="mt-1.5 text-sm text-[#7b8981]">{config.description}</p>
           </div>
-          {view !== "candidate-applications" &&
-            view !== "final-interview-approval" &&
-            (
+          {view !== "final-interview-approval" && (
             <button
               type="button"
               onClick={() => {
+                if (view === "candidate-applications") {
+                  setShowCandidateApplicationForm((isOpen) => !isOpen);
+                  setCandidateApplicationsError("");
+                  setActionMessage("");
+                  return;
+                }
                 if (view === "verification-bgv") {
                   setShowBgvForm((isOpen) => !isOpen);
                   setBgvError("");
@@ -981,7 +1156,9 @@ export function RecruitmentOperationalScreen({
               }}
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#e5a538] px-4 text-sm font-semibold text-[#342712] shadow-sm transition hover:bg-[#d99a2b] focus:outline-none focus:ring-2 focus:ring-[#e5a538]/35"
             >
-              {view === "verification-bgv" && showBgvForm ? (
+              {(view === "candidate-applications" &&
+                showCandidateApplicationForm) ||
+              (view === "verification-bgv" && showBgvForm) ? (
                 <X className="h-4 w-4" />
               ) : (view === "onboarding" || view === "induction") &&
                 showPostJoiningForm ? (
@@ -993,7 +1170,10 @@ export function RecruitmentOperationalScreen({
               ) : (
                 <Plus className="h-4 w-4" />
               )}
-              {view === "verification-bgv" && showBgvForm
+              {view === "candidate-applications" &&
+              showCandidateApplicationForm
+                ? "Cancel"
+                : view === "verification-bgv" && showBgvForm
                 ? "Cancel BGV"
                 : (view === "onboarding" || view === "induction") &&
                     showPostJoiningForm
@@ -1023,6 +1203,164 @@ export function RecruitmentOperationalScreen({
             {actionMessage}
           </p>
         )}
+        {view === "candidate-applications" &&
+          showCandidateApplicationForm && (
+            <form
+              onSubmit={(event) => void submitCandidateApplication(event)}
+              className="space-y-4 rounded-2xl border border-[#e6e8e3] bg-white p-5 shadow-[0_8px_24px_rgba(39,48,41,0.04)]"
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Job opening
+                  <select
+                    name="jobOpeningId"
+                    required
+                    defaultValue=""
+                    disabled={
+                      candidateApplicationDropdownsLoading ||
+                      jobOpeningOptions.length === 0
+                    }
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:bg-[#f5f6f4]"
+                  >
+                    <option value="" disabled>
+                      {candidateApplicationDropdownsLoading
+                        ? "Loading job openings..."
+                        : "Select a job opening"}
+                    </option>
+                    {jobOpeningOptions.map((opening) => (
+                      <option key={opening.value} value={opening.value}>
+                        {opening.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Full name
+                  <input
+                    name="fullName"
+                    type="text"
+                    required
+                    maxLength={200}
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                  />
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Email
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    maxLength={150}
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                  />
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Phone
+                  <input
+                    name="phone"
+                    type="tel"
+                    required
+                    maxLength={20}
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                  />
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Address
+                  <input
+                    name="address"
+                    type="text"
+                    maxLength={500}
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                  />
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Source
+                  <select
+                    name="source"
+                    value={candidateApplicationSource}
+                    disabled={candidateApplicationDropdownsLoading}
+                    onChange={(event) => {
+                      const selectedSource = event.target.value;
+                      setCandidateApplicationSource(selectedSource);
+                      if (
+                        selectedSource.toLowerCase() !== "employee referral"
+                      ) {
+                        setCandidateApplicationReferrer("");
+                      }
+                    }}
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                  >
+                    <option value="">
+                      {candidateApplicationDropdownsLoading
+                        ? "Loading sources..."
+                        : "Select a source (optional)"}
+                    </option>
+                    {sourceOptions.map((source) => (
+                      <option key={source.value} value={source.value}>
+                        {source.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Referred by
+                  <input
+                    name="referredBy"
+                    type="text"
+                    value={candidateApplicationReferrer}
+                    onChange={(event) =>
+                      setCandidateApplicationReferrer(event.target.value)
+                    }
+                    required={isEmployeeReferral}
+                    disabled={!isEmployeeReferral}
+                    maxLength={100}
+                    placeholder={
+                      isEmployeeReferral
+                        ? "Enter referring employee name"
+                        : "Available for Employee Referral only"
+                    }
+                    className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f3f5f3] disabled:text-[#87938c]"
+                  />
+                </label>
+                <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
+                  Resume (PDF, DOC, DOCX; max 5 MB)
+                  <input
+                    name="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    required
+                    className="block min-h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 py-2 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-[#f5f6f4] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#46534a]"
+                  />
+                </label>
+              </div>
+              {candidateApplicationDropdownsError && (
+                <p role="alert" className="text-sm text-rose-700">
+                  {candidateApplicationDropdownsError}
+                </p>
+              )}
+              {!candidateApplicationDropdownsLoading &&
+                jobOpeningOptions.length === 0 &&
+                !candidateApplicationDropdownsError && (
+                <p className="text-sm text-[#7b8981]">
+                  No active job openings are available for applications.
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={
+                  isSubmittingCandidateApplication ||
+                  candidateApplicationDropdownsLoading ||
+                  jobOpeningOptions.length === 0 ||
+                  Boolean(candidateApplicationDropdownsError)
+                }
+                className="inline-flex h-10 items-center rounded-lg bg-[#38634a] px-4 text-sm font-semibold text-white transition hover:bg-[#2e533d] disabled:cursor-wait disabled:opacity-60"
+              >
+                {isSubmittingCandidateApplication
+                  ? "Submitting..."
+                  : "Submit Application"}
+              </button>
+            </form>
+          )}
         {(view === "onboarding" || view === "joining") &&
           welcomeEmailError && (
           <p
@@ -1277,9 +1615,11 @@ export function RecruitmentOperationalScreen({
               </button>
             </form>
           )}
-        {view === "candidate-applications" && candidateApplicationsError && (
+        {view === "candidate-applications" &&
+          (candidateApplicationsError ||
+            candidateApplicationDropdownsError) && (
           <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {candidateApplicationsError}
+            {candidateApplicationsError || candidateApplicationDropdownsError}
           </p>
         )}
 
@@ -1355,11 +1695,7 @@ export function RecruitmentOperationalScreen({
                           </span>
                         ) : column.key === "resume" && row[column.key] !== "—" ? (
                           <a
-                            href={
-                              /^https?:\/\//i.test(row[column.key])
-                                ? row[column.key]
-                                : `${(import.meta.env.VITE_API_URL ?? "http://localhost:3001/api").replace(/\/$/, "")}/${row[column.key].replace(/^\//, "")}`
-                            }
+                            href={recruitmentFileUrl(row[column.key])}
                             target="_blank"
                             rel="noreferrer"
                             className="font-semibold text-[#a87519] hover:text-[#80540d]"

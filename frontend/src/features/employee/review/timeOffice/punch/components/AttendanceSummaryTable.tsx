@@ -7,14 +7,14 @@ export default function AttendanceSummaryTable({
   isLoading,
 }: AttendanceSummaryTableProps) {
   return (
-    <div className="rounded-xl border border-black bg-white font-[Urbanist]">
+    <div className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-black bg-white font-[Urbanist]">
       <div className="border-b border-black px-4 py-3 font-[Urbanist]">
         <h3 className="text-sm font-semibold text-gray-800 font-[Urbanist]">
           Attendance Summary
         </h3>
       </div>
 
-      <div className="overflow-x-auto font-[Urbanist]">
+      <div className="w-full min-w-0 max-w-full overflow-x-auto font-[Urbanist]">
         <table className="min-w-[650px] w-full font-[Urbanist]">
           <thead className="bg-blue-50 font-[Urbanist]">
             <tr>

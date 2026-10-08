@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { ArrowUpRight, CalendarDays, X } from "lucide-react";
+import axios from "axios";
+import { ArrowUpRight, CalendarDays, Mail, X } from "lucide-react";
 import type { ReactNode } from "react";
+import {
+  recruitmentApi,
+  recruitmentFileUrl,
+} from "../api/recruitment.api";
 import type {
   Candidate,
   CandidateStage,
@@ -20,11 +25,7 @@ function candidateCode(candidate: Candidate) {
 function resumeHref(candidate: Candidate) {
   const url = candidate.resumeUrl?.trim();
   if (!url) return "";
-  if (/^https?:\/\//i.test(url)) return url;
-
-  const apiBaseUrl =
-    import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
-  return `${apiBaseUrl.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
+  return recruitmentFileUrl(url);
 }
 
 function PanelCard({
@@ -217,6 +218,11 @@ export function InterviewSchedulePanel({
   const [drafts, setDrafts] = useState<
     Record<number, Partial<InterviewSchedule>>
   >({});
+  const [emailDrafts, setEmailDrafts] = useState<Record<number, string>>({});
+  const [sendingInvitation, setSendingInvitation] = useState<number | null>(null);
+  const [invitationMessages, setInvitationMessages] = useState<
+    Record<number, { type: "success" | "error"; text: string }>
+  >({});
 
   const updateDraft = (
     candidateId: number,
@@ -227,6 +233,61 @@ export function InterviewSchedulePanel({
       ...previous,
       [candidateId]: { ...previous[candidateId], [field]: value },
     }));
+  };
+
+  const sendInvitation = async (
+    candidate: Candidate,
+    interviewerName: string,
+    date: string,
+    time: string,
+  ) => {
+    const email = (emailDrafts[candidate.id] ?? candidate.email ?? "").trim();
+    if (!email || !interviewerName.trim() || !date || !time) {
+      setInvitationMessages((previous) => ({
+        ...previous,
+        [candidate.id]: {
+          type: "error",
+          text: "Enter the candidate email and complete the interviewer, date, and time first.",
+        },
+      }));
+      return;
+    }
+
+    setSendingInvitation(candidate.id);
+    setInvitationMessages((previous) => {
+      const next = { ...previous };
+      delete next[candidate.id];
+      return next;
+    });
+    try {
+      const response = await recruitmentApi.sendInterviewInvitation({
+        email,
+        candidateName: candidate.name,
+        position: candidate.role,
+        interviewerName: interviewerName.trim(),
+        scheduledDate: date,
+        scheduledTime: time,
+      });
+      setInvitationMessages((previous) => ({
+        ...previous,
+        [candidate.id]: {
+          type: "success",
+          text: response.message,
+        },
+      }));
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? String(error.response?.data?.message ?? error.message)
+        : error instanceof Error
+          ? error.message
+          : "Unable to send the interview invitation.";
+      setInvitationMessages((previous) => ({
+        ...previous,
+        [candidate.id]: { type: "error", text: message },
+      }));
+    } finally {
+      setSendingInvitation(null);
+    }
   };
 
   return (
@@ -314,20 +375,78 @@ export function InterviewSchedulePanel({
                       />
                     </TableCell>
                     <TableCell>
-                      <button
-                        type="button"
-                        disabled={!interviewerName.trim() || !date || !time}
-                        onClick={() =>
-                          onSchedule(candidate.id, {
-                            interviewerName: interviewerName.trim(),
-                            date,
-                            time,
-                          })
-                        }
-                        className="whitespace-nowrap rounded-lg bg-[#e8f4ec] px-3 py-2 text-xs font-semibold text-[#39724f] transition hover:bg-[#d9ecdf] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {schedule ? "Update Schedule" : "Schedule Interview"}
-                      </button>
+                      <div className="flex min-w-[310px] flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="email"
+                            value={emailDrafts[candidate.id] ?? candidate.email ?? ""}
+                            onChange={(event) =>
+                              setEmailDrafts((previous) => ({
+                                ...previous,
+                                [candidate.id]: event.target.value,
+                              }))
+                            }
+                            maxLength={254}
+                            placeholder="Candidate email"
+                            aria-label={`Candidate email for ${candidate.name}`}
+                            className="h-9 min-w-0 flex-1 rounded-lg border border-[#dfe4df] px-2.5 text-xs outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15"
+                          />
+                          <button
+                            type="button"
+                            disabled={
+                              sendingInvitation === candidate.id ||
+                              !(emailDrafts[candidate.id] ?? candidate.email ?? "").trim() ||
+                              !interviewerName.trim() ||
+                              !date ||
+                              !time
+                            }
+                            onClick={() =>
+                              void sendInvitation(
+                                candidate,
+                                interviewerName,
+                                date,
+                                time,
+                              )
+                            }
+                            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#dfe4df] bg-white px-3 text-xs font-semibold text-[#58655c] transition hover:border-[#d8a43b] hover:bg-[#fffaf0] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Mail className="h-3.5 w-3.5" />
+                            {sendingInvitation === candidate.id
+                              ? "Sending..."
+                              : "Send Email"}
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={!interviewerName.trim() || !date || !time}
+                          onClick={() =>
+                            onSchedule(candidate.id, {
+                              interviewerName: interviewerName.trim(),
+                              date,
+                              time,
+                            })
+                          }
+                          className="self-start whitespace-nowrap rounded-lg bg-[#e8f4ec] px-3 py-2 text-xs font-semibold text-[#39724f] transition hover:bg-[#d9ecdf] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {schedule ? "Update Schedule" : "Schedule Interview"}
+                        </button>
+                        {invitationMessages[candidate.id] && (
+                          <p
+                            role={
+                              invitationMessages[candidate.id].type === "error"
+                                ? "alert"
+                                : "status"
+                            }
+                            className={
+                              invitationMessages[candidate.id].type === "error"
+                                ? "text-xs text-rose-700"
+                                : "text-xs text-emerald-700"
+                            }
+                          >
+                            {invitationMessages[candidate.id].text}
+                          </p>
+                        )}
+                      </div>
                     </TableCell>
                   </tr>
                 );

@@ -111,9 +111,8 @@ export default function AttendanceFilters({
   }, [processMenuOpen, onProcessMenuOpenChange]);
 
   return (
-    <div className="w-full overflow-x-auto lg:overflow-x-visible rounded-xl border border-black bg-white shadow-sm font-[Urbanist]">
-      <div className="flex w-max min-w-max items-stretch divide-x divide-slate-200 font-[Urbanist]">
-        {/* Employee */}
+    <div className="w-full overflow-x-auto rounded-xl border border-[#dbe3ee] bg-white shadow-sm font-[Urbanist]">
+      <div className="flex w-full min-w-max items-stretch divide-x divide-[#dbe3ee] font-[Urbanist]">
         <AttendanceDropdown
           widthClass="w-64"
           trigger={(open, toggle) => (
@@ -338,11 +337,11 @@ export default function AttendanceFilters({
         </AttendanceDropdown>
 
         {/* Process */}
-        <div ref={processRef} className="relative shrink-0 font-[Urbanist]">
+        <div ref={processRef} className="relative min-w-[200px] flex-1 font-[Urbanist]">
           <button
             type="button"
             onClick={onProcessClick}
-            className={`flex h-[60px] w-[200px] items-center justify-center gap-1.5 text-[12px] font-medium transition-colors ${
+            className={`flex h-[60px] w-full items-center justify-center gap-1.5 text-[12px] font-medium transition-colors ${
               processed
                 ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                 : "bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
@@ -412,10 +411,11 @@ export default function AttendanceFilters({
         <button
           type="button"
           onClick={onExport}
-          className="flex h-[60px] w-[100px] shrink-0 items-center justify-center text-xs font-semibold text-emerald-700 hover:bg-emerald-50 font-[Urbanist]"
+         className="sticky right-0 z-20 flex h-[60px] w-[100px] shrink-0 items-center justify-center border-l border-[#dbe3ee] bg-white text-xs font-semibold text-emerald-700 shadow-[-4px_0_6px_-4px_rgba(16,24,40,0.12)] hover:bg-emerald-50 font-[Urbanist]"
         >
           Export
         </button>
+        
       </div>
 
       {/* Date list helper */}

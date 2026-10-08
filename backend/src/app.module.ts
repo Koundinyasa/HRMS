@@ -3,7 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 import { AppController } from './app.controller';
-
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { JwtConfigModule } from './common/jwt/jwt-config.module';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
@@ -17,13 +18,20 @@ import { LoggerModule } from './common/logger/logger.module';
 import { ReviewModule } from './review/review.module';
 import { RecruitmentModule } from './recruitment/recruitment.module';
 
+
 @Module({
+
   imports: [
+
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
       load: [configuration],
       validationSchema,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
     }),
 
     JwtConfigModule,
@@ -42,9 +50,12 @@ import { RecruitmentModule } from './recruitment/recruitment.module';
 
     LoggerModule,
     ReviewModule,
+    
     // LogsModule,
   ],
 
   controllers: [AppController],
 })
+
+
 export class AppModule {}

@@ -9,6 +9,7 @@ import axios from "axios";
 import { INITIAL_CANDIDATES, OPENING_DEPARTMENTS } from "../constants/recruitment.constants";
 import {
   recruitmentApi,
+  recruitmentFileUrl,
   type CreateRequisitionRequest,
 } from "../api/recruitment.api";
 import type {
@@ -132,16 +133,27 @@ function mapDashboardCandidate(row: RecruitmentRow): Candidate | null {
   return {
     id,
     name,
+    email: readText(row, ["Email", "CandidateEmail", "EmailAddress"], ""),
     candidateCode: readText(row, ["CandidateID", "CandidateCode"], ""),
     role,
     stage,
     rating: 0,
     daysInStage: durationMatch ? Number(durationMatch[1]) : 0,
-    resumeUrl: readText(
-      row,
-      ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
-      "",
-    ),
+    resumeUrl: (() => {
+      const resumeUrl = readText(
+        row,
+        ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
+        "",
+      );
+      const resumeExtension = readText(
+        row,
+        ["FileExtension", "ResumeFileExtension", "ResumeExtension", "ActualFileName"],
+        "",
+      );
+      return resumeUrl
+        ? recruitmentFileUrl(resumeUrl, resumeExtension || undefined)
+        : "";
+    })(),
   };
 }
 
@@ -290,46 +302,58 @@ export function useRecruitment() {
       try {
         const loadedOpenings = toRows(openingResult.value).map(mapOpening);
         setOpenings(loadedOpenings);
-
-        const screeningResults = await Promise.allSettled(
-          loadedOpenings.map((opening) =>
-            recruitmentApi.getCandidatesForScreening(opening.id),
-          ),
-        );
-        const resumesByApplicationId = new Map<number, string>();
-        screeningResults.forEach((result) => {
-          if (result.status !== "fulfilled") return;
-          toRows(result.value).forEach((row) => {
-            const applicationId = readNumber(row, [
-              "ApplicationID",
-              "CandidateApplicationID",
-              "ApplicationId",
-            ]);
-            const resumeUrl = readText(
-              row,
-              ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
-              "",
-            );
-            if (applicationId > 0 && resumeUrl) {
-              resumesByApplicationId.set(applicationId, resumeUrl);
-            }
-          });
-        });
-        setCandidates((previous) =>
-          previous.map((candidate) => ({
-            ...candidate,
-            resumeUrl:
-              candidate.resumeUrl ||
-              resumesByApplicationId.get(candidate.id) ||
-              "",
-          })),
-        );
       } catch (error) {
         errors.push(getErrorMessage(error, "Unable to load job openings."));
       }
     } else {
       errors.push(
         getErrorMessage(openingResult.reason, "Unable to load job openings."),
+      );
+    }
+
+    try {
+      const applications = await recruitmentApi.getCandidateApplications();
+      const resumesByApplicationId = new Map<number, string>();
+      toRows(applications).forEach((row) => {
+        const applicationId = readNumber(row, [
+          "ApplicationID",
+          "CandidateApplicationID",
+          "ApplicationId",
+        ]);
+        const resumeUrl = readText(
+          row,
+          ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
+          "",
+        );
+        if (applicationId > 0 && resumeUrl) {
+          const resumeExtension = readText(
+            row,
+            [
+              "FileExtension",
+              "ResumeFileExtension",
+              "ResumeExtension",
+              "ActualFileName",
+            ],
+            "",
+          );
+          resumesByApplicationId.set(
+            applicationId,
+            recruitmentFileUrl(resumeUrl, resumeExtension || undefined),
+          );
+        }
+      });
+      setCandidates((previous) =>
+        previous.map((candidate) => ({
+          ...candidate,
+          resumeUrl:
+            candidate.resumeUrl ||
+            resumesByApplicationId.get(candidate.id) ||
+            "",
+        })),
+      );
+    } catch (error) {
+      errors.push(
+        getErrorMessage(error, "Unable to load candidate application details."),
       );
     }
 

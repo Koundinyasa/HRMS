@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as sql from 'mssql';
 import { DatabaseService } from '../database/database.service';
 import { CreateRequisitionDto } from './dto/create-requisition.dto';
@@ -148,14 +148,17 @@ export class RecruitmentService {
     return result.recordset;
   } */
 
-  async getCandidateApplications(jobOpeningId: number, employeeId: string) {
+  async getCandidateApplications(
+    companyId: number,
+    applicationStatusId?: number,
+  ) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input('JobOpeningID', sql.Int, jobOpeningId)
-        .input('ActionBy', sql.VarChar(25), employeeId)
+        .input('CompanyID', sql.Int, companyId)
+        .input('ApplicationStatusID', sql.Int, applicationStatusId ?? null)
         .execute('USP_GetCandidateApplication');
 
       return result.recordset;
@@ -459,5 +462,103 @@ export class RecruitmentService {
       );
     }
   }
+ async createCandidateApplication(
+    dto: CreateCandidateApplicationDto,
+    resume: Express.Multer.File,
+  ) {
+    try {
+      const pool = await this.databaseService.connect();
+ 
+      const resumeUrl = resume
+        ? `/uploads/recruitment/resumes/${resume.filename}`
+        : null;
+ 
+      const actualFileName = resume ? resume.originalname : null;
+ 
+      const fileName = resume ? resume.filename : null;
+ 
+      const fileExtension = resume ? extname(resume.originalname) : null;
+ 
+      const fileSizeKB = resume
+        ? Number((resume.size / 1024).toFixed(2))
+        : null;
+ 
+      const result = await pool
+        .request()
+        .input('JobOpeningID', sql.Int, dto.jobOpeningId)
+        .input('FullName', sql.VarChar(200), dto.fullName)
+        .input('Email', sql.VarChar(150), dto.email)
+        .input('Phone', sql.VarChar(20), dto.phone)
+        .input('Address', sql.VarChar(500), dto.address ?? null)
+        .input('ResumeURL', sql.VarChar(500), resumeUrl)
+        .input('ActualFileName', sql.VarChar(255), actualFileName)
+        .input('FileName', sql.VarChar(255), fileName)
+        .input('FileExtension', sql.VarChar(20), fileExtension)
+        .input('FileSizeKB', sql.Decimal(18, 2), fileSizeKB)
+        .input('Source', sql.VarChar(100), dto.source ?? null)
+        .input('ReferredBy', sql.VarChar(100), dto.referredBy ?? null)
+        .execute('USP_CreateCandidateApplication');
+ 
+      return result.recordset;
+    } catch (error) {
+      console.error('Create candidate application error:', error);
+ 
+      throw new InternalServerErrorException(
+        'Failed to create candidate application.',
+      );
+    }
+  }
+   async getActiveJobOpenings(companyId: number) {
+    try {
+      const pool = await this.databaseService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('Flag', sql.Int, 3)
+        .execute('USP_GetRecruitmentPriority');
+ 
+      return {
+        success: true,
+        data: result.recordset || [],
+        message: 'Active job openings retrieved successfully.',
+      };
+    } catch (error) {
+      console.error('Get active job openings error:', error);
+ 
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve active job openings.',
+      );
+    }
+  }
+ 
+  async getRecruitmentSources() {
+    try {
+      const pool = await this.databaseService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, 0)
+        .input('Flag', sql.Int, 4)
+        .execute('USP_GetRecruitmentPriority');
+ 
+      return {
+        success: true,
+        data: result.recordset || [],
+        message: 'Recruitment sources retrieved successfully.',
+      };
+    } catch (error) {
+      console.error('Get recruitment sources error:', error);
+ 
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve recruitment sources.',
+      );
+    }
+  }
+ 
  
 }

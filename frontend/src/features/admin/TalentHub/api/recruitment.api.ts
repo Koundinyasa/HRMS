@@ -6,6 +6,36 @@ const recruitmentClient = axios.create({
   withCredentials: true,
 });
 
+export function recruitmentFileUrl(filePath: string, fileExtension?: string) {
+  if (/^https?:\/\//i.test(filePath)) return filePath;
+
+  const apiBaseUrl = new URL(
+    import.meta.env.VITE_API_URL ?? "http://localhost:3001/api",
+  );
+  const normalizedPath = filePath.startsWith("/") ? filePath : `/${filePath}`;
+  const resumePathMatch = normalizedPath.match(
+    /^\/?uploads\/recruitment\/resumes\/([^/?#]+)$/i,
+  );
+  if (resumePathMatch) {
+    const fileName = resumePathMatch[1];
+    const extension =
+      fileName.match(/\.(pdf|doc|docx)$/i)?.[1] ??
+      fileExtension?.match(/\.(pdf|doc|docx)$/i)?.[1] ??
+      fileExtension?.replace(/^\./, "").toLowerCase();
+    const previewUrl = new URL(
+      `recruitment/resume-preview/${encodeURIComponent(fileName)}`,
+      `${apiBaseUrl.toString().replace(/\/$/, "")}/`,
+    );
+    if (extension && ["pdf", "doc", "docx"].includes(extension)) {
+      previewUrl.searchParams.set("extension", extension);
+    }
+    return previewUrl.toString();
+  }
+  const publicPath = normalizedPath.replace(/^\/api(?=\/uploads\/)/i, "");
+
+  return new URL(publicPath, apiBaseUrl.origin).toString();
+}
+
 export interface CreateRequisitionRequest {
   branchId: number;
   designationId: number;
@@ -56,15 +86,6 @@ export interface RecruitmentDashboardResponse {
 export interface RecruitmentLookupResponse {
   success: boolean;
   data: unknown[];
-  message?: string;
-}
-
-export interface RecruitmentDashboardResponse {
-  success: boolean;
-  data: {
-    applications: unknown[];
-    summary: Record<string, number>;
-  };
   message?: string;
 }
 
@@ -144,10 +165,16 @@ export const recruitmentApi = {
       )
     ).data;
   },
-  getCandidateApplications: async (jobOpeningId: number) =>
+  getCandidateApplications: async (applicationStatusId?: number) =>
     (
       await recruitmentClient.get<unknown[]>(
-        `/recruitment/candidateapplications/${jobOpeningId}`,
+        "/recruitment/candidateapplications",
+        {
+          params:
+            applicationStatusId === undefined
+              ? undefined
+              : { applicationStatusId },
+        },
       )
     ).data,
   updateResumeScreening: async (request: {
@@ -199,6 +226,20 @@ export const recruitmentApi = {
     (
       await recruitmentClient.post<unknown>(
         "/recruitment/interviewschedule",
+        request,
+      )
+    ).data,
+  sendInterviewInvitation: async (request: {
+    email: string;
+    candidateName: string;
+    position: string;
+    interviewerName: string;
+    scheduledDate: string;
+    scheduledTime: string;
+  }) =>
+    (
+      await recruitmentClient.post<{ success: boolean; message: string }>(
+        "/recruitment/send-interview-invitation",
         request,
       )
     ).data,

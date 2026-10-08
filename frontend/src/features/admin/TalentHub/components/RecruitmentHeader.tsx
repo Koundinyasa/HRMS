@@ -18,9 +18,9 @@ export function RecruitmentHeader({
   onNewOpening,
 }: RecruitmentHeaderProps) {
   return (
-    <div className="border-b border-[#dfe6e1] bg-white px-5 pt-5 sm:px-8 sm:pt-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-5">
-        <div>
+    <div className="w-full min-w-0 border-b border-[#dfe6e1] bg-white px-4 pt-5 sm:px-8 sm:pt-6">
+      <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-4 pb-5">
+        <div className="min-w-0">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#6f8178]">
             Talent Hub
           </p>
@@ -29,8 +29,8 @@ export function RecruitmentHeader({
           </h1>
         </div>
         {showActions && (
-          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <label className="relative block min-w-0 sm:w-[290px]">
+          <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row">
+            <label className="relative block w-full min-w-0 sm:w-[290px]">
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#74837b]" />
               <input
                 type="search"
@@ -45,7 +45,7 @@ export function RecruitmentHeader({
               <button
                 type="button"
                 onClick={onNewOpening}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#e5a538] px-5 text-sm font-semibold text-[#342712] transition hover:bg-[#d99a2b] focus:outline-none focus:ring-2 focus:ring-[#e5a538]/40"
+                className="inline-flex h-11 w-full min-w-0 items-center justify-center gap-2 rounded-xl bg-[#e5a538] px-5 text-sm font-semibold text-[#342712] transition hover:bg-[#d99a2b] focus:outline-none focus:ring-2 focus:ring-[#e5a538]/40 sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
                 New job opening

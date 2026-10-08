@@ -110,7 +110,7 @@ export default function RecruitmentPage() {
   }, [routeTab, setActiveTab]);
 
   return (
-    <div className="-m-4 min-h-full bg-[#f5f7f5] text-[#202a26] sm:-m-6">
+    <div className="-m-4 min-h-full min-w-0 bg-[#f5f7f5] text-[#202a26] sm:-m-6">
       {!isOperationalWorkflowView && (
         <RecruitmentHeader
           pageTitle={selectedPageTitle}
@@ -125,7 +125,7 @@ export default function RecruitmentPage() {
           }
         />
       )}
-      <main className="space-y-6 px-5 py-6 sm:px-8">
+      <main className="min-w-0 space-y-6 px-4 py-6 sm:px-8">
         {view === "job-requisition" ? (
           <RecruitmentOperationalScreen
             key={view}
@@ -157,7 +157,6 @@ export default function RecruitmentPage() {
           <RecruitmentOperationalScreen
             key={view}
             view={view}
-            openings={openings}
           />
         ) : isWorkflowPlaceholder ? (
           <section>

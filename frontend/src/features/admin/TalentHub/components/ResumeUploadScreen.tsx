@@ -7,7 +7,11 @@ interface LookupOption {
   label: string;
 }
 
-const MAX_RESUME_SIZE = 10 * 1024 * 1024;
+interface JobOpeningOption extends LookupOption {
+  location: string;
+}
+
+const MAX_RESUME_SIZE = 5 * 1024 * 1024;
 const DEFAULT_SOURCE = "Employee Referral";
 const MAX_REFERRAL_NAME_LENGTH = 75;
 const ACCEPTED_RESUME_TYPES = new Set([
@@ -106,8 +110,7 @@ function mapRecruitmentSource(record: unknown): LookupOption {
 export function ResumeUploadScreen() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [resumeUrl, setResumeUrl] = useState("");
-  const [source, setSource] = useState(DEFAULT_SOURCE);
+  const [source, setSource] = useState("");
   const [referralName, setReferralName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -198,11 +201,11 @@ export function ResumeUploadScreen() {
       setError("Select an active job opening.");
       return;
     }
-    if (source === DEFAULT_SOURCE && !referralName.trim()) {
+    if (isEmployeeReferral && !referralName.trim()) {
       setError("Enter the referring employee's name.");
       return;
     }
-    if (!file && !resumeUrl) {
+    if (!file) {
       setError("Choose a resume file before submitting.");
       return;
     }
@@ -215,16 +218,17 @@ export function ResumeUploadScreen() {
         email: String(formData.get("email")).trim(),
         phone: String(formData.get("phone")).trim(),
         address: String(formData.get("address")).trim() || undefined,
-        source:
-          source === DEFAULT_SOURCE
-            ? `${source} - ${referralName.trim()}`
-            : source,
-        resumeUrl: savedResumeUrl,
+        source,
+        referredBy: isEmployeeReferral ? referralName.trim() : undefined,
+        resume: file,
       });
       setSuccess("Resume uploaded and candidate application created.");
       setFile(null);
-      setResumeUrl("");
-      setSource(DEFAULT_SOURCE);
+      setSource(
+        sources.find(
+          (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
+        )?.value ?? "",
+      );
       setReferralName("");
       form.reset();
     } catch (submitError) {
@@ -327,10 +331,12 @@ export function ResumeUploadScreen() {
               <select
                 name="source"
                 value={source}
+                required
+                disabled={isLoadingLookups || sources.length === 0}
                 onChange={(event) => {
                   const selectedSource = event.target.value;
                   setSource(selectedSource);
-                  if (selectedSource !== DEFAULT_SOURCE) {
+                  if (selectedSource.toLowerCase() !== DEFAULT_SOURCE.toLowerCase()) {
                     setReferralName("");
                   }
                 }}
@@ -348,7 +354,7 @@ export function ResumeUploadScreen() {
             </label>
             <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
               Referring employee name
-              {source === DEFAULT_SOURCE && (
+              {isEmployeeReferral && (
                 <span className="text-rose-600"> *</span>
               )}
               <input
@@ -356,13 +362,13 @@ export function ResumeUploadScreen() {
                 type="text"
                 value={referralName}
                 onChange={(event) => setReferralName(event.target.value)}
-                required={source === DEFAULT_SOURCE}
-                disabled={source !== DEFAULT_SOURCE}
+                required={isEmployeeReferral}
+                disabled={!isEmployeeReferral}
                 maxLength={MAX_REFERRAL_NAME_LENGTH}
                 autoComplete="name"
                 className="h-11 w-full rounded-lg border border-[#dfe4df] px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f3f5f3] disabled:text-[#87938c]"
                 placeholder={
-                  source === DEFAULT_SOURCE
+                  isEmployeeReferral
                     ? "Enter referring employee name"
                     : "Available for Employee Referral only"
                 }

@@ -8,9 +8,21 @@ import ToastStack from "../components/ToastStack";
 import { useAttendanceOverview } from "../hooks/useAttendanceOverview";
 import { NavLink, useParams } from "react-router-dom";
 import { useState } from "react";
-import { CalendarDays, FileSpreadsheet, Grid2X2, History, List } from "lucide-react";
+import {
+  CalendarDays,
+  FileSpreadsheet,
+  Grid2X2,
+  History,
+  List,
+} from "lucide-react";
 import { MonthPicker } from "@/components/ui/monthpicker";
 import { useGetProfileQuery } from "../../../dashboard/api/dashboardApi";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 export default function AttendanceOverview() {
   const [showAttendanceDetails, setShowAttendanceDetails] = useState(false);
@@ -92,28 +104,51 @@ export default function AttendanceOverview() {
       <div className="mx-auto max-w-[1600px] space-y-4 font-[Urbanist]">
         <div className="flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4 font-[Urbanist]">
           <div className="flex min-w-max items-center gap-8 font-[Urbanist]">
-          <NavLink
-            to={`/${domain}/employee/TA/attendanceoverview`}
-            className="whitespace-nowrap border-b-2 border-[#1997e8] px-1 py-5 text-[15px] font-semibold text-[#1997e8] font-[Urbanist]"
-          >
-            Attendance Overview
-          </NavLink>
+            <NavLink
+              to={`/${domain}/employee/TA/attendanceoverview`}
+              className="whitespace-nowrap border-b-2 border-[#1997e8] px-1 py-5 text-[15px] font-semibold text-[#1997e8] font-[Urbanist]"
+            >
+              Attendance Overview
+            </NavLink>
           </div>
           <div className="flex min-w-max items-center gap-2 font-[Urbanist]">
-            <button type="button" title="List view" onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 text-slate-500"}`}>
+            <button
+              type="button"
+              title="List view"
+              onClick={() => setView("list")}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border ${
+                view === "list"
+                  ? "border-sky-500 bg-sky-500 text-white"
+                  : "border-slate-200 text-slate-500"
+              }`}
+            >
               <List size={16} />
             </button>
-            <button type="button" title="Calendar view" onClick={() => setView("calendar")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "calendar" ? "border-sky-500 bg-sky-500 text-white" : "border-slate-200 text-slate-500"}`}>
+            <button
+              type="button"
+              title="Calendar view"
+              onClick={() => setView("calendar")}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border ${
+                view === "calendar"
+                  ? "border-sky-500 bg-sky-500 text-white"
+                  : "border-slate-200 text-slate-500"
+              }`}
+            >
               <CalendarDays size={16} />
             </button>
             <div className="w-[120px] font-[Urbanist]">
-              <MonthPicker value={selectedMonth} onChange={setSelectedMonth} className="h-9 rounded-lg border-black bg-white text-xs font-[Urbanist]" />
+              <MonthPicker
+                value={selectedMonth}
+                onChange={setSelectedMonth}
+                className="h-9 rounded-lg border-black bg-white text-xs font-[Urbanist]"
+              />
             </div>
-            <select
-              aria-label="Select employee"
-              value={selectedEmployee?.id ?? ""}
-              onChange={(event) => {
-                const employee = employees.find((item) => item.id === event.target.value);
+            <Select
+              value={selectedEmployee?.id || "none"}
+              onValueChange={(value) => {
+                if (value === null) return;
+
+                const employee = employees.find((item) => item.id === value);
                 if (employee) {
                   selectEmployee(employee);
                   setShowAttendanceDetails(true);
@@ -122,22 +157,70 @@ export default function AttendanceOverview() {
                 }
               }}
               disabled={reportingEmployeesLoading || employees.length === 0}
-              className="h-9 w-[180px] rounded-lg border border-black bg-white px-2 text-xs text-slate-600 font-[Urbanist]"
             >
-              <option value="">
-                {reportingEmployeesLoading ? "Loading employees..." : "Select employee"}
-              </option>
-              {employees.map((employee) => (
-                <option key={employee.id} value={employee.id}>{employee.id} {employee.name}</option>
-              ))}
-            </select>
-            <button type="button" title="Grid view" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeGridClick"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-slate-500 font-[Urbanist]">
+              <SelectTrigger
+                aria-label="Select employee"
+                className="h-9 w-[180px] shrink-0 rounded-lg border-black bg-white px-2 text-xs text-slate-600 shadow-none focus:ring-0 font-[Urbanist]"
+              >
+                <span className="min-w-0 truncate">
+                  {selectedEmployee
+                    ? `${selectedEmployee.id} ${selectedEmployee.name}`
+                    : reportingEmployeesLoading
+                    ? "Loading employees..."
+                    : "Select employee"}
+                </span>
+              </SelectTrigger>
+
+              <SelectContent
+                side="bottom"
+                align="end"
+                sideOffset={4}
+                alignItemWithTrigger={false}
+                className="max-h-60 w-(--anchor-width) min-w-[220px] max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto"
+              >
+                <SelectItem
+                  value="none"
+                  className="min-w-0 whitespace-normal break-words"
+                >
+                  Select employee
+                </SelectItem>
+                {employees.map((employee) => (
+                  <SelectItem
+                    key={employee.id}
+                    value={employee.id}
+                    className="min-w-0 whitespace-normal break-words"
+                  >
+                    {employee.id} {employee.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              title="Grid view"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("timeOfficeGridClick"))
+              }
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-slate-500 font-[Urbanist]"
+            >
               <Grid2X2 size={16} />
             </button>
-            <button type="button" title="Export" onClick={handleExport} className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-emerald-600 font-[Urbanist]">
+            <button
+              type="button"
+              title="Export"
+              onClick={handleExport}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-emerald-600 font-[Urbanist]"
+            >
               <FileSpreadsheet size={16} />
             </button>
-            <button type="button" title="History" onClick={() => window.dispatchEvent(new CustomEvent("timeOfficeHistory"))} className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-slate-500 font-[Urbanist]">
+            <button
+              type="button"
+              title="History"
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("timeOfficeHistory"))
+              }
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-black text-slate-500 font-[Urbanist]"
+            >
               <History size={16} />
             </button>
           </div>
@@ -207,37 +290,37 @@ export default function AttendanceOverview() {
             />
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 font-[Urbanist]">
-          {/* Monthly Overview */}
+              {/* Monthly Overview */}
 
-          <MonthlyOverview
-            selectedMonth={selectedMonth}
-            overview={overview}
-            overviewStats={overviewStats}
-            onOpenDetail={openDetailModal}
-          />
+              <MonthlyOverview
+                selectedMonth={selectedMonth}
+                overview={overview}
+                overviewStats={overviewStats}
+                onOpenDetail={openDetailModal}
+              />
 
-          {/* Punch Details */}
+              {/* Punch Details */}
 
-          <PunchDetails
-            selectedDate={selectedDate}
-            selectedMonthNumber={selectedMonthNumber}
-            selectedYear={selectedYear}
-            activeDay={activeDay}
-            punchTab={punchTab}
-            punches={rawPunches}
-            onPunchTabChange={setPunchTab}
-          />
+              <PunchDetails
+                selectedDate={selectedDate}
+                selectedMonthNumber={selectedMonthNumber}
+                selectedYear={selectedYear}
+                activeDay={activeDay}
+                punchTab={punchTab}
+                punches={rawPunches}
+                onPunchTabChange={setPunchTab}
+              />
 
-          {/* Request Status */}
+              {/* Request Status */}
 
-          <RequestStatus
-            onRaiseRequest={() =>
-              pushToast(
-                "Regularization request form is a placeholder in this demo",
-                "info",
-              )
-            }
-          />
+              <RequestStatus
+                onRaiseRequest={() =>
+                  pushToast(
+                    "Regularization request form is a placeholder in this demo",
+                    "info",
+                  )
+                }
+              />
             </div>
           </>
         )}

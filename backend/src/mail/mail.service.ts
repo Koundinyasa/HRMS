@@ -1,94 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-
+ 
 @Injectable()
 export class MailService {
   private transporter: nodemailer.Transporter;
   private readonly fromAddress: string;
-
+ 
   constructor(private readonly configService: ConfigService) {
     const user = this.configService.get<string>('mail.user');
     const pass = this.configService.get<string>('mail.password');
     this.fromAddress = user || '';
-
+ 
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: { user, pass },
     });
   }
-
-  async sendWelcomeEmail(
-    email: string,
-    candidateName: string,
-    position: string,
-  ): Promise<void> {
-    await this.transporter.sendMail({
-      from: `"HRMS System" <${this.fromAddress}>`,
-      to: email,
-      subject: `Welcome to ${position}`,
-      text: [
-        `Dear ${candidateName},`,
-        '',
-        `Welcome to ${position}! We are excited to have you join us.`,
-        '',
-        'Please contact the HR team if you have any questions before your joining date.',
-        '',
-        'Regards,',
-        'HR Team',
-      ].join('\n'),
-    });
-  }
-
-  async sendJoiningEmail(
-    email: string,
-    candidateName: string,
-    position: string,
-    joiningDate: string,
-  ): Promise<void> {
-    await this.transporter.sendMail({
-      from: `"HRMS System" <${this.fromAddress}>`,
-      to: email,
-      subject: `Joining Details - ${position}`,
-      text: [
-        `Dear ${candidateName},`,
-        '',
-        `We are pleased to confirm your joining for ${position} on ${joiningDate}.`,
-        '',
-        'Please contact the HR team if you have any questions before your joining date.',
-        '',
-        'Regards,',
-        'HR Team',
-      ].join('\n'),
-    });
-  }
-
-  async sendTeamAssignmentEmail(
-    email: string,
-    employeeName: string,
-    department: string,
-    team: string,
-    manager: string,
-  ): Promise<void> {
-    await this.transporter.sendMail({
-      from: `"HRMS System" <${this.fromAddress}>`,
-      to: email,
-      subject: `Your Team Assignment - ${team}`,
-      text: [
-        `Dear ${employeeName},`,
-        '',
-        `You have been assigned to the ${team} team in the ${department} department.`,
-        `Your reporting manager is ${manager}.`,
-        '',
-        'Please contact the HR team if you have any questions.',
-        '',
-        'Regards,',
-        'HR Team',
-      ].join('\n'),
-    });
-  }
-
- async sendTempPassword(
+ 
+  async sendTempPassword(
     email: string,
     tempPassword: string,
     applicationUrl: string,
@@ -97,7 +27,7 @@ export class MailService {
       from: `"HRMS System" <${this.fromAddress}>`,
       to: email,
       subject: 'Your HRMS Login Credentials',
-
+ 
       html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -1261,7 +1191,7 @@ export class MailService {
 `,
     });
   }
-
+ 
   async sendOtp(email: string, otp: string): Promise<void> {
     await this.transporter.sendMail({
       from: `"HRMS System" <${this.fromAddress}>`,
@@ -1289,7 +1219,7 @@ export class MailService {
         </div>`,
     });
   }
-
+ 
   async sendWish(
     email: string,
     eventType: 'BIRTHDAY' | 'WORK_ANNIVERSARY',
@@ -1298,7 +1228,7 @@ export class MailService {
   ): Promise<void> {
     const eventLabel =
       eventType === 'BIRTHDAY' ? 'birthday' : 'work anniversary';
-
+ 
     await this.transporter.sendMail({
       from: `"HRMS System" <${this.fromAddress}>`,
       to: email,
@@ -1307,3 +1237,5 @@ export class MailService {
     });
   }
 }
+ 
+ 

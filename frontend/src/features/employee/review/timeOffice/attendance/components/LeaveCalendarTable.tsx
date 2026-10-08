@@ -10,25 +10,25 @@ const LeaveCalendarTable = ({
   onAttendanceClick,
 }: LeaveCalendarTableProps) => {
   return (
-    <div className="flex h-full min-h-0 w-full flex-col">
+    <div className="flex h-full min-h-0 w-full flex-col font-[Urbanist]">
       <div className="punch-horizontal-scroll min-h-0 flex-1 overflow-auto">
-        <table className="min-w-max border-collapse">
+        <table className="min-w-max border-separate border-spacing-0">
           <thead className="sticky top-0 z-30">
-            <tr className="bg-blue-50">
-              <th className="sticky left-0 z-40 min-w-[220px] border border-black bg-blue-50 px-4 py-3 text-left text-xs font-semibold text-gray-600">
+            <tr className="bg-[#eaf4fb]">
+              <th className="sticky left-0 z-40 w-[200px] min-w-[200px] border-b border-r border-[#dbe3ee] bg-[#eaf4fb] px-4 py-2.5 text-left align-middle text-xs font-semibold text-[#344054] shadow-[2px_0_4px_-2px_rgba(16,24,40,0.08)]">
                 Emp Id / Name
               </th>
 
               {days.map((day) => (
                 <th
                   key={day.key}
-                  className="min-w-[55px] border border-black bg-blue-50 px-2 py-2 text-center font-[Urbanist]"
+                  className="w-[48px] min-w-[48px] border-b border-r border-[#dbe3ee] bg-[#eaf4fb] px-1 py-2 text-center align-middle"
                 >
-                  <div className="text-xs font-semibold text-gray-700 font-[Urbanist]">
+                  <div className="text-[13px] font-semibold leading-tight text-[#344054]">
                     {day.date}
                   </div>
 
-                  <div className="text-[11px] text-gray-400 font-[Urbanist]">
+                  <div className="text-[10px] font-medium leading-tight text-[#8792a3]">
                     {day.weekday}
                   </div>
                 </th>

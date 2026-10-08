@@ -30,6 +30,7 @@ describe('RecruitmentController', () => {
           useValue: {
             sendWelcomeEmail: jest.fn(),
             sendJoiningEmail: jest.fn(),
+            sendInterviewInvitation: jest.fn(),
             sendTeamAssignmentEmail: jest.fn(),
           },
         },
