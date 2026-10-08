@@ -14,6 +14,7 @@ import numpy as np
 import cv2
 import base64
 import time
+import os  # ANTI-SPOOF — to find the model files next to this script
 from db_config import get_db_connection
  
 app = FastAPI()
@@ -86,6 +87,109 @@ BLUR_VARIANCE_THRESHOLD = 20.0
 # before typical well-lit indoor brightness (200+), so this doesn't
 # start firing on rooms that don't actually need the rescue.
 LOW_LIGHT_BRIGHTNESS_THRESHOLD = 120.0
+
+# ── ANTI-SPOOF: real face vs phone screen / photo ────────────────────────
+# Testing showed a phone video of an enrolled employee blinking passes the
+# blink check (a recorded blink is still a blink) AND the face match (it IS
+# their face). This adds MiniVision's open-source Silent-Face-Anti-Spoofing
+# models (Apache-2.0, github.com/minivision-ai/Silent-Face-Anti-Spoofing),
+# converted to ONNX so they run on the OpenCV already installed — no new
+# packages. Each model looks at a crop around the face and returns the
+# probability that it is a real face. The converted models reproduce the
+# authors' published results exactly (real face 0.99, printed photo fake
+# 0.73, face on a tablet screen fake 0.82).
+ANTISPOOF_ENABLED = True
+# True = reject a punch whose score is below the threshold.
+# False = only log the score (use while collecting calibration numbers).
+ANTISPOOF_ENFORCE = True
+# PROVISIONAL — on the authors' samples real faces scored ~0.99 and
+# screens/photos 0.02-0.32. Set the final value from the [ANTISPOOF] log
+# lines of real punches vs phone-video attempts on your own laptops.
+ANTISPOOF_REAL_THRESHOLD = 0.5
+ANTISPOOF_FRAMES = 5  # frames checked per punch, spread across the capture
+ANTISPOOF_MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "anti_spoof_models")
+# (model file, crop scale around the face box) — the authors' pairing.
+ANTISPOOF_MODELS = [
+    ("2.7_80x80_MiniFASNetV2.onnx", 2.7),
+    ("4_0_0_80x80_MiniFASNetV1SE.onnx", 4.0),
+]
+
+
+def _load_antispoof_nets():
+    try:
+        nets = [(cv2.dnn.readNetFromONNX(os.path.join(ANTISPOOF_MODEL_DIR, name)), scale)
+                for name, scale in ANTISPOOF_MODELS]
+        print(f"[ANTISPOOF] loaded {len(nets)} models from {ANTISPOOF_MODEL_DIR}")
+        return nets
+    except Exception as err:
+        print(f"[ANTISPOOF] ERROR - could not load the models from {ANTISPOOF_MODEL_DIR}: {err}. "
+              f"Every punch will be REJECTED until the model files are in place.")
+        return None
+
+
+ANTISPOOF_NETS = _load_antispoof_nets() if ANTISPOOF_ENABLED else None
+
+
+def antispoof_crop(frame_bgr: np.ndarray, box: tuple[int, int, int, int], scale: float, size: int = 80) -> np.ndarray:
+    """Crop around the face box (x, y, w, h) enlarged by `scale`, kept inside
+    the image, resized to size x size. Same maths as the authors' CropImage."""
+    src_h, src_w = frame_bgr.shape[:2]
+    x, y, box_w, box_h = box
+    scale = min((src_h - 1) / box_h, min((src_w - 1) / box_w, scale))
+    new_w, new_h = box_w * scale, box_h * scale
+    center_x, center_y = box_w / 2 + x, box_h / 2 + y
+    left, top = center_x - new_w / 2, center_y - new_h / 2
+    right, bottom = center_x + new_w / 2, center_y + new_h / 2
+    if left < 0:
+        right -= left
+        left = 0
+    if top < 0:
+        bottom -= top
+        top = 0
+    if right > src_w - 1:
+        left -= right - src_w + 1
+        right = src_w - 1
+    if bottom > src_h - 1:
+        top -= bottom - src_h + 1
+        bottom = src_h - 1
+    left, top, right, bottom = int(left), int(top), int(right), int(bottom)
+    return cv2.resize(frame_bgr[top:bottom + 1, left:right + 1], (size, size))
+
+
+def check_anti_spoof(frames_rgb: list[np.ndarray], prepared_frames: list[dict]) -> tuple[bool, float | None]:
+    """Average real-face probability over a few frames spread across the
+    capture. Returns (passed, score). Uses the ORIGINAL camera frames (not
+    the low-light-enhanced copies) and the face boxes already found by
+    prepare_frames(), so no extra face detection is needed."""
+    if not ANTISPOOF_ENABLED:
+        return True, None
+    if ANTISPOOF_NETS is None:
+        print("[ANTISPOOF] models not loaded - rejecting the punch (fail closed)")
+        return False, None
+    with_face = [i for i, e in enumerate(prepared_frames) if e["locations_original"]]
+    if not with_face:
+        print("[ANTISPOOF] no face found in any frame - rejecting")
+        return False, None
+    count = min(ANTISPOOF_FRAMES, len(with_face))
+    picks = sorted({with_face[round(k * (len(with_face) - 1) / max(1, count - 1))] for k in range(count)})
+
+    per_frame = []
+    for i in picks:
+        top, right, bottom, left = prepared_frames[i]["locations_original"][0]
+        box = (left, top, right - left, bottom - top)
+        frame_bgr = cv2.cvtColor(frames_rgb[i], cv2.COLOR_RGB2BGR)  # models expect BGR, 0-255
+        real = 0.0
+        for net, scale in ANTISPOOF_NETS:
+            blob = antispoof_crop(frame_bgr, box, scale).transpose(2, 0, 1)[None].astype(np.float32)
+            net.setInput(blob)
+            real += float(net.forward()[0][1])  # class 1 = real face
+        per_frame.append(real / len(ANTISPOOF_NETS))
+
+    score = sum(per_frame) / len(per_frame)
+    passed = score >= ANTISPOOF_REAL_THRESHOLD or not ANTISPOOF_ENFORCE
+    print(f"[ANTISPOOF] realScore={score:.3f} perFrame={[round(s, 3) for s in per_frame]} "
+          f"threshold={ANTISPOOF_REAL_THRESHOLD} enforce={ANTISPOOF_ENFORCE} passed={passed}")
+    return passed, score
  
  
 def is_face_too_small(location: tuple[int, int, int, int], frame_width: int) -> bool:
@@ -354,6 +458,20 @@ async def verify_face(
             "thresholdUsed": THRESHOLD_PERCENT,
         }
  
+    # ANTI-SPOOF — the blink check above can't tell a real face from a
+    # video of that face on a phone screen. Reject screens/photos here,
+    # before matching. Same "LivenessFailed" result NestJS already handles.
+    spoof_passed, _real_score = check_anti_spoof(frames_rgb, prepared)
+    if not spoof_passed:
+        return {
+            "verified": False,
+            "livenessFailed": True,
+            "matchResult": "LivenessFailed",
+            "livenessCheckPassed": False,
+            "confidenceScore": 0.0,
+            "thresholdUsed": THRESHOLD_PERCENT,
+        }
+
     # GALLERY MATCHING — for each live frame, compute its distance to
     # EVERY template in the employee's gallery and keep only the closest
     # one, ALONG WITH which template (FaceVectorID) produced it. This is
