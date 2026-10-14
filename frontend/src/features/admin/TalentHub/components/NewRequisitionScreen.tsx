@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import { LoaderCircle, X } from "lucide-react";
-import { recruitmentApi } from "../api/recruitment.api";
+import { toast } from "react-toastify";
+import {
+  getApiErrorMessage,
+  useCreateRequisitionMutation,
+  useGetRequisitionMasterQuery,
+} from "../hooks/useRecruitment";
 
 const fieldClass =
   "h-10 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm text-[#354239] outline-none placeholder:text-[#929c95] focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f5f7f5] disabled:opacity-70";
@@ -22,16 +26,26 @@ function RequisitionField({
   );
 }
 
-function getApiError(error: unknown) {
-  if (axios.isAxiosError(error)) {
-    const data: unknown = error.response?.data;
-    if (data && typeof data === "object" && "message" in data) {
-      const message = data.message;
-      return Array.isArray(message) ? message.join(", ") : String(message);
-    }
-    return error.message;
-  }
-  return error instanceof Error ? error.message : "Unable to create requisition.";
+// POST /recruitment/requisition responds with:
+// [{ StatusCode: 1, Message: "...", RequisitionNo: "REQ-HYD-IT-2026-005", StatusID: 14 }]
+function readCreateRequisitionResult(response: unknown) {
+  const record = Array.isArray(response) ? response[0] : response;
+  const row =
+    record && typeof record === "object"
+      ? (record as Record<string, unknown>)
+      : {};
+
+  const statusCode = Number(row.StatusCode ?? row.statusCode ?? 1);
+  const message = String(
+    row.Message ?? row.message ?? "Job requisition created successfully.",
+  );
+  const requisitionNo = String(row.RequisitionNo ?? row.requisitionNo ?? "");
+
+  return {
+    statusCode: Number.isFinite(statusCode) ? statusCode : 1,
+    message,
+    requisitionNo,
+  };
 }
 
 interface BranchOption {
@@ -45,6 +59,9 @@ interface DesignationOption {
   id: number;
   name: string;
 }
+
+const NO_BRANCHES: BranchOption[] = [];
+const NO_DESIGNATIONS: DesignationOption[] = [];
 
 function masterValue(row: Record<string, unknown>, aliases: string[]) {
   const aliasSet = new Set(aliases.map((alias) => alias.toLowerCase()));
@@ -93,30 +110,32 @@ export function NewRequisitionScreen({
 }) {
   const navigate = useNavigate();
   const { domain } = useParams<{ domain: string }>();
-  const [branches, setBranches] = useState<BranchOption[]>([]);
-  const [designations, setDesignations] = useState<DesignationOption[]>([]);
-  const [isLoadingMasters, setIsLoadingMasters] = useState(true);
-  const [masterError, setMasterError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [createRequisition] = useCreateRequisitionMutation();
 
-  const loadRequisitionMaster = useCallback(async () => {
-    setIsLoadingMasters(true);
-    setMasterError("");
+  const {
+    data: masterResponse,
+    error: masterQueryError,
+    isFetching: isLoadingMasters,
+    refetch: refetchRequisitionMaster,
+  } = useGetRequisitionMasterQuery();
+
+  const masters = useMemo(() => {
+    if (!masterResponse) return undefined;
     try {
-      const response = await recruitmentApi.getRequisitionMaster();
-      if (!response.success || !response.data) {
+      if (!masterResponse.success || !masterResponse.data) {
         throw new Error("Requisition master returned an unsuccessful response.");
       }
       if (
-        !Array.isArray(response.data.branches) ||
-        !Array.isArray(response.data.designations)
+        !Array.isArray(masterResponse.data.branches) ||
+        !Array.isArray(masterResponse.data.designations)
       ) {
         throw new Error("Requisition master did not return branches and designations.");
       }
 
-      setBranches(
-        response.data.branches.map((branch) => ({
+      const branches: BranchOption[] = masterResponse.data.branches.map(
+        (branch) => ({
           id: requiredMasterId(
             branch,
             ["BranchID", "BranchId", "ID", "Id"],
@@ -131,10 +150,10 @@ export function NewRequisitionScreen({
             masterValue(branch, ["StateName", "State", "StateCode"]) ?? "",
           ),
           isActive: isActiveMasterRecord(branch),
-        })),
+        }),
       );
-      setDesignations(
-        response.data.designations.map((designation) => ({
+      const designations: DesignationOption[] =
+        masterResponse.data.designations.map((designation) => ({
           id: requiredMasterId(
             designation,
             ["DesignationID", "DesignationId", "ID", "Id"],
@@ -145,20 +164,32 @@ export function NewRequisitionScreen({
             ["DesignationName", "Name"],
             "designation",
           ),
-        })),
-      );
-    } catch (loadError) {
-      setMasterError(getApiError(loadError));
-      setBranches([]);
-      setDesignations([]);
-    } finally {
-      setIsLoadingMasters(false);
-    }
-  }, []);
+        }));
 
-  useEffect(() => {
-    void Promise.resolve().then(loadRequisitionMaster);
-  }, [loadRequisitionMaster]);
+      return { branches, designations, error: "" };
+    } catch (loadError) {
+      return {
+        branches: NO_BRANCHES,
+        designations: NO_DESIGNATIONS,
+        error:
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load requisition master data.",
+      };
+    }
+  }, [masterResponse]);
+
+  const branches = masters?.branches ?? NO_BRANCHES;
+  const designations = masters?.designations ?? NO_DESIGNATIONS;
+  // Hide a stale error while a retry is in flight
+  const masterError = isLoadingMasters
+    ? ""
+    : masterQueryError
+      ? getApiErrorMessage(
+          masterQueryError,
+          "Unable to load requisition master data.",
+        )
+      : (masters?.error ?? "");
 
   const activeBranches = branches.filter((branch) => branch.isActive);
 
@@ -210,7 +241,7 @@ export function NewRequisitionScreen({
 
     setIsSubmitting(true);
     try {
-      await recruitmentApi.createRequisition({
+      const response = await createRequisition({
         branchId,
         designationId,
         jobTitle,
@@ -219,11 +250,24 @@ export function NewRequisitionScreen({
         ...(salaryRangeMax !== undefined ? { salaryRangeMax } : {}),
         ...(experienceRequired ? { experienceRequired } : {}),
         priority,
-      });
+      }).unwrap();
+
+      const result = readCreateRequisitionResult(response);
+      // StatusCode 1 = created; 0 or negative = business-rule failure from the API
+      if (result.statusCode <= 0) {
+        throw new Error(result.message || "Unable to create requisition.");
+      }
+
+      toast.success(
+        result.requisitionNo
+          ? `${result.message} (${result.requisitionNo})`
+          : result.message,
+      );
+
       await onCreated();
       navigate(`/${domain}/admin/talent-hub/recruitment/requisition-approval`);
     } catch (submitError) {
-      setError(getApiError(submitError));
+      setError(getApiErrorMessage(submitError, "Unable to create requisition."));
     } finally {
       setIsSubmitting(false);
     }
@@ -336,7 +380,7 @@ export function NewRequisitionScreen({
             </span>
             <button
               type="button"
-              onClick={() => void loadRequisitionMaster()}
+              onClick={() => void refetchRequisitionMaster()}
               className="rounded-md border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
             >
               Retry lookups

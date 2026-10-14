@@ -223,14 +223,41 @@ export class RecruitmentService {
 
   async getCandidatesEligibleForInterview() {
     const pool = await this.databaseService.connect();
-
+ 
     const result = await pool
       .request()
       .execute('USP_GetCandidatesEligibleForInterview');
-
+ 
     return result.recordset;
   }
 
+
+  async getCandidatesForScreening(
+    companyId: number,
+    jobOpeningId: number | undefined,
+    actionBy: string,
+  ) {
+    try {
+      const pool = await this.databaseService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('JobOpeningID', sql.Int, jobOpeningId ?? null)
+        .input('ActionBy', sql.VarChar(25), actionBy)
+        .execute('USP_GetCandidatesForScreening');
+ 
+      return result.recordset;
+    } catch (error) {
+      console.error('Get candidates for screening error:', error);
+ 
+      throw new InternalServerErrorException(
+        'Failed to retrieve candidates for resume screening.',
+      );
+    }
+  }
+ 
+  
   async scheduleCandidateInterview(
     applicationId: number,
     interviewTypeId: number,
@@ -533,6 +560,8 @@ export class RecruitmentService {
       );
     }
   }
+
+   
  
   async getRecruitmentSources() {
     try {

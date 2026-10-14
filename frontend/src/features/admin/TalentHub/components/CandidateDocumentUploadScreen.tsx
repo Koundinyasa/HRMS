@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Eye, FileUp, LoaderCircle } from "lucide-react";
-import { recruitmentApi } from "../api/recruitment.api";
+import {
+  getApiErrorMessage,
+  useGetRecruitmentDashboardQuery,
+  useLazyGetCandidateDocumentFileQuery,
+  useUploadCandidateDocumentFileMutation,
+} from "../hooks/useRecruitment";
 
 const DOCUMENTS = [
   { id: 1, label: "Aadhaar", required: true },
@@ -27,6 +31,8 @@ type CandidateOption = {
   candidateName: string;
   jobTitle: string;
 };
+
+const NO_CANDIDATES: CandidateOption[] = [];
 
 function readCandidateOption(value: unknown): CandidateOption | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -83,10 +89,8 @@ function readCandidateOption(value: unknown): CandidateOption | null {
 }
 
 export function CandidateDocumentUploadScreen() {
-  const [candidates, setCandidates] = useState<CandidateOption[]>([]);
   const [selectedApplicationId, setSelectedApplicationId] = useState("");
   const [manualApplicationId, setManualApplicationId] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [hasExperience, setHasExperience] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState<
@@ -105,49 +109,56 @@ export function CandidateDocumentUploadScreen() {
     };
   }, []);
 
-  useEffect(() => {
-    let isCurrent = true;
-    const loadCandidates = async () => {
-      try {
-        await Promise.resolve();
-        if (!isCurrent) return;
-        setIsLoading(true);
-        setError("");
-        const response = await recruitmentApi.getRecruitmentDashboard();
-        if (!response.success || !Array.isArray(response.data?.applications)) {
-          throw new Error(
-            response.message ??
-              "Recruitment dashboard returned an invalid application list.",
-          );
-        }
-        const records = response.data.applications;
-        const options = records
-          .map(readCandidateOption)
-          .filter((candidate): candidate is CandidateOption => candidate !== null);
-        const uniqueOptions = Array.from(
-          new Map(
-            options.map((candidate) => [candidate.applicationId, candidate]),
-          ).values(),
-        );
-        if (isCurrent) setCandidates(uniqueOptions);
-      } catch (loadError) {
-        if (!isCurrent) return;
-        const message = axios.isAxiosError(loadError)
-          ? String(loadError.response?.data?.message ?? loadError.message)
-          : loadError instanceof Error
-            ? loadError.message
-            : "Unable to load candidates for document upload.";
-        setError(message);
-      } finally {
-        if (isCurrent) setIsLoading(false);
-      }
-    };
+  const [uploadCandidateDocumentFile] =
+    useUploadCandidateDocumentFileMutation();
+  const [fetchCandidateDocumentFile] = useLazyGetCandidateDocumentFileQuery();
 
-    void loadCandidates();
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
+  const {
+    data: dashboardResponse,
+    error: dashboardQueryError,
+    isLoading,
+  } = useGetRecruitmentDashboardQuery();
+
+  const candidatesResult = useMemo(() => {
+    if (!dashboardResponse) return undefined;
+    try {
+      if (
+        !dashboardResponse.success ||
+        !Array.isArray(dashboardResponse.data?.applications)
+      ) {
+        throw new Error(
+          dashboardResponse.message ??
+            "Recruitment dashboard returned an invalid application list.",
+        );
+      }
+      const options = dashboardResponse.data.applications
+        .map(readCandidateOption)
+        .filter((candidate): candidate is CandidateOption => candidate !== null);
+      const uniqueOptions = Array.from(
+        new Map(
+          options.map((candidate) => [candidate.applicationId, candidate]),
+        ).values(),
+      );
+      return { candidates: uniqueOptions, error: "" };
+    } catch (loadError) {
+      return {
+        candidates: NO_CANDIDATES,
+        error:
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load candidates for document upload.",
+      };
+    }
+  }, [dashboardResponse]);
+
+  const candidates = candidatesResult?.candidates ?? NO_CANDIDATES;
+  const loadError = dashboardQueryError
+    ? getApiErrorMessage(
+        dashboardQueryError,
+        "Unable to load candidates for document upload.",
+      )
+    : (candidatesResult?.error ?? "");
+  const displayError = error || loadError;
 
   const uploadDocument = async (documentId: number, file?: File) => {
     setError("");
@@ -168,20 +179,16 @@ export function CandidateDocumentUploadScreen() {
 
     setUploadingDocument(documentId);
     try {
-      const response = await recruitmentApi.uploadCandidateDocumentFile({
+      const response = await uploadCandidateDocumentFile({
         applicationId,
         documentType: documentId,
         file,
-      });
+      }).unwrap();
       setUploadedDocuments((previous) =>
         new Map(previous).set(documentId, response.documentUrl),
       );
     } catch (uploadError) {
-      const message = axios.isAxiosError(uploadError)
-        ? String(uploadError.response?.data?.message ?? uploadError.message)
-        : uploadError instanceof Error
-          ? uploadError.message
-          : "Document upload failed. Please try again.";
+      const message = getApiErrorMessage(uploadError, "Document upload failed. Please try again.");
       setError(message);
     } finally {
       setUploadingDocument(null);
@@ -198,18 +205,14 @@ export function CandidateDocumentUploadScreen() {
 
     setViewingDocument(documentId);
     try {
-      const file = await recruitmentApi.getCandidateDocumentFile(documentUrl);
+      const file = await fetchCandidateDocumentFile(documentUrl).unwrap();
       const previewUrl = URL.createObjectURL(file);
       documentPreviewUrls.current.push(previewUrl);
       previewWindow.location.href = previewUrl;
       previewWindow.opener = null;
     } catch (viewError) {
       previewWindow.close();
-      const message = axios.isAxiosError(viewError)
-        ? String(viewError.response?.data?.message ?? viewError.message)
-        : viewError instanceof Error
-          ? viewError.message
-          : "Unable to open the uploaded document.";
+      const message = getApiErrorMessage(viewError, "Unable to open the uploaded document.");
       setError(message);
     } finally {
       setViewingDocument(null);
@@ -324,12 +327,12 @@ export function CandidateDocumentUploadScreen() {
           Candidate has previous work experience
         </label>
 
-        {error && (
+        {displayError && (
           <p
             role="alert"
             className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
           >
-            {error}
+            {displayError}
           </p>
         )}
 

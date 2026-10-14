@@ -1,6 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, FileUp, LoaderCircle, Upload, X } from "lucide-react";
-import { recruitmentApi } from "../api/recruitment.api";
+import {
+  getApiErrorMessage,
+  useCreateCandidateApplicationMutation,
+  useGetJobOpeningMasterQuery,
+  useGetRecruitmentSourcesQuery,
+} from "../hooks/useRecruitment";
 
 interface LookupOption {
   value: string;
@@ -11,9 +16,12 @@ interface JobOpeningOption extends LookupOption {
   location: string;
 }
 
+const NO_OPENINGS: JobOpeningOption[] = [];
+const NO_SOURCES: LookupOption[] = [];
+
 const MAX_RESUME_SIZE = 5 * 1024 * 1024;
 const DEFAULT_SOURCE = "Employee Referral";
-const MAX_REFERRAL_NAME_LENGTH = 75;
+const REFERRING_EMPLOYEES = ["Yogesh", "Prathibha", "Daniel"];
 const ACCEPTED_RESUME_TYPES = new Set([
   "application/pdf",
   "application/msword",
@@ -115,53 +123,62 @@ export function ResumeUploadScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [openings, setOpenings] = useState<JobOpeningOption[]>([]);
-  const [sources, setSources] = useState<LookupOption[]>([]);
-  const [isLoadingLookups, setIsLoadingLookups] = useState(true);
-  const [lookupError, setLookupError] = useState("");
+  const [createCandidateApplication] = useCreateCandidateApplicationMutation();
 
-  useEffect(() => {
-    let isCurrent = true;
+  const {
+    data: openingsResponse,
+    error: openingsQueryError,
+    isLoading: isLoadingOpenings,
+  } = useGetJobOpeningMasterQuery();
 
-    const loadLookups = async () => {
-      try {
-        const [openingsResponse, sourcesResponse] = await Promise.all([
-          recruitmentApi.getJobOpeningMaster(),
-          recruitmentApi.getRecruitmentSources(),
-        ]);
-        const loadedOpenings = getLookupRows(
-          openingsResponse,
-          "job opening",
-        ).map(mapJobOpening);
-        const loadedSources = getLookupRows(
-          sourcesResponse,
-          "recruitment source",
-        ).map(mapRecruitmentSource);
-        if (!isCurrent) return;
-        setOpenings(loadedOpenings);
-        setSources(loadedSources);
-        setSource(
-          loadedSources.find(
-            (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
-          )?.value ?? "",
-        );
-      } catch (lookupLoadError) {
-        if (!isCurrent) return;
-        setLookupError(
+  const {
+    data: sourcesResponse,
+    error: sourcesQueryError,
+    isLoading: isLoadingSources,
+  } = useGetRecruitmentSourcesQuery();
+
+  const lookups = useMemo(() => {
+    if (!openingsResponse || !sourcesResponse) return undefined;
+    try {
+      return {
+        openings: getLookupRows(openingsResponse, "job opening").map(
+          mapJobOpening,
+        ),
+        sources: getLookupRows(sourcesResponse, "recruitment source").map(
+          mapRecruitmentSource,
+        ),
+        error: "",
+      };
+    } catch (lookupLoadError) {
+      return {
+        openings: NO_OPENINGS,
+        sources: NO_SOURCES,
+        error:
           lookupLoadError instanceof Error
             ? lookupLoadError.message
             : "Unable to load job openings and recruitment sources.",
-        );
-      } finally {
-        if (isCurrent) setIsLoadingLookups(false);
-      }
-    };
+      };
+    }
+  }, [openingsResponse, sourcesResponse]);
 
-    void loadLookups();
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
+  const openings = lookups?.openings ?? NO_OPENINGS;
+  const sources = lookups?.sources ?? NO_SOURCES;
+  const isLoadingLookups = isLoadingOpenings || isLoadingSources;
+  const lookupQueryError = openingsQueryError ?? sourcesQueryError;
+  const lookupError = lookupQueryError
+    ? getApiErrorMessage(
+        lookupQueryError,
+        "Unable to load job openings and recruitment sources.",
+      )
+    : (lookups?.error ?? "");
+
+  // Preselect the default source once the lookups have loaded
+  useEffect(() => {
+    const defaultSource = sources.find(
+      (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
+    )?.value;
+    if (defaultSource) setSource((current) => current || defaultSource);
+  }, [sources]);
 
   const isEmployeeReferral =
     source.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
@@ -212,7 +229,7 @@ export function ResumeUploadScreen() {
 
     setIsSubmitting(true);
     try {
-      await recruitmentApi.createCandidateApplication({
+      await createCandidateApplication({
         jobOpeningId,
         fullName: String(formData.get("fullName")).trim(),
         email: String(formData.get("email")).trim(),
@@ -221,7 +238,7 @@ export function ResumeUploadScreen() {
         source,
         referredBy: isEmployeeReferral ? referralName.trim() : undefined,
         resume: file,
-      });
+      }).unwrap();
       setSuccess("Resume uploaded and candidate application created.");
       setFile(null);
       setSource(
@@ -232,9 +249,10 @@ export function ResumeUploadScreen() {
       setReferralName("");
       form.reset();
     } catch (submitError) {
+      const detail = getApiErrorMessage(submitError, "");
       setError(
-        submitError instanceof Error
-          ? `Candidate application could not be submitted: ${submitError.message}`
+        detail
+          ? `Candidate application could not be submitted: ${detail}`
           : "Candidate application could not be submitted. Please try again.",
       );
     } finally {
@@ -357,22 +375,25 @@ export function ResumeUploadScreen() {
               {isEmployeeReferral && (
                 <span className="text-rose-600"> *</span>
               )}
-              <input
+              <select
                 name="referralName"
-                type="text"
                 value={referralName}
                 onChange={(event) => setReferralName(event.target.value)}
                 required={isEmployeeReferral}
                 disabled={!isEmployeeReferral}
-                maxLength={MAX_REFERRAL_NAME_LENGTH}
-                autoComplete="name"
-                className="h-11 w-full rounded-lg border border-[#dfe4df] px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f3f5f3] disabled:text-[#87938c]"
-                placeholder={
-                  isEmployeeReferral
-                    ? "Enter referring employee name"
-                    : "Available for Employee Referral only"
-                }
-              />
+                className="h-11 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm outline-none focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f3f5f3] disabled:text-[#87938c]"
+              >
+                <option value="">
+                  {isEmployeeReferral
+                    ? "Select referring employee"
+                    : "Available for Employee Referral only"}
+                </option>
+                {REFERRING_EMPLOYEES.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="space-y-1.5 text-sm font-medium text-[#46534a]">
               Address

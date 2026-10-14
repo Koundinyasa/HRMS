@@ -226,6 +226,7 @@ export interface DateFieldProps {
   initialMonth?: string;
   holidays?: Map<string, { name: string; isOptional: boolean }>;
   inputClassName?: string;
+  showLeaveMessage?: boolean;
 }
 
 export interface LeaveNavItem {

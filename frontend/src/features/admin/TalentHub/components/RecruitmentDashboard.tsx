@@ -1,4 +1,5 @@
-import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, X } from "lucide-react";
 import { STAGES } from "../constants/recruitment.constants";
 import { CandidateCard, EmptyState } from "./RecruitmentShared";
 import type {
@@ -21,6 +22,21 @@ export function RecruitmentDashboard({
   setSelectedRole,
   updateCandidateStage,
 }: RecruitmentDashboardProps) {
+  // null = nothing selected -> show every stage
+  const [selectedStage, setSelectedStage] = useState<CandidateStage | null>(
+    null
+  );
+
+  const toggleStage = (stageName: CandidateStage) =>
+    setSelectedStage((current) => (current === stageName ? null : stageName));
+
+  const activeStage = STAGES.find((stage) => stage.name === selectedStage);
+  const activeStageCandidates = activeStage
+    ? filteredCandidates.filter(
+        (candidate) => candidate.stage === activeStage.name
+      )
+    : [];
+
   return (
     <>
       <section className="rounded-2xl border border-[#e0e7e2] bg-white p-5 sm:p-7">
@@ -28,7 +44,8 @@ export function RecruitmentDashboard({
           <div>
             <h2 className="text-lg font-bold">Hiring funnel</h2>
             <p className="mt-1 text-sm text-[#78867e]">
-              Candidate progress across your hiring stages
+              Candidate progress across your hiring stages. Select a stage to
+              see only its candidates.
             </p>
           </div>
           <label className="relative">
@@ -49,7 +66,7 @@ export function RecruitmentDashboard({
           </label>
         </div>
 
-        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 lg:gap-2">
           {STAGES.map((stage, index) => {
             const count = filteredCandidates.filter(
               (candidate) => candidate.stage === stage.name
@@ -64,9 +81,27 @@ export function RecruitmentDashboard({
               index === 0 || previousCount === 0
                 ? null
                 : Math.round((count / previousCount) * 100);
+            const isSelected = selectedStage === stage.name;
+            const isDimmed = selectedStage !== null && !isSelected;
 
             return (
-              <div key={stage.name} className="min-w-0">
+              <button
+                key={stage.name}
+                type="button"
+                onClick={() => toggleStage(stage.name)}
+                aria-pressed={isSelected}
+                aria-label={`${stage.name}: ${count} candidate${
+                  count === 1 ? "" : "s"
+                }. ${isSelected ? "Click to show all stages" : "Click to show only this stage"}`}
+                className={`min-w-0 rounded-xl p-2 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#e5a538] ${
+                  isSelected ? "bg-[#f3f6f3]" : "hover:bg-[#f7f9f7]"
+                } ${isDimmed ? "opacity-60 hover:opacity-100" : ""}`}
+                style={
+                  isSelected
+                    ? { boxShadow: `inset 0 0 0 2px ${stage.color}` }
+                    : undefined
+                }
+              >
                 <div className="mb-2 flex items-baseline justify-between gap-2">
                   <span className="text-3xl font-bold">{count}</span>
                   {conversion !== null && (
@@ -96,7 +131,7 @@ export function RecruitmentDashboard({
                     ? "Total applications"
                     : `${count} candidate${count === 1 ? "" : "s"}`}
                 </p>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -105,7 +140,47 @@ export function RecruitmentDashboard({
       <section aria-label="Candidate pipeline">
         {filteredCandidates.length === 0 ? (
           <EmptyState message="No candidates match your search and role filter." />
+        ) : activeStage ? (
+          // ---- A stage is selected: show only that stage's candidates ----
+          <div className="rounded-2xl bg-[#edf1ed] p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h3 className="flex items-center gap-2 text-sm font-bold">
+                <span className={`h-2.5 w-2.5 rounded-full ${activeStage.dot}`} />
+                {activeStage.name}
+                <span className="font-semibold text-[#718078]">
+                  {activeStageCandidates.length}
+                </span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedStage(null)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#d4ddd6] bg-white px-3 py-1.5 text-xs font-semibold text-[#52625a] transition hover:bg-[#f7f9f7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#e5a538]"
+              >
+                <X className="h-3.5 w-3.5" />
+                Show all stages
+              </button>
+            </div>
+
+            {activeStageCandidates.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-[#d4ddd6] px-3 py-8 text-center text-xs text-[#85928a]">
+                No candidates in this stage
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {activeStageCandidates.map((candidate) => (
+                  <CandidateCard
+                    key={candidate.id}
+                    candidate={candidate}
+                    onMove={(nextStage) =>
+                      updateCandidateStage(candidate.id, nextStage)
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
+          // ---- Nothing selected: show every stage ----
           <div className="flex gap-4 overflow-x-auto pb-3">
             {STAGES.map((stage) => {
               const stageCandidates = filteredCandidates.filter(

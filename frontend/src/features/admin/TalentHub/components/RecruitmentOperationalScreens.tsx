@@ -1,14 +1,188 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Mail, Plus, RotateCcw, Search, X } from "lucide-react";
-import axios from "axios";
 import {
-  recruitmentApi,
+  getApiErrorMessage,
   recruitmentFileUrl,
-} from "../api/recruitment.api";
+  useApproveCandidateJoiningMutation,
+  useCreateCandidateApplicationMutation,
+  useGetCandidateApplicationsQuery,
+  useGetJobOpeningMasterQuery,
+  useGetRecruitmentSourcesQuery,
+  usePerformCandidateBgvMutation,
+  useSendJoiningEmailMutation,
+  useSendTeamAssignmentEmailMutation,
+  useSendWelcomeEmailMutation,
+} from "../hooks/useRecruitment";
 
 type WorkflowRow = Record<string, string>;
 type DropdownOption = { value: string; label: string };
 const EMPTY_WORKFLOW_ROWS: WorkflowRow[] = [];
+const EMPTY_DROPDOWN_OPTIONS: DropdownOption[] = [];
+
+function readLookupText(record: Record<string, unknown>, aliases: string[]) {
+  const normalizedAliases = new Set(
+    aliases.map((alias) => alias.toLowerCase().replace(/[^a-z0-9]/g, "")),
+  );
+  const entry = Object.entries(record).find(([key]) =>
+    normalizedAliases.has(key.toLowerCase().replace(/[^a-z0-9]/g, "")),
+  );
+  const value = entry?.[1];
+  return value === null || value === undefined || value === ""
+    ? ""
+    : String(value);
+}
+
+function mapLookupRows(
+  response: unknown,
+  aliases: { value: string[]; label: string[] },
+  description: string,
+): DropdownOption[] {
+  if (
+    !response ||
+    typeof response !== "object" ||
+    !("success" in response) ||
+    !response.success ||
+    !("data" in response) ||
+    !Array.isArray(response.data)
+  ) {
+    const message =
+      response && typeof response === "object" && "message" in response
+        ? response.message
+        : undefined;
+    throw new Error(
+      typeof message === "string"
+        ? message
+        : `Recruitment API returned an invalid ${description} list.`,
+    );
+  }
+
+  return response.data.map((record) => {
+    if (!record || typeof record !== "object" || Array.isArray(record)) {
+      throw new Error(`Recruitment API returned an invalid ${description}.`);
+    }
+    const row = record as Record<string, unknown>;
+    const value = readLookupText(row, aliases.value);
+    const label = readLookupText(row, aliases.label);
+    if (!value || !label) {
+      throw new Error(
+        `Recruitment API returned a ${description} without its value or name.`,
+      );
+    }
+    return { value, label };
+  });
+}
+
+function mapCandidateApplication(record: unknown): WorkflowRow {
+  if (!record || typeof record !== "object" || Array.isArray(record)) {
+    throw new Error("Recruitment API returned an invalid candidate record.");
+  }
+
+  const candidate = record as Record<string, unknown>;
+  const value = (...aliases: string[]) => {
+    const normalizeKey = (key: string) =>
+      key.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const aliasSet = new Set(aliases.map(normalizeKey));
+    const entry = Object.entries(candidate).find(([key]) =>
+      aliasSet.has(normalizeKey(key)),
+    );
+    const field = entry?.[1];
+    return field === null || field === undefined || field === ""
+      ? "—"
+      : String(field);
+  };
+  const rawSource = value("Source", "ApplicationSource", "SourceName");
+  const referralMatch = rawSource.match(/^Employee Referral\s*-\s*(.+)$/i);
+
+  const resumeUrl = value(
+    "ResumeURL",
+    "ResumeUrl",
+    "ResumePath",
+    "ResumeFilePath",
+    "ResumeFileURL",
+  );
+  const resumeExtension = value(
+    "FileExtension",
+    "ResumeFileExtension",
+    "ResumeExtension",
+    "ActualFileName",
+  );
+
+  return {
+    application: value(
+      "ApplicationID",
+      "CandidateApplicationID",
+      "ApplicationId",
+      "ApplicationNumber",
+      "ApplicationNo",
+    ),
+    candidateId: value(
+      "CandidateID",
+      "CandidateId",
+      "ApplicantID",
+      "ApplicantId",
+      "CandidateCode",
+    ),
+    candidate: value(
+      "FullName",
+      "CandidateName",
+      "CandidateFullName",
+      "ApplicantName",
+      "Name",
+    ),
+    position: value(
+      "JobTitle",
+      "Position",
+      "OpeningTitle",
+      "JobOpeningTitle",
+      "JobOpeningName",
+      "Designation",
+    ),
+    opening: value("JobOpeningID", "OpeningID", "JobId", "JobOpeningNumber"),
+    appliedDate: value(
+      "AppliedDate",
+      "ApplicationDate",
+      "DateApplied",
+      "ApplicationCreatedDate",
+      "CreatedDate",
+      "CreatedOn",
+      "CreatedAt",
+    ),
+    source: referralMatch
+      ? "Employee Referral"
+      : rawSource,
+    referringEmployee:
+      value(
+        "ReferringEmployee",
+        "ReferralName",
+        "ReferredBy",
+        "ReferrerName",
+        "ReferredByName",
+      ) !== "—"
+        ? value(
+            "ReferringEmployee",
+            "ReferralName",
+            "ReferredBy",
+            "ReferrerName",
+            "ReferredByName",
+          )
+        : referralMatch?.[1].trim() ?? "—",
+    status: value(
+      "ApplicationStatus",
+      "CandidateStatus",
+      "CurrentStage",
+      "Status",
+      "StatusName",
+      "Stage",
+    ),
+    resume:
+      resumeUrl === "—"
+        ? "—"
+        : recruitmentFileUrl(
+            resumeUrl,
+            resumeExtension === "—" ? undefined : resumeExtension,
+          ),
+  };
+}
 
 function readLookupText(record: Record<string, unknown>, aliases: string[]) {
   const normalizedAliases = new Set(
@@ -550,26 +724,12 @@ export function RecruitmentOperationalScreen({
     string | null
   >(null);
   const [teamAssignmentError, setTeamAssignmentError] = useState("");
-  const [candidateApplicationRows, setCandidateApplicationRows] =
-    useState<WorkflowRow[]>([]);
-  const [candidateApplicationsLoading, setCandidateApplicationsLoading] =
-    useState(false);
-  const [candidateApplicationsError, setCandidateApplicationsError] =
+  const [candidateApplicationSubmitError, setCandidateApplicationSubmitError] =
     useState("");
   const [showCandidateApplicationForm, setShowCandidateApplicationForm] =
     useState(false);
   const [isSubmittingCandidateApplication, setIsSubmittingCandidateApplication] =
     useState(false);
-  const [candidateApplicationsRefreshKey, setCandidateApplicationsRefreshKey] =
-    useState(0);
-  const [jobOpeningOptions, setJobOpeningOptions] = useState<DropdownOption[]>(
-    [],
-  );
-  const [sourceOptions, setSourceOptions] = useState<DropdownOption[]>([]);
-  const [candidateApplicationDropdownsLoading, setCandidateApplicationDropdownsLoading] =
-    useState(false);
-  const [candidateApplicationDropdownsError, setCandidateApplicationDropdownsError] =
-    useState("");
   const [candidateApplicationSource, setCandidateApplicationSource] =
     useState("");
   const [candidateApplicationReferrer, setCandidateApplicationReferrer] =
@@ -577,76 +737,78 @@ export function RecruitmentOperationalScreen({
   const isEmployeeReferral =
     candidateApplicationSource.toLowerCase() === "employee referral";
 
-  const rows =
-    view === "candidate-applications"
-      ? candidateApplicationRows
-      : postJoiningRows[view] ?? config?.rows ?? EMPTY_WORKFLOW_ROWS;
-  const statusKey = config?.statusKey ?? "";
+  const [createCandidateApplication] = useCreateCandidateApplicationMutation();
+  const [performCandidateBgv] = usePerformCandidateBgvMutation();
+  const [approveCandidateJoining] = useApproveCandidateJoiningMutation();
+  const [triggerSendJoiningEmail] = useSendJoiningEmailMutation();
+  const [triggerSendTeamAssignmentEmail] = useSendTeamAssignmentEmailMutation();
+  const [triggerSendWelcomeEmail] = useSendWelcomeEmailMutation();
 
-  useEffect(() => {
-    if (view !== "candidate-applications") return;
+  // Candidate applications / dropdown lookups are only needed on this view.
+  // Mutations invalidate the "Recruitment" tag, so the list refetches itself.
+  const isCandidateApplicationsView = view === "candidate-applications";
 
-    let isCurrent = true;
+  const {
+    data: candidateApplicationsResponse,
+    error: candidateApplicationsQueryError,
+    isFetching: candidateApplicationsLoading,
+  } = useGetCandidateApplicationsQuery(undefined, {
+    skip: !isCandidateApplicationsView,
+  });
 
-    const loadApplications = async () => {
-      try {
-        const records = await recruitmentApi.getCandidateApplications();
-        if (!Array.isArray(records)) {
-          throw new Error("Recruitment API returned an invalid application list.");
-        }
-        if (isCurrent) {
-          setCandidateApplicationRows(
-            records.map(mapCandidateApplication),
-          );
-        }
-      } catch (error) {
-        if (!isCurrent) return;
-        const message = axios.isAxiosError(error)
-          ? String(error.response?.data?.message ?? error.message)
-          : error instanceof Error
-            ? error.message
-            : "Unable to load candidate applications.";
-        setCandidateApplicationsError(message);
-      } finally {
-        if (isCurrent) setCandidateApplicationsLoading(false);
+  const {
+    data: jobOpeningMasterResponse,
+    error: jobOpeningMasterQueryError,
+    isFetching: jobOpeningMasterLoading,
+  } = useGetJobOpeningMasterQuery(undefined, {
+    skip: !isCandidateApplicationsView,
+  });
+
+  const {
+    data: recruitmentSourcesResponse,
+    error: recruitmentSourcesQueryError,
+    isFetching: recruitmentSourcesLoading,
+  } = useGetRecruitmentSourcesQuery(undefined, {
+    skip: !isCandidateApplicationsView,
+  });
+
+  const candidateApplicationsResult = useMemo(() => {
+    if (!candidateApplicationsResponse) return undefined;
+    try {
+      if (!Array.isArray(candidateApplicationsResponse)) {
+        throw new Error("Recruitment API returned an invalid application list.");
       }
-    };
+      return {
+        rows: candidateApplicationsResponse.map(mapCandidateApplication),
+        error: "",
+      };
+    } catch (error) {
+      return {
+        rows: EMPTY_WORKFLOW_ROWS,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to load candidate applications.",
+      };
+    }
+  }, [candidateApplicationsResponse]);
 
-    void Promise.resolve().then(() => {
-      if (!isCurrent) return;
-      setCandidateApplicationsLoading(true);
-      setCandidateApplicationsError("");
-      return loadApplications();
-    });
-    return () => {
-      isCurrent = false;
-    };
-  }, [
-    view,
-    candidateApplicationsRefreshKey,
-  ]);
-
-  useEffect(() => {
-    if (view !== "candidate-applications") return;
-
-    let isCurrent = true;
-
-    const loadDropdowns = async () => {
-      try {
-        const [openingsResponse, sourcesResponse] = await Promise.all([
-          recruitmentApi.getJobOpeningMaster(),
-          recruitmentApi.getRecruitmentSources(),
-        ]);
-        const loadedOpenings = mapLookupRows(
-          openingsResponse,
+  const dropdownsResult = useMemo(() => {
+    if (!jobOpeningMasterResponse || !recruitmentSourcesResponse) {
+      return undefined;
+    }
+    try {
+      return {
+        jobOpenings: mapLookupRows(
+          jobOpeningMasterResponse,
           {
             value: ["JobOpeningID", "OpeningID", "JobID", "ID"],
             label: ["JobTitle", "OpeningTitle", "Title", "JobOpeningName"],
           },
           "job opening",
-        );
-        const loadedSources = mapLookupRows(
-          sourcesResponse,
+        ),
+        sources: mapLookupRows(
+          recruitmentSourcesResponse,
           {
             value: [
               "SourceName",
@@ -666,34 +828,56 @@ export function RecruitmentOperationalScreen({
             ],
           },
           "recruitment source",
-        );
-        if (isCurrent) {
-          setJobOpeningOptions(loadedOpenings);
-          setSourceOptions(loadedSources);
-        }
-      } catch (error) {
-        if (!isCurrent) return;
-        const message = axios.isAxiosError(error)
-          ? String(error.response?.data?.message ?? error.message)
-          : error instanceof Error
+        ),
+        error: "",
+      };
+    } catch (error) {
+      return {
+        jobOpenings: EMPTY_DROPDOWN_OPTIONS,
+        sources: EMPTY_DROPDOWN_OPTIONS,
+        error:
+          error instanceof Error
             ? error.message
-            : "Unable to load candidate application dropdowns.";
-        setCandidateApplicationDropdownsError(message);
-      } finally {
-        if (isCurrent) setCandidateApplicationDropdownsLoading(false);
-      }
-    };
+            : "Unable to load candidate application dropdowns.",
+      };
+    }
+  }, [jobOpeningMasterResponse, recruitmentSourcesResponse]);
 
-    void Promise.resolve().then(() => {
-      if (!isCurrent) return;
-      setCandidateApplicationDropdownsLoading(true);
-      setCandidateApplicationDropdownsError("");
-      return loadDropdowns();
-    });
-    return () => {
-      isCurrent = false;
-    };
-  }, [view]);
+  const candidateApplicationRows =
+    candidateApplicationsResult?.rows ?? EMPTY_WORKFLOW_ROWS;
+  const jobOpeningOptions =
+    dropdownsResult?.jobOpenings ?? EMPTY_DROPDOWN_OPTIONS;
+  const sourceOptions = dropdownsResult?.sources ?? EMPTY_DROPDOWN_OPTIONS;
+  const candidateApplicationDropdownsLoading =
+    jobOpeningMasterLoading || recruitmentSourcesLoading;
+
+  const candidateApplicationsLoadError = candidateApplicationsLoading
+    ? ""
+    : candidateApplicationsQueryError
+      ? getApiErrorMessage(
+          candidateApplicationsQueryError,
+          "Unable to load candidate applications.",
+        )
+      : (candidateApplicationsResult?.error ?? "");
+  const candidateApplicationsError =
+    candidateApplicationSubmitError || candidateApplicationsLoadError;
+
+  const dropdownsQueryError =
+    jobOpeningMasterQueryError ?? recruitmentSourcesQueryError;
+  const candidateApplicationDropdownsError = candidateApplicationDropdownsLoading
+    ? ""
+    : dropdownsQueryError
+      ? getApiErrorMessage(
+          dropdownsQueryError,
+          "Unable to load candidate application dropdowns.",
+        )
+      : (dropdownsResult?.error ?? "");
+
+  const rows =
+    view === "candidate-applications"
+      ? candidateApplicationRows
+      : postJoiningRows[view] ?? config?.rows ?? EMPTY_WORKFLOW_ROWS;
+  const statusKey = config?.statusKey ?? "";
 
   const submitCandidateApplication = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -702,11 +886,11 @@ export function RecruitmentOperationalScreen({
     const form = event.currentTarget;
     const formData = new FormData(form);
     const resume = formData.get("resume");
-    setCandidateApplicationsError("");
+    setCandidateApplicationSubmitError("");
     setIsSubmittingCandidateApplication(true);
 
     try {
-      await recruitmentApi.createCandidateApplication({
+      await createCandidateApplication({
         jobOpeningId: Number(formData.get("jobOpeningId")),
         fullName: String(formData.get("fullName") ?? "").trim(),
         email: String(formData.get("email") ?? "").trim(),
@@ -718,20 +902,15 @@ export function RecruitmentOperationalScreen({
             ? candidateApplicationReferrer.trim()
             : undefined,
         resume: resume instanceof File && resume.size > 0 ? resume : undefined,
-      });
+      }).unwrap();
       form.reset();
       setCandidateApplicationSource("");
       setCandidateApplicationReferrer("");
       setShowCandidateApplicationForm(false);
       setActionMessage("Candidate application submitted successfully.");
-      setCandidateApplicationsRefreshKey((current) => current + 1);
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to submit the candidate application.";
-      setCandidateApplicationsError(message);
+      const message = getApiErrorMessage(error, "Unable to submit the candidate application.");
+      setCandidateApplicationSubmitError(message);
     } finally {
       setIsSubmittingCandidateApplication(false);
     }
@@ -770,22 +949,18 @@ export function RecruitmentOperationalScreen({
 
     setIsSubmittingBgv(true);
     try {
-      await recruitmentApi.performCandidateBgv({
+      await performCandidateBgv({
         applicationId,
         isClear: bgvResult === "clear",
         remarks: bgvRemarks.trim() || undefined,
-      });
+      }).unwrap();
       setShowBgvForm(false);
       setBgvApplicationId("");
       setBgvResult("");
       setBgvRemarks("");
       setActionMessage("BGV result submitted successfully.");
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to submit the BGV result.";
+      const message = getApiErrorMessage(error, "Unable to submit the BGV result.");
       setBgvError(message);
     } finally {
       setIsSubmittingBgv(false);
@@ -867,10 +1042,10 @@ export function RecruitmentOperationalScreen({
 
     setIsSubmittingJoining(true);
     try {
-      await recruitmentApi.approveCandidateJoining({
+      await approveCandidateJoining({
         applicationId,
         joiningDate,
-      });
+      }).unwrap();
       const row: WorkflowRow = {
         application: String(applicationId),
         candidateId: joiningFormValues.candidateId.trim(),
@@ -889,11 +1064,7 @@ export function RecruitmentOperationalScreen({
       setShowJoiningForm(false);
       setActionMessage("Joining preparation submitted successfully.");
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to prepare candidate joining.";
+      const message = getApiErrorMessage(error, "Unable to prepare candidate joining.");
       setJoiningFormError(message);
     } finally {
       setIsSubmittingJoining(false);
@@ -913,19 +1084,15 @@ export function RecruitmentOperationalScreen({
     }
     setSendingJoiningEmail(rowKey);
     try {
-      await recruitmentApi.sendJoiningEmail({
+      await triggerSendJoiningEmail({
         email,
         candidateName: row.candidate,
         position: row.position ?? "your role",
         joiningDate: row.joiningDate,
-      });
+      }).unwrap();
       setActionMessage(`Joining email sent to ${email}.`);
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to send the joining email.";
+      const message = getApiErrorMessage(error, "Unable to send the joining email.");
       setWelcomeEmailError(message);
     } finally {
       setSendingJoiningEmail(null);
@@ -974,20 +1141,16 @@ export function RecruitmentOperationalScreen({
 
     setSendingTeamAssignmentEmail(rowKey);
     try {
-      await recruitmentApi.sendTeamAssignmentEmail({
+      await triggerSendTeamAssignmentEmail({
         email,
         employeeName: row.employee,
         department: row.department,
         team: row.team,
         manager: row.manager,
-      });
+      }).unwrap();
       setActionMessage(`Team assignment email sent to ${email}.`);
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to send the team assignment email.";
+      const message = getApiErrorMessage(error, "Unable to send the team assignment email.");
       setTeamAssignmentError(message);
     } finally {
       setSendingTeamAssignmentEmail(null);
@@ -1014,11 +1177,11 @@ export function RecruitmentOperationalScreen({
 
     setSendingWelcomeEmail(rowKey);
     try {
-      await recruitmentApi.sendWelcomeEmail({
+      await triggerSendWelcomeEmail({
         email,
         candidateName: row.candidate,
         position: row.position,
-      });
+      }).unwrap();
       setPostJoiningRows((previous) => {
         const onboardingRows = previous.onboarding ?? config.rows;
         const rowIndex = onboardingRows.findIndex(
@@ -1037,11 +1200,7 @@ export function RecruitmentOperationalScreen({
       });
       setActionMessage(`Welcome email sent to ${email}.`);
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to send the welcome email.";
+      const message = getApiErrorMessage(error, "Unable to send the welcome email.");
       setWelcomeEmailError(message);
     } finally {
       setSendingWelcomeEmail(null);
@@ -1116,7 +1275,7 @@ export function RecruitmentOperationalScreen({
               onClick={() => {
                 if (view === "candidate-applications") {
                   setShowCandidateApplicationForm((isOpen) => !isOpen);
-                  setCandidateApplicationsError("");
+                  setCandidateApplicationSubmitError("");
                   setActionMessage("");
                   return;
                 }

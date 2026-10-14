@@ -11,6 +11,16 @@ import type {
   WithdrawRequest,
 } from "../types/separation.types";
 
+const isErrorResult = (result: any): boolean => {
+  if (!result) return false;
+
+  const code = Number(result.ErrorCode ?? result.StatusCode);
+  if (!Number.isNaN(code) && code >= 400) return true;
+
+  const message = String(result.Message ?? result.message ?? "");
+  return /^\s*(validation\s*error|error)\b/i.test(message);
+};
+
 export const useSeparationManagement = () => {
   /**
    * Fetch Separation Status
@@ -29,10 +39,7 @@ export const useSeparationManagement = () => {
    */
   const [
     submitResignation,
-    {
-      isLoading: isSubmitting,
-      reset: resetSubmitState,
-    },
+    { isLoading: isSubmitting, reset: resetSubmitState },
   ] = useSubmitResignationMutation();
 
   /**
@@ -40,46 +47,34 @@ export const useSeparationManagement = () => {
    */
   const [
     withdrawResignation,
-    {
-      isLoading: isWithdrawing,
-      reset: resetWithdrawState,
-    },
+    { isLoading: isWithdrawing, reset: resetWithdrawState },
   ] = useWithdrawResignationMutation();
 
   /**
    * Submit Resignation Request
    */
-  const submitRequest = async (
-    request: ResignationRequest
-  ) => {
+  const submitRequest = async (request: ResignationRequest) => {
     try {
       const response = await submitResignation(request).unwrap();
 
       // Backend returns an array
-      const result = Array.isArray(response)
-        ? response[0]
-        : response;
+      const result = Array.isArray(response) ? response[0] : response;
 
-      if (result.ErrorCode === "400") {
+      if (isErrorResult(result)) {
         throw {
           data: {
             Message: result.Message,
           },
         };
       }
-      toast.success(
-        result.Message ||
-        "Resignation submitted successfully."
-      );
+      toast.success(result.Message || "Resignation submitted successfully.");
 
       await refetch();
 
       return result;
     } catch (err: any) {
       toast.error(
-        err?.data?.Message ||
-        err?.message ||
-        "Unable to submit resignation."
+        err?.data?.Message || err?.message || "Unable to submit resignation.",
       );
 
       throw err;
@@ -89,17 +84,20 @@ export const useSeparationManagement = () => {
   /**
    * Withdraw Resignation Request
    */
-  const withdrawRequest = async (
-    request: WithdrawRequest
-  ) => {
+  const withdrawRequest = async (request: WithdrawRequest) => {
     try {
-      const response = await withdrawResignation(
-        request
-      ).unwrap();
+      const response = await withdrawResignation(request).unwrap();
+
+      if (isErrorResult(response)) {
+        throw {
+          data: {
+            Message: response.Message,
+          },
+        };
+      }
 
       toast.success(
-        response.Message ||
-        "Withdrawal request submitted successfully."
+        response.Message || "Withdrawal request submitted successfully.",
       );
 
       await refetch();
@@ -108,8 +106,8 @@ export const useSeparationManagement = () => {
     } catch (err: any) {
       toast.error(
         err?.data?.Message ||
-        err?.data?.message ||
-        "Unable to withdraw resignation."
+          err?.data?.message ||
+          "Unable to withdraw resignation.",
       );
 
       throw err;

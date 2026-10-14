@@ -96,7 +96,7 @@ export function DatePicker({
         value={text}
         aria-invalid={isInvalid}
         readOnly
-        onClick={() => onOpenChange?.(true)}
+        onClick={() => onOpenChange?.(!open)}
         onBlur={onBlur}
         className={cn(
           "h-12 cursor-pointer rounded-2xl border-slate-300 bg-white px-4 pr-11 text-sm transition-all duration-150 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.12)]",

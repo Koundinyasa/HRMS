@@ -29,6 +29,7 @@ export const baseApi = createApi({
     "AdditionalClassifications",
     "BankFieldMapping",
     "SalaryComponents",
+    "Recruitment",
   ],
   endpoints: () => ({}),
 });

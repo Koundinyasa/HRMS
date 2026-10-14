@@ -335,17 +335,18 @@ export class RecruitmentController {
     });
   }
 
-  /* @UseGuards(JwtAuthGuard)
-  @Get('candidatescreening/:jobOpeningId')
+   @UseGuards(JwtAuthGuard)
+  @Get('candidatescreening')
   async getCandidatesForScreening(
-    @Param('jobOpeningId', ParseIntPipe) jobOpeningId: number,
     @Req() req: any,
+    @Query('jobOpeningId') jobOpeningId?: string,
   ) {
     return this.recruitmentService.getCandidatesForScreening(
-      jobOpeningId,
+      req.user.companyId,
+      jobOpeningId ? Number(jobOpeningId) : undefined,
       req.user.employeeId,
     );
-  } */
+  }
   @UseGuards(JwtAuthGuard)
   @Get('candidateapplications')
   async getCandidateApplications(

@@ -1,393 +1,642 @@
-import axios from "axios";
+import { baseApi } from "@/app/baseApi";
+import type {
+  CreateRequisitionRequest,
+  RequisitionActionRequest,
+  RequisitionMasterResponse,
+  CandidateApplicationRequest,
+  RecruitmentDashboardResponse,
+  RecruitmentLookupResponse,
+  ResumeScreeningRequest,
+  ResumeScreeningResponse,
+  ScheduleAssessmentRequest,
+  SkipAssessmentRequest,
+  ScheduleInterviewRequest,
+  SendInterviewInvitationRequest,
+  AssessmentResultRequest,
+  FinalInterviewApprovalRequest,
+  InterviewFeedbackRequest,
+  CandidateOfferRequest,
+  UploadCandidateDocumentRequest,
+  UploadCandidateDocumentFileRequest,
+  UploadCandidateDocumentFileResponse,
+  CandidateBgvRequest,
+  SendWelcomeEmailRequest,
+  SendJoiningEmailRequest,
+  SendTeamAssignmentEmailRequest,
+  ApproveCandidateJoiningRequest,
+  PublishJobOpeningRequest,
+  RecruitmentEmailResponse,
+} from "../types/recruitment.types";
 
-const recruitmentClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3001/api",
-  timeout: 15000,
-  withCredentials: true,
-});
+// ======================================================
+// FILE URL HELPER (not an API call – plain utility)
+// ======================================================
 
-export function recruitmentFileUrl(filePath: string, fileExtension?: string) {
+const API_URL: string =
+  import.meta.env.VITE_API_URL ?? "http://localhost:3001/api";
+
+export function recruitmentFileUrl(
+  filePath: string,
+  fileExtension?: string
+) {
   if (/^https?:\/\//i.test(filePath)) return filePath;
 
-  const apiBaseUrl = new URL(
-    import.meta.env.VITE_API_URL ?? "http://localhost:3001/api",
-  );
-  const normalizedPath = filePath.startsWith("/") ? filePath : `/${filePath}`;
+  const apiBaseUrl = new URL(API_URL);
+  const normalizedPath = filePath.startsWith("/")
+    ? filePath
+    : `/${filePath}`;
+
   const resumePathMatch = normalizedPath.match(
-    /^\/?uploads\/recruitment\/resumes\/([^/?#]+)$/i,
+    /^\/?uploads\/recruitment\/resumes\/([^/?#]+)$/i
   );
+
   if (resumePathMatch) {
     const fileName = resumePathMatch[1];
+
     const extension =
       fileName.match(/\.(pdf|doc|docx)$/i)?.[1] ??
       fileExtension?.match(/\.(pdf|doc|docx)$/i)?.[1] ??
       fileExtension?.replace(/^\./, "").toLowerCase();
+
     const previewUrl = new URL(
       `recruitment/resume-preview/${encodeURIComponent(fileName)}`,
-      `${apiBaseUrl.toString().replace(/\/$/, "")}/`,
+      `${apiBaseUrl.toString().replace(/\/$/, "")}/`
     );
+
     if (extension && ["pdf", "doc", "docx"].includes(extension)) {
       previewUrl.searchParams.set("extension", extension);
     }
+
     return previewUrl.toString();
   }
+
   const publicPath = normalizedPath.replace(/^\/api(?=\/uploads\/)/i, "");
 
   return new URL(publicPath, apiBaseUrl.origin).toString();
 }
 
-export interface CreateRequisitionRequest {
-  branchId: number;
-  designationId: number;
-  jobTitle: string;
-  vacancies: number;
-  salaryRangeMin?: number;
-  salaryRangeMax?: number;
-  experienceRequired?: string;
-  priority?: number;
-}
+export const recruitmentApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
 
-export interface RequisitionActionRequest {
-  requisitionId: number;
-  action: "APPROVE" | "REJECT";
-  reviewRemarks?: string;
-}
+    // ==================================================
+    // DASHBOARD
+    // ==================================================
 
-export interface RequisitionMasterResponse {
-  success: boolean;
-  data: {
-    companies: Record<string, unknown>[];
-    branches: Record<string, unknown>[];
-    departments: Record<string, unknown>[];
-    designations: Record<string, unknown>[];
-  };
-}
+    getRecruitmentDashboard: builder.query<
+      RecruitmentDashboardResponse,
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/dashboard",
+        method: "GET",
+      }),
 
-export interface CandidateApplicationRequest {
-  jobOpeningId: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  address?: string;
-  resume?: File;
-  source?: string;
-  referredBy?: string;
-}
+      providesTags: ["Recruitment"],
+    }),
 
-export interface RecruitmentDashboardResponse {
-  success: boolean;
-  data: {
-    applications: unknown[];
-    summary: Record<string, number>;
-  };
-  message?: string;
-}
 
-export interface RecruitmentLookupResponse {
-  success: boolean;
-  data: unknown[];
-  message?: string;
-}
+    // ==================================================
+    // REQUISITIONS
+    // ==================================================
 
-export const recruitmentApi = {
-  getRecruitmentDashboard: async () =>
-    (
-      await recruitmentClient.get<RecruitmentDashboardResponse>(
-        "/recruitment/dashboard",
-      )
-    ).data,
-  getPendingRequisitions: async () =>
-    (await recruitmentClient.get<unknown[]>("/recruitment/pendingrequisitions"))
-      .data,
-  updateRequisition: async (request: RequisitionActionRequest) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/requisitionaction",
-        request,
-      )
-    ).data,
-  createJobOpening: async (requisitionId: number) =>
-    (
-      await recruitmentClient.post<unknown>("/recruitment/jobopening", {
-        requisitionId,
-      })
-    ).data,
-  publishJobOpening: async (jobOpeningId: number, closingDate: string) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/jobopeningpublish",
-        { jobOpeningId, closingDate },
-      )
-    ).data,
-  getJobOpenings: async () =>
-    (await recruitmentClient.get<unknown[]>("/recruitment/jobopenings")).data,
-  getJobOpeningMaster: async () =>
-    (
-      await recruitmentClient.get<RecruitmentLookupResponse>(
-        "/recruitment/jobopeningmaster",
-      )
-    ).data,
-  getRecruitmentSources: async () =>
-    (
-      await recruitmentClient.get<RecruitmentLookupResponse>(
-        "/recruitment/sources",
-      )
-    ).data,
-  getRequisitionMaster: async () =>
-    (
-      await recruitmentClient.get<RequisitionMasterResponse>(
-        "/recruitment/requisitionmaster",
-      )
-    ).data,
-  createRequisition: async (request: CreateRequisitionRequest) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/requisition",
-        request,
-      )
-    ).data,
-  createCandidateApplication: async (
-    request: CandidateApplicationRequest,
-  ) => {
-    const formData = new FormData();
-    formData.append("jobOpeningId", String(request.jobOpeningId));
-    formData.append("fullName", request.fullName);
-    formData.append("email", request.email);
-    formData.append("phone", request.phone);
-    if (request.address) formData.append("address", request.address);
-    if (request.resume) formData.append("resume", request.resume);
-    if (request.source) formData.append("source", request.source);
-    if (request.referredBy) formData.append("referredBy", request.referredBy);
-    return (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/candidateapplication",
-        formData,
-      )
-    ).data;
-  },
-  getCandidateApplications: async (applicationStatusId?: number) =>
-    (
-      await recruitmentClient.get<unknown[]>(
-        "/recruitment/candidateapplications",
-        {
-          params:
-            applicationStatusId === undefined
-              ? undefined
-              : { applicationStatusId },
-        },
-      )
-    ).data,
-  updateResumeScreening: async (request: {
-    applicationId: number;
-    action: "APPROVE" | "REJECT";
-    reviewRemarks?: string;
-  }) =>
-    (await recruitmentClient.post<unknown>("/recruitment/screening", request))
-      .data,
-  getCandidatesForAssessment: async () =>
-    (
-      await recruitmentClient.get<unknown[]>(
-        "/recruitment/assessmentscheduling",
-      )
-    ).data,
-  scheduleAssessment: async (request: {
-    applicationId: number;
-    assessmentType: string;
-    scheduledDate: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/assessmentschedule",
-        request,
-      )
-    ).data,
-  skipAssessment: async (request: {
-    applicationId: number;
-    remarks?: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/skipcandidateassessment",
-        request,
-      )
-    ).data,
-  getCandidatesEligibleForInterview: async () =>
-    (
-      await recruitmentClient.get<unknown[]>(
-        "/recruitment/intervieweligible",
-      )
-    ).data,
-  scheduleInterview: async (request: {
-    applicationId: number;
-    interviewTypeId: number;
-    scheduledDate: string;
-    interviewerEmployeeId: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/interviewschedule",
-        request,
-      )
-    ).data,
-  sendInterviewInvitation: async (request: {
-    email: string;
-    candidateName: string;
-    position: string;
-    interviewerName: string;
-    scheduledDate: string;
-    scheduledTime: string;
-  }) =>
-    (
-      await recruitmentClient.post<{ success: boolean; message: string }>(
-        "/recruitment/send-interview-invitation",
-        request,
-      )
-    ).data,
-  updateAssessmentResult: async (request: {
-    assessmentId: number;
-    score: number;
-    isQualified: boolean;
-    remarks?: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/assessmentresult",
-        request,
-      )
-    ).data,
-  updateFinalInterviewApproval: async (request: {
-    applicationId: number;
-    isSelected: boolean;
-    remarks?: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/finalinterviewapproval",
-        request,
-      )
-    ).data,
-  submitInterviewFeedback: async (request: {
-    interviewId: number;
-    rating: number;
-    feedback: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/interviewfeedback",
-        request,
-      )
-    ).data,
-  createCandidateOffer: async (request: {
-    applicationId: number;
-    offeredSalary: number;
-    negotiatedSalary?: number;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/candidateoffer",
-        request,
-      )
-    ).data,
-  getCandidatesForVerification: async () =>
-    (
-      await recruitmentClient.get<unknown[]>(
-        "/recruitment/candidatesforverification",
-      )
-    ).data,
-  uploadCandidateDocument: async (request: {
-    applicationId: number;
-    documentType: number;
-    documentUrl: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/uploadcandidatedocument",
-        request,
-      )
-    ).data,
-  uploadCandidateDocumentFile: async (request: {
-    applicationId: number;
-    documentType: number;
-    file: File;
-  }) => {
-    const formData = new FormData();
-    formData.append("applicationId", String(request.applicationId));
-    formData.append("documentType", String(request.documentType));
-    formData.append("file", request.file);
-    return (
-      await recruitmentClient.post<{ documentUrl: string }>(
-        "/recruitment/candidate-documents",
-        formData,
-      )
-    ).data;
-  },
-  getCandidateDocumentFile: async (documentUrl: string) =>
-    (
-      await recruitmentClient.get<Blob>(documentUrl, {
-        responseType: "blob",
-      })
-    ).data,
-  performCandidateBgv: async (request: {
-    applicationId: number;
-    isClear: boolean;
-    remarks?: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/bgvcandidate",
-        request,
-      )
-    ).data,
-  sendWelcomeEmail: async (request: {
-    email: string;
-    candidateName: string;
-    position: string;
-  }) =>
-    (
-      await recruitmentClient.post<{ success: boolean; message: string }>(
-        "/recruitment/send-welcome-email",
-        request,
-      )
-    ).data,
-  sendJoiningEmail: async (request: {
-    email: string;
-    candidateName: string;
-    position: string;
-    joiningDate: string;
-  }) =>
-    (
-      await recruitmentClient.post<{ success: boolean; message: string }>(
-        "/recruitment/send-joining-email",
-        request,
-      )
-    ).data,
-  sendTeamAssignmentEmail: async (request: {
-    email: string;
-    employeeName: string;
-    department: string;
-    team: string;
-    manager: string;
-  }) =>
-    (
-      await recruitmentClient.post<{ success: boolean; message: string }>(
-        "/recruitment/send-team-assignment-email",
-        request,
-      )
-    ).data,
-  getCandidatesForJoining: async () =>
-    (
-      await recruitmentClient.get<unknown[]>(
-        "/recruitment/candidatesforjoining",
-      )
-    ).data,
-  approveCandidateJoining: async (request: {
-    applicationId: number;
-    joiningDate: string;
-  }) =>
-    (
-      await recruitmentClient.post<unknown>(
-        "/recruitment/approvecandidatejoining",
-        request,
-      )
-    ).data,
-};
+    getPendingRequisitions: builder.query<
+      unknown[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/pendingrequisitions",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    getRequisitionMaster: builder.query<
+      RequisitionMasterResponse,
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/requisitionmaster",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    createRequisition: builder.mutation<
+      unknown,
+      CreateRequisitionRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/requisition",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    updateRequisition: builder.mutation<
+      unknown,
+      RequisitionActionRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/requisitionaction",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // JOB OPENINGS
+    // ==================================================
+
+    getJobOpenings: builder.query<
+      unknown[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/jobopenings",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    getJobOpeningMaster: builder.query<
+      RecruitmentLookupResponse,
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/jobopeningmaster",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    getRecruitmentSources: builder.query<
+      RecruitmentLookupResponse,
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/sources",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    createJobOpening: builder.mutation<
+      unknown,
+      number
+    >({
+      query: (requisitionId) => ({
+        url: "/recruitment/jobopening",
+        method: "POST",
+        body: { requisitionId },
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    publishJobOpening: builder.mutation<
+      unknown,
+      PublishJobOpeningRequest
+    >({
+      query: ({ jobOpeningId, closingDate }) => ({
+        url: "/recruitment/jobopeningpublish",
+        method: "POST",
+        body: { jobOpeningId, closingDate },
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // CANDIDATE APPLICATIONS
+    // ==================================================
+
+    createCandidateApplication: builder.mutation<
+      unknown,
+      CandidateApplicationRequest
+    >({
+      query: (request) => {
+
+        const formData = new FormData();
+
+        formData.append(
+          "jobOpeningId",
+          String(request.jobOpeningId)
+        );
+
+        formData.append("fullName", request.fullName);
+        formData.append("email", request.email);
+        formData.append("phone", request.phone);
+
+        if (request.address) {
+          formData.append("address", request.address);
+        }
+
+        if (request.resume) {
+          formData.append("resume", request.resume);
+        }
+
+        if (request.source) {
+          formData.append("source", request.source);
+        }
+
+        if (request.referredBy) {
+          formData.append("referredBy", request.referredBy);
+        }
+
+        return {
+          url: "/recruitment/candidateapplication",
+          method: "POST",
+          body: formData,
+        };
+      },
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    // applicationStatusId is optional – pass undefined to fetch all
+    getCandidateApplications: builder.query<
+      unknown[],
+      number | void
+    >({
+      query: (applicationStatusId) => ({
+        url: "/recruitment/candidateapplications",
+        method: "GET",
+        params:
+          applicationStatusId === undefined
+            ? undefined
+            : { applicationStatusId },
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // RESUME SCREENING
+    // ==================================================
+
+    updateResumeScreening: builder.mutation<
+      ResumeScreeningResponse[],
+      ResumeScreeningRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/screening",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // ASSESSMENTS
+    // ==================================================
+
+    getCandidatesForAssessment: builder.query<
+      unknown[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/assessmentscheduling",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    scheduleAssessment: builder.mutation<
+      unknown,
+      ScheduleAssessmentRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/assessmentschedule",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    skipAssessment: builder.mutation<
+      unknown,
+      SkipAssessmentRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/skipcandidateassessment",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    updateAssessmentResult: builder.mutation<
+      unknown,
+      AssessmentResultRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/assessmentresult",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // INTERVIEWS
+    // ==================================================
+
+    getCandidatesEligibleForInterview: builder.query<
+      unknown[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/intervieweligible",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    scheduleInterview: builder.mutation<
+      unknown,
+      ScheduleInterviewRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/interviewschedule",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    sendInterviewInvitation: builder.mutation<
+      RecruitmentEmailResponse,
+      SendInterviewInvitationRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/send-interview-invitation",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    submitInterviewFeedback: builder.mutation<
+      unknown,
+      InterviewFeedbackRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/interviewfeedback",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    updateFinalInterviewApproval: builder.mutation<
+      unknown,
+      FinalInterviewApprovalRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/finalinterviewapproval",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // OFFERS
+    // ==================================================
+
+    createCandidateOffer: builder.mutation<
+      unknown,
+      CandidateOfferRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/candidateoffer",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // DOCUMENT VERIFICATION
+    // ==================================================
+
+    getCandidatesForVerification: builder.query<
+      unknown[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/candidatesforverification",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    uploadCandidateDocument: builder.mutation<
+      unknown,
+      UploadCandidateDocumentRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/uploadcandidatedocument",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    uploadCandidateDocumentFile: builder.mutation<
+      UploadCandidateDocumentFileResponse,
+      UploadCandidateDocumentFileRequest
+    >({
+      query: ({ applicationId, documentType, file }) => {
+
+        const formData = new FormData();
+
+        formData.append(
+          "applicationId",
+          String(applicationId)
+        );
+
+        formData.append(
+          "documentType",
+          String(documentType)
+        );
+
+        formData.append("file", file);
+
+        return {
+          url: "/recruitment/candidate-documents",
+          method: "POST",
+          body: formData,
+        };
+      },
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    // Returns a Blob (pdf / image etc.). documentUrl may be absolute or relative.
+    getCandidateDocumentFile: builder.query<
+      Blob,
+      string
+    >({
+      query: (documentUrl) => ({
+        url: documentUrl,
+        method: "GET",
+        responseHandler: (response: Response) => response.blob(),
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // BACKGROUND VERIFICATION
+    // ==================================================
+
+    performCandidateBgv: builder.mutation<
+      unknown,
+      CandidateBgvRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/bgvcandidate",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // JOINING
+    // ==================================================
+
+    getCandidatesForJoining: builder.query<
+      unknown[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/candidatesforjoining",
+        method: "GET",
+      }),
+
+      providesTags: ["Recruitment"],
+    }),
+
+    approveCandidateJoining: builder.mutation<
+      unknown,
+      ApproveCandidateJoiningRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/approvecandidatejoining",
+        method: "POST",
+        body,
+      }),
+
+      invalidatesTags: ["Recruitment"],
+    }),
+
+
+    // ==================================================
+    // EMAILS
+    // ==================================================
+
+    sendWelcomeEmail: builder.mutation<
+      RecruitmentEmailResponse,
+      SendWelcomeEmailRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/send-welcome-email",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    sendJoiningEmail: builder.mutation<
+      RecruitmentEmailResponse,
+      SendJoiningEmailRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/send-joining-email",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    sendTeamAssignmentEmail: builder.mutation<
+      RecruitmentEmailResponse,
+      SendTeamAssignmentEmailRequest
+    >({
+      query: (body) => ({
+        url: "/recruitment/send-team-assignment-email",
+        method: "POST",
+        body,
+      }),
+    }),
+
+  }),
+});
+
+
+export const {
+  useGetRecruitmentDashboardQuery,
+  useGetPendingRequisitionsQuery,
+  useGetRequisitionMasterQuery,
+  useCreateRequisitionMutation,
+  useUpdateRequisitionMutation,
+  useGetJobOpeningsQuery,
+  useGetJobOpeningMasterQuery,
+  useGetRecruitmentSourcesQuery,
+  useCreateJobOpeningMutation,
+  usePublishJobOpeningMutation,
+  useCreateCandidateApplicationMutation,
+  useGetCandidateApplicationsQuery,
+  useUpdateResumeScreeningMutation,
+  useGetCandidatesForAssessmentQuery,
+  useScheduleAssessmentMutation,
+  useSkipAssessmentMutation,
+  useUpdateAssessmentResultMutation,
+  useGetCandidatesEligibleForInterviewQuery,
+  useScheduleInterviewMutation,
+  useSendInterviewInvitationMutation,
+  useSubmitInterviewFeedbackMutation,
+  useUpdateFinalInterviewApprovalMutation,
+  useCreateCandidateOfferMutation,
+  useGetCandidatesForVerificationQuery,
+  useUploadCandidateDocumentMutation,
+  useUploadCandidateDocumentFileMutation,
+  useGetCandidateDocumentFileQuery,
+  useLazyGetCandidateDocumentFileQuery,
+  usePerformCandidateBgvMutation,
+  useGetCandidatesForJoiningQuery,
+  useApproveCandidateJoiningMutation,
+  useSendWelcomeEmailMutation,
+  useSendJoiningEmailMutation,
+  useSendTeamAssignmentEmailMutation,
+} = recruitmentApi;

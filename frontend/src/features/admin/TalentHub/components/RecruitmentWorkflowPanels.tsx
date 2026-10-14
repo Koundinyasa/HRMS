@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from "react";
-import axios from "axios";
 import { ArrowUpRight, CalendarDays, Mail, X } from "lucide-react";
 import type { ReactNode } from "react";
+import { toast } from "react-toastify";
 import {
-  recruitmentApi,
+  getApiErrorMessage,
   recruitmentFileUrl,
-} from "../api/recruitment.api";
+  useSendInterviewInvitationMutation,
+  useUpdateResumeScreeningMutation,
+} from "../hooks/useRecruitment";
 import type {
   Candidate,
   CandidateStage,
@@ -14,6 +16,11 @@ import type {
 import { EmptyState } from "./RecruitmentShared";
 
 type ReviewDecision = "Reviewing" | "Shortlisted" | "Rejected";
+
+const SCREENING_REMARKS = {
+  APPROVE: "Resume shortlisted for the next recruitment stage.",
+  REJECT: "Candidate does not meet the required experience.",
+} as const;
 
 function candidateCode(candidate: Candidate) {
   return (
@@ -101,14 +108,55 @@ export function ResumeScreeningPanel({
   updateCandidateStage: (candidateId: number, stage: CandidateStage) => void;
 }) {
   const [decisions, setDecisions] = useState<Record<number, ReviewDecision>>({});
+  const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [updateResumeScreening] = useUpdateResumeScreeningMutation();
+  // Backend only allows screening for applications still in "Applied" status.
+  // Candidates decided in this session stay listed so their result pill shows.
   const screeningCandidates = candidates.filter(
-    (candidate) => candidate.stage === "Applied" || candidate.stage === "Screening"
+    (candidate) =>
+      candidate.stage === "Applied" || decisions[candidate.id] !== undefined
   );
 
-  const setDecision = (candidate: Candidate, decision: ReviewDecision) => {
-    setDecisions((previous) => ({ ...previous, [candidate.id]: decision }));
-    if (decision === "Shortlisted") {
-      updateCandidateStage(candidate.id, "Screening");
+  // candidate.id is the ApplicationID returned by the recruitment dashboard
+  const setDecision = async (
+    candidate: Candidate,
+    decision: "Shortlisted" | "Rejected"
+  ) => {
+    if (submittingId !== null) return;
+
+    const action = decision === "Shortlisted" ? "APPROVE" : "REJECT";
+    setSubmittingId(candidate.id);
+
+    try {
+      const response = await updateResumeScreening({
+        applicationId: candidate.id,
+        action,
+        reviewRemarks: SCREENING_REMARKS[action],
+      }).unwrap();
+
+      // StatusCode 1 = success; 0 or negative = business-rule failure
+      const result = Array.isArray(response) ? response[0] : undefined;
+      if (result && Number(result.StatusCode) <= 0) {
+        toast.error(result.Message || "Unable to update resume screening.");
+        return;
+      }
+
+      setDecisions((previous) => ({ ...previous, [candidate.id]: decision }));
+      if (decision === "Shortlisted") {
+        updateCandidateStage(candidate.id, "Screening");
+      }
+      toast.success(
+        result?.Message ||
+          (decision === "Shortlisted"
+            ? "Candidate shortlisted successfully."
+            : "Candidate rejected successfully.")
+      );
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Unable to update resume screening.")
+      );
+    } finally {
+      setSubmittingId(null);
     }
   };
 
@@ -177,14 +225,16 @@ export function ResumeScreeningPanel({
                         <button
                           type="button"
                           onClick={() => setDecision(candidate, "Shortlisted")}
-                          className="rounded-lg bg-[#e8f4ec] px-3 py-2 text-xs font-semibold text-[#39724f] transition hover:bg-[#d9ecdf]"
+                          disabled={submittingId !== null}
+                          className="rounded-lg bg-[#e8f4ec] px-3 py-2 text-xs font-semibold text-[#39724f] transition hover:bg-[#d9ecdf] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          Shortlist
+                          {submittingId === candidate.id ? "Saving..." : "Shortlist"}
                         </button>
                         <button
                           type="button"
                           onClick={() => setDecision(candidate, "Rejected")}
-                          className="rounded-lg bg-[#fbeceb] px-3 py-2 text-xs font-semibold text-[#aa504c] transition hover:bg-[#f5dcda]"
+                          disabled={submittingId !== null}
+                          className="rounded-lg bg-[#fbeceb] px-3 py-2 text-xs font-semibold text-[#aa504c] transition hover:bg-[#f5dcda] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Reject
                         </button>
@@ -220,6 +270,7 @@ export function InterviewSchedulePanel({
   >({});
   const [emailDrafts, setEmailDrafts] = useState<Record<number, string>>({});
   const [sendingInvitation, setSendingInvitation] = useState<number | null>(null);
+  const [sendInterviewInvitation] = useSendInterviewInvitationMutation();
   const [invitationMessages, setInvitationMessages] = useState<
     Record<number, { type: "success" | "error"; text: string }>
   >({});
@@ -260,14 +311,14 @@ export function InterviewSchedulePanel({
       return next;
     });
     try {
-      const response = await recruitmentApi.sendInterviewInvitation({
+      const response = await sendInterviewInvitation({
         email,
         candidateName: candidate.name,
         position: candidate.role,
         interviewerName: interviewerName.trim(),
         scheduledDate: date,
         scheduledTime: time,
-      });
+      }).unwrap();
       setInvitationMessages((previous) => ({
         ...previous,
         [candidate.id]: {
@@ -276,11 +327,7 @@ export function InterviewSchedulePanel({
         },
       }));
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to send the interview invitation.";
+      const message = getApiErrorMessage(error, "Unable to send the interview invitation.");
       setInvitationMessages((previous) => ({
         ...previous,
         [candidate.id]: { type: "error", text: message },

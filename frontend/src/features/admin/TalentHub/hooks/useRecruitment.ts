@@ -1,18 +1,30 @@
 import {
-  useCallback,
   useEffect,
   useMemo,
   useState,
   type FormEvent,
 } from "react";
-import axios from "axios";
-import { INITIAL_CANDIDATES, OPENING_DEPARTMENTS } from "../constants/recruitment.constants";
+
+import { toast } from "react-toastify";
+
 import {
-  recruitmentApi,
+  INITIAL_CANDIDATES,
+  OPENING_DEPARTMENTS,
+} from "../constants/recruitment.constants";
+
+import {
+  useGetJobOpeningsQuery,
+  useGetPendingRequisitionsQuery,
+  useGetRecruitmentDashboardQuery,
+  useGetCandidateApplicationsQuery,
+  useCreateRequisitionMutation,
+  useUpdateRequisitionMutation,
+  useCreateJobOpeningMutation,
   recruitmentFileUrl,
-  type CreateRequisitionRequest,
 } from "../api/recruitment.api";
+
 import type {
+  CreateRequisitionRequest,
   Approval,
   ApprovalStatus,
   Candidate,
@@ -21,7 +33,38 @@ import type {
   JobOpening,
   RecruitmentTab,
 } from "../types/recruitment.types";
+
 import { validateJobOpening } from "../validation/recruitment.validation";
+
+// ======================================================
+// RE-EXPORTS FOR COMPONENTS
+// Components import API hooks from this file, never from
+// "../api/recruitment.api" directly.
+// ======================================================
+
+export {
+  recruitmentFileUrl,
+  useGetRecruitmentDashboardQuery,
+  useGetRequisitionMasterQuery,
+  useCreateRequisitionMutation,
+  useGetJobOpeningMasterQuery,
+  useGetRecruitmentSourcesQuery,
+  useCreateCandidateApplicationMutation,
+  useGetCandidateApplicationsQuery,
+  useSendInterviewInvitationMutation,
+  useUpdateResumeScreeningMutation,
+  useUploadCandidateDocumentFileMutation,
+  useLazyGetCandidateDocumentFileQuery,
+  usePerformCandidateBgvMutation,
+  useApproveCandidateJoiningMutation,
+  useSendWelcomeEmailMutation,
+  useSendJoiningEmailMutation,
+  useSendTeamAssignmentEmailMutation,
+} from "../api/recruitment.api";
+
+// ======================================================
+// HELPERS
+// ======================================================
 
 type RecruitmentRow = Record<string, unknown>;
 
@@ -39,9 +82,11 @@ function toRows(response: unknown): RecruitmentRow[] {
 }
 
 function readValue(row: RecruitmentRow, ...aliases: string[]) {
-  const normalizedAliases = new Set(aliases.map((alias) => alias.toLowerCase()));
+  const normalizedAliases = new Set(
+    aliases.map((alias) => alias.toLowerCase())
+  );
   const entry = Object.entries(row).find(([key]) =>
-    normalizedAliases.has(key.toLowerCase()),
+    normalizedAliases.has(key.toLowerCase())
   );
   return entry?.[1];
 }
@@ -56,6 +101,58 @@ function readText(row: RecruitmentRow, aliases: string[], fallback: string) {
 function readNumber(row: RecruitmentRow, aliases: string[], fallback = 0) {
   const value = Number(readValue(row, ...aliases));
   return Number.isFinite(value) ? value : fallback;
+}
+
+// Works for RTK Query errors (FetchBaseQueryError / SerializedError), plain Errors
+// and string / array `message` bodies.
+// Components import this as `getApiErrorMessage`.
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (!error) return fallback;
+
+  if (typeof error === "string") return error || fallback;
+
+  const errorResponse = error as {
+    data?: unknown;
+    message?: unknown;
+    error?: unknown;
+  };
+
+  const { data } = errorResponse;
+
+  if (data && typeof data === "object") {
+    const body = data as { message?: unknown; Message?: unknown };
+    const message = body.Message ?? body.message;
+
+    if (Array.isArray(message) && message.length > 0) {
+      return message.map(String).join(", ");
+    }
+
+    if (typeof message === "string" && message) return message;
+  }
+
+  if (typeof errorResponse.message === "string" && errorResponse.message) {
+    return errorResponse.message;
+  }
+
+  if (typeof errorResponse.error === "string" && errorResponse.error) {
+    return errorResponse.error;
+  }
+
+  return fallback;
+}
+
+export { getErrorMessage as getApiErrorMessage };
+
+// Runs a mapper and captures its error instead of throwing during render
+function safeMap<T>(
+  run: () => T,
+  fallbackMessage: string
+): { value?: T; error?: string } {
+  try {
+    return { value: run() };
+  } catch (error) {
+    return { error: getErrorMessage(error, fallbackMessage) };
+  }
 }
 
 function openingStatus(value: string): JobOpening["status"] {
@@ -87,7 +184,7 @@ function mapOpening(row: RecruitmentRow): JobOpening {
     applicants: readNumber(
       row,
       ["ApplicantCount", "ApplicantsCount", "TotalApplicants"],
-      0,
+      0
     ),
     positions: readNumber(row, ["Vacancies", "Positions", "NoOfPositions"], 1),
     positionsFilled: readNumber(row, ["PositionsFilled", "FilledPositions"]),
@@ -102,7 +199,7 @@ function mapDashboardCandidate(row: RecruitmentRow): Candidate | null {
   const role = readText(row, ["JobTitle"], "");
   if (!id || !name || !role) {
     throw new Error(
-      "Recruitment dashboard application is missing its ID, candidate name, or job title.",
+      "Recruitment dashboard application is missing its ID, candidate name, or job title."
     );
   }
 
@@ -116,11 +213,14 @@ function mapDashboardCandidate(row: RecruitmentRow): Candidate | null {
     status.includes("screen")
   ) {
     stage = "Screening";
-  } else if (
-    status.includes("interview") ||
-    status.includes("scheduled")
-  ) {
+  } else if (status.includes("interview") || status.includes("scheduled")) {
     stage = "Interview";
+  } else if (
+    status.includes("document") ||
+    status.includes("verif") ||
+    status.includes("bgv")
+  ) {
+    stage = "Documents";
   } else if (status.includes("offer")) {
     stage = "Offer";
   } else if (status.includes("hired") || status.includes("joined")) {
@@ -143,12 +243,12 @@ function mapDashboardCandidate(row: RecruitmentRow): Candidate | null {
       const resumeUrl = readText(
         row,
         ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
-        "",
+        ""
       );
       const resumeExtension = readText(
         row,
         ["FileExtension", "ResumeFileExtension", "ResumeExtension", "ActualFileName"],
-        "",
+        ""
       );
       return resumeUrl
         ? recruitmentFileUrl(resumeUrl, resumeExtension || undefined)
@@ -162,7 +262,7 @@ function mapPendingRequisition(row: RecruitmentRow): Approval | null {
   const title = readText(
     row,
     ["JobTitle", "Title", "DesignationName", "Position"],
-    "",
+    ""
   );
   if (!id || !title) {
     return null;
@@ -193,7 +293,16 @@ function mapPendingRequisition(row: RecruitmentRow): Approval | null {
   };
 }
 
-export function useRecruitment() {
+// ======================================================
+// HOOK
+// ======================================================
+
+export const useRecruitment = () => {
+
+  // ==================================================
+  // LOCAL UI STATE
+  // ==================================================
+
   const [activeTab, setActiveTab] = useState<RecruitmentTab>("pipeline");
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("All open roles");
@@ -203,10 +312,7 @@ export function useRecruitment() {
   const [interviewSchedules, setInterviewSchedules] = useState<
     Record<number, InterviewSchedule>
   >({});
-  const [openings, setOpenings] = useState<JobOpening[]>([]);
-  const [approvals, setApprovals] = useState<Approval[]>([]);
-  const [recruitmentError, setRecruitmentError] = useState("");
-  const [isRecruitmentLoading, setIsRecruitmentLoading] = useState(true);
+  const [actionError, setActionError] = useState("");
   const [selectedApprovalStatus, setSelectedApprovalStatus] =
     useState<ApprovalStatus>("waiting");
   const [approvalComments, setApprovalComments] = useState<
@@ -217,6 +323,233 @@ export function useRecruitment() {
   const [completedFeedbackTasks, setCompletedFeedbackTasks] = useState<
     number[]
   >([]);
+
+  // ==================================================
+  // JOB OPENINGS
+  // ==================================================
+
+  const {
+    data: openingsResponse,
+    error: openingsQueryError,
+    isFetching: openingsFetching,
+    refetch: refetchOpenings,
+  } = useGetJobOpeningsQuery();
+
+  // ==================================================
+  // PENDING REQUISITIONS (APPROVALS)
+  // ==================================================
+
+  const {
+    data: requisitionsResponse,
+    error: requisitionsQueryError,
+    isFetching: requisitionsFetching,
+    refetch: refetchRequisitions,
+  } = useGetPendingRequisitionsQuery();
+
+  // ==================================================
+  // DASHBOARD (PIPELINE CANDIDATES)
+  // ==================================================
+
+  const {
+    data: dashboardResponse,
+    error: dashboardQueryError,
+    isFetching: dashboardFetching,
+    refetch: refetchDashboard,
+  } = useGetRecruitmentDashboardQuery();
+
+  // ==================================================
+  // CANDIDATE APPLICATIONS (RESUME URLS)
+  // ==================================================
+
+  const {
+    data: applicationsResponse,
+    error: applicationsQueryError,
+    isFetching: applicationsFetching,
+    refetch: refetchApplications,
+  } = useGetCandidateApplicationsQuery();
+
+  // ==================================================
+  // MUTATIONS
+  // ==================================================
+
+  const [
+    updateRequisition,
+    {
+      isLoading: isUpdatingRequisition,
+    },
+  ] = useUpdateRequisitionMutation();
+
+  const [
+    createJobOpeningFromRequisition,
+    {
+      isLoading: isCreatingJobOpening,
+    },
+  ] = useCreateJobOpeningMutation();
+
+  const [
+    createRequisition,
+    {
+      isLoading: isSubmittingRequisition,
+    },
+  ] = useCreateRequisitionMutation();
+
+  // ==================================================
+  // MAPPED DATA
+  // ==================================================
+
+  const openingsResult = useMemo(
+    () =>
+      openingsResponse === undefined
+        ? undefined
+        : safeMap(
+            () => toRows(openingsResponse).map(mapOpening),
+            "Unable to load job openings."
+          ),
+    [openingsResponse]
+  );
+
+  const approvalsResult = useMemo(
+    () =>
+      requisitionsResponse === undefined
+        ? undefined
+        : safeMap(
+            () =>
+              toRows(requisitionsResponse)
+                .map(mapPendingRequisition)
+                .filter(
+                  (approval): approval is Approval => approval !== null
+                ),
+            "Unable to load requisitions."
+          ),
+    [requisitionsResponse]
+  );
+
+  const dashboardResult = useMemo(
+    () =>
+      dashboardResponse === undefined
+        ? undefined
+        : safeMap(() => {
+            if (
+              !dashboardResponse.success ||
+              !Array.isArray(dashboardResponse.data?.applications)
+            ) {
+              throw new Error(
+                dashboardResponse.message ??
+                  "Recruitment dashboard returned an invalid application list."
+              );
+            }
+
+            return toRows(dashboardResponse.data.applications)
+              .map(mapDashboardCandidate)
+              .filter(
+                (candidate): candidate is Candidate => candidate !== null
+              );
+          }, "Unable to load recruitment applications."),
+    [dashboardResponse]
+  );
+
+  const resumesResult = useMemo(
+    () =>
+      applicationsResponse === undefined
+        ? undefined
+        : safeMap(() => {
+            const resumesByApplicationId = new Map<number, string>();
+
+            toRows(applicationsResponse).forEach((row) => {
+              const applicationId = readNumber(row, [
+                "ApplicationID",
+                "CandidateApplicationID",
+                "ApplicationId",
+              ]);
+              const resumeUrl = readText(
+                row,
+                ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
+                ""
+              );
+
+              if (applicationId > 0 && resumeUrl) {
+                const resumeExtension = readText(
+                  row,
+                  [
+                    "FileExtension",
+                    "ResumeFileExtension",
+                    "ResumeExtension",
+                    "ActualFileName",
+                  ],
+                  ""
+                );
+
+                resumesByApplicationId.set(
+                  applicationId,
+                  recruitmentFileUrl(resumeUrl, resumeExtension || undefined)
+                );
+              }
+            });
+
+            return resumesByApplicationId;
+          }, "Unable to load candidate application details."),
+    [applicationsResponse]
+  );
+
+  const openings: JobOpening[] = openingsResult?.value ?? [];
+  const approvals: Approval[] = approvalsResult?.value ?? [];
+
+  // Dashboard candidates + resume urls from the applications list
+  const serverCandidates = useMemo(() => {
+    const dashboardCandidates = dashboardResult?.value;
+    if (!dashboardCandidates) return undefined;
+
+    const resumes = resumesResult?.value;
+
+    return dashboardCandidates.map((candidate) => ({
+      ...candidate,
+      resumeUrl: candidate.resumeUrl || resumes?.get(candidate.id) || "",
+    }));
+  }, [dashboardResult, resumesResult]);
+
+  // Keep candidates editable locally (stage changes), re-synced on every fetch
+  useEffect(() => {
+    if (serverCandidates) {
+      setCandidates(serverCandidates);
+    }
+  }, [serverCandidates]);
+
+  // ==================================================
+  // LOADING / ERROR
+  // ==================================================
+
+  const isRecruitmentLoading =
+    openingsFetching ||
+    requisitionsFetching ||
+    dashboardFetching ||
+    applicationsFetching;
+
+  const loadErrors = [
+    dashboardQueryError
+      ? getErrorMessage(
+          dashboardQueryError,
+          "Unable to load recruitment applications."
+        )
+      : dashboardResult?.error,
+    openingsQueryError
+      ? getErrorMessage(openingsQueryError, "Unable to load job openings.")
+      : openingsResult?.error,
+    applicationsQueryError
+      ? getErrorMessage(
+          applicationsQueryError,
+          "Unable to load candidate application details."
+        )
+      : resumesResult?.error,
+    requisitionsQueryError
+      ? getErrorMessage(requisitionsQueryError, "Unable to load requisitions.")
+      : approvalsResult?.error,
+  ].filter(Boolean);
+
+  const recruitmentError = actionError || loadErrors.join(" ");
+
+  // ==================================================
+  // FILTERS
+  // ==================================================
 
   const filteredCandidates = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -250,189 +583,97 @@ export function useRecruitment() {
     (approval) => approval.status === "waiting"
   ).length;
 
-  const refreshRecruitment = useCallback(async () => {
-    setIsRecruitmentLoading(true);
-    setRecruitmentError("");
-    const [openingResult, requisitionResult, dashboardResult] =
-      await Promise.allSettled([
-        recruitmentApi.getJobOpenings(),
-        recruitmentApi.getPendingRequisitions(),
-        recruitmentApi.getRecruitmentDashboard(),
-      ]);
-    const errors: string[] = [];
-    const getErrorMessage = (error: unknown, fallback: string) =>
-      axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message ?? fallback)
-        : error instanceof Error
-          ? error.message
-          : fallback;
+  // ==================================================
+  // REFRESH
+  // ==================================================
 
-    if (dashboardResult.status === "fulfilled") {
-      try {
-        const dashboardResponse = dashboardResult.value;
-        if (
-          !dashboardResponse.success ||
-          !Array.isArray(dashboardResponse.data?.applications)
-        ) {
-          throw new Error(
-            dashboardResponse.message ??
-              "Recruitment dashboard returned an invalid application list.",
-          );
-        }
-        setCandidates(
-          toRows(dashboardResponse.data.applications)
-            .map(mapDashboardCandidate)
-            .filter((candidate): candidate is Candidate => candidate !== null),
-        );
-      } catch (error) {
-        errors.push(
-          getErrorMessage(error, "Unable to load recruitment applications."),
-        );
-      }
-    } else {
-      errors.push(
-        getErrorMessage(
-          dashboardResult.reason,
-          "Unable to load recruitment applications.",
-        ),
-      );
-    }
+  const refreshRecruitment = async () => {
+    setActionError("");
 
-    if (openingResult.status === "fulfilled") {
-      try {
-        const loadedOpenings = toRows(openingResult.value).map(mapOpening);
-        setOpenings(loadedOpenings);
-      } catch (error) {
-        errors.push(getErrorMessage(error, "Unable to load job openings."));
-      }
-    } else {
-      errors.push(
-        getErrorMessage(openingResult.reason, "Unable to load job openings."),
-      );
-    }
+    await Promise.allSettled([
+      refetchOpenings(),
+      refetchRequisitions(),
+      refetchDashboard(),
+      refetchApplications(),
+    ]);
+  };
 
-    try {
-      const applications = await recruitmentApi.getCandidateApplications();
-      const resumesByApplicationId = new Map<number, string>();
-      toRows(applications).forEach((row) => {
-        const applicationId = readNumber(row, [
-          "ApplicationID",
-          "CandidateApplicationID",
-          "ApplicationId",
-        ]);
-        const resumeUrl = readText(
-          row,
-          ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
-          "",
-        );
-        if (applicationId > 0 && resumeUrl) {
-          const resumeExtension = readText(
-            row,
-            [
-              "FileExtension",
-              "ResumeFileExtension",
-              "ResumeExtension",
-              "ActualFileName",
-            ],
-            "",
-          );
-          resumesByApplicationId.set(
-            applicationId,
-            recruitmentFileUrl(resumeUrl, resumeExtension || undefined),
-          );
-        }
-      });
-      setCandidates((previous) =>
-        previous.map((candidate) => ({
-          ...candidate,
-          resumeUrl:
-            candidate.resumeUrl ||
-            resumesByApplicationId.get(candidate.id) ||
-            "",
-        })),
-      );
-    } catch (error) {
-      errors.push(
-        getErrorMessage(error, "Unable to load candidate application details."),
-      );
-    }
-
-    if (requisitionResult.status === "fulfilled") {
-      try {
-        setApprovals(
-          toRows(requisitionResult.value)
-            .map(mapPendingRequisition)
-            .filter((approval): approval is Approval => approval !== null),
-        );
-      } catch (error) {
-        errors.push(getErrorMessage(error, "Unable to load requisitions."));
-      }
-    } else {
-      errors.push(
-        getErrorMessage(
-          requisitionResult.reason,
-          "Unable to load requisitions.",
-        ),
-      );
-    }
-
-    setRecruitmentError(errors.join(" "));
-    setIsRecruitmentLoading(false);
-  }, []);
-
-  useEffect(() => {
-    void Promise.resolve().then(refreshRecruitment);
-  }, [refreshRecruitment]);
+  // ==================================================
+  // APPROVE REQUISITION (CREATES JOB OPENING)
+  // ==================================================
 
   const approveOpening = async (approvalId: number) => {
-    setRecruitmentError("");
+    setActionError("");
+
     try {
-      await recruitmentApi.updateRequisition({
+      await updateRequisition({
         requisitionId: approvalId,
         action: "APPROVE",
-      });
-      await recruitmentApi.createJobOpening(approvalId);
+      }).unwrap();
+
+      await createJobOpeningFromRequisition(approvalId).unwrap();
+
       await refreshRecruitment();
-    } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to approve this requisition.";
-      setRecruitmentError(message);
+
+      toast.success("Requisition approved successfully.");
+
+    } catch (error: unknown) {
+      const message = getErrorMessage(
+        error,
+        "Unable to approve this requisition."
+      );
+
+      setActionError(message);
+      toast.error(message);
     }
   };
+
+  // ==================================================
+  // REJECT / SEND BACK REQUISITION
+  // ==================================================
 
   const sendBackOpening = async (approvalId: number) => {
     const comment = approvalComments[approvalId]?.trim();
-    setRecruitmentError("");
+    setActionError("");
+
     try {
-      await recruitmentApi.updateRequisition({
+      await updateRequisition({
         requisitionId: approvalId,
         action: "REJECT",
         reviewRemarks: comment,
-      });
+      }).unwrap();
+
       setApprovalComments((previous) => ({ ...previous, [approvalId]: "" }));
+
       await refreshRecruitment();
-    } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to reject this requisition.";
-      setRecruitmentError(message);
+
+      toast.success("Requisition sent back successfully.");
+
+    } catch (error: unknown) {
+      const message = getErrorMessage(
+        error,
+        "Unable to reject this requisition."
+      );
+
+      setActionError(message);
+      toast.error(message);
     }
   };
 
+  // ==================================================
+  // CREATE REQUISITION (JOB OPENING FORM)
+  // ==================================================
+
   const createJobOpening = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validation = validateJobOpening(
-      new FormData(event.currentTarget)
-    );
+
+    const validation = validateJobOpening(new FormData(event.currentTarget));
+
     if (!validation.valid) {
       setJobFormError(validation.message);
       return false;
     }
+
     const {
       title,
       branchId,
@@ -443,6 +684,7 @@ export function useRecruitment() {
       experienceRequired,
       priority,
     } = validation.values;
+
     const request: CreateRequisitionRequest = {
       jobTitle: title,
       branchId,
@@ -455,26 +697,42 @@ export function useRecruitment() {
     };
 
     try {
-      setRecruitmentError("");
-      await recruitmentApi.createRequisition(request);
+      setActionError("");
+
+      await createRequisition(request).unwrap();
+
       setIsJobDialogOpen(false);
       setSelectedApprovalStatus("waiting");
       setActiveTab("approvals");
       setJobFormError("");
+
       await refreshRecruitment();
+
+      toast.success("Requisition submitted successfully.");
+
       return true;
-    } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? String(error.response?.data?.message ?? error.message)
-        : error instanceof Error
-          ? error.message
-          : "Unable to submit this requisition.";
+
+    } catch (error: unknown) {
+      const message = getErrorMessage(
+        error,
+        "Unable to submit this requisition."
+      );
+
       setJobFormError(message);
+      toast.error(message);
+
       return false;
     }
   };
 
-  const updateCandidateStage = (candidateId: number, stage: CandidateStage) => {
+  // ==================================================
+  // CANDIDATE HELPERS
+  // ==================================================
+
+  const updateCandidateStage = (
+    candidateId: number,
+    stage: CandidateStage
+  ) => {
     setCandidates((previous) =>
       previous.map((candidate) =>
         candidate.id === candidateId
@@ -486,7 +744,7 @@ export function useRecruitment() {
 
   const scheduleCandidateInterview = (
     candidateId: number,
-    schedule: InterviewSchedule,
+    schedule: InterviewSchedule
   ) => {
     setInterviewSchedules((previous) => ({
       ...previous,
@@ -494,7 +752,15 @@ export function useRecruitment() {
     }));
   };
 
+  // ==================================================
+  // RETURN
+  // ==================================================
+
   return {
+    // ================================================
+    // UI STATE
+    // ================================================
+
     activeTab,
     setActiveTab,
     search,
@@ -503,14 +769,6 @@ export function useRecruitment() {
     setSelectedRole,
     selectedDepartment,
     setSelectedDepartment,
-    candidates,
-    interviewSchedules,
-    filteredCandidates,
-    openings,
-    filteredOpenings,
-    approvals,
-    recruitmentError,
-    isRecruitmentLoading,
     selectedApprovalStatus,
     setSelectedApprovalStatus,
     approvalComments,
@@ -521,7 +779,38 @@ export function useRecruitment() {
     setJobFormError,
     completedFeedbackTasks,
     setCompletedFeedbackTasks,
+
+    // ================================================
+    // DATA
+    // ================================================
+
+    candidates,
+    interviewSchedules,
+    filteredCandidates,
+    openings,
+    filteredOpenings,
+    approvals,
     approvalCount,
+
+    // ================================================
+    // LOADING
+    // ================================================
+
+    isRecruitmentLoading,
+    isUpdatingRequisition,
+    isCreatingJobOpening,
+    isSubmittingRequisition,
+
+    // ================================================
+    // ERROR
+    // ================================================
+
+    recruitmentError,
+
+    // ================================================
+    // ACTIONS
+    // ================================================
+
     approveOpening,
     sendBackOpening,
     refreshRecruitment,
@@ -529,4 +818,4 @@ export function useRecruitment() {
     updateCandidateStage,
     scheduleCandidateInterview,
   };
-}
+};

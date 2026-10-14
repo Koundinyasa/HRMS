@@ -233,6 +233,7 @@ export const STAGES: {
   { name: "Applied", color: "#91a09a", dot: "bg-[#91a09a]" },
   { name: "Screening", color: "#3b6cae", dot: "bg-[#3b6cae]" },
   { name: "Interview", color: "#805cb6", dot: "bg-[#805cb6]" },
+  { name: "Documents", color: "#2a9d9f", dot: "bg-[#2a9d9f]" },
   { name: "Offer", color: "#e8a537", dot: "bg-[#e8a537]" },
   { name: "Hired", color: "#318365", dot: "bg-[#318365]" },
 ];
