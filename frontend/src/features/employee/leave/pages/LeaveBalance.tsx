@@ -4,9 +4,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { useLeave } from "../hooks/useLeave";
+const getLeaveTypeName = (raw: string | number | null): string => {
+  const text = String(raw ?? "").trim();
+  if (!text) return "-";
+const afterSeparator = text.split(/[,\n]|\s-\s/).pop()?.trim() ?? text;
 
+  return afterSeparator.replace(/^[A-Z]{1,4}(?=[A-Z][a-z])/, "").trim() || text;
+};
 export default function LeaveBalance() {
   const { leaveBalance, balanceLoading } = useLeave();
 
@@ -246,7 +251,7 @@ export default function LeaveBalance() {
   text-purple-700
 "
                               >
-                                {field.value}
+                                {getLeaveTypeName(field.value)}
                               </span>
 
                             ) : field.label === "Accrued" ? (
