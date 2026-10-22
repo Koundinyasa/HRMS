@@ -9,8 +9,18 @@ export const useRolePermissionsGrid = (selectedRole: string) => {
   const [roleAccessData, setRoleAccessData] = useState<Record<string, RoleAccessConfig>>({});
   const [loading, setLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState("");
-  const [permissions, setPermissions] = useState<PermissionRow[]>([]);
+  const [tabSelection, setTabSelection] = useState<{
+    role: string;
+    tab: string;
+  } | null>(null);
+  const [permissionOverrides, setPermissionOverrides] = useState<
+    Record<string, PermissionRow[]>
+  >({});
+  const [previousRole, setPreviousRole] = useState(selectedRole);
+  if (previousRole !== selectedRole) {
+    setPreviousRole(selectedRole);
+    setTabSelection(null);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -26,31 +36,33 @@ export const useRolePermissionsGrid = (selectedRole: string) => {
     };
   }, []);
 
-  // Reset to the role's first module tab whenever the role or the
-  // underlying data set changes.
-  useEffect(() => {
-    const roleConfig = roleAccessData[selectedRole];
-    const firstTab = roleConfig?.modules[0] ?? "";
-
-    setActiveTab(firstTab);
-    setPermissions(roleConfig?.data[firstTab] ?? []);
-  }, [selectedRole, roleAccessData]);
-
   const tabs = roleAccessData[selectedRole]?.modules ?? [];
+  const activeTab =
+    tabSelection?.role === selectedRole && tabs.includes(tabSelection.tab)
+      ? tabSelection.tab
+      : (tabs[0] ?? "");
+  const permissionsKey = `${selectedRole}:${activeTab}`;
+  const permissions =
+    permissionOverrides[permissionsKey] ??
+    roleAccessData[selectedRole]?.data[activeTab] ??
+    [];
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setPermissions(roleAccessData[selectedRole]?.data[tab] ?? []);
+    setTabSelection({ role: selectedRole, tab });
   };
 
   const togglePermission = (rowIndex: number, key: string) => {
-    setPermissions((prev) => {
+    setPermissionOverrides((current) => {
+      const prev =
+        current[permissionsKey] ??
+        roleAccessData[selectedRole]?.data[activeTab] ??
+        [];
       const updated = [...prev];
       updated[rowIndex] = {
         ...updated[rowIndex],
         [key]: !updated[rowIndex][key as keyof PermissionRow],
       };
-      return updated;
+      return { ...current, [permissionsKey]: updated };
     });
   };
 

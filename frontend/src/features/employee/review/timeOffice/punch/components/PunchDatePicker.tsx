@@ -8,9 +8,6 @@ import DatePicker, {
 import { useBlockedHolidays } from "@/features/employee/leave/hooks/useBlockedHolidays";
 import { isWeekendIso } from "@/features/employee/leave/constants/leave.constants";
 
-const ISO_FORMAT = "yyyy-MM-dd";
-const TEXT_FORMAT = "dd-MM-yyyy";
-
 const WEEKDAY_LABELS = [
   "Su",
   "Mo",

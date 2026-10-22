@@ -7,10 +7,7 @@ import WithdrawLeaveDialog from "./WithdrawLeaveDialog";
 
 
 
-import type {
-  LeaveHistoryRecord,
-  LeaveHistoryTableProps,
-} from "../types/leave.types";
+import type { LeaveHistoryRecord, LeaveHistorySection } from "../types/leave.types";
 
 
 
@@ -19,7 +16,7 @@ export default function LeaveHistoryTable({
   loading = false,
   refetchLeaveHistory,
 }: {
-  section: any;
+  section: LeaveHistorySection;
   loading?: boolean;
   refetchLeaveHistory?: () => void;
 }) {
@@ -54,7 +51,6 @@ export default function LeaveHistoryTable({
       case "rejected":
         return "bg-red-100 text-red-700";
 
-      case "withdrawn":
       case "withdrawn":
         return "bg-orange-100 text-orange-700";
 
@@ -448,4 +444,3 @@ export default function LeaveHistoryTable({
     </>
   );
 }
-

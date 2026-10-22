@@ -7,7 +7,6 @@ import {
   ChevronRight,
   FileText,
   Filter,
-  MoreVertical,
   Search,
   X,
 } from "lucide-react";

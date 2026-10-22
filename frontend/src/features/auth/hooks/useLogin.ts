@@ -48,7 +48,9 @@ export const useLogin = () => {
         return;
       }
       const roleId =
-        (response.data as any)?.roleId ?? (response as any)?.roleId;
+        (response.data as typeof response.data & { roleId?: number })
+          .roleId ??
+        (response as typeof response & { roleId?: number }).roleId;
  
       if (roleId === 1 || roleId === 2) {
         navigate(`/${domain}/admin/dashboard`); // ✅ Admin + HR Admin → admin dashboard
@@ -58,13 +60,23 @@ export const useLogin = () => {
         toast.error("Unauthorized role");
         return;
       }
-    } catch (err: any) {
-      const message = err?.data?.message ?? "Login failed. Please try again.";
- 
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
+      const message = data.message ?? "Login failed. Please try again.";
+
       if (Array.isArray(message)) {
-        message.forEach((m: string) => toast.error(m));
+        message.forEach((item) => {
+          if (typeof item === "string") toast.error(item);
+        });
       } else {
-        toast.error(message);
+        toast.error(typeof message === "string" ? message : String(message));
       }
       loadCaptcha();
     }

@@ -13,11 +13,13 @@ import {
   deleteGeneralReport,
 } from "../api/generalReport.api";
 
+type GeneralReportEntry = Record<string, unknown>;
+
 export default function useGeneralReport() {
-  const [fields, setFields] = useState<any[]>([]);
-  const [reports, setReports] = useState<any[]>([]);
+  const [fields, setFields] = useState<GeneralReportEntry[]>([]);
+  const [reports, setReports] = useState<GeneralReportEntry[]>([]);
   const [pinnedReports, setPinnedReports] =
-    useState<any[]>([]);
+    useState<GeneralReportEntry[]>([]);
 
   const [loadingFields, setLoadingFields] =
     useState(false);
@@ -264,9 +266,11 @@ export default function useGeneralReport() {
   // ==========================================
 
   useEffect(() => {
-    fetchFields();
-    fetchReports();
-    fetchPinnedReports();
+    queueMicrotask(() => {
+      void fetchFields();
+      void fetchReports();
+      void fetchPinnedReports();
+    });
   }, [
     fetchFields,
     fetchReports,

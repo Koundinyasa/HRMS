@@ -25,13 +25,21 @@ export const useAppliedHRLeave = () => {
       toast.success(result?.Message || "Leave applied successfully");
 
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Apply leave for employee error:", error);
 
       const message =
-        error?.data?.message ||
-        error?.message ||
-        "Unable to apply leave for employee";
+        typeof error === "object" && error !== null
+          ? ("data" in error &&
+              typeof error.data === "object" &&
+              error.data !== null &&
+              "message" in error.data &&
+              typeof error.data.message === "string"
+                ? error.data.message
+                : "message" in error && typeof error.message === "string"
+                  ? error.message
+                  : "Unable to apply leave for employee")
+          : "Unable to apply leave for employee";
 
       toast.error(message);
 

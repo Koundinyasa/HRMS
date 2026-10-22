@@ -137,7 +137,16 @@ import React, { useState } from "react";
 import { ChevronDown, ChevronUp, Phone, Mail } from "lucide-react";
 
 interface WorkFlowDetailsTabProps {
-  form: any;
+  form: {
+    photoUrl?: string;
+    fullName?: string;
+    empId?: string | number;
+    designation?: string;
+    branch?: string;
+    dateOfJoining?: string;
+    mobile?: string;
+    email?: string;
+  };
 }
 
 const WorkFlowDetailsTab: React.FC<WorkFlowDetailsTabProps> = ({ form }) => {

@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -144,8 +145,10 @@ export default function Notification() {
   // DATE HELPERS
   // ============================================================
 
-  const pad = (value: number) =>
-    String(value).padStart(2, "0");
+  const pad = useCallback(
+    (value: number) => String(value).padStart(2, "0"),
+    []
+  );
 
   const formatDate = (date: Date) => {
     return `${pad(date.getDate())}-${pad(
@@ -153,13 +156,13 @@ export default function Notification() {
     )}-${date.getFullYear()}`;
   };
 
-  const formatIsoDate = (date: Date) => {
+  const formatIsoDate = useCallback((date: Date) => {
     return `${date.getFullYear()}-${pad(
       date.getMonth() + 1
     )}-${pad(date.getDate())}`;
-  };
+  }, [pad]);
 
-  const parseDate = (value: string): Date | null => {
+  const parseDate = useCallback((value: string): Date | null => {
     if (!value) return null;
 
     const parts = value.split("-");
@@ -193,13 +196,13 @@ export default function Notification() {
     }
 
     return date;
-  };
+  }, []);
 
   // ============================================================
   // CREATE CALENDAR CELLS
   // ============================================================
 
-  const createCalendarCells = (
+  const createCalendarCells = useCallback((
     calendarDate: Date,
     selectedDate: string
   ): CalendarCell[] => {
@@ -244,7 +247,7 @@ export default function Notification() {
         selected: Boolean(isSelected),
       };
     });
-  };
+  }, [formatIsoDate, parseDate]);
 
   // ============================================================
   // WEEKDAY LABELS
@@ -269,7 +272,7 @@ export default function Notification() {
       fromCalendarDate,
       fromDate
     );
-  }, [fromCalendarDate, fromDate]);
+  }, [createCalendarCells, fromCalendarDate, fromDate]);
 
   // ============================================================
   // TO DATE CALENDAR
@@ -280,7 +283,7 @@ export default function Notification() {
       toCalendarDate,
       toDate
     );
-  }, [toCalendarDate, toDate]);
+  }, [createCalendarCells, toCalendarDate, toDate]);
 
   // ============================================================
   // MONTH LABEL

@@ -491,7 +491,10 @@ export const useRecruitment = () => {
     [applicationsResponse]
   );
 
-  const openings: JobOpening[] = openingsResult?.value ?? [];
+  const openings: JobOpening[] = useMemo(
+    () => openingsResult?.value ?? [],
+    [openingsResult?.value]
+  );
   const approvals: Approval[] = approvalsResult?.value ?? [];
 
   // Dashboard candidates + resume urls from the applications list
@@ -509,9 +512,8 @@ export const useRecruitment = () => {
 
   // Keep candidates editable locally (stage changes), re-synced on every fetch
   useEffect(() => {
-    if (serverCandidates) {
-      setCandidates(serverCandidates);
-    }
+    if (!serverCandidates) return;
+    queueMicrotask(() => setCandidates(serverCandidates));
   }, [serverCandidates]);
 
   // ==================================================

@@ -33,7 +33,11 @@ export default function OnboardConfirmationLetterPage() {
     : "/insights";
 
   useEffect(() => {
-    setCurrentPage(1);
+    const frame = window.requestAnimationFrame(() => {
+      setCurrentPage(1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [
     filters.search,
     filters.branch,

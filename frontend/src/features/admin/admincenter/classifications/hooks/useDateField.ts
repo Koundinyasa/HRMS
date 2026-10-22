@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     addDays,
     addMonths,
@@ -28,13 +28,15 @@ export function useDateField(value: string, onChange: (iso: string) => void) {
     const [month, setMonth] = useState(() =>
         value ? parse(value, ISO_FORMAT, new Date()) : new Date(),
     );
+    const [previousValue, setPreviousValue] = useState(value);
 
     // Re-sync when the form clears or replaces the value (reset, submit) — otherwise
     // the input keeps showing the old date after the form has been emptied.
     // Typing alone doesn't touch `value`, so this won't fight the user mid-edit.
-    useEffect(() => {
+    if (value !== previousValue) {
+        setPreviousValue(value);
         setText(value ? format(parse(value, ISO_FORMAT, new Date()), TEXT_FORMAT) : '');
-    }, [value]);
+    }
 
     const commitText = () => {
         const parsed = parse(text, TEXT_FORMAT, new Date());

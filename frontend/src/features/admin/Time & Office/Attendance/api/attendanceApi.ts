@@ -134,23 +134,37 @@ import type {
   LeavePunchExistRow,
 } from '../types/attendance.types';
 
+interface AttendanceOption {
+  id: number;
+  label: string;
+}
+
+interface AttendanceDescription {
+  label: string;
+  value: string;
+}
+
+interface LeaveAbbreviation {
+  code: string;
+}
+
 export const attendanceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ---- Configuration (GET) ----
-    getAttendance: builder.query<any, void>({
+    getAttendance: builder.query<unknown, void>({
       query: () => 'admin/ta/attendance/configurations/configuration',
     }),
 
-    getSalaryCalenderdays: builder.query<any, void>({
+    getSalaryCalenderdays: builder.query<AttendanceOption[], void>({
       query: () => 'admin/ta/attendance/configurations/salarycalendardays',
     }),
 
-    getAttendancetypes: builder.query<any, void>({
+    getAttendancetypes: builder.query<AttendanceOption[], void>({
       query: () => 'admin/ta/attendance/configurations/attendancetypes',
     }),
 
     // ---- Configuration (POST) ----
-    postAttendanceConfiguration: builder.mutation<any, CreateAttendance>({
+    postAttendanceConfiguration: builder.mutation<unknown, CreateAttendance>({
       query: (dto) => ({
         url: 'admin/ta/attendance/configurations/save',
         method: 'POST',
@@ -159,28 +173,28 @@ export const attendanceApi = baseApi.injectEndpoints({
     }),
 
     // ---- Integrations (GET) ----
-    getDescriptions: builder.query<any, void>({
+    getDescriptions: builder.query<AttendanceDescription[], void>({
       query: () => 'admin/ta/attendance/integrations/settings/descriptions',
     }),
 
-    getIntegrations: builder.query<any, void>({
+    getIntegrations: builder.query<AttendanceOption[], void>({
       query: () => 'admin/ta/attendance/integrations/settings/integrationtypes',
     }),
 
-    getApplicableAttendance: builder.query<any, void>({
+    getApplicableAttendance: builder.query<AttendanceOption[], void>({
       query: () => 'admin/ta/attendance/integrations/settings/applicableattendance',
     }),
 
-    getLeaveAbbreviations: builder.query<any, void>({
+    getLeaveAbbreviations: builder.query<LeaveAbbreviation[], void>({
       query: () => 'admin/ta/attendance/integrations/settings/leaveabbreviations',
     }),
 
-    getCalculateOT: builder.query<any, void>({
+    getCalculateOT: builder.query<AttendanceOption[], void>({
       query: () => 'admin/ta/attendance/integrations/settings/calculateot',
     }),
 
     // ---- Integrations (POST) ----
-    postAttendanceIntegration: builder.mutation<any, AttendanceIntegration>({
+    postAttendanceIntegration: builder.mutation<unknown, AttendanceIntegration>({
       query: (dto) => ({
         url: 'admin/ta/attendance/integrations/settings/save',
         method: 'POST',
@@ -188,16 +202,16 @@ export const attendanceApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getAttendanceIntegrationDescriptions: builder.query<any, void>({
+    getAttendanceIntegrationDescriptions: builder.query<AttendanceDescription[], void>({
       query: () => 'admin/ta/attendance/integrations/attendanceintegration/descriptions',
     }),
 
     // ---- Reconcile Leave ----
-    getReconcileLeaveTypes: builder.query<any, void>({
+    getReconcileLeaveTypes: builder.query<AttendanceOption[], void>({
       query: () => 'admin/ta/attendance/integrations/reconcileleave/leavetypes',
     }),
 
-    updateReconcileLeave: builder.mutation<any, ReconcileLeaveUpdate>({
+    updateReconcileLeave: builder.mutation<unknown, ReconcileLeaveUpdate>({
       query: (dto) => ({
         url: 'admin/ta/attendance/integrations/reconcileleave/update',
         method: 'POST',

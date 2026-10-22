@@ -167,11 +167,17 @@ export default function BulkUpdateStatutoryTable({
   const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
-    setPage(1);
+    const frame = window.requestAnimationFrame(() => {
+      setPage(1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [employees.length, pageSize]);
 
   const allSelected =
     employees.length > 0 && selectedIds.length === employees.length;
+  const totalPages = Math.max(1, Math.ceil(employees.length / pageSize));
+  const visiblePage = Math.min(page, totalPages);
 
   // When exactly one statutory is selected, swap the generic "Statutory" column
   // for a "<Label> Applicability" column with YES/NO pills.
@@ -189,8 +195,8 @@ export default function BulkUpdateStatutoryTable({
   const totalCount = employees.length;
 
   const pagedEmployees = employees.slice(
-    (page - 1) * pageSize,
-    page * pageSize
+    (visiblePage - 1) * pageSize,
+    visiblePage * pageSize
   );
 
   return (
@@ -436,7 +442,7 @@ export default function BulkUpdateStatutoryTable({
       {/* PAGINATION */}
 
       <BulkUpdatePagination
-        page={page}
+        page={visiblePage}
         pageSize={pageSize}
         totalCount={totalCount}
         onPageChange={setPage}

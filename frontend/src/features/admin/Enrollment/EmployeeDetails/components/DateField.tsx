@@ -361,4 +361,6 @@ export default function DateField({
   );
 }
  
+// These helpers are imported by existing date-field consumers.
+// eslint-disable-next-line react-refresh/only-export-components
 export { parseDDMMYYYY, formatDDMMYYYY };

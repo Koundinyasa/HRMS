@@ -28,10 +28,12 @@ export function MonthPicker({
   const [viewYear, setViewYear] = React.useState(() =>
     selectedYear ? Number(selectedYear) : new Date().getFullYear()
   );
- 
-  React.useEffect(() => {
+  const [previousSelectedYear, setPreviousSelectedYear] =
+    React.useState(selectedYear);
+  if (selectedYear !== previousSelectedYear) {
+    setPreviousSelectedYear(selectedYear);
     if (selectedYear) setViewYear(Number(selectedYear));
-  }, [selectedYear]);
+  }
  
   const handlePick = (month: string) => {
     onChange(`${month}/${viewYear}`);

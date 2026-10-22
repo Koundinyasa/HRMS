@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import type {
-  ReportingEmployee,
   ApplyForEmployeeSelectorProps,
 } from "../types/appliedLeave.types";
 

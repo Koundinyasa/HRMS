@@ -1009,16 +1009,6 @@ export default function MonthlyGracePage() {
      DROPDOWN STATES
   ======================================================= */
 
-  const [
-    isMonthOpen,
-    setIsMonthOpen,
-  ] = useState(false);
-
-  const [
-    isGraceTypeOpen,
-    setIsGraceTypeOpen,
-  ] = useState(false);
-
   /* =======================================================
      COLUMNS
   ======================================================= */

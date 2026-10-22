@@ -45,8 +45,7 @@ export interface LeaveCalendarEmployee {
 // Attendance Count
 // ===============================
 
-export interface AttendanceCountEmployee
-  extends Record<string, unknown> {}
+export type AttendanceCountEmployee = Record<string, unknown>;
 
 export interface EmployeeAttendanceCountResponse {
   success: boolean;

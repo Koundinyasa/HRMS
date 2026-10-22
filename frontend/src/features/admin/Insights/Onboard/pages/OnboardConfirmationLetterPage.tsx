@@ -62,7 +62,11 @@ export default function OnboardConfirmationLetterPage() {
     )?.label ?? "Confirmation Letter";
 
   useEffect(() => {
-    setCurrentPage(1);
+    const frame = window.requestAnimationFrame(() => {
+      setCurrentPage(1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [
     filters.search,
     filters.branch,

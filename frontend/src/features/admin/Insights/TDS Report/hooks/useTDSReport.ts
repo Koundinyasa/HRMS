@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchTDSReport } from "../api/tdsReport.api";
 
 export default function useTDSReport(endpoint?: string) {
@@ -8,7 +7,7 @@ export default function useTDSReport(endpoint?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     if (!endpoint) return;
     setLoading(true);
     setError(null);
@@ -36,11 +35,13 @@ export default function useTDSReport(endpoint?: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [endpoint]);
 
   useEffect(() => {
-    void fetchReport();
-  }, [endpoint]);
+    queueMicrotask(() => {
+      void fetchReport();
+    });
+  }, [fetchReport]);
 
   return {
     rows,

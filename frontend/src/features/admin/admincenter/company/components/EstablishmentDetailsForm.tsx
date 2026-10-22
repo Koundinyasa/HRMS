@@ -287,7 +287,7 @@
 
 
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -347,11 +347,12 @@ export default function EstablishmentDetailsForm() {
   const [formData, setFormData] =
     useState<EstablishmentDetails>(EMPTY_ESTABLISHMENT);
 
-  useEffect(() => {
-    if (establishment) {
-      setFormData(establishment);
-    }
-  }, [establishment]);
+  const [previousEstablishment, setPreviousEstablishment] =
+    useState<typeof establishment>();
+  if (establishment && establishment !== previousEstablishment) {
+    setPreviousEstablishment(establishment);
+    setFormData(establishment);
+  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLTextAreaElement>

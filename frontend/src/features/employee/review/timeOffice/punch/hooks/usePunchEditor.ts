@@ -314,10 +314,8 @@
 // }
 
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
+import type { SetStateAction } from "react";
 
 import type {
   EditablePunch,
@@ -329,11 +327,45 @@ import type {
 export function usePunchEditor(
   punchRecords: PunchRecord[],
 ): UsePunchEditorResult {
-  const [
-    edits,
-    setEdits,
-  ] =
-    useState<PunchEdits>({});
+  const recordSignature = JSON.stringify(
+    punchRecords.map((record) => ({
+      punchId: record.punchId,
+      originalTime: record.originalTime,
+      correctedTime: record.correctedTime,
+      remarks: record.remarks,
+    })),
+  );
+  const createInitialEdits = (): PunchEdits =>
+    Object.fromEntries(
+      punchRecords.map((record) => [
+        String(record.punchId),
+        {
+          correctedTime: record.correctedTime || record.originalTime || "",
+          remarks: record.remarks ?? "",
+        },
+      ]),
+    );
+  const [editState, setEditState] = useState({
+    signature: recordSignature,
+    edits: createInitialEdits(),
+  });
+  const edits =
+    editState.signature === recordSignature
+      ? editState.edits
+      : createInitialEdits();
+  const setEdits = (update: SetStateAction<PunchEdits>) => {
+    setEditState((previous) => {
+      const current =
+        previous.signature === recordSignature
+          ? previous.edits
+          : createInitialEdits();
+      return {
+        signature: recordSignature,
+        edits:
+          typeof update === "function" ? update(current) : update,
+      };
+    });
+  };
 
   const [
     savingId,
@@ -350,73 +382,6 @@ export function usePunchEditor(
     useState<string | null>(
       null,
     );
-
-  /* =======================================================
-     INITIALIZE EDIT VALUES
-     ======================================================= */
-
-  useEffect(() => {
-    /*
-     * If there are no punch records,
-     * simply clear edits.
-     */
-    if (
-      !punchRecords ||
-      punchRecords.length === 0
-    ) {
-      setEdits({});
-      return;
-    }
-
-    const initial: PunchEdits =
-      {};
-
-    punchRecords.forEach(
-      (record) => {
-        const id =
-          String(
-            record.punchId,
-          );
-
-        initial[id] = {
-          correctedTime:
-            record.correctedTime ||
-            record.originalTime ||
-            "",
-
-          remarks:
-            record.remarks ?? "",
-        };
-      },
-    );
-
-    setEdits(initial);
-  }, [
-    /*
-     * IMPORTANT:
-     *
-     * We depend on the contents rather than
-     * blindly depending on a newly-created
-     * empty array.
-     */
-    JSON.stringify(
-      punchRecords.map(
-        (record) => ({
-          punchId:
-            record.punchId,
-
-          originalTime:
-            record.originalTime,
-
-          correctedTime:
-            record.correctedTime,
-
-          remarks:
-            record.remarks,
-        }),
-      ),
-    ),
-  ]);
 
   /* =======================================================
      UPDATE FIELD

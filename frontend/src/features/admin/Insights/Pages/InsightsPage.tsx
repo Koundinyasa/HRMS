@@ -42,7 +42,7 @@ import { Outlet } from "react-router-dom";
 
 export default function InsightsPage() {
   return (
-    <div className="min-h-full bg-gray-50 p-4">
+    <div className="min-h-full min-w-0 bg-gray-50 p-2 sm:p-4">
       <Outlet />
     </div>
   );

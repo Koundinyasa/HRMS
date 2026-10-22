@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   useGetWorkflowsByModuleQuery,
   useCreateWorkflowMutation,
@@ -20,14 +20,10 @@ export function useWorkflows(module: WorkflowModule = "leaveApply") {
 
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (workflows.length > 0 && !selectedWorkflowId) {
-      setSelectedWorkflowId(workflows[0].id);
-    }
-  }, [workflows, selectedWorkflowId]);
-
+  const effectiveSelectedWorkflowId =
+    selectedWorkflowId ?? workflows[0]?.id ?? null;
   const selectedWorkflow =
-    workflows.find((w) => w.id === selectedWorkflowId) || null;
+    workflows.find((w) => w.id === effectiveSelectedWorkflowId) || null;
 
   const handleCreateWorkflow = async (name: string) => {
     await createWorkflow({ name, module, levels: [] }).unwrap();
@@ -35,7 +31,7 @@ export function useWorkflows(module: WorkflowModule = "leaveApply") {
 
   const handleDeleteWorkflow = async (id: string) => {
     await deleteWorkflow(id).unwrap();
-    if (selectedWorkflowId === id) setSelectedWorkflowId(null);
+    if (effectiveSelectedWorkflowId === id) setSelectedWorkflowId(null);
   };
 
   const handleAddLevel = async (workflowId: string) => {
@@ -57,7 +53,7 @@ export function useWorkflows(module: WorkflowModule = "leaveApply") {
   return {
     workflows,
     selectedWorkflow,
-    selectedWorkflowId,
+    selectedWorkflowId: effectiveSelectedWorkflowId,
     setSelectedWorkflowId,
     isLoading,
     isCreating,

@@ -1,12 +1,3 @@
-import { useEffect, useState } from "react";
-
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
-
 // export default function ComingSoonPage() {
 //   return (
 //     <div className="flex min-h-full w-full items-center justify-center bg-[#f5f7fb] p-6">

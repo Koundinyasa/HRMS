@@ -283,7 +283,6 @@
 
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -296,7 +295,6 @@ import {
 } from "../api/regularizationApi";
 
 import type {
-  AttendanceDay,
   AttendanceOverviewData,
   PunchRecord,
   UseAttendanceProps,
@@ -314,17 +312,8 @@ export function useAttendance({
   year,
   classificationId,
 }: UseAttendanceProps) {
-  const [attendance, setAttendance] =
-    useState<AttendanceDay[]>([]);
-
-  const [overview, setOverview] =
-    useState<AttendanceOverviewData | null>(null);
-
   const [punchRecords, setPunchRecords] =
     useState<PunchRecord[]>([]);
-
-  const [error, setError] =
-    useState<string | null>(null);
 
   // =====================================================
   // VALIDATE REQUEST
@@ -343,7 +332,7 @@ export function useAttendance({
     data: attendanceData = [],
     isLoading: isAttendanceLoading,
     isError: isAttendanceError,
-    error: attendanceError,
+    refetch: refetchAttendance,
   } = useGetEmployeeMonthlyAttendanceDetailsQuery(
     {
       employeeId: Number(employeeId),
@@ -364,7 +353,7 @@ export function useAttendance({
     data: overviewData,
     isLoading: isOverviewLoading,
     isError: isOverviewError,
-    error: overviewError,
+    refetch: refetchOverview,
   } = useGetEmployeeAttendanceOverviewQuery(
     {
       employeeId,
@@ -402,66 +391,15 @@ export function useAttendance({
     { isLoading: isRawPunchLoading },
   ] = useLazyGetEmployeeDailyRawPunchesQuery();
 
-  // =====================================================
-  // UPDATE ATTENDANCE DATA FROM API
-  // =====================================================
-
-  useEffect(() => {
-    if (!validRequest) {
-      setAttendance([]);
-      setOverview(null);
-      setError(
-        "Invalid employee or attendance selection.",
-      );
-      return;
-    }
-
-    setAttendance(
-      Array.isArray(attendanceData)
-        ? attendanceData
-        : [],
-    );
-
-    setOverview(
-      overviewRows as unknown as AttendanceOverviewData,
-    );
-  }, [
-    validRequest,
-    attendanceData,
-    overviewData,
-  ]);
-
-  // =====================================================
-  // API ERROR HANDLING
-  // =====================================================
-
-  useEffect(() => {
-    if (
-      isAttendanceError ||
-      isOverviewError
-    ) {
-      console.error(
-        "Attendance API Error:",
-        attendanceError || overviewError,
-      );
-
-      setError(
-        "Failed to load attendance.",
-      );
-
-      return;
-    }
-
-    if (validRequest) {
-      setError(null);
-    }
-  }, [
-    isAttendanceError,
-    isOverviewError,
-    attendanceError,
-    overviewError,
-    validRequest,
-  ]);
+  const attendance = validRequest ? attendanceData : [];
+  const overview = validRequest
+    ? (overviewRows as unknown as AttendanceOverviewData)
+    : null;
+  const error = !validRequest
+    ? "Invalid employee or attendance selection."
+    : isAttendanceError || isOverviewError
+      ? "Failed to load attendance."
+      : null;
 
   // =====================================================
   // RELOAD ATTENDANCE
@@ -469,25 +407,13 @@ export function useAttendance({
 
   const loadAttendance =
     useCallback(async () => {
-      if (!validRequest) {
-        setAttendance([]);
-        setOverview(null);
-        return;
+      if (validRequest) {
+        await Promise.all([refetchAttendance(), refetchOverview()]);
       }
-
-      setAttendance(
-        Array.isArray(attendanceData)
-          ? attendanceData
-          : [],
-      );
-
-      setOverview(
-        overviewRows as unknown as AttendanceOverviewData,
-      );
     }, [
       validRequest,
-      attendanceData,
-      overviewData,
+      refetchAttendance,
+      refetchOverview,
     ]);
 
   // =====================================================

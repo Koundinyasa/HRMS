@@ -33,13 +33,7 @@ export default function FilterBar({
   variant = "chip",
   showMenu = false,
 }: FilterBarProps) {
-  const [activeFields, setActiveFields] = useState<FilterFieldKey[]>(fields);
-
-  const toggleField = (key: FilterFieldKey) => {
-    setActiveFields((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
-  };
+  const [activeFields] = useState<FilterFieldKey[]>(fields);
 
   const addFilterButtonClass =
     variant === "chip"

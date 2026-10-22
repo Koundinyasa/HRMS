@@ -2,6 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import {
   Plus,
@@ -424,32 +431,28 @@ export default function BranchPage() {
                 <div className="space-y-2">
                   <Label htmlFor="branch-state">State</Label>
 
-                  <select
-                    id="branch-state"
-                    value={form.state}
-                    onChange={(e) => setField("state", e.target.value)}
-                    className="
-                      h-9
-                      w-full
-                      rounded-lg
-                      border
-                      border-input
-                      bg-transparent
-                      px-3
-                      text-sm
-                      outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-violet-500
-                    "
+                  <Select
+                    value={form.state || null}
+                    onValueChange={(state) => setField("state", state ?? "")}
                   >
-                    <option value="">Select state</option>
-
+                    <SelectTrigger
+                      id="branch-state"
+                      className="h-9 rounded-lg border-input px-3 focus-visible:ring-2 focus-visible:ring-violet-500"
+                    >
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      sideOffset={4}
+                      className="!w-(--anchor-width) !min-w-0"
+                    >
                     {STATES.map((state) => (
-                      <option key={state} value={state}>
+                      <SelectItem key={state} value={state}>
                         {state}
-                      </option>
+                      </SelectItem>
                     ))}
-                  </select>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

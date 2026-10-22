@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { useGetBankFieldConfigQuery, useSaveBankFieldConfigMutation } from "../api/classificationApi";
 import { getBackendMessage } from "./getBackendMessage";
@@ -12,16 +12,23 @@ export const useBankFieldMapping = (bankId: number) => {
   const usingFallback = isError;
   const data = usingFallback ? { ...DEFAULT_BANK_FIELD_CONFIG, BankId: bankId } : apiData;
 
-  const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
-  const [mappingRows, setMappingRows] = useState<FieldMappingRow[]>([]);
+  const [availableFields, setAvailableFields] = useState<AvailableField[]>(
+    () => data?.AvailableFields ?? [],
+  );
+  const [mappingRows, setMappingRows] = useState<FieldMappingRow[]>(
+    () => data?.MappingRows ?? [],
+  );
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
+  const [previousApiData, setPreviousApiData] = useState(apiData);
+  const [previousUsingFallback, setPreviousUsingFallback] = useState(usingFallback);
+  if (apiData !== previousApiData || usingFallback !== previousUsingFallback) {
+    setPreviousApiData(apiData);
+    setPreviousUsingFallback(usingFallback);
     if (data) {
       setAvailableFields(data.AvailableFields);
       setMappingRows(data.MappingRows);
     }
-  }, [data]);
+  }
 
   const toggleField = (fieldId: string) => {
     setAvailableFields((prev) =>

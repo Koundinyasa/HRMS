@@ -1,7 +1,7 @@
 import { baseApi } from "@/app/baseApi";
 import type { LeaveReportRow } from "../types/leaveReport";
 import type { ReportFilterState, GroupByLeavePolicyState } from "../types/filters";
-import type { AuditLogEntry, AuditLogFilterState } from "../types/auditLog";
+import type { AuditLogEntry } from "../types/auditLog";
 
 // ─────────────────────────────────────────────────────────────
 // Types

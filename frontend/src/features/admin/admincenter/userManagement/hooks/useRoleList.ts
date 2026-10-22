@@ -13,7 +13,6 @@ export const useRoleList = () => {
   useEffect(() => {
     let cancelled = false;
 
-    setLoading(true);
     fetchRoles().then((data) => {
       if (cancelled) return;
       setRoles(data);

@@ -1,6 +1,6 @@
 // useEmployeeList.ts
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   fetchCreatedEmployees,
   fetchPendingEmployees,
@@ -26,7 +26,6 @@ export const useEmployeeList = () => {
   useEffect(() => {
     let cancelled = false;
 
-    setLoading(true);
     Promise.all([
       fetchCreatedEmployees(),
       fetchPendingEmployees(),
@@ -55,22 +54,24 @@ export const useEmployeeList = () => {
 
   const clearSearch = () => setSearch("");
 
-  const matchesSearch = (name: string) =>
-    name.toLowerCase().includes(search.toLowerCase());
+  const matchesSearch = useCallback(
+    (name: string) => name.toLowerCase().includes(search.toLowerCase()),
+    [search]
+  );
 
   const filteredCreatedEmployees = useMemo(
     () => createdEmployees.filter((e) => matchesSearch(e.name)),
-    [createdEmployees, search]
+    [createdEmployees, matchesSearch]
   );
 
   const filteredPendingEmployees = useMemo(
     () => pendingEmployees.filter((e) => matchesSearch(e.name)),
-    [pendingEmployees, search]
+    [pendingEmployees, matchesSearch]
   );
 
   const filteredInactiveEmployees = useMemo(
     () => inactiveEmployees.filter((e) => matchesSearch(e.name)),
-    [inactiveEmployees, search]
+    [inactiveEmployees, matchesSearch]
   );
 
   const showEmptyState = activeSubTab === "Updated Email ID";

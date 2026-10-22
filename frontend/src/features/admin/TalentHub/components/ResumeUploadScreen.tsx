@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, FileUp, LoaderCircle, Upload, X } from "lucide-react";
 import {
   getApiErrorMessage,
@@ -172,16 +172,13 @@ export function ResumeUploadScreen() {
       )
     : (lookups?.error ?? "");
 
-  // Preselect the default source once the lookups have loaded
-  useEffect(() => {
-    const defaultSource = sources.find(
-      (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
-    )?.value;
-    if (defaultSource) setSource((current) => current || defaultSource);
-  }, [sources]);
+  const defaultSource = sources.find(
+    (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
+  )?.value;
+  const selectedSource = source || defaultSource || "";
 
   const isEmployeeReferral =
-    source.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
+    selectedSource.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
 
   const handleFileChange = (selectedFile?: File) => {
     setError("");
@@ -235,7 +232,7 @@ export function ResumeUploadScreen() {
         email: String(formData.get("email")).trim(),
         phone: String(formData.get("phone")).trim(),
         address: String(formData.get("address")).trim() || undefined,
-        source,
+        source: selectedSource,
         referredBy: isEmployeeReferral ? referralName.trim() : undefined,
         resume: file,
       }).unwrap();
@@ -348,7 +345,7 @@ export function ResumeUploadScreen() {
               Source
               <select
                 name="source"
-                value={source}
+                value={selectedSource}
                 required
                 disabled={isLoadingLookups || sources.length === 0}
                 onChange={(event) => {

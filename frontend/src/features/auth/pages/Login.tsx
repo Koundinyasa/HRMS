@@ -3,19 +3,68 @@ import bgImage from "@/assets/images/background-bg.png";
 import peopleImage from "@/assets/images/people.png";
 import logoImage from "@/assets/images/koundinyasa-logo.png";
 import { BarChart2, Clock, TrendingUp } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { hidePageLoader } from "@/features/employee/employeeSlice";
 
 const urbanist: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
 
+function LoginFormSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading login page"
+      aria-live="polite"
+      aria-busy="true"
+      className="w-full animate-pulse flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg sm:p-8"
+    >
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 rounded-lg bg-slate-200" />
+        <div className="h-4 w-16 rounded bg-slate-200" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-28 rounded bg-slate-200" />
+        <div className="h-4 w-56 max-w-full rounded bg-slate-200" />
+      </div>
+      {[0, 1, 2].map((field) => (
+        <div key={field} className="space-y-2">
+          <div className="h-4 w-20 rounded bg-slate-200" />
+          <div className="h-11 w-full rounded-lg bg-slate-100" />
+        </div>
+      ))}
+      <div className="h-10 w-full rounded-lg bg-slate-200" />
+    </div>
+  );
+}
+
 export default function Login() {
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const [showLoginSkeleton, setShowLoginSkeleton] = useState(
+    Boolean(
+      (location.state as { showLoginSkeleton?: boolean } | null)
+        ?.showLoginSkeleton,
+    ),
+  );
 
   useEffect(() => {
     dispatch(hidePageLoader());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!showLoginSkeleton) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowLoginSkeleton(false);
+    }, 600);
+
+    return () => window.clearTimeout(timer);
+  }, [showLoginSkeleton]);
+
   return (
     <div
       className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"
@@ -140,7 +189,7 @@ export default function Login() {
               className="w-full"
               style={{ maxWidth: "clamp(320px, 90vw, 540px)" }}
             >
-              <LoginForm />
+              {showLoginSkeleton ? <LoginFormSkeleton /> : <LoginForm />}
             </div>
           </div>
 

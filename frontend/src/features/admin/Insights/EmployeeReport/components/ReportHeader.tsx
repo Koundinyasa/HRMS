@@ -38,17 +38,17 @@ export default function ReportHeader({
   const showSearch = onSearchChange !== undefined;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4 flex-wrap">
+    <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-3 shadow-sm sm:gap-4 sm:px-6">
       <span
-        className="flex items-center gap-2 px-4 py-2 rounded-md border border-orange-200 bg-orange-50 text-sm font-semibold text-orange-800 whitespace-nowrap"
+        className="flex min-w-0 max-w-full items-center gap-2 rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-800 sm:px-4"
         style={{ backgroundColor: "#FDEEE3", borderColor: "#FBD9BC" }}
       >
-        <Icon size={15} />
-        {title}
+        <Icon size={15} className="shrink-0" />
+        <span className="break-words">{title}</span>
       </span>
 
       {showSearch && (
-        <div className="relative w-48 sm:w-64 shrink-0">
+        <div className="relative w-full min-w-0 sm:w-64 sm:shrink-0">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="search"
@@ -60,7 +60,7 @@ export default function ReportHeader({
         </div>
       )}
 
-      <div className="flex items-center gap-3 sm:gap-4 flex-wrap sm:ml-auto">
+      <div className="flex min-w-0 flex-wrap items-center gap-3 sm:ml-auto sm:gap-4">
         {showSearch && onClearSearch && (
           <button
             type="button"

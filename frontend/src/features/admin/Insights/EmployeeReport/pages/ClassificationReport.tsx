@@ -10,6 +10,7 @@ import Pagination from "../components/common/Pagination";
 import MultiSelectDropdown, {
   type MultiSelectOption,
 } from "../components/common/MultiSelectDropdown";
+import ReportDatePicker from "../components/common/ReportDatePicker";
 import { PdfExportIcon, ExcelExportIcon } from "../components/common/ReportExportIcons";
 import { useReportFilters } from "../hooks/useReportFilters";
 import { useEmployeeReportData } from "../hooks/useEmployeeReportData";
@@ -77,20 +78,20 @@ export default function ClassificationReport() {
 
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700 whitespace-nowrap">From Date</span>
-          <input
-            type="date"
+          <ReportDatePicker
             value={filters.fromDate}
-            onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-brand-300"
+            onChange={(fromDate) => setFilters({ ...filters, fromDate })}
+            ariaLabel="From date"
+            className="w-36"
           />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700 whitespace-nowrap">To Date</span>
-          <input
-            type="date"
+          <ReportDatePicker
             value={filters.toDate}
-            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm outline-none focus:border-brand-300"
+            onChange={(toDate) => setFilters({ ...filters, toDate })}
+            ariaLabel="To date"
+            className="w-36"
           />
         </div>
 

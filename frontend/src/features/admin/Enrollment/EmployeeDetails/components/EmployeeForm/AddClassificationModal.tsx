@@ -197,10 +197,14 @@ export default function AddClassificationModal({
   const [error, setError] = useState("");
  
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+
+    const frame = window.requestAnimationFrame(() => {
       setData(DEFAULTS);
       setError("");
-    }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [open]);
  
   if (!open) return null;

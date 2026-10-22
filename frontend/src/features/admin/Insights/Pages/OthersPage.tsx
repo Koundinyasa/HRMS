@@ -4566,7 +4566,7 @@
 // }
 
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronsLeft,
@@ -4643,10 +4643,14 @@ function useDateField(value: string, onChange: (value: string) => void) {
   );
 
   // Keep local text/view in sync if the value is changed from outside.
-  useMemo(() => {
-    setText(value);
-    const parsed = parseDDMMYYYY(value);
-    if (parsed) setViewDate(parsed);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setText(value);
+      const parsed = parseDDMMYYYY(value);
+      if (parsed) setViewDate(parsed);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [value]);
 
   const monthLabel = viewDate.toLocaleString("en-US", {
@@ -4771,7 +4775,7 @@ function useDropdownPosition(
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
-  const reposition = () => {
+  const reposition = useCallback(() => {
     const btn = buttonRef.current;
     if (!btn) return;
 
@@ -4791,12 +4795,12 @@ function useDropdownPosition(
     }
 
     setCoords({ top, left });
-  };
+  }, [panelWidth]);
 
   useLayoutEffect(() => {
     if (!open) return;
     reposition();
-  }, [open]);
+  }, [open, reposition]);
 
   useEffect(() => {
     if (!open) return;
@@ -4821,7 +4825,7 @@ function useDropdownPosition(
       window.removeEventListener("resize", handleReposition);
       window.removeEventListener("scroll", handleReposition, true);
     };
-  }, [open, onClose]);
+  }, [open, onClose, reposition]);
 
   return { wrapperRef, buttonRef, coords };
 }
@@ -5198,31 +5202,22 @@ const ATTRITION_MONTH_LABELS = [
 const ATTRITION_MONTH_SHORT = ["Apr", "May", "Jun", "Jul", "Aug", "Sep"];
 
 const ATTRITION_TOTAL_STRENGTH = [45, 52, 89, 133, 181, 196];
-const ATTRITION_TOTAL_STRENGTH_SUM = 696;
 
 const ATTRITION_RESIGNED = [11, 3, 1, 0, 0, 0];
-const ATTRITION_RESIGNED_SUM = 15;
 
 const ATTRITION_ABSCONDING = [0, 0, 0, 0, 0, 0];
-const ATTRITION_ABSCONDING_SUM = 0;
 
 const ATTRITION_TERMINATION = [0, 0, 0, 0, 0, 0];
-const ATTRITION_TERMINATION_SUM = 0;
 
 const ATTRITION_TOTAL = [11, 3, 1, 0, 0, 0];
-const ATTRITION_TOTAL_SUM = 15;
 
 const ATTRITION_RECRUITMENT = [18, 40, 45, 48, 15, 1];
-const ATTRITION_RECRUITMENT_SUM = 167;
 
 const ATTRITION_TRANSFERRED_OUT = [0, 0, 0, 0, 0, 0];
-const ATTRITION_TRANSFERRED_OUT_SUM = 0;
 
 const ATTRITION_JOINED_BY_TRANSFER = [10, 25, 71, 88, 1, 0];
-const ATTRITION_JOINED_BY_TRANSFER_SUM = 195;
 
 const ATTRITION_TOTAL_EMP_LAST_DAY = [52, 89, 133, 181, 196, 197];
-const ATTRITION_TOTAL_EMP_LAST_DAY_SUM = 848;
 
 const ATTRITION_PERCENTAGE: Array<number | null> = [
   22.68,
@@ -5232,7 +5227,6 @@ const ATTRITION_PERCENTAGE: Array<number | null> = [
   null,
   null,
 ];
-const ATTRITION_PERCENTAGE_SUM = 27.84;
 
 const ATTRITION_CHART_MONTHS = [
   "Apr",
@@ -6357,12 +6351,16 @@ function YearDropdown({
 function AttritionQueryFilter() {
   const [isOpen, setIsOpen] = useState(false);
   const [queryText, setQueryText] = useState("");
-  const containerRef = useDropdownPosition(isOpen, () => setIsOpen(false), 192);
+  const { wrapperRef, buttonRef, coords } = useDropdownPosition(
+    isOpen,
+    () => setIsOpen(false),
+    192,
+  );
 
   return (
-    <div ref={containerRef.wrapperRef} className="relative shrink-0">
+    <div ref={wrapperRef} className="relative shrink-0">
       <button
-        ref={containerRef.buttonRef}
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen((value) => !value)}
         className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
@@ -6375,8 +6373,8 @@ function AttritionQueryFilter() {
         <div
           style={{
             position: "fixed",
-            top: containerRef.coords.top,
-            left: containerRef.coords.left,
+            top: coords.top,
+            left: coords.left,
             width: 192,
           }}
           className="z-50 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"

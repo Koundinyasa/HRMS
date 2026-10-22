@@ -1,4 +1,22 @@
 import { baseApi } from "@/app/baseApi";
+
+type UnknownRecord = Record<string, unknown>;
+
+function toRecord(value: unknown): UnknownRecord {
+  return typeof value === "object" && value !== null
+    ? value as UnknownRecord
+    : {};
+}
+
+function toNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function toIdentifier(value: unknown): string | number | null {
+  return typeof value === "string" || typeof value === "number"
+    ? value
+    : null;
+}
  
 /* ============================================================
    EMPLOYEE TYPES
@@ -378,14 +396,14 @@ export const employeeDetailsApi =
             : response?.data ?? [];
  
           return list.map((raw) => {
-            const anyRaw = raw as any;
- 
+            const rawRecord = raw as unknown as UnknownRecord;
+            const attendanceType =
+              rawRecord.AttendanceType ??
+              rawRecord.AttendenceType;
+
             return {
               ...raw,
-              AttendanceType:
-                anyRaw.AttendanceType ??
-                anyRaw.AttendenceType ??
-                null,
+              AttendanceType: toNullableString(attendanceType),
             };
           });
         },
@@ -414,14 +432,14 @@ export const employeeDetailsApi =
             | EmployeeDetailData
             | GetEmployeeDetailResponse
         ): EmployeeDetailData => {
-          const body: any =
+          const body: EmployeeDetailData =
             response &&
             typeof response === "object" &&
             "data" in response
               ? (
                   response as GetEmployeeDetailResponse
-                ).data ?? {}
-              : response ?? {};
+                ).data ?? {} as EmployeeDetailData
+              : response ?? {} as EmployeeDetailData;
  
           return {
             general: body.general ?? [],
@@ -556,8 +574,9 @@ export const employeeDetailsApi =
               | GetOrganizationChartResponse
               | OrganizationChartDTO
           ): OrganizationChartDTO => {
-            const responseAny =
-              response as any;
+            const responseRecord = toRecord(response);
+            const payload = responseRecord.data ?? response;
+            const data = toRecord(payload);
  
             /*
              * Backend response can be:
@@ -582,62 +601,56 @@ export const employeeDetailsApi =
              * }
              */
  
-            const data =
-              responseAny?.data &&
-              typeof responseAny.data ===
-                "object"
-                ? responseAny.data
-                : responseAny;
- 
-            const employees =
-              Array.isArray(data)
-                ? data
-                : Array.isArray(data?.Employees)
-                  ? data.Employees
-                  : [];
+            const employees: unknown[] = Array.isArray(payload)
+              ? payload
+              : Array.isArray(data.Employees)
+                ? data.Employees
+                : [];
  
             return {
               OrganizationName:
-                data?.OrganizationName ??
-                "",
+                toNullableString(data.OrganizationName) ?? "",
  
               TotalStrength:
                 Number(
-                  data?.TotalStrength ??
+                  data.TotalStrength ??
                     employees.length
                 ),
  
               TeamLabel:
-                data?.TeamLabel ?? null,
+                toNullableString(data.TeamLabel),
  
               Employees:
-                employees.map(
-                  (employee: any) => ({
+                employees.map((employee) => {
+                  const record = toRecord(employee);
+                  return {
                     EmployeeID:
-                      employee?.EmployeeID ??
-                      employee?.["Employee ID"],
- 
+                      toIdentifier(
+                        record.EmployeeID ??
+                          record["Employee ID"]
+                      ) ?? "",
                     EmployeeName:
-                      employee?.EmployeeName ??
-                      employee?.["Employee Name"] ??
-                      "",
- 
+                      toNullableString(
+                        record.EmployeeName ??
+                          record["Employee Name"]
+                      ) ?? "",
                     DesignationName:
-                      employee?.DesignationName ??
-                      employee?.Designation ??
-                      null,
- 
+                      toNullableString(
+                        record.DesignationName ??
+                          record.Designation
+                      ),
                     ProfilePhoto:
-                      employee?.ProfilePhoto ??
-                      employee?.ProfilePhotoUrl ??
-                      null,
- 
+                      toNullableString(
+                        record.ProfilePhoto ??
+                          record.ProfilePhotoUrl
+                      ),
                     ReportingAuthorityID:
-                      employee?.ReportingAuthorityID ??
-                      employee?.["Manager ID"] ??
-                      null,
-                  })
-                ),
+                      toIdentifier(
+                        record.ReportingAuthorityID ??
+                          record["Manager ID"]
+                      ),
+                  };
+                }),
             };
           },
  

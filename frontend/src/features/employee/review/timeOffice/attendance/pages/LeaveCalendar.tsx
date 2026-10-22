@@ -56,7 +56,10 @@ const LeaveCalendar = () => {
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pageState, setPageState] = useState({
+    searchValue: "",
+    page: 1,
+  });
 
   const [rowsPerPage, setRowsPerPage] = useState<number>(
     LEAVE_CALENDAR_CONSTANTS.DEFAULT_ROWS_PER_PAGE,
@@ -188,6 +191,16 @@ const LeaveCalendar = () => {
   // =========================================================
 
   const searchValue = searchTerm.toLowerCase().trim();
+  const currentPage =
+    pageState.searchValue === searchValue ? pageState.page : 1;
+  const setCurrentPage = (
+    update: number | ((page: number) => number),
+  ) => {
+    setPageState({
+      searchValue,
+      page: typeof update === "function" ? update(currentPage) : update,
+    });
+  };
 
   const filteredEmployees = useMemo(
     () =>
@@ -200,14 +213,6 @@ const LeaveCalendar = () => {
       }),
     [monthlyLeaveCalendar, searchValue],
   );
-
-  // =========================================================
-  // RESET PAGE WHEN SEARCH CHANGES
-  // =========================================================
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchValue]);
 
   // =========================================================
   // PAGINATION

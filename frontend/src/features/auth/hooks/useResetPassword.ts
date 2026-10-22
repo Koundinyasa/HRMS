@@ -64,9 +64,19 @@ export const useResetPassword = () => {
  
       toast.success("Password reset successfully.");
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
       toast.error(
-        error?.data?.message || "Failed to reset password"
+        typeof data.message === "string"
+          ? data.message
+          : "Failed to reset password",
       );
       return false;
     }

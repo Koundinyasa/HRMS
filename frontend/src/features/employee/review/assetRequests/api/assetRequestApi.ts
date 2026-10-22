@@ -1,7 +1,6 @@
 import { baseApi } from "@/app/baseApi";
 
 import type {
-  AssetRequest,
   AssetRequestActionPayload,
   AssetRequestFormData,
   AssetRequestListResponse,

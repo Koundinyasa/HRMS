@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Outlet, useLocation } from "react-router-dom";
 import { ArrowUp } from "lucide-react";
@@ -6,7 +6,9 @@ import { ArrowUp } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
+import { useAppSelector } from "@/hooks/useAppSelector";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
+import SkeletonLoading from "@/components/ui/SkeletonLoading";
 
 export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -17,6 +19,21 @@ export default function Layout() {
 
   const mainRef = useRef<HTMLElement>(null);
   const location = useLocation();
+  const [settledPath, setSettledPath] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSettledPath(location.pathname);
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [location.pathname]);
+
+  const isInitialDataLoading = useAppSelector(
+    (state) =>
+      settledPath !== location.pathname ||
+      state.employee.employeeInfo.pendingPageDataRequests > 0,
+  );
   const isDashboard = location.pathname.endsWith("/employee/dashboard");
   const isPunchPage = location.pathname.endsWith("/employee/Punch");
 
@@ -57,7 +74,7 @@ export default function Layout() {
         <main
           ref={mainRef}
           onScroll={handleMainScroll}
-          className={`flex-1 min-w-0 min-h-0 ${
+          className={`relative flex-1 min-w-0 min-h-0 ${
             isPunchPage
               ? "punch-scroll-container overflow-y-scroll"
               : "overflow-y-auto"
@@ -69,6 +86,11 @@ export default function Layout() {
           ) : (
             <div className="module-shell p-3 sm:p-4 lg:p-5">
               <Outlet />
+            </div>
+          )}
+          {isInitialDataLoading && (
+            <div className="absolute inset-0 z-10 overflow-y-auto bg-slate-100 p-3 sm:p-4 lg:p-5">
+              <SkeletonLoading pathname={location.pathname} />
             </div>
           )}
 

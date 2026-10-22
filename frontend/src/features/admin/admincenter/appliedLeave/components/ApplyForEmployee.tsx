@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, ChevronDown, PenLine, Tags } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,7 +61,6 @@ export default function ApplyForEmployee() {
     control,
     handleSubmit,
     reset,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<LeaveApplyForm>({
@@ -70,11 +69,9 @@ export default function ApplyForEmployee() {
     mode: "onTouched",
   });
 
-  const fromDate = watch("fromDate");
-
-  const toDate = watch("toDate");
-
-  const leaveType = watch("leaveType");
+  const fromDate = useWatch({ control, name: "fromDate" });
+  const toDate = useWatch({ control, name: "toDate" });
+  const leaveType = useWatch({ control, name: "leaveType" });
   const availableEmployeeLeaveTypes =
     employeeDetails?.employeeLeaveBalance ?? [];
 

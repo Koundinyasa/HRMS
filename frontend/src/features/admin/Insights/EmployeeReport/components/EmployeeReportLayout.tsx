@@ -19,8 +19,8 @@ export default function EmployeeReportLayout() {
   const handleBack = () => navigate(landingPath);
 
   return (
-    <div className="p-3 sm:p-4 space-y-3 font-['Urbanist']">
-      <div className="bg-white rounded-lg shadow-sm border border-[#EDEDED] px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+    <div className="min-w-0 space-y-3 p-2 font-['Urbanist'] sm:p-4">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border border-[#EDEDED] bg-white px-3 py-3 shadow-sm sm:px-6">
         {/* COLOR CHANGE: tab chip purple -> orange, with orange hover */}
         <span className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[#FFD9BF] bg-[#FFF5EE] text-sm font-semibold text-[#FF6200] whitespace-nowrap transition-colors hover:bg-[#FFE5D6] hover:border-[#FF6200]">
           <Users size={16} />

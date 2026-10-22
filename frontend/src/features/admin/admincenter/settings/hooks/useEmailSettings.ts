@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useGetEmailTypesQuery,
   useGetEmailPayslipSettingsQuery,
@@ -29,13 +29,15 @@ export function useEmailSettings() {
   const [type, setType] = useState("Pay Slip");
   const [subject, setSubject] = useState("Pay Slip for {monthyear}");
   const [body, setBody] = useState(DEFAULT_PAYSLIP_BODY);
+  const [previousPayslipSettings, setPreviousPayslipSettings] = useState<
+    typeof payslipSettings
+  >();
 
-  useEffect(() => {
-    if (payslipSettings) {
-      setSubject(payslipSettings.subject || "Pay Slip for {monthyear}");
-      setBody(payslipSettings.body || DEFAULT_PAYSLIP_BODY);
-    }
-  }, [payslipSettings]);
+  if (payslipSettings && payslipSettings !== previousPayslipSettings) {
+    setPreviousPayslipSettings(payslipSettings);
+    setSubject(payslipSettings.subject || "Pay Slip for {monthyear}");
+    setBody(payslipSettings.body || DEFAULT_PAYSLIP_BODY);
+  }
 
   const handleSave = async () => {
     if (type !== "Pay Slip") {

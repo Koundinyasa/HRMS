@@ -35,7 +35,6 @@ import type {
   PTHalfYearlyReportParams,
   PTYearlyReportParams,
   StatutoryAcknowledgementParams,
-  StatutoryAcknowledgementRequest,
 } from "../types/statutoryReport.types";
 
 // ============================================================

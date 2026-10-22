@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, History } from "lucide-react";
 import {useGetPolicyLeaveDetailQuery,useUpdatePolicyLeaveDetailMutation} from "../api/settingsApi";
@@ -31,10 +31,11 @@ export default function LeaveBehaviorPage() {
     excludeWeeklyOffFromEss: false,
     considerLopOnWeeklyOff: false,
   });
-
-  useEffect(() => {
-    if (data) setForm(data);
-  }, [data]);
+  const [previousData, setPreviousData] = useState<LeaveBehaviorSettings>();
+  if (data && data !== previousData) {
+    setPreviousData(data);
+    setForm(data);
+  }
 
   const setField = <K extends keyof LeaveBehaviorSettings>(
     field: K,

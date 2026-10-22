@@ -384,8 +384,17 @@ const Panel: React.FC<PanelProps> = ({ title, onCopy, copyTitle, children }) => 
 ============================================================ */
 
 interface AddressTabProps {
-  form: any;
-  set?: (key: string, value: any) => void;
+  form: {
+    photoUrl?: string | null;
+    fullName?: string | null;
+    empId?: string | number | null;
+    designation?: string | null;
+    branch?: string | null;
+    dateOfJoining?: string | null;
+    mobile?: string | null;
+    email?: string | null;
+  };
+  set?: (key: string, value: string | number | boolean) => void;
 }
 
 const AddressTab: React.FC<AddressTabProps> = ({ form }) => {

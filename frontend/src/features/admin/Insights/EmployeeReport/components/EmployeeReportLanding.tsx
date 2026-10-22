@@ -30,7 +30,10 @@ export default function EmployeeReportLanding() {
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+    <div
+      className="grid min-w-0 items-start gap-3 sm:gap-4"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 15rem), 1fr))" }}
+    >
       {EMPLOYEE_REPORT_MENU.map((group) => {
         const Icon = GROUP_ICONS[group.title] ?? Users;
         return (
@@ -40,7 +43,7 @@ export default function EmployeeReportLanding() {
           >
             <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
               <Icon size={16} className="text-[#FF6200] shrink-0" /> {/* COLOR CHANGE: orange icon */}
-              <span className="text-sm font-semibold text-[#131313]">{group.title}</span>
+              <span className="min-w-0 text-sm font-semibold text-[#131313] break-words">{group.title}</span>
             </div>
 
             <div className="py-1">

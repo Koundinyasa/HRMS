@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useGetPayrollDetailsQuery,
   useUpdatePayrollDetailsMutation,
@@ -35,12 +35,12 @@ export function usePayrollSettings() {
     useUpdatePayrollDetailsMutation();
 
   const [formData, setFormData] = useState<PayrollSettings>(EMPTY_PAYROLL);
+  const [previousPayroll, setPreviousPayroll] = useState<typeof payroll>();
 
-  useEffect(() => {
-    if (payroll) {
-      setFormData(payroll);
-    }
-  }, [payroll]);
+  if (payroll && payroll !== previousPayroll) {
+    setPreviousPayroll(payroll);
+    setFormData(payroll);
+  }
 
   const toggleModule = (name: keyof PayrollSettings["modules"]) => {
     setFormData((prev) => ({

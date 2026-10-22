@@ -68,7 +68,6 @@
 //   );
 // }
 
-import { useState } from "react";
 import {
   Bookmark,
   ChevronLeft,
@@ -84,12 +83,7 @@ export default function GeneralReportNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [activeTab, setActiveTab] =
-    useState("Report Writer");
-
   const handleTabClick = (tab: string) => {
-    setActiveTab(tab);
-
     if (tab === "Report Writer") {
       navigate(
         "/koundinyasatech/admin/insights/general-report"

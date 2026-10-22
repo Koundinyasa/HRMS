@@ -629,7 +629,7 @@
 // }
 
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
 
 import {
@@ -696,18 +696,6 @@ export default function ChangePasswordModal({
   // =========================
   // Reset Form
   // =========================
-
-  useEffect(() => {
-    if (!open) {
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
-      setShowCurrentPassword(false);
-      setShowNewPassword(false);
-      setShowConfirmPassword(false);
-    }
-  }, [open]);
 
   // =========================
   // Close Modal
@@ -797,15 +785,23 @@ export default function ChangePasswordModal({
             "Failed to change password."
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(
         "Change password error:",
         error
       );
 
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
       const message =
-        error?.data?.message ||
-        error?.error ||
+        (typeof data.message === "string" && data.message) ||
+        (typeof errorRecord.error === "string" && errorRecord.error) ||
         "Failed to change password. Please try again.";
 
       toast.error(message);

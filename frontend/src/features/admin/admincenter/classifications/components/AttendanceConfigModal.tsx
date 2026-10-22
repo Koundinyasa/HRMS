@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { StyledSelect } from "@/components/ui/select";
 import type { AttendanceConfig, AttendanceType } from "../types/attendance.types";
 
 const ATTENDANCE_TYPES: AttendanceType[] = ["Daily", "Weekly", "Monthly", "Shift Based"];
@@ -87,15 +88,17 @@ export function AttendanceConfigModal({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-gray-700">Attendance Type</label>
-            <select
+            <StyledSelect
               value={config.AttendanceType}
-              onChange={(e) => onChange({ ...config, AttendanceType: e.target.value as AttendanceType })}
-              className="w-full h-9 rounded-lg border border-input bg-transparent px-3 text-sm outline-none"
-            >
-              {ATTENDANCE_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+              onValueChange={(value) => {
+                const attendanceType = ATTENDANCE_TYPES.find((type) => type === value);
+                if (attendanceType) {
+                  onChange({ ...config, AttendanceType: attendanceType });
+                }
+              }}
+              options={ATTENDANCE_TYPES}
+              className="!h-9 !rounded-lg !border-input !px-3"
+            />
           </div>
 
           <div className="rounded-lg border border-gray-200 px-3 py-1 divide-y divide-gray-100">

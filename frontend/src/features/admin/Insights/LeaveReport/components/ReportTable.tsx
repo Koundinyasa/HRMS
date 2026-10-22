@@ -101,6 +101,8 @@ export default function ReportTable({
   );
 }
 
+// Imported by the monthly history page; keep this named export for the existing module API.
+// eslint-disable-next-line react-refresh/only-export-components
 export const dragActionColumn = {
   key: "__action",
   label: "Action",

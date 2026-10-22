@@ -1,8 +1,6 @@
 import { Mail, Building2, BriefcaseBusiness, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type {
-  ReportingEmployee,
-  EmployeeDetails,
   EmployeeInfoCardProps
 } from "../types/appliedLeave.types";
 

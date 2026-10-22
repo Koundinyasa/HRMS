@@ -1894,10 +1894,8 @@ export default function FormMasterPage() {
       },
     ]);
 
-  const currentFields =
-    FIELD_MAP[activeFieldTab] ?? [];
-
   const filteredFields = useMemo(() => {
+    const currentFields = FIELD_MAP[activeFieldTab] ?? [];
     const search =
       searchText.trim().toLowerCase();
 
@@ -1908,7 +1906,7 @@ export default function FormMasterPage() {
     return currentFields.filter((field) =>
       field.toLowerCase().includes(search)
     );
-  }, [activeFieldTab, currentFields, searchText]);
+  }, [activeFieldTab, searchText]);
 
   /* =====================================================
      SELECT / UNSELECT FIELD

@@ -1418,7 +1418,7 @@
 
 
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Plus,
   FileText,
@@ -1483,9 +1483,18 @@ export default function WorkflowsPage() {
     : DEFAULT_WORKFLOWS;
   const workflows = rawWorkflows;
 
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>(
-    workflows[0]?.id || "wf-1"
-  );
+  const [workflowSelection, setWorkflowSelection] = useState({
+    module: selectedModule as WorkflowModule | null,
+    id: workflows[0]?.id || "wf-1",
+  });
+  const selectedWorkflowId =
+    workflowSelection.module === selectedModule
+      ? workflowSelection.id
+      : workflows[0]?.id || "wf-1";
+  const handleModuleChange = (module: WorkflowModule) => {
+    setWorkflowSelection({ module: null, id: "" });
+    setSelectedModule(module);
+  };
 
   const selectedWorkflow =
     workflows.find((w) => w.id === selectedWorkflowId) || workflows[0];
@@ -1493,12 +1502,6 @@ export default function WorkflowsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (workflows.length > 0) {
-      setSelectedWorkflowId(workflows[0].id);
-    }
-  }, [selectedModule]);
 
   async function handleCreateWorkflow() {
     const result = validateWorkflowName(newName, workflows);
@@ -1606,7 +1609,7 @@ export default function WorkflowsPage() {
               <StyledSelect
                 value={selectedModule}
                 onValueChange={(v) =>
-                  setSelectedModule(v as WorkflowModule)
+                  handleModuleChange(v as WorkflowModule)
                 }
                 options={MODULE_OPTIONS.map((m) => ({
                   label: m.label,
@@ -1657,7 +1660,12 @@ export default function WorkflowsPage() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setSelectedWorkflowId(item.id)}
+                      onClick={() =>
+                        setWorkflowSelection({
+                          module: selectedModule,
+                          id: item.id,
+                        })
+                      }
                       className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-xs font-medium transition-all sm:px-4 sm:py-3 ${
                         isSelected
                           ? "bg-[#7C3AED] text-white"

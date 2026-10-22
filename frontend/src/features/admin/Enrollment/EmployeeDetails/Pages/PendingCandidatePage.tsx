@@ -2142,19 +2142,25 @@ const PendingCandidatePage: React.FC = () => {
 
   // keep selection valid as the backend list changes (first load, after remove, refetch, etc.)
   useEffect(() => {
-    if (candidates.length === 0) {
-      setSelectedId(null);
-      return;
-    }
-    if (selectedId === null || !candidates.some((c) => c.id === selectedId)) {
-      setSelectedId(candidates[0].id);
-    }
+    const frame = window.requestAnimationFrame(() => {
+      if (candidates.length === 0) {
+        setSelectedId(null);
+        return;
+      }
+      if (selectedId === null || !candidates.some((c) => c.id === selectedId)) {
+        setSelectedId(candidates[0].id);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [candidates, selectedId]);
 
   // refresh the editable draft whenever the selection or the underlying backend data changes
   useEffect(() => {
     const found = candidates.find((c) => c.id === selectedId) ?? null;
-    setDraft(found);
+    const frame = window.requestAnimationFrame(() => setDraft(found));
+
+    return () => window.cancelAnimationFrame(frame);
   }, [candidates, selectedId]);
 
   const displayName = (c: PendingCandidate) =>

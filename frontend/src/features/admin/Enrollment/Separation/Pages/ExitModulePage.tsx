@@ -340,7 +340,7 @@ export default function ExitModulePage() {
   const [policyEmployees, setPolicyEmployees] = useState<Employee[]>([]);
 
   const [showKTTasksModal, setShowKTTasksModal] = useState<boolean>(false);
-  const [ktTaskDraft, setKtTaskDraft] = useState<KTTask[]>([{ id: Date.now(), taskName: "", assignedTo: "" }]);
+  const [ktTaskDraft, setKtTaskDraft] = useState<KTTask[]>([{ id: 0, taskName: "", assignedTo: "" }]);
   const [policyKTTasks, setPolicyKTTasks] = useState<KTTask[]>([]);
 
   const updateForm = (field: keyof SeparationForm, value: string) => {

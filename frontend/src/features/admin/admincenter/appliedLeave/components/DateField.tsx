@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useRef,
   useState,
   type MouseEvent,
@@ -122,7 +121,11 @@ export default function DateField({
   );
 });
 
-  useEffect(() => {
+  const [previousValue, setPreviousValue] = useState(value);
+  const [previousInitialMonth, setPreviousInitialMonth] = useState(initialMonth);
+  if (value !== previousValue || initialMonth !== previousInitialMonth) {
+  setPreviousValue(value);
+  setPreviousInitialMonth(initialMonth);
   setText(toDisplay(value));
 
   const base = value
@@ -138,7 +141,7 @@ export default function DateField({
       1,
     ),
   );
-}, [value, initialMonth]);
+  }
 
   const isDisabled = (iso: string) => {
   if (!isWithinRange(iso, min, max)) {

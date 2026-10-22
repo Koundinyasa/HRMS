@@ -1,10 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
 import { useDashboard } from "../hooks/useDashboard";
+
+const getHolidayDate = (dateString: string) => {
+  const [datePart] = dateString.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  return { year, month: month - 1, day };
+};
 
 export default function CalendarCard() {
   const { holidayData } = useDashboard();
@@ -39,19 +45,6 @@ export default function CalendarCard() {
     "Fri",
     "Sat",
   ];
-
-  const getHolidayDate = (dateString: string) => {
-    const [datePart] = dateString.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
-
-    return {
-      year,
-      month: month - 1,
-      day,
-    };
-  };
-
-
 
   const year =
     currentDate.getFullYear();
@@ -137,15 +130,14 @@ export default function CalendarCard() {
     );
   };
 
-  const today = new Date();
-
-  const todayDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
-  const upcomingHolidays =
-    holidayData?.data
+  const upcomingHolidays = useMemo(() => {
+    const today = new Date();
+    const todayDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    return holidayData?.data
       ?.filter((holiday) => {
         const {
           year: holidayYear,
@@ -181,6 +173,7 @@ export default function CalendarCard() {
           ).getTime()
         );
       }) || [];
+  }, [holidayData?.data]);
   const upcomingHoliday =
     upcomingHolidays[
     currentHolidayIndex

@@ -36,8 +36,22 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data);
-    } catch (err: any) {
-      const message = err?.data?.message ?? err?.response?.data?.message ?? "";
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const response =
+        errorRecord.response && typeof errorRecord.response === "object"
+          ? (errorRecord.response as Record<string, unknown>)
+          : {};
+      const dataValue = errorRecord.data ?? response.data;
+      const data =
+        dataValue && typeof dataValue === "object"
+          ? (dataValue as Record<string, unknown>)
+          : {};
+      const message =
+        typeof data.message === "string" ? data.message : "";
       if (message.toLowerCase().includes("captcha")) {
         setError("captchaAnswer", { type: "manual", message });
       }

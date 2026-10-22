@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X, Bookmark } from "lucide-react";
 import type { DayOfWeek, WeeklyOff, WeekHalfFlags } from "../api/weeklyoffApi";
 
@@ -35,6 +35,21 @@ const EMPTY_FORM: WeeklyOffFormValues = {
   weeks: DEFAULT_WEEKS,
 };
 
+function getInitialForm(initialData?: WeeklyOff | null): WeeklyOffFormValues {
+  if (!initialData) return EMPTY_FORM;
+  return {
+    effectiveFrom: initialData.effectiveFrom,
+    dayOfWeek: initialData.dayOfWeek,
+    weeks: [
+      initialData.week1,
+      initialData.week2,
+      initialData.week3,
+      initialData.week4,
+      initialData.week5,
+    ],
+  };
+}
+
 export default function WeeklyOffFormModal({
   isOpen,
   masterLabel,
@@ -44,27 +59,10 @@ export default function WeeklyOffFormModal({
   onSubmit,
   isSubmitting,
 }: WeeklyOffFormModalProps) {
-  const [form, setForm] = useState<WeeklyOffFormValues>(EMPTY_FORM);
+  const [form, setForm] = useState<WeeklyOffFormValues>(() =>
+    getInitialForm(initialData),
+  );
   const [errors, setErrors] = useState<{ effectiveFrom?: boolean; dayOfWeek?: boolean }>({});
-
-  useEffect(() => {
-    if (initialData) {
-      setForm({
-        effectiveFrom: initialData.effectiveFrom,
-        dayOfWeek: initialData.dayOfWeek,
-        weeks: [
-          initialData.week1,
-          initialData.week2,
-          initialData.week3,
-          initialData.week4,
-          initialData.week5,
-        ],
-      });
-    } else {
-      setForm(EMPTY_FORM);
-    }
-    setErrors({});
-  }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 

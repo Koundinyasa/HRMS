@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useGetReminderByTypeQuery,
   useUpdateReminderByTypeMutation,
@@ -28,14 +28,19 @@ export function useReminderSettings(selectedType: ReminderType) {
     useUpdateReminderByTypeMutation();
 
   const [formData, setFormData] = useState<ReminderSettings>(EMPTY_REMINDER);
+  const [previousReminder, setPreviousReminder] = useState<typeof reminder>();
+  const [previousSelectedType, setPreviousSelectedType] =
+    useState<ReminderType>();
 
-  useEffect(() => {
+  if (reminder !== previousReminder || selectedType !== previousSelectedType) {
+    setPreviousReminder(reminder);
+    setPreviousSelectedType(selectedType);
     if (reminder) {
       setFormData(reminder);
     } else {
       setFormData({ ...EMPTY_REMINDER, type: selectedType });
     }
-  }, [reminder, selectedType]);
+  }
 
   const toggleOption = (key: keyof ReminderSettings["applicability"]) => {
     setFormData((prev) => ({

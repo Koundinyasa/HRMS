@@ -34,9 +34,9 @@ export default function ODPunchPage() {
   const [showAdvanceFilter, setShowAdvanceFilter] =
     useState(false);
 
-  const [reportType, setReportType] = useState("");
-  const [group, setGroup] = useState("");
-  const [orderBy, setOrderBy] = useState("");
+  const [, setReportType] = useState("");
+  const [, setGroup] = useState("");
+  const [, setOrderBy] = useState("");
 
   const handleSearch = () => {
     const validation = validateDateRange(

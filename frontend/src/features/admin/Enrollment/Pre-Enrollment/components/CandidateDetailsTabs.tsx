@@ -112,7 +112,7 @@ export default function CandidateDetailsTabs({
   candidate,
 }: CandidateDetailsTabsProps) {
   return (
-    <div className="w-full">
+    <div className="w-full" data-candidate-id={candidate.id}>
 
       {/* Secondary Tabs */}
       <div className="flex w-full flex-wrap items-center gap-2">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useGetTenantSettingsQuery,
   useUpdateTenantSettingsMutation,
@@ -19,14 +19,14 @@ export function useTenantSettings() {
   const [ipAddress, setIpAddress] = useState("");
   const [ipList, setIpList] = useState<string[]>([]);
   const [passwordExpiry, setPasswordExpiry] = useState("90");
+  const [previousTenant, setPreviousTenant] = useState<typeof tenant>();
 
-  useEffect(() => {
-    if (tenant) {
-      setLogoPreview(tenant.companyLogoUrl || null);
-      setIpList(tenant.ipWhitelist || []);
-      setPasswordExpiry(String(tenant.passwordExpiryDays ?? 90));
-    }
-  }, [tenant]);
+  if (tenant && tenant !== previousTenant) {
+    setPreviousTenant(tenant);
+    setLogoPreview(tenant.companyLogoUrl || null);
+    setIpList(tenant.ipWhitelist || []);
+    setPasswordExpiry(String(tenant.passwordExpiryDays ?? 90));
+  }
 
   const handleFileChange = (file: File | null) => {
     if (!file) return;

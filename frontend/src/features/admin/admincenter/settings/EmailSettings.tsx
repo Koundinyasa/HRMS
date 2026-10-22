@@ -406,7 +406,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import { Mark, mergeAttributes } from "@tiptap/core";
+import { Mark, mergeAttributes, type CommandProps } from "@tiptap/core";
 
 import {
   Bold,
@@ -431,6 +431,15 @@ import { StyledSelect } from "@/components/ui/select";
 
 import { useEmailSettings } from "./hooks/useEmailSettings";
 
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    fontSize: {
+      setFontSize: (size: string) => ReturnType;
+      unsetFontSize: () => ReturnType;
+    };
+  }
+}
+
 // Custom font-size mark — built on @tiptap/core only, no extra package needed
 const FontSize = Mark.create({
   name: "fontSize",
@@ -449,20 +458,20 @@ const FontSize = Mark.create({
   parseHTML() {
     return [{ style: "font-size" }];
   },
-  renderHTML({ HTMLAttributes }: any) {
+  renderHTML({ HTMLAttributes }) {
     return ["span", mergeAttributes(HTMLAttributes), 0];
   },
   addCommands() {
     return {
       setFontSize:
         (size: string) =>
-        ({ chain }: any) =>
+        ({ chain }: CommandProps) =>
           chain().setMark("fontSize", { size }).run(),
       unsetFontSize:
         () =>
-        ({ chain }: any) =>
+        ({ chain }: CommandProps) =>
           chain().unsetMark("fontSize").run(),
-    } as any;
+    };
   },                
 });
 

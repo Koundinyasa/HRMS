@@ -20,10 +20,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { domain } = useParams();
  
-  const now = new Date();
-  // const monthBadge =
-  //   now.toLocaleString("en-US", { month: "short" }).toUpperCase() + "/" + now.getFullYear();
- 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {

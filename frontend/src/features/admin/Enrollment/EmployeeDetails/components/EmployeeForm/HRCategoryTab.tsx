@@ -2987,12 +2987,16 @@ const DatePicker: React.FC<
 
   useEffect(() => {
     if (open) {
-      setCursor(
-        parseDDMMYYYY(value) ??
-          new Date()
-      );
+      const frame = window.requestAnimationFrame(() => {
+        setCursor(
+          parseDDMMYYYY(value) ??
+            new Date()
+        );
+      });
+
+      return () => window.cancelAnimationFrame(frame);
     }
-  }, [open]);
+  }, [open, value]);
 
   /* ==========================================================
      OUTSIDE CLICK + ESCAPE
@@ -3731,10 +3735,19 @@ const ExcelIcon = () => (
 ============================================================ */
 
 interface HRCategoryTabProps {
-  form: any;
+  form: {
+    photoUrl?: string | null;
+    fullName?: string | null;
+    empId?: string | number | null;
+    designation?: string | null;
+    branch?: string | null;
+    dateOfJoining?: string | null;
+    mobile?: string | null;
+    email?: string | null;
+  };
   set?: (
     key: string,
-    value: any
+    value: string | number | boolean
   ) => void;
 }
 
@@ -3822,17 +3835,12 @@ const HRCategoryTab: React.FC<
   );
 
   useEffect(() => {
-    setSlot(
-      document.getElementById(
-        HR_ACTIONS_SLOT_ID
-      )
-    );
+    const frame = window.requestAnimationFrame(() => {
+      setSlot(document.getElementById(HR_ACTIONS_SLOT_ID));
+      setExportSlot(document.getElementById(HR_EXPORT_SLOT_ID));
+    });
 
-    setExportSlot(
-      document.getElementById(
-        HR_EXPORT_SLOT_ID
-      )
-    );
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   /* ==========================================================
@@ -4134,7 +4142,7 @@ const HRCategoryTab: React.FC<
       form?.empId ||
       "employee";
 
-    let csv = "";
+    let csv: string;
 
     if (isMultiple) {
 

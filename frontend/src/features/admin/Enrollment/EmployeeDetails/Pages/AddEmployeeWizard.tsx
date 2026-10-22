@@ -183,7 +183,6 @@ type Step = (typeof STEPS)[number];
    connects the backend can find every spot without reading the whole file.
 ============================================================================ */
 
-const PREFIXES = ["Mr", "Ms", "Mrs", "Dr"]; // [WIRE: GET /enrollment/masterdata/prefixes]
 const TITLES = ["Ms.", "Ms", "Mr", "MRS", "Y", "MR", "MS", "Mrs", "Miss"]; // [WIRE: GET /enrollment/masterdata/titles]
 const GENDERS = ["Male", "Female", "Transgender"]; // [WIRE: GET /enrollment/masterdata/genders]
 const MARITAL_STATUS = ["Unmarried", "Married", "Divorced", "Widowed"]; // [WIRE: GET /enrollment/masterdata/marital-status]
@@ -705,7 +704,14 @@ const DateInput: React.FC<{
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"days" | "months" | "years">("days");
   const [cursor, setCursor] = useState(() => parseDate(value) ?? new Date());
+  const [previousValue, setPreviousValue] = useState(value);
   const ref = useRef<HTMLDivElement>(null);
+
+  if (value !== previousValue) {
+    setPreviousValue(value);
+    const parsed = parseDate(value);
+    if (parsed) setCursor(parsed);
+  }
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -717,11 +723,6 @@ const DateInput: React.FC<{
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
-
-  useEffect(() => {
-    const parsed = parseDate(value);
-    if (parsed) setCursor(parsed);
-  }, [value]);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -1303,6 +1304,36 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
   type SimpleAddKey = "salaryStructure" | "costCenter" | "bank" | "department" | "team";
   const [simpleAddTarget, setSimpleAddTarget] = useState<SimpleAddKey | null>(null);
   const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
+  const [previousResetInputs, setPreviousResetInputs] = useState({
+    open,
+    initialData,
+    isEditMode,
+    editInitialData,
+  });
+
+  if (
+    previousResetInputs.open !== open ||
+    previousResetInputs.initialData !== initialData ||
+    previousResetInputs.isEditMode !== isEditMode ||
+    previousResetInputs.editInitialData !== editInitialData
+  ) {
+    setPreviousResetInputs({
+      open,
+      initialData,
+      isEditMode,
+      editInitialData,
+    });
+    if (open) {
+      setStepIndex(0);
+      setErrors({});
+      setFormData({ ...defaultFormData, ...initialData });
+    }
+    if (isEditMode && editInitialData) {
+      setStepIndex(0);
+      setErrors({});
+      setFormData({ ...defaultFormData, ...editInitialData });
+    }
+  }
 
   const salaryStructureOptions = [...SALARY_STRUCTURES, ...customLists.salaryStructure];
   const costCenterOptions = [...COST_CENTERS, ...customLists.costCenter];
@@ -1313,23 +1344,6 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
     ...ATTENDANCE_STRUCTURES,
     ...customLists.attendanceStructure,
   ];
-
-  useEffect(() => {
-    if (open) {
-      setStepIndex(0);
-      setErrors({});
-      setFormData({ ...defaultFormData, ...initialData });
-    }
-  }, [open, initialData]);
-
-  /** Page mode + editing: prefill the form once the employee's data arrives. */
-  useEffect(() => {
-    if (isEditMode && editInitialData) {
-      setStepIndex(0);
-      setErrors({});
-      setFormData({ ...defaultFormData, ...editInitialData });
-    }
-  }, [isEditMode, editInitialData]);
 
   useEffect(() => {
     if (!toast) return;
@@ -1384,28 +1398,11 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
     [formData.firstName, formData.middleName, formData.lastName]
   );
 
-  useEffect(() => {
-    setFormData((prev) => (prev.fullName === fullName ? prev : { ...prev, fullName }));
-  }, [fullName]);
-
-  /** Probation completion + confirmation date follow joining + probation days */
-  useEffect(() => {
-    const days = Number(formData.probationPeriod) || 0;
-    if (!formData.dateOfJoining || !days) return;
-    const completion = addDays(formData.dateOfJoining, days);
-    setFormData((prev) =>
-      prev.probationCompletionDate === completion
-        ? prev
-        : { ...prev, probationCompletionDate: completion }
-    );
-  }, [formData.dateOfJoining, formData.probationPeriod]);
-
-  /** Prefix mirrors Title (Title is the interactive dropdown) */
-  useEffect(() => {
-    setFormData((prev) =>
-      prev.prefix === prev.title ? prev : { ...prev, prefix: prev.title }
-    );
-  }, [formData.title]);
+  const probationDays = Number(formData.probationPeriod) || 0;
+  const probationCompletionDate =
+    formData.dateOfJoining && probationDays
+      ? addDays(formData.dateOfJoining, probationDays)
+      : formData.probationCompletionDate;
 
   /** Spouse Name only applies to Married */
   const spouseDisabled = formData.maritalStatus !== "Married";
@@ -1539,7 +1536,12 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
          normally fired either right here alongside createEmployee, or
          earlier at the moment each file is picked.
       ==================================================================== */
-      onSubmit?.(formData);
+      onSubmit?.({
+        ...formData,
+        fullName,
+        prefix: formData.title,
+        probationCompletionDate,
+      });
       if (!onSubmit) navigate(-1);
       return;
     }
@@ -1572,7 +1574,7 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
       <div className={`${CARD} p-[20px]`}>
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_34px] items-end gap-[12px]">
           <Field label="Prefix">
-            <TextInput value={formData.prefix} onChange={() => {}} computed disabled />
+            <TextInput             value={formData.title} onChange={() => {}} computed disabled />
           </Field>
 
           <Field
@@ -1638,7 +1640,7 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
 
         <Field label="Full Name" className="mt-[16px]">
           <TextInput
-            value={formData.fullName}
+            value={fullName}
             onChange={() => {}}
             placeholder="One Nn Mm"
             computed
@@ -1739,7 +1741,7 @@ const AddEmployeeWizard: React.FC<AddEmployeeWizardProps> = ({
 
         <Field label="Probation Completion Date" className="mt-[16px]">
           <DateInput
-            value={formData.probationCompletionDate}
+            value={probationCompletionDate}
             onChange={(v) => set("probationCompletionDate", v)}
             computed
             disabled

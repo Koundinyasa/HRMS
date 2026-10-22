@@ -383,12 +383,18 @@ export default function BulkUpdateClassificationTable({
   const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
-    setPage(1);
+    const frame = window.requestAnimationFrame(() => {
+      setPage(1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [employees.length, pageSize]);
 
   const allSelected = employees.length > 0 && selectedIds.length === employees.length;
   const totalCount = employees.length;
-  const pagedEmployees = employees.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const visiblePage = Math.min(page, totalPages);
+  const pagedEmployees = employees.slice((visiblePage - 1) * pageSize, visiblePage * pageSize);
 
   return (
     // <div className="flex flex-col gap-3">
@@ -540,7 +546,7 @@ export default function BulkUpdateClassificationTable({
           </div>
 
           <BulkUpdatePagination
-            page={page}
+            page={visiblePage}
             pageSize={pageSize}
             totalCount={totalCount}
             onPageChange={setPage}

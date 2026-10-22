@@ -32,14 +32,15 @@ function formatClockTime(isoString: string): string {
  
 export default function AttendanceCard() {
 
-  const [punchedIn, setPunchedIn] = useState(false);
   const { data: faceStatus } = useGetFaceStatusQuery();
- 
-  useEffect(() => {
-    if (faceStatus) {
-      setPunchedIn(faceStatus.punchedIn);
-    }
-  }, [faceStatus]);
+  const [punchOverride, setPunchOverride] = useState<{
+    source: typeof faceStatus;
+    value: boolean;
+  } | null>(null);
+  const punchedIn =
+    punchOverride && punchOverride.source === faceStatus
+      ? punchOverride.value
+      : (faceStatus?.punchedIn ?? false);
  
   const { data: profile, refetch: refetchProfile } = useGetProfileQuery();
   const attendanceSummary = profile?.data?.attendanceSummary;
@@ -63,10 +64,13 @@ export default function AttendanceCard() {
 
   const handlePunchSuccess = useCallback(
     (action: "IN" | "OUT") => {
-      setPunchedIn(action === "IN");
+      setPunchOverride({
+        source: faceStatus,
+        value: action === "IN",
+      });
       refetchProfile();
     },
-    [refetchProfile]
+    [faceStatus, refetchProfile]
   );
  
   return (

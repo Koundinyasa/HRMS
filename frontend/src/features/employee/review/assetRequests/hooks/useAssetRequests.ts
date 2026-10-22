@@ -45,7 +45,10 @@ export const useAssetRequests = () => {
       priority: "All",
     });
 
-  const requests: AssetRequest[] = data?.data ?? [];
+  const requests: AssetRequest[] = useMemo(
+    () => data?.data ?? [],
+    [data?.data]
+  );
 
   const filteredRequests = useMemo(() => {
     return requests.filter((request) => {

@@ -182,7 +182,7 @@
 
 
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -205,10 +205,12 @@ const EMPTY_ESI: EsiConfiguration = {
 export default function EsiDetailsForm() {
   const { esi, isLoading, updateEsi, isSaving, refetch } = useEsiDetails();
   const [esiData, setEsiData] = useState<EsiConfiguration>(EMPTY_ESI);
+  const [previousEsi, setPreviousEsi] = useState<typeof esi>();
  
-  useEffect(() => {
-    if (esi) setEsiData(esi);
-  }, [esi]);
+  if (esi && esi !== previousEsi) {
+    setPreviousEsi(esi);
+    setEsiData(esi);
+  }
  
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { id, value } = e.target;
@@ -321,7 +323,12 @@ export default function EsiDetailsForm() {
               <SelectTrigger size="sm" className="h-11">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                side="bottom"
+                align="start"
+                sideOffset={8}
+                alignItemWithTrigger={false}
+              >
                 <SelectItem value="Higher Amount">Higher Amount</SelectItem>
                 <SelectItem value="Lower Amount">Lower Amount</SelectItem>
                 <SelectItem value="Nearest Amount">Nearest Amount</SelectItem>

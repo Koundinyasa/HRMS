@@ -14,6 +14,8 @@ export interface LeaveTypeOption {
   code: string;
 }
 
+// Imported by the summary page; keep this named export for the existing module API.
+// eslint-disable-next-line react-refresh/only-export-components
 export const LEAVE_TYPE_OPTIONS: LeaveTypeOption[] = [
   { value: "compensatory_off", label: "Compensatory Off", code: "CO" },
   { value: "compensatory_work", label: "Compensatory Work", code: "CW" },

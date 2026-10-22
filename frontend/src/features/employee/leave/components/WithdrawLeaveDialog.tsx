@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
     Dialog,
@@ -40,14 +40,20 @@ export default function WithdrawLeaveDialog({
     const { withdrawLeave, isWithdrawing } =
         useWithdrawLeave();
 
-    const [remarks, setRemarks] =
-        useState("");
-
-    useEffect(() => {
-        if (open) {
-            setRemarks("");
+    const [remarksState, setRemarksState] = useState({
+        open,
+        value: "",
+    });
+    const remarks =
+        remarksState.open === open ? remarksState.value : "";
+    const setRemarks = (value: string) =>
+        setRemarksState({ open, value });
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (nextOpen && !open) {
+            setRemarksState({ open: true, value: "" });
         }
-    }, [open]);
+        onOpenChange(nextOpen);
+    };
 
     const values = useMemo(() => {
         if (!record) return {};
@@ -88,7 +94,7 @@ export default function WithdrawLeaveDialog({
     return (
         <Dialog
             open={open}
-            onOpenChange={onOpenChange}
+            onOpenChange={handleOpenChange}
         >
             <DialogContent className="sm:max-w-3xl rounded-xl">
 
@@ -211,4 +217,3 @@ export default function WithdrawLeaveDialog({
         </Dialog>
     );
 }
-

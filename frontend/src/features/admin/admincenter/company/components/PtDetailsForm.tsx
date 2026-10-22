@@ -210,7 +210,7 @@
 
 
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -232,9 +232,10 @@ export default function PtDetailsForm() {
     { fromSalary: "15001", toSalary: "20000", ptAmount: "150" },
     { fromSalary: "20001", toSalary: "999999999", ptAmount: "200" },
   ]);
+  const [previousSlabs, setPreviousSlabs] = useState<typeof ptSlabs>();
 
-  useEffect(() => {
-    if (ptSlabs && ptSlabs.length > 0) {
+  if (ptSlabs && ptSlabs.length > 0 && ptSlabs !== previousSlabs) {
+      setPreviousSlabs(ptSlabs);
       setEffectiveFrom(ptSlabs[0].effectiveFrom);
       setPeriod(ptSlabs[0].period);
       setSlabs(
@@ -244,8 +245,7 @@ export default function PtDetailsForm() {
           ptAmount: String(item.ptAmount),
         }))
       );
-    }
-  }, [ptSlabs]);
+  }
 
   function handleSlabChange(index: number, field: keyof LocalSlab, value: string) {
     setSlabs((prev) =>
@@ -314,7 +314,12 @@ export default function PtDetailsForm() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select period" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  side="bottom"
+                  align="start"
+                  sideOffset={8}
+                  alignItemWithTrigger={false}
+                >
                   <SelectItem value="Monthly">Monthly</SelectItem>
                   <SelectItem value="Quarterly">Quarterly</SelectItem>
                   <SelectItem value="Half Yearly">Half Yearly</SelectItem>

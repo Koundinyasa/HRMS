@@ -1,5 +1,5 @@
 import { NavLink, useParams } from "react-router-dom";
-import { Plus, Clock, PieChart, History, XCircle,CalendarDays} from "lucide-react";
+import { Plus, Clock, PieChart, History, CalendarDays } from "lucide-react";
 
 import { useDashboard } from "../../dashboard/hooks/useDashboard";
 
@@ -69,19 +69,13 @@ export default function LeaveNavbar() {
           //     `/${domain}/employee`
           //   ) ?? "";
 
-          let route = "";
-
-          
-          if (tab.menuName === "Holiday List") {
-            route = `/${domain}/employee/leave/holidaylist`;
-          } else {
-            // Existing dynamic route logic for other tabs
-            route =
-              tab.routeUrl?.replace(
-                "/Employee",
-                `/${domain}/employee`
-              ) ?? "";
-          }
+          const route =
+            tab.menuName === "Holiday List"
+              ? `/${domain}/employee/leave/holidaylist`
+              : tab.routeUrl?.replace(
+                  "/Employee",
+                  `/${domain}/employee`
+                ) ?? "";
 
           return (
             <NavLink

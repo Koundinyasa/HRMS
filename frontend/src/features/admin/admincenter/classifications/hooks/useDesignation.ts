@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -30,7 +30,7 @@ export const useDesignation = () => {
   const backendDesignations = data?.Designations ?? [];
   const backendTotal = data?.TotalCount ?? 0;
 
-  const designations = useMemo(() => backendDesignations, [backendDesignations]);
+  const designations = backendDesignations;
   const total = backendTotal;
 
   const setPageSize = (size: number) => {

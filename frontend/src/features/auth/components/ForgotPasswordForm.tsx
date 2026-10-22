@@ -280,7 +280,6 @@
  
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Button } from "@/components/ui/button";
 import { forgotPasswordSchema } from "../validation/forgotPasswordSchema";
 import { useForgotPassword } from "../hooks/useForgotPassword";
 import { useNavigate, useParams } from "react-router-dom";
@@ -290,12 +289,9 @@ import { Loader2 } from "lucide-react";
  
 const U: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
  
-const inputCls =
-  "w-full h-[44px] rounded-lg border border-slate-200 bg-slate-50 text-slate-700 placeholder:text-slate-400 outline-none pl-9 pr-4 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition-all";
- 
 export default function ForgotPasswordForm() {
   const [userId, setUserId] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
+  const mobileNumber = "";
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -31,13 +31,14 @@ function useDatePicker(value: string, onChange: (iso: string) => void) {
   const [open, setOpen] = useState(false);
   const [viewMonth, setViewMonth] = useState(validSelected ?? new Date());
   const [text, setText] = useState(validSelected ? format(validSelected, TEXT_FORMAT) : "");
+  const [previousValue, setPreviousValue] = useState(value);
 
   // Stay in sync when `value` changes from outside the picker (e.g. a reset).
-  useEffect(() => {
+  if (value !== previousValue) {
+    setPreviousValue(value);
     setText(validSelected ? format(validSelected, TEXT_FORMAT) : "");
     if (validSelected) setViewMonth(validSelected);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }
 
   const cells = useMemo<DatePickerCell[]>(() => {
     const gridStart = startOfWeek(startOfMonth(viewMonth));

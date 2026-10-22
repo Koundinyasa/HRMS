@@ -96,14 +96,12 @@ export function DatePicker2({
   id,
   text,
   align = "left",
-  onTextChange: _onTextChange,
   onBlur,
   isInvalid,
   placeholder = "dd-mm-yyyy",
   inputClassName,
   open,
   onOpenChange,
-  monthLabel: _monthLabel,
   weekdayLabels,
   cells,
   onSelectDay,
@@ -128,13 +126,6 @@ export function DatePicker2({
   const activeYear = viewYear;
   const activeMonth = viewMonth;
   const today = useMemo(() => todayIso(), []);
- 
-  useEffect(() => {
-    if (!open) {
-      setPanel("days");
-      setHolidayPopup(null);
-    }
-  }, [open]);
  
   const prevPanel = useRef<PanelMode>("days");
   useEffect(() => {
@@ -221,7 +212,21 @@ export function DatePicker2({
     }
     return list;
   }, [yearPage]);
- 
+
+  const openPicker = () => {
+    setPanel("days");
+    setHolidayPopup(null);
+    onOpenChange(true);
+  };
+
+  const togglePicker = () => {
+    if (!open) {
+      setPanel("days");
+      setHolidayPopup(null);
+    }
+    onOpenChange(!open);
+  };
+
   return (
     <div className="relative" ref={wrapperRef}>
       <Input
@@ -231,7 +236,7 @@ export function DatePicker2({
         value={text}
         aria-invalid={isInvalid}
         readOnly
-        onClick={() => onOpenChange(true)}
+        onClick={openPicker}
         onBlur={onBlur}
         className={cn(
           "h-12 cursor-pointer rounded-2xl border-slate-300 bg-white px-4 pr-11 text-sm transition-all duration-150 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.12)]",
@@ -252,7 +257,7 @@ export function DatePicker2({
         size="sm"
         tabIndex={-1}
         aria-label="Open calendar"
-        onClick={() => onOpenChange(!open)}
+        onClick={togglePicker}
         className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full p-0 transition-colors"
         style={{
           color: open ? "var(--primary-color)" : "#94A3B8",

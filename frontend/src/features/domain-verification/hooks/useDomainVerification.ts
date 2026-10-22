@@ -1,19 +1,16 @@
 import { useNavigate } from "react-router-dom";
- 
+
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
- 
 import { setDomain } from "../domainSlice";
- 
+
 import { useVerifyDomainMutation } from "../api/domainApi";
-import { showPageLoader } from "../../employee/employeeSlice";
 import { toast } from "react-toastify";
 
 export const useDomainVerification = () => {
   const navigate = useNavigate();
- 
   const dispatch = useAppDispatch();
- 
-  const [verifyDomainApi] =
+
+  const [verifyDomainApi, { isLoading: isVerifying }] =
     useVerifyDomainMutation();
  
   const verifyDomain = async (
@@ -29,13 +26,11 @@ export const useDomainVerification = () => {
 
         dispatch(setDomain(domain));
 
-        dispatch(showPageLoader());
-
         toast.success("Domain verified successfully.");
 
-        setTimeout(() => {
-          navigate(`/${domain}/login`);
-        }, 1000);
+        navigate(`/${domain}/login`, {
+          state: { showLoginSkeleton: true },
+        });
 
         return true;
       }
@@ -53,5 +48,6 @@ export const useDomainVerification = () => {
  
   return {
     verifyDomain,
+    isVerifying,
   };
 };

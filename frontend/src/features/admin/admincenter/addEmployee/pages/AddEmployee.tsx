@@ -1537,16 +1537,18 @@ function DateFieldControl({ name, value, onCommit, onFieldBlur, error, hint, min
   const seed = value ? new Date(`${value}T00:00:00`) : new Date();
   const [viewYear, setViewYear] = useState(seed.getFullYear());
   const [viewMonth, setViewMonth] = useState(seed.getMonth() + 1);
+  const [previousValue, setPreviousValue] = useState(value);
  
   // Keep local text/view month in sync when the value changes from outside (reset, clear, prefill)
-  useEffect(() => {
+  if (value !== previousValue) {
+    setPreviousValue(value);
     setText(isoToDmy(value));
     if (value) {
       const d = new Date(`${value}T00:00:00`);
       setViewYear(d.getFullYear());
       setViewMonth(d.getMonth() + 1);
     }
-  }, [value]);
+  }
  
   const gotoIso = (iso: string) => {
     const d = new Date(`${iso}T00:00:00`);

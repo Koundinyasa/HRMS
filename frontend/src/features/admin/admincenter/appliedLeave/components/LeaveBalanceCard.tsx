@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { LeaveBalance,LeaveBalanceCardProps } from "../types/appliedLeave.types";
+import type { LeaveBalanceCardProps } from "../types/appliedLeave.types";
 const DOT_COLORS = [
   "#22c55e",
   "#f97316",

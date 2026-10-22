@@ -18,6 +18,7 @@ export function LeaveStatusConfigProvider({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useStatusConfigMap(): StatusConfigMap {
   return useContext(LeaveStatusConfigContext);
 }

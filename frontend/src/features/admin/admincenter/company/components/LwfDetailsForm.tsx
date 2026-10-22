@@ -189,7 +189,7 @@
 
 
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -211,16 +211,16 @@ export default function LwfDetailsForm() {
   const [employeeContribution, setEmployeeContribution] = useState(0);
   const [employerContribution, setEmployerContribution] = useState(0);
   const [deductionMonths, setDeductionMonths] = useState<string[]>([]);
+  const [previousLwf, setPreviousLwf] = useState<typeof lwf>();
 
-  useEffect(() => {
-    if (lwf) {
+  if (lwf && lwf !== previousLwf) {
+      setPreviousLwf(lwf);
       setEffectiveFrom(lwf.effectiveFrom);
       setCutoffAmount(lwf.cutoffAmount);
       setEmployeeContribution(lwf.employeeContribution);
       setEmployerContribution(lwf.employerContribution);
       setDeductionMonths(monthsToArray(lwf));
-    }
-  }, [lwf]);
+  }
 
   function handleMonthChange(month: string) {
     setDeductionMonths((prev) =>

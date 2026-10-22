@@ -33,7 +33,10 @@ export const useSalaryComponent = () => {
   const [deleteTarget, setDeleteTarget] = useState<SalaryComponent | null>(null);
 
   const { data: apiComponents, isLoading, isError } = useGetSalaryComponentsQuery();
-  const allComponents = isError ? DEFAULT_SALARY_COMPONENTS : apiComponents ?? [];
+  const allComponents = useMemo(
+    () => (isError ? DEFAULT_SALARY_COMPONENTS : apiComponents ?? []),
+    [isError, apiComponents]
+  );
   const usingFallback = isError;
   const [createComponent, { isLoading: isCreating }] = useCreateSalaryComponentMutation();
   const [updateComponent, { isLoading: isUpdating }] = useUpdateSalaryComponentMutation();

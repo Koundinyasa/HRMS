@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react";
 
@@ -80,7 +80,6 @@ export default function LeaveApply() {
     control,
     handleSubmit,
     reset,
-    watch,
     setValue,
     setError,
     formState: { errors },
@@ -91,9 +90,9 @@ export default function LeaveApply() {
     mode: "onTouched",
   });
 
-  const fromDate = watch("fromDate");
-  const leaveType = watch("leaveType");
-  const toDate = watch("toDate");
+  const fromDate = useWatch({ control, name: "fromDate" });
+  const leaveType = useWatch({ control, name: "leaveType" });
+  const toDate = useWatch({ control, name: "toDate" });
 
   const isSingleDay = fromDate && toDate && fromDate === toDate;
 

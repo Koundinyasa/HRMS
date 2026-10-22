@@ -170,15 +170,12 @@ export const useExitFilters = () => {
   };
 
   const activeCount = useMemo(() => {
-    const {
-      search: _search,
-      ...rest
-    } = filters;
-
-    return Object.values(rest).reduce(
-      (total, values) =>
-        total + (values?.length ?? 0),
-      0
+    return Object.entries(filters).reduce(
+      (total, [key, values]) =>
+        key === "search"
+          ? total
+          : total + (values?.length ?? 0),
+      0,
     );
   }, [filters]);
 

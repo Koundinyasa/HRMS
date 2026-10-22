@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react";
 
@@ -131,7 +131,6 @@ export default function ApplyLeaveForEmployee() {
     control,
     handleSubmit,
     reset,
-    watch,
     setValue,
     setError,
     formState: { errors },
@@ -142,9 +141,9 @@ export default function ApplyLeaveForEmployee() {
     mode: "onTouched",
   });
 
-  const fromDate = watch("fromDate");
-  const leaveType = watch("leaveType");
-  const toDate = watch("toDate");
+  const fromDate = useWatch({ control, name: "fromDate" });
+  const leaveType = useWatch({ control, name: "leaveType" });
+  const toDate = useWatch({ control, name: "toDate" });
 
   const isSingleDay = fromDate && toDate && fromDate === toDate;
 
@@ -156,10 +155,11 @@ export default function ApplyLeaveForEmployee() {
     }
   }, [isSingleDay, setValue]);
 
-  useEffect(() => {
+  const handleApplyForEmployeeChange = (employeeId: string) => {
+    setApplyForEmployeeId(employeeId);
     setValue("leaveType", "");
     setLeaveTypeOpen(false);
-  }, [applyForEmployeeId, setValue]);
+  };
 
   const totalDays =
     fromDate && toDate
@@ -230,7 +230,7 @@ export default function ApplyLeaveForEmployee() {
       await refetchEmployeeDetails();
 
       reset(DEFAULT_VALUES);
-      setApplyForEmployeeId("");
+      handleApplyForEmployeeChange("");
     }
   };
 
@@ -286,7 +286,7 @@ export default function ApplyLeaveForEmployee() {
                 id="applyFor"
                 employees={reportingEmployees}
                 value={applyForEmployeeId}
-                onChange={setApplyForEmployeeId}
+                onChange={handleApplyForEmployeeChange}
                 loading={employeesLoading}
                 placeholder="Search employee..."
               />

@@ -1,6 +1,6 @@
 
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -151,12 +151,17 @@ export default function CompanyForm() {
   const [dateCalendarOpen, setDateCalendarOpen] = useState(false);
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [previousCompany, setPreviousCompany] = useState<typeof company>();
+  const [previousEstablishmentDate, setPreviousEstablishmentDate] =
+    useState<string>();
 
-  useEffect(() => {
-    if (company) setCompanyData(company);
-  }, [company]);
+  if (company && company !== previousCompany) {
+    setPreviousCompany(company);
+    setCompanyData(company);
+  }
 
-  useEffect(() => {
+  if (companyData.dateOfEstablishment !== previousEstablishmentDate) {
+    setPreviousEstablishmentDate(companyData.dateOfEstablishment);
     setDateText(isoToDisplay(companyData.dateOfEstablishment));
     if (companyData.dateOfEstablishment) {
       const [y, m] = companyData.dateOfEstablishment.split("-");
@@ -165,7 +170,7 @@ export default function CompanyForm() {
         setViewMonth(Number(m) - 1);
       }
     }
-  }, [companyData.dateOfEstablishment]);
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { id, value } = e.target;

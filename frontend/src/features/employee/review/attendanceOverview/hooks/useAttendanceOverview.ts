@@ -664,7 +664,6 @@
 
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -679,7 +678,10 @@ import type {
   Toast,
 } from "../types/attendanceOverview.types";
 
-import type { Employee } from "../types/regularization.types";
+import type {
+  AttendanceOverviewData,
+  Employee,
+} from "../types/regularization.types";
 
 import {
   getOverviewStats,
@@ -922,7 +924,7 @@ export function useAttendanceOverview() {
   // SELECTED DATE
   // =====================================================
 
-  const [selectedDate, setSelectedDate] =
+  const [selectedDateState, setSelectedDate] =
     useState(
       currentDate.getDate(),
     );
@@ -1078,6 +1080,11 @@ export function useAttendanceOverview() {
     selectedYear,
     selectedMonthNumber,
   ]);
+  const selectedDate = days.some(
+    (day) => day.date === selectedDateState,
+  )
+    ? selectedDateState
+    : (days[0]?.date ?? selectedDateState);
 
   console.log("===== ATTENDANCE STATUS DEBUG =====");
   console.log("Raw attendance:", attendance);
@@ -1121,7 +1128,7 @@ export function useAttendanceOverview() {
   // UI components expect a single employee object (or null).
 
   const overview = useMemo(() => {
-    let base: any = null;
+    let base: Record<string, unknown> | null;
 
     if (!rawOverview) {
       base = null;
@@ -1175,17 +1182,25 @@ export function useAttendanceOverview() {
           {},
         );
       } else if (!selectedEmployee?.id) {
-        base = rawOverview[0] ?? null;
+        base =
+          rawOverview[0] && typeof rawOverview[0] === "object"
+            ? (rawOverview[0] as Record<string, unknown>)
+            : null;
       } else {
         const match = rawOverview.find(
-          (row: { EmployeeID?: string | number }) =>
-            String(row?.EmployeeID ?? "") ===
-            String(selectedEmployee.id),
+          (row) =>
+            String(
+              (row as Record<string, unknown>).EmployeeID ?? "",
+            ) === String(selectedEmployee.id),
         );
-        base = match ?? rawOverview[0] ?? null;
+        const selectedRow = match ?? rawOverview[0];
+        base =
+          selectedRow && typeof selectedRow === "object"
+            ? (selectedRow as Record<string, unknown>)
+            : null;
       }
     } else {
-      base = rawOverview;
+      base = rawOverview as Record<string, unknown>;
     }
 
     // Enrich with simple aggregates from normalized days when
@@ -1227,8 +1242,8 @@ export function useAttendanceOverview() {
       }
     }
 
-    return base;
-  }, [rawOverview, selectedEmployee?.id, days]);
+    return base as unknown as AttendanceOverviewData;
+  }, [rawOverview, selectedEmployee, days]);
 
   // =====================================================
   // OVERVIEW STATS
@@ -1252,25 +1267,6 @@ export function useAttendanceOverview() {
       (day) =>
         day.date === selectedDate,
     ) ?? days[0];
-
-  // =====================================================
-  // KEEP SELECTED DATE VALID
-  // =====================================================
-
-  useEffect(() => {
-    if (
-      days.length > 0 &&
-      !days.some(
-        (day) =>
-          day.date === selectedDate,
-      )
-    ) {
-      setSelectedDate(days[0].date);
-    }
-  }, [
-    days,
-    selectedDate,
-  ]);
 
   // =====================================================
   // TOAST
@@ -1458,7 +1454,7 @@ export function useAttendanceOverview() {
     }, [
       days,
       pushToast,
-      selectedEmployee?.id,
+      selectedEmployee,
       selectedMonth,
     ]);
 

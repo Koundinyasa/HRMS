@@ -37,7 +37,7 @@ function HalfCell({ checked }: { checked: boolean }) {
 }
 
 export default function WeeklyOffPanel() {
-  const [year, setYear] = useState(2026);
+  const [year] = useState(2026);
   const [month, setMonth] = useState(1); // Feb
   const [selectedMasterId, setSelectedMasterId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -57,7 +57,7 @@ export default function WeeklyOffPanel() {
   const [updateWeeklyOff, { isLoading: isUpdating }] = useUpdateWeeklyOffMutation();
   const [deleteWeeklyOff] = useDeleteWeeklyOffMutation();
 
-  const effectiveFromOptions = useMemo(buildEffectiveFromOptions, []);
+  const effectiveFromOptions = useMemo(() => buildEffectiveFromOptions(), []);
 
   const openAddModal = () => {
     setEditingWeeklyOff(null);
@@ -204,15 +204,17 @@ export default function WeeklyOffPanel() {
         </div>
       </div>
 
-      <WeeklyOffFormModal
-        isOpen={modalOpen}
-        masterLabel={activeMasterLabel}
-        effectiveFromOptions={effectiveFromOptions}
-        initialData={editingWeeklyOff}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        isSubmitting={isCreating || isUpdating}
-      />
+      {modalOpen && (
+        <WeeklyOffFormModal
+          isOpen={modalOpen}
+          masterLabel={activeMasterLabel}
+          effectiveFromOptions={effectiveFromOptions}
+          initialData={editingWeeklyOff}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          isSubmitting={isCreating || isUpdating}
+        />
+      )}
     </div>
   );
 }

@@ -61,6 +61,9 @@ type Column = {
   label: string;
 };
 
+const employeeField = (employee: Employee, key: string): unknown =>
+  (employee as unknown as Record<string, unknown>)[key];
+
 /* ============================================================
    VALID EMPLOYEE FILTER TYPES
 ============================================================ */
@@ -142,12 +145,12 @@ function useOutsideClick(
 ============================================================ */
 
 function FixedDropdown({
-  anchor,
+  anchorRef,
   children,
   width = 220,
   onClose,
 }: {
-  anchor: HTMLElement | null;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
   children: ReactNode;
   width?: number;
   onClose: () => void;
@@ -160,9 +163,8 @@ function FixedDropdown({
   });
 
   useEffect(() => {
-    if (!anchor) {
-      return;
-    }
+    const anchor = anchorRef.current;
+    if (!anchor) return;
 
     const update = () => {
       const rect = anchor.getBoundingClientRect();
@@ -192,13 +194,9 @@ function FixedDropdown({
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [anchor, width]);
+  }, [anchorRef, width]);
 
   useOutsideClick(ref, onClose);
-
-  if (!anchor) {
-    return null;
-  }
 
   return (
     <div
@@ -312,7 +310,7 @@ function MultiFilter({
 
       {open && (
         <FixedDropdown
-          anchor={buttonRef.current}
+          anchorRef={buttonRef}
           width={224}
           onClose={() => setOpen(false)}
         >
@@ -429,7 +427,7 @@ function ColumnHeader({
 
       {open && (
         <FixedDropdown
-          anchor={buttonRef.current}
+          anchorRef={buttonRef}
           width={220}
           onClose={() => setOpen(false)}
         >
@@ -565,7 +563,7 @@ export default function EmployeePage1() {
       if (type === "male") {
         return (
           String(
-            (employee as any).Gender ?? ""
+            employeeField(employee, "Gender") ?? ""
           )
             .trim()
             .toLowerCase() === "male"
@@ -579,7 +577,7 @@ export default function EmployeePage1() {
       if (type === "female") {
         return (
           String(
-            (employee as any).Gender ?? ""
+            employeeField(employee, "Gender") ?? ""
           )
             .trim()
             .toLowerCase() === "female"
@@ -595,7 +593,7 @@ export default function EmployeePage1() {
 
       if (type === "joined") {
         return Boolean(
-          (employee as any).JoiningDate
+          employeeField(employee, "JoiningDate")
         );
       }
 
@@ -608,7 +606,7 @@ export default function EmployeePage1() {
 
       if (type === "left") {
         return Boolean(
-          (employee as any).ExitDate
+          employeeField(employee, "ExitDate")
         );
       }
 
@@ -618,9 +616,9 @@ export default function EmployeePage1() {
 
       if (type === "confirmation-pending") {
         const confirmationStatus = String(
-          (employee as any).ConfirmationStatus ??
-            (employee as any).EmpStatus ??
-            (employee as any).EmployeeStatus ??
+          employeeField(employee, "ConfirmationStatus") ??
+            employeeField(employee, "EmpStatus") ??
+            employeeField(employee, "EmployeeStatus") ??
             ""
         )
           .trim()
@@ -784,10 +782,8 @@ export default function EmployeePage1() {
       salary: uniq(
         fullRows.map(
           (e) =>
-            (e as any)
-              .SalaryStructureName ??
-            (e as any)
-              .SalaryStructure
+            employeeField(e, "SalaryStructureName") ??
+            employeeField(e, "SalaryStructure")
         )
       ),
 
@@ -800,8 +796,8 @@ export default function EmployeePage1() {
       empStatus: uniq(
         fullRows.map(
           (e) =>
-            (e as any).EmpStatus ??
-            (e as any).EmployeeStatus ??
+            employeeField(e, "EmpStatus") ??
+            employeeField(e, "EmployeeStatus") ??
             (e.ExitDate
               ? "Left"
               : "Active")
@@ -825,9 +821,8 @@ export default function EmployeePage1() {
     employee: Employee
   ) =>
     String(
-      (employee as any).EmpStatus ??
-        (employee as any)
-          .EmployeeStatus ??
+      employeeField(employee, "EmpStatus") ??
+        employeeField(employee, "EmployeeStatus") ??
         (isEmployeeFull(employee) &&
         employee.ExitDate
           ? "Left"
@@ -893,10 +888,8 @@ export default function EmployeePage1() {
             (salaryFilter.length === 0 ||
               salaryFilter.includes(
                 String(
-                  (employee as any)
-                    .SalaryStructureName ??
-                    (employee as any)
-                      .SalaryStructure ??
+                  employeeField(employee, "SalaryStructureName") ??
+                    employeeField(employee, "SalaryStructure") ??
                     ""
                 )
               )) &&
@@ -928,7 +921,7 @@ export default function EmployeePage1() {
 
             const employeeValue =
               String(
-                (employee as any)[key] ??
+                employeeField(employee, key) ??
                   ""
               ).toLowerCase();
 
@@ -953,13 +946,13 @@ export default function EmployeePage1() {
       result = [...result].sort(
         (a, b) => {
           const first = String(
-            (a as any)[
+            (a as unknown as Record<string, unknown>)[
               sortConfig.key!
             ] ?? ""
           ).toLowerCase();
 
           const second = String(
-            (b as any)[
+            (b as unknown as Record<string, unknown>)[
               sortConfig.key!
             ] ?? ""
           ).toLowerCase();
@@ -1038,7 +1031,11 @@ export default function EmployeePage1() {
   ============================================================ */
 
   useEffect(() => {
-    setPage(1);
+    const frame = window.requestAnimationFrame(() => {
+      setPage(1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [
     search,
     branchFilter,

@@ -11,6 +11,7 @@ interface ReportTableColumn {
   key: string;
   label: string;
   align?: "left" | "right" | "center";
+  minWidth?: string;
   render?: (row: EmployeeReportRow) => React.ReactNode;
 }
 
@@ -65,6 +66,7 @@ export default function ReportTable({
                     ? "text-center"
                     : "text-left"
                 }`}
+                style={col.minWidth ? { minWidth: col.minWidth } : undefined}
               >
                 {col.label}
               </th>
@@ -107,6 +109,7 @@ export default function ReportTable({
                         ? "text-brand-700 font-medium"
                         : "text-gray-700"
                     }`}
+                    style={col.minWidth ? { minWidth: col.minWidth } : undefined}
                   >
                     {col.render
                       ? col.render(row)

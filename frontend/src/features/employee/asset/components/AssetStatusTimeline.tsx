@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Check,
   ChevronDown,
@@ -73,11 +73,11 @@ const getStageClasses = (
 export default function AssetStatusTimeline({
   requests,
 }: Props) {
-  const [expandedId, setExpandedId] =
-    useState<number | null>(null);
-
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [viewState, setViewState] = useState<{
+    requestIds: string;
+    currentPage: number;
+    expandedId: number | null;
+  } | null>(null);
 
   const itemsPerPage = 3;
 
@@ -89,6 +89,14 @@ export default function AssetStatusTimeline({
       );
     });
   }, [requests]);
+
+  const requestIds = sortedRequests.map((request) => request.Id).join(",");
+  const currentPage =
+    viewState?.requestIds === requestIds ? viewState.currentPage : 1;
+  const expandedId =
+    viewState?.requestIds === requestIds
+      ? viewState.expandedId
+      : (sortedRequests[0]?.Id ?? null);
 
   const totalPages = Math.ceil(
     sortedRequests.length / itemsPerPage
@@ -102,20 +110,19 @@ export default function AssetStatusTimeline({
       startIndex,
       startIndex + itemsPerPage
     );
-  useEffect(() => {
-    if (sortedRequests.length) {
-      setCurrentPage(1);
-      setExpandedId(sortedRequests[0].Id);
-    }
-  }, [sortedRequests]);
   const toggleExpand = (id: number) => {
-    setExpandedId((prev) =>
-      prev === id ? null : id
-    );
+    setViewState({
+      requestIds,
+      currentPage,
+      expandedId: expandedId === id ? null : id,
+    });
   };
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    setExpandedId(null);
+    setViewState({
+      requestIds,
+      currentPage: page,
+      expandedId: null,
+    });
   };
 
   return (
@@ -130,12 +137,6 @@ export default function AssetStatusTimeline({
             (stage) =>
               stage.StageState === "COMPLETED"
           ).length;
-        const currentStage =
-          request.Stages.find(
-            (stage) =>
-              stage.StageState ===
-              "CURRENT"
-          );
         const rejectedStage =
           request.Stages.find(
             (stage) =>
@@ -271,7 +272,7 @@ export default function AssetStatusTimeline({
                         </p>
                       </div>
 
-                      {request.Stages.map((stage, index) => {
+                      {request.Stages.map((stage) => {
                         const status = getStageStatus(stage.StageState);
                         const style = getStageClasses(status);
 

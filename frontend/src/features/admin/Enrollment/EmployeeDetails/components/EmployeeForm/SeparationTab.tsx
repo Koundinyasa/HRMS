@@ -1002,8 +1002,23 @@ import DatePicker from "../ui/datepicker";
 ============================================================ */
 
 interface SeparationTabProps {
-  form: any;
-  set: (key: string, value: any) => void;
+  form: {
+    photoUrl?: string;
+    fullName?: string;
+    empId?: string | number;
+    designation?: string;
+    branch?: string;
+    dateOfJoining?: string;
+    mobile?: string;
+    email?: string;
+    noticePeriodDays?: string | number;
+    reasonForLeaving?: string;
+    remarks?: string;
+    employeeLock?: boolean;
+    resignationDate?: string;
+    dateOfLeaving?: string;
+  };
+  set: (key: string, value: string | number | boolean) => void;
   onSave?: () => void;
   onDiscard?: () => void;
 }
@@ -1142,19 +1157,23 @@ function useSeparationDatePicker(
 
   /* Sync when parent form value changes */
   useEffect(() => {
-    setText(formatDisplayDate(value));
+    const frame = window.requestAnimationFrame(() => {
+      setText(formatDisplayDate(value));
 
-    const parsed = parseDisplayDate(value);
+      const parsed = parseDisplayDate(value);
 
-    if (parsed) {
-      const [year, month] = parsed
-        .split("-")
-        .map(Number);
+      if (parsed) {
+        const [year, month] = parsed
+          .split("-")
+          .map(Number);
 
-      setViewMonth(
-        new Date(year, month - 1, 1)
-      );
-    }
+        setViewMonth(
+          new Date(year, month - 1, 1)
+        );
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [value]);
 
   const monthLabel = useMemo(
@@ -1368,7 +1387,7 @@ const SeparationTab: React.FC<SeparationTabProps> = ({
 
   const wrappedSet = (
     key: string,
-    value: any
+    value: string | number | boolean
   ) => {
     set(key, value);
   };

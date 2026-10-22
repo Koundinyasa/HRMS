@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X, Bookmark } from "lucide-react";
 import type { Holiday } from "../api/holidaySettingsApi";
 
@@ -25,6 +25,16 @@ const EMPTY_FORM: HolidayFormValues = {
   isRestrictedHoliday: false,
 };
 
+function getInitialForm(initialData?: Holiday | null): HolidayFormValues {
+  if (!initialData) return EMPTY_FORM;
+  return {
+    holidayName: initialData.holidayName,
+    holidayDate: initialData.holidayDate,
+    isNationalHoliday: initialData.isNationalHoliday,
+    isRestrictedHoliday: initialData.isRestrictedHoliday,
+  };
+}
+
 export default function HolidayFormModal({
   isOpen,
   masterLabel,
@@ -33,20 +43,9 @@ export default function HolidayFormModal({
   onSubmit,
   isSubmitting,
 }: HolidayFormModalProps) {
-  const [form, setForm] = useState<HolidayFormValues>(EMPTY_FORM);
-
-  useEffect(() => {
-    if (initialData) {
-      setForm({
-        holidayName: initialData.holidayName,
-        holidayDate: initialData.holidayDate,
-        isNationalHoliday: initialData.isNationalHoliday,
-        isRestrictedHoliday: initialData.isRestrictedHoliday,
-      });
-    } else {
-      setForm(EMPTY_FORM);
-    }
-  }, [initialData, isOpen]);
+  const [form, setForm] = useState<HolidayFormValues>(() =>
+    getInitialForm(initialData),
+  );
 
   if (!isOpen) return null;
 

@@ -1,4 +1,4 @@
-​​import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronDown,
   ChevronRight,
-  CalendarDays,
   SlidersHorizontal,
   FileText,
   FileSpreadsheet,
@@ -403,9 +402,6 @@ export default function GratuityModulePage() {
 
   const errorInputClass =
     "w-full h-8 border border-[#f04438] bg-[#fff7f6] rounded-sm px-2.5 outline-none text-[10.5px] text-[#344054] focus:border-[#f04438] placeholder:text-[#98a2b3]";
-
-  const iconBtnClass =
-    "w-[30px] h-[30px] border border-[#e4e7ec] rounded bg-white flex items-center justify-center cursor-pointer text-[#667085] hover:bg-[#f2f4f7]";
 
   return (
     <div className="min-h-screen w-full max-w-full bg-[#f5f7fa] text-[#344054] font-sans text-[12px] relative overflow-x-hidden">

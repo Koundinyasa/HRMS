@@ -11,6 +11,8 @@ interface Row extends Record<string, unknown> {
   employeeName?: string;
 }
 
+const EMPTY_ROWS: Row[] = [];
+
 export default function AttendanceIntegrationReportPage() {
   const navigate = useNavigate();
   const [fromMonth, setFromMonth] = useState("2026-09-01");
@@ -21,7 +23,7 @@ export default function AttendanceIntegrationReportPage() {
   const [page, setPage] = useState(1);
 
   // No mock data. The existing backend endpoint/response contract should be connected here.
-  const rows: Row[] = [];
+  const rows: Row[] = EMPTY_ROWS;
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();

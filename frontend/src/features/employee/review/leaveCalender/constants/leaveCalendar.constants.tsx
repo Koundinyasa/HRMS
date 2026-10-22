@@ -201,8 +201,8 @@ export const getEmployeeName = (
    SEARCH
 ========================================================= */
 
-export const filterEmployees = (
-  employees: any[],
+export const filterEmployees = <T extends Record<string, unknown>>(
+  employees: T[],
   searchTerm: string,
 ) => {
   const search = searchTerm
@@ -230,7 +230,7 @@ export const filterEmployees = (
 ========================================================= */
 
 export const summarizeAttendance = (
-  employee: Record<string, any>,
+  employee: Record<string, unknown>,
 ): Pick<
   AttendanceHistoryEmployee,
   "present" | "absent"

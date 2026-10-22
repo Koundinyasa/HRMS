@@ -4810,16 +4810,6 @@ const avatarColorFor = (name: string) => {
   return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 };
 
-/* =========================================================
-   API RESPONSE EXTRACTION
-
-   Supports:
-   [...]
-   { data: [...] }
-   { Employees: [...] }
-   { data: { Employees: [...] } }
-========================================================= */
-
 const extractEmployees = (
   response: unknown
 ): EmployeeRecord[] => {
@@ -4862,16 +4852,6 @@ const extractEmployees = (
 
   return [];
 };
-
-/* =========================================================
-   BUILD ORGANIZATION TREE
-
-   No synthetic Organization card.
-   No synthetic Reporting Manager card.
-
-   Employees with missing manager records are displayed
-   as standalone roots using their actual employee data.
-========================================================= */
 
 function buildTree(records: EmployeeRecord[]): OrgNode[] {
   const employees = records
@@ -4920,9 +4900,6 @@ function buildTree(records: EmployeeRecord[]): OrgNode[] {
       attached.add(employee.id);
     }
   });
-
-  // Promote employees whose manager is missing from
-  // the backend response to standalone actual employee roots.
   employees.forEach((employee) => {
     if (!attached.has(employee.id)) {
       const node = nodeById.get(employee.id)!;
@@ -4935,8 +4912,6 @@ function buildTree(records: EmployeeRecord[]): OrgNode[] {
     }
   });
 
-  // Prevent circular parent-child relationships from
-  // causing recursive rendering loops.
   const visited = new Set<string>();
 
   const cleanTree = (node: OrgNode): OrgNode => {
@@ -4960,29 +4935,106 @@ function buildTree(records: EmployeeRecord[]): OrgNode[] {
   return roots.map(cleanTree);
 }
 
+function buildRoleGroupedTree(records: EmployeeRecord[]): OrgNode[] {
+
+  const tree = buildTree(records);
+
+  const allNodes: OrgNode[] = [];
+
+  const collectNodes = (node: OrgNode) => {
+    allNodes.push(node);
+    node.children.forEach(collectNodes);
+  };
+
+  tree.forEach(collectNodes);
+
+  const normalizedDesignation = (node: OrgNode) =>
+    node.designation.trim().toUpperCase();
+
+  const isProjectManager = (node: OrgNode) =>
+    normalizedDesignation(node).includes("PROJECT MANAGER");
+
+  const isTeamLead = (node: OrgNode) =>
+    normalizedDesignation(node).includes("TEAM LEAD");
+
+  const isHrExecutive = (node: OrgNode) =>
+    normalizedDesignation(node).includes("HR EXECUTIVE");
+
+  const projectManager = allNodes.find(isProjectManager);
+  if (!projectManager) {
+    return tree;
+  }
+
+  const teamLeads = allNodes.filter(
+    (node) => isTeamLead(node) && node.id !== projectManager.id
+  );
+
+  const hrExecutives = allNodes.filter(
+    (node) => isHrExecutive(node) && node.id !== projectManager.id
+  );
+
+  if (teamLeads.length === 0 && hrExecutives.length === 0) {
+    return tree;
+  }
+
+  /*
+   * Clone the nodes so we never mutate the RTK Query/API data.
+   */
+  const cloneNode = (node: OrgNode): OrgNode => ({
+    ...node,
+    children: node.children.map(cloneNode),
+  });
+  const secondLevelNodes = [
+    ...teamLeads,
+    ...hrExecutives,
+  ].map(cloneNode);
+
+  const specialIds = new Set(
+    secondLevelNodes.map((node) => node.id)
+  );
+
+  const removeSpecialNodes = (node: OrgNode): OrgNode => ({
+    ...node,
+    children: node.children
+      .filter((child) => !specialIds.has(child.id))
+      .map(removeSpecialNodes),
+  });
+
+  const cleanedTree = tree.map(removeSpecialNodes);
+  const cleanedProjectManager =
+    cleanedTree.find((node) => node.id === projectManager.id) ??
+    cloneNode(projectManager);
+  const existingDirectReports = cleanedProjectManager.children.filter(
+    (child) => !specialIds.has(child.id)
+  );
+  const finalProjectManager: OrgNode = {
+    ...cleanedProjectManager,
+    children: [
+      ...secondLevelNodes,
+      ...existingDirectReports,
+    ],
+  };
+
+  const remainingRoots = cleanedTree.filter(
+    (root) =>
+      root.id !== projectManager.id &&
+      !specialIds.has(root.id)
+  );
+
+  return [finalProjectManager, ...remainingRoots];
+}
+
 /* =========================================================
    ZOOM SETTINGS
 ========================================================= */
 
-const MIN_ZOOM = 0.3;
+const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 2;
 const ZOOM_STEP = 0.1;
-
-/* Card sizing — the connector lines are measured from real DOM
-   positions (see useConnectorPaths below), so a wide subtree on
-   one branch can never overlap its neighbors. */
 const CARD_SIZE = {
   standard: { width: 286, gapX: 44, connectorHeight: 48 },
   compact: { width: 220, gapX: 30, connectorHeight: 38 },
 };
-
-/* =========================================================
-   CONNECTOR MEASUREMENT HOOK
-
-   Measures the real rendered position of the children row and
-  each child card, so the SVG connectors always line up
-   exactly — even when one branch is much wider than another.
-========================================================= */
 
 function useConnectorPaths(
   childCount: number,
@@ -4991,12 +5043,11 @@ function useConnectorPaths(
 ) {
   const rowRef = useRef<HTMLDivElement>(null);
   const childRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [state, setState] = useState<{ width: number; paths: string[] }>({
+  const [state, setState] = useState<{ width: number; height: number; paths: string[] }>({
     width: 0,
+    height: connectorHeight,
     paths: [],
   });
-
-  childRefs.current = [];
 
   const registerChild = useCallback(
     (index: number) => (element: HTMLDivElement | null) => {
@@ -5013,26 +5064,39 @@ function useConnectorPaths(
     if (!row) return;
 
     const measure = () => {
-      const rowRect = row.getBoundingClientRect();
-      const width = rowRect.width;
+      const width = row.offsetWidth;
       const parentX = width / 2;
 
-      const paths = childRefs.current.map((element) => {
-        if (!element) return "";
+      const childXs = childRefs.current
+        .map((element) => {
+          if (!element) return null;
+          return element.offsetLeft + element.offsetWidth / 2;
+        })
+        .filter((childX): childX is number => childX !== null);
 
-        const rect = element.getBoundingClientRect();
-        const childX = rect.left - rowRect.left + rect.width / 2;
+      const height = connectorHeight;
+      let paths: string[];
 
-        if (childCount === 1) {
-          return `M ${parentX} 0 V ${connectorHeight}`;
-        }
+      if (childXs.length === 1) {
+        paths = [`M ${parentX} 0 V ${height}`];
+      } else if (childXs.length > 1) {
+        const branchY = Math.round(height / 2);
+        const curveRadius = Math.min(16, branchY * 0.8);
+        const leftX = Math.min(...childXs);
+        const rightX = Math.max(...childXs);
 
-        const branchY = Math.round(connectorHeight / 2);
+        paths = [
+          `M ${parentX} 0 V ${branchY - curveRadius}`,
+          `M ${parentX} ${branchY - curveRadius} Q ${parentX} ${branchY} ${parentX - curveRadius} ${branchY}`,
+          `M ${parentX} ${branchY - curveRadius} Q ${parentX} ${branchY} ${parentX + curveRadius} ${branchY}`,
+          `M ${leftX} ${branchY} H ${rightX}`,
+          ...childXs.map((childX) => `M ${childX} ${branchY} V ${height}`),
+        ];
+      } else {
+        paths = [];
+      }
 
-        return `M ${parentX} 0 V ${branchY} H ${childX} V ${connectorHeight}`;
-      });
-
-      setState({ width, paths });
+      setState({ width, height, paths });
     };
 
     measure();
@@ -5067,10 +5131,27 @@ const OrganizationChartPage: React.FC = () => {
   const [showPhoto, setShowPhoto] = useState(false);
 
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const panRef = useRef({ x: 0, y: 0 });
+  const dragRef = useRef<{
+    active: boolean;
+    moved: boolean;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  }>({
+    active: false,
+    moved: false,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+  });
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setSearch(searchInput.trim());
@@ -5093,30 +5174,61 @@ const OrganizationChartPage: React.FC = () => {
     () => extractEmployees(data),
     [data]
   );
-
   const tree = useMemo(
-    () => buildTree(employees),
+    () => buildRoleGroupedTree(employees),
     [employees]
   );
+  useEffect(() => {
+    panRef.current = pan;
+  }, [pan]);
 
   /* =======================================================
      ZOOM CONTROLS
   ======================================================= */
 
+  const applyZoom = (nextZoom: number) => {
+    // Zoom only. Do not change scrollLeft/scrollTop or move the chart.
+    setZoom(nextZoom);
+  };
+
+  const handleChartWheel = useCallback((event: WheelEvent) => {
+    if (!event.ctrlKey) return;
+
+    event.preventDefault();
+
+    const nextZoom = Math.min(
+      MAX_ZOOM,
+      Math.max(
+        MIN_ZOOM,
+        Number(
+          (zoom + (event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP)).toFixed(2)
+        )
+      )
+    );
+
+    setZoom(nextZoom);
+  }, [zoom]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener("wheel", handleChartWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleChartWheel);
+  }, [handleChartWheel]);
+
   const handleZoomIn = () => {
-    setZoom((current) =>
-      Math.min(MAX_ZOOM, Number((current + ZOOM_STEP).toFixed(2)))
+    applyZoom(
+      Math.min(MAX_ZOOM, Number((zoom + ZOOM_STEP).toFixed(2)))
     );
   };
 
   const handleZoomOut = () => {
-    setZoom((current) =>
-      Math.max(MIN_ZOOM, Number((current - ZOOM_STEP).toFixed(2)))
+    applyZoom(
+      Math.max(MIN_ZOOM, Number((zoom - ZOOM_STEP).toFixed(2)))
     );
   };
 
-  // "Fit to screen" measures the natural width of the tree and
-  // scales it down (never up) so the whole chart is visible at once.
   const handleFit = useCallback(() => {
     const container = containerRef.current;
     const content = contentRef.current;
@@ -5128,21 +5240,55 @@ const OrganizationChartPage: React.FC = () => {
     content.style.transform = "none";
 
     const contentWidth = content.scrollWidth;
-    const availableWidth = container.clientWidth - 48;
+    const contentHeight = content.scrollHeight;
+    const availableWidth = container.clientWidth - 80;
+    const availableHeight = container.clientHeight - 80;
 
     content.style.transform = previousTransform;
 
-    if (contentWidth > 0 && availableWidth > 0) {
+    if (contentWidth > 0 && contentHeight > 0 && availableWidth > 0 && availableHeight > 0) {
       const nextScale = Math.min(
         1,
-        Math.max(MIN_ZOOM, availableWidth / contentWidth)
+        Math.max(
+          MIN_ZOOM,
+          Math.min(availableWidth / contentWidth, availableHeight / contentHeight)
+        )
       );
 
       setZoom(Number(nextScale.toFixed(2)));
+      setPan({ x: 0, y: 0 });
+      panRef.current = { x: 0, y: 0 };
     }
   }, []);
 
-  const handleResetZoom = () => setZoom(1);
+  useEffect(() => {
+    const container = containerRef.current;
+    const content = contentRef.current;
+
+    if (!container || !content || isLoading || tree.length === 0) return;
+    let fitTimer = 0;
+
+    const scheduleFit = () => {
+      window.clearTimeout(fitTimer);
+      fitTimer = window.setTimeout(handleFit, 350);
+    };
+
+    const observer = new ResizeObserver(scheduleFit);
+
+    observer.observe(container);
+
+    scheduleFit();
+
+    return () => {
+      window.clearTimeout(fitTimer);
+      observer.disconnect();
+    };
+  }, [handleFit, isLoading, tree.length]);
+  const handleResetZoom = () => {
+    applyZoom(1);
+    setPan({ x: 0, y: 0 });
+    panRef.current = { x: 0, y: 0 };
+  };
 
   const handleDownload = () => {
     window.print();
@@ -5150,8 +5296,8 @@ const OrganizationChartPage: React.FC = () => {
 
   return (
     <div
-      className="flex h-[calc(100vh-80px)] w-full flex-col bg-[#F7F7F7]"
-      style={{ fontFamily: "Urbanist, Geist Variable, sans-serif" }}
+      className="organization-chart-page flex h-[calc(100vh-80px)] w-full flex-col bg-[#F7F7F7]"
+      style={{ fontFamily: "Poppins, Urbanist, sans-serif" }}
     >
 
       {/* ENROLLMENT TABS */}
@@ -5339,12 +5485,76 @@ const OrganizationChartPage: React.FC = () => {
         ) : (
           <div
             ref={containerRef}
-              className="occ-scroll relative min-h-0 flex-1 overflow-auto rounded-xl border border-[#E2E2E2] bg-[#F5F5F5] p-10 shadow-[inset_0_1px_3px_rgba(19,19,19,0.04)]"
+            onPointerDown={(event) => {
+              if (event.pointerType !== "mouse" || event.button !== 0) return;
+
+              const target = event.target as HTMLElement;
+
+              // Do not start chart panning when interacting with controls.
+              if (target.closest("button, input, select, textarea, a")) return;
+
+              const rect = event.currentTarget.getBoundingClientRect();
+
+              dragRef.current = {
+                active: true,
+                moved: false,
+                startX: event.clientX - rect.left,
+                startY: event.clientY - rect.top,
+                originX: panRef.current.x,
+                originY: panRef.current.y,
+              };
+
+              event.currentTarget.setPointerCapture(event.pointerId);
+              event.currentTarget.style.cursor = "grabbing";
+            }}
+            onPointerMove={(event) => {
+              const drag = dragRef.current;
+              if (!drag.active) return;
+
+              const rect = event.currentTarget.getBoundingClientRect();
+              const x = event.clientX - rect.left;
+              const y = event.clientY - rect.top;
+
+              const dx = x - drag.startX;
+              const dy = y - drag.startY;
+
+              if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                drag.moved = true;
+              }
+
+              const nextPan = {
+                x: drag.originX + dx,
+                y: drag.originY + dy,
+              };
+
+              panRef.current = nextPan;
+              setPan(nextPan);
+            }}
+            onPointerUp={(event) => {
+              dragRef.current.active = false;
+              event.currentTarget.style.cursor = "grab";
+
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+              }
+            }}
+            onPointerCancel={(event) => {
+              dragRef.current.active = false;
+              event.currentTarget.style.cursor = "grab";
+
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+              }
+            }}
+            className="occ-scroll relative min-h-0 flex-1 overflow-hidden rounded-xl border border-[#E2E2E2] bg-[#F5F5F5] p-10 shadow-[inset_0_1px_3px_rgba(19,19,19,0.04)] cursor-grab select-none"
           >
             <div
               ref={contentRef}
-              className="inline-block origin-top-left transition-transform duration-150 ease-out"
-              style={{ transform: `scale(${zoom})` }}
+              className="mx-auto block w-max origin-top-left"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transformOrigin: "top left",
+              }}
             >
               <div className="flex w-max items-start gap-14">
                 {tree.map((root) => (
@@ -5362,8 +5572,13 @@ const OrganizationChartPage: React.FC = () => {
         )}
       </div>
 
-      {/* Keep chart panning available while hiding scrollbar chrome. */}
+      {/* Keep the chart viewport fixed; panning is handled by pointer drag. */}
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        .organization-chart-page,
+        .organization-chart-page * {
+          font-family: "Poppins", "Urbanist", sans-serif !important;
+        }
         .occ-scroll::-webkit-scrollbar {
           display: none;
         }
@@ -5385,10 +5600,13 @@ const OrgTreeNode: React.FC<{
   showPhoto: boolean;
   depth: number;
 }> = ({ node, compact, showPhoto, depth }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(depth > 0);
   const [photoFailed, setPhotoFailed] = useState(false);
 
   const hasChildren = node.children.length > 0;
+  const canExpand =
+    node.designation.toUpperCase().includes("PROJECT MANAGER") ||
+    node.designation.toUpperCase().includes("TEAM LEAD");
   const avatarColor = avatarColorFor(node.name || node.id);
   const showRealPhoto = showPhoto && !!node.photo && !photoFailed;
 
@@ -5397,7 +5615,7 @@ const OrgTreeNode: React.FC<{
 
   const size = compact ? CARD_SIZE.compact : CARD_SIZE.standard;
 
-  const { rowRef, registerChild, width, paths } = useConnectorPaths(
+  const { rowRef, registerChild, width, height, paths } = useConnectorPaths(
     node.children.length,
     size.connectorHeight,
     hasChildren && !collapsed
@@ -5478,7 +5696,7 @@ const OrgTreeNode: React.FC<{
       </div>
 
       {/* CHILDREN TOGGLE */}
-      {hasChildren && (
+      {hasChildren && canExpand && (
         <button
           type="button"
           onClick={() =>
@@ -5509,9 +5727,7 @@ const OrgTreeNode: React.FC<{
           from real measured positions rather than assumed widths. */}
       {hasChildren && (
         <div
-          className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
-            collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]"
-          }`}
+          className={collapsed ? "hidden" : "grid grid-rows-[1fr]"}
         >
           <div className="overflow-hidden">
             <div
@@ -5520,10 +5736,13 @@ const OrgTreeNode: React.FC<{
               }`}
             >
               <svg
-                width={width || undefined}
-                height={size.connectorHeight}
-                className="block shrink-0"
-                style={{ width: width || "100%" }}
+                width={width || 0}
+                height={height}
+                className="block shrink-0 overflow-visible"
+                style={{
+                  width: width || 0,
+                  minWidth: width || 0,
+                }}
               >
                 {paths.map((d, index) =>
                   d ? (
@@ -5542,7 +5761,7 @@ const OrgTreeNode: React.FC<{
 
               <div
                 ref={rowRef}
-                className="flex items-start"
+                className="relative flex w-max items-start"
                 style={{ gap: size.gapX }}
               >
                 {node.children.map((child, index) => (
@@ -5569,6 +5788,15 @@ const OrgTreeNode: React.FC<{
 };
 
 export default OrganizationChartPage;
+
+
+
+
+
+
+
+
+
 
 
 

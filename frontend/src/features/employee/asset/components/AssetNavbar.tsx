@@ -58,25 +58,21 @@ export default function AssetNavbar() {
     >
       <div className="grid w-full grid-cols-3 gap-2">
         {tabs.map((tab: MenuItem) => {
-          let route = "";
-
-          switch (tab.menuName) {
-            case "Asset Request":
-              route = `/${domain}/employee/assets/request`;
-              break;
-
-            case "Asset Status":
-              route = `/${domain}/employee/assets/return`;
-              break;
-
-            case "History":
-              route = `/${domain}/employee/assets/assigned`;
-              break;
-
-            default:
-              route =
-                tab.routeUrl?.replace("/Employee", `/${domain}/employee`) ?? "";
-          }
+          const route = (() => {
+            switch (tab.menuName) {
+              case "Asset Request":
+                return `/${domain}/employee/assets/request`;
+              case "Asset Status":
+                return `/${domain}/employee/assets/return`;
+              case "History":
+                return `/${domain}/employee/assets/assigned`;
+              default:
+                return (
+                  tab.routeUrl?.replace("/Employee", `/${domain}/employee`) ??
+                  ""
+                );
+            }
+          })();
 
           const Icon = getTabIcon(tab.menuName);
 

@@ -26,8 +26,8 @@ const TABLE_COLUMNS = [
   { key: "employeeId", label: "Emp. ID" },
   { key: "employeeName", label: "Emp. Name" },
   { key: "gender", label: "Gender" },
-  { key: "dob", label: "DOB" },
-  { key: "doj", label: "DOJ" },
+  { key: "dob", label: "DOB", align: "center" as const, minWidth: "5.5rem" },
+  { key: "doj", label: "DOJ", align: "center" as const, minWidth: "5.5rem" },
 ];
 const DEFAULT_VISIBLE = { department: false, designation: false };
 

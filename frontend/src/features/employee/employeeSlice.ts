@@ -20,6 +20,7 @@ interface EmployeeState {
   department: string;
   lastLoginDateTime: string;
   isPageLoading: boolean;
+  pendingPageDataRequests: number;
 }
 
 const initialState: EmployeeState = {
@@ -32,6 +33,7 @@ const initialState: EmployeeState = {
   department: "",
   lastLoginDateTime: "",
   isPageLoading: false,
+  pendingPageDataRequests: 0,
 };
 
 /*
@@ -49,7 +51,10 @@ const employeeInfoSlice = createSlice({
     setEmployeeProfile: (
       state,
       action: PayloadAction<
-        Omit<EmployeeState, "isPageLoading">
+        Omit<
+          EmployeeState,
+          "isPageLoading" | "pendingPageDataRequests"
+        >
       >
     ) => {
       state.companyName =
@@ -95,6 +100,17 @@ const employeeInfoSlice = createSlice({
     hidePageLoader: (state) => {
       state.isPageLoading = false;
     },
+
+    startPageDataLoading: (state) => {
+      state.pendingPageDataRequests += 1;
+    },
+
+    finishPageDataLoading: (state) => {
+      state.pendingPageDataRequests = Math.max(
+        0,
+        state.pendingPageDataRequests - 1,
+      );
+    },
   },
 });
 
@@ -109,6 +125,8 @@ export const {
   clearEmployeeProfile,
   showPageLoader,
   hidePageLoader,
+  startPageDataLoading,
+  finishPageDataLoading,
 } = employeeInfoSlice.actions;
 
 /*

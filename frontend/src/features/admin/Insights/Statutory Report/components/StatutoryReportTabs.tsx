@@ -277,31 +277,6 @@ export default function StatutoryReportTabs() {
     useState<ReportType>("pf");
 
   /* =======================================================
-     HANDLE TOP TAB
-  ======================================================= */
-
-  const handleReportClick = (
-    report: ReportType
-  ) => {
-    setActiveReport(report);
-
-    /*
-      The content is displayed immediately using
-      activeReport.
-
-      Navigation is also preserved so your URLs
-      continue to work.
-    */
-
-    if (report === "pf") {
-      navigate(".");
-      return;
-    }
-
-    navigate(report);
-  };
-
-  /* =======================================================
      HANDLE CHILD REPORT
   ======================================================= */
 

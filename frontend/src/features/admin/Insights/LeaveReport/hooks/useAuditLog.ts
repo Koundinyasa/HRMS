@@ -44,7 +44,11 @@ export function useAuditLog({ reportType, enabled }: UseAuditLogParams) {
   }, [enabled, reportType, filters, page, pageSize]);
 
   useEffect(() => {
-    load();
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [load]);
 
   const handleExport = useCallback(

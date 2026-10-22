@@ -1031,8 +1031,17 @@ export interface EmployeeDocument {
 }
 
 interface DocumentsTabProps {
-  form: any;
-  set?: (key: string, value: any) => void;
+  form: {
+    photoUrl?: string | null;
+    fullName?: string | null;
+    empId?: string | number | null;
+    designation?: string | null;
+    branch?: string | null;
+    dateOfJoining?: string | null;
+    mobile?: string | null;
+    email?: string | null;
+  };
+  set?: (key: string, value: string | number | boolean) => void;
   documents?: EmployeeDocument[];
   onDelete?: (doc: EmployeeDocument) => void;
   onDownload?: (doc: EmployeeDocument) => void;
@@ -1181,9 +1190,13 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   ========================================================== */
 
   useEffect(() => {
-    if (documents) {
+    if (!documents) return;
+
+    const frame = window.requestAnimationFrame(() => {
       setRows(documents);
-    }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [documents]);
 
   /* ==========================================================

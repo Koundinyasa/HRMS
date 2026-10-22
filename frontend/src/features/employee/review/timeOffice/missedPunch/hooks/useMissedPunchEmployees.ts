@@ -3,6 +3,11 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import {
+  finishPageDataLoading,
+  startPageDataLoading,
+} from "@/features/employee/employeeSlice";
 
 import {
   getMissedPunchEmployees,
@@ -50,6 +55,7 @@ function getCompanyId():
 
 export function useMissedPunch():
   UseMissedPunchResult {
+  const dispatch = useAppDispatch();
   const today =
     getTodayDate();
 
@@ -112,6 +118,7 @@ export function useMissedPunch():
         }
 
         setIsLoading(true);
+        dispatch(startPageDataLoading());
 
         setError(null);
 
@@ -161,9 +168,10 @@ export function useMissedPunch():
           );
         } finally {
           setIsLoading(false);
+          dispatch(finishPageDataLoading());
         }
       },
-      [],
+      [dispatch],
     );
 
   /* =======================================================
@@ -171,11 +179,13 @@ export function useMissedPunch():
   ======================================================= */
 
   useEffect(() => {
-    void fetchEmployees(filters);
+    const schedule = window.setTimeout(() => {
+      void fetchEmployees(filters);
+    }, 0);
+    return () => window.clearTimeout(schedule);
   }, [
     fetchEmployees,
-    filters.fromDate,
-    filters.toDate,
+    filters,
   ]);
 
   /* =======================================================

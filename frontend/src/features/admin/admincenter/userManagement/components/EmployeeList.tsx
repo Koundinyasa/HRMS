@@ -339,9 +339,6 @@ const EmployeeList = () => {
     subTabs,
     activeSubTab,
     setActiveSubTab,
-    search,
-    setSearch,
-    clearSearch,
     rowsPerPage,
     setRowsPerPage,
     currentPage,
@@ -417,4 +414,3 @@ const EmployeeList = () => {
 };
 
 export default EmployeeList;
-

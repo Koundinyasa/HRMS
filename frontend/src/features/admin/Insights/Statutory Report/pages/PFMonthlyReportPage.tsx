@@ -1107,7 +1107,6 @@ import { useState } from "react";
 import {
   ChevronDown,
   ChevronLeft,
-  FileDown,
   Filter,
   MoreVertical,
   Search,
@@ -1117,6 +1116,28 @@ import { useNavigate } from "react-router-dom";
 
 import { usePFMonthlyReport } from "../hooks/useStatutoryReport";
 // import StatutoryReportNavbar from "../components/StatutoryReportNavbar";
+
+type ReportValue = string | number | null;
+
+interface PFMonthlyReportEmployee {
+  id?: string | number;
+  empId?: string | number;
+  slNo?: ReportValue;
+  pfNumber?: ReportValue;
+  uan?: ReportValue;
+  name?: ReportValue;
+  employeeName?: ReportValue;
+  employerPf?: ReportValue;
+  employerPF?: ReportValue;
+  employeePfEarnings?: ReportValue;
+  employeePFEarnings?: ReportValue;
+  employeeEpf?: ReportValue;
+  employeeEPF?: ReportValue;
+  pfVol?: ReportValue;
+  employerEpfDifference?: ReportValue;
+  employerEPFDifference?: ReportValue;
+  pension?: ReportValue;
+}
 
 export default function PFMonthlyReportPage() {
   const navigate = useNavigate();
@@ -1512,7 +1533,7 @@ export default function PFMonthlyReportPage() {
 
               <tbody>
                 {Array.isArray(data) && data.length > 0 ? (
-                  data.map((employee: any, index: number) => (
+                  data.map((employee: PFMonthlyReportEmployee, index: number) => (
                     <tr
                       key={
                         employee.id ??

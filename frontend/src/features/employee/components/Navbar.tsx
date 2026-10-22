@@ -1,5 +1,4 @@
 import Header from "./Header";
-import ThemePreset from "./ThemePreset";
 import NotificationCard from "./NotificationCard";
 import ProfileMenu from "./ProfileMenu";
 import type { NavbarProps } from "../dashboard/types/dashboard.types";

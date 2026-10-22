@@ -11,6 +11,8 @@ interface Row extends Record<string, unknown> {
   employeeName?: string;
 }
 
+const EMPTY_ROWS: Row[] = [];
+
 export default function HourlyAttendanceReportPage() {
   const navigate = useNavigate();
   const [fromMonth, setFromMonth] = useState("Sep/2026");
@@ -21,7 +23,7 @@ export default function HourlyAttendanceReportPage() {
   const [page, setPage] = useState(1);
 
   // No mock data. The existing backend endpoint/response contract should be connected here.
-  const rows: Row[] = [];
+  const rows: Row[] = EMPTY_ROWS;
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();

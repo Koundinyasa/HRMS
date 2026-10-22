@@ -774,14 +774,15 @@ const AuditLogModal: React.FC<AuditLogModalProps> = ({
   // draft = what's in the controls, applied = what the table is filtered by
   const [draft, setDraft] = useState<AppliedFilters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<AppliedFilters>(EMPTY_FILTERS);
+  const [previousOpen, setPreviousOpen] = useState(open);
 
-  // reset every time the modal is reopened
-  useEffect(() => {
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
     if (open) {
       setDraft(EMPTY_FILTERS);
       setApplied(EMPTY_FILTERS);
     }
-  }, [open]);
+  }
 
   // filter options are derived from the rows the backend returned
   const users = useMemo(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
     LEAVE_POLICY_GROUPS,
     LEAVE_POLICY_SEED_ROWS,
@@ -18,6 +18,7 @@ import type {
 
 export function useLeavePolicy(initialGroup: LeavePolicyGroupCode = "employee") {
     const [groupCode, setGroupCode] = useState<LeavePolicyGroupCode>(initialGroup);
+    const [previousInitialGroup, setPreviousInitialGroup] = useState(initialGroup);
     const [rowsByGroup, setRowsByGroup] = useState(LEAVE_POLICY_SEED_ROWS);
     const [settingsByLeave, setSettingsByLeave] = useState<Record<string, LeaveBehaviorSettings>>({});
     const [isSaving, setIsSaving] = useState(false);
@@ -29,9 +30,10 @@ export function useLeavePolicy(initialGroup: LeavePolicyGroupCode = "employee") 
     // clicking "Intern Leave Policy" changes the URL but groupCode — and
     // everything derived from it below — stays stuck on whatever group was
     // active on first mount.
-    useEffect(() => {
+    if (initialGroup !== previousInitialGroup) {
+        setPreviousInitialGroup(initialGroup);
         setGroupCode(initialGroup);
-    }, [initialGroup]);
+    }
 
     const groups = LEAVE_POLICY_GROUPS;
     const activeGroup = useMemo(
@@ -78,6 +80,7 @@ export function useLeavePolicy(initialGroup: LeavePolicyGroupCode = "employee") 
     // Placeholder save — resolves immediately since there's nowhere to persist
     // to yet. Kept async so the page can show a "Saving..." state already.
     const saveSettings = async (_leaveCode: string) => {
+        void _leaveCode;
         setIsSaving(true);
         await new Promise((resolve) => setTimeout(resolve, 300));
         setIsSaving(false);

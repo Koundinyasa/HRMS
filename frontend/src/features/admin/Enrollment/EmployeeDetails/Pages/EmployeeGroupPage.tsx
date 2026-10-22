@@ -881,7 +881,11 @@ const EmployeeGroupPage: React.FC<Props> = ({
     if (locked) return;
     setCols((prev) => {
       const n = new Set(prev);
-      n.has(key) ? n.delete(key) : n.add(key);
+      if (n.has(key)) {
+        n.delete(key);
+      } else {
+        n.add(key);
+      }
       return n;
     });
   };

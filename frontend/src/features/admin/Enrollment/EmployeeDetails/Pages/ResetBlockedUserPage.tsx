@@ -789,7 +789,11 @@ const ResetBlockedUserPage: React.FC = () => {
   }, [queryInput]);
 
   useEffect(() => {
-    setPage(1);
+    const frame = window.requestAnimationFrame(() => {
+      setPage(1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [search]);
 
   const { data, isLoading, isFetching, isError, refetch } =
@@ -809,7 +813,11 @@ const ResetBlockedUserPage: React.FC = () => {
 
   // clear stale selections whenever the page or search result set changes
   useEffect(() => {
-    setSelected(new Set());
+    const frame = window.requestAnimationFrame(() => {
+      setSelected(new Set());
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [page, search]);
 
   /* ---------------- audit log ---------------- */

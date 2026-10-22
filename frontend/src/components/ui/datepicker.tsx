@@ -69,13 +69,14 @@ export function DatePicker({
         wrapperRef.current &&
         !wrapperRef.current.contains(event.target as Node)
       ) {
-        // onOpenChange(false);
-        onOpenChange?.(false);
+        onOpenChange(false);
       }
     };
  
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onOpenChange?.(false);
+      if (event.key === "Escape") {
+        onOpenChange(false);
+      }
     };
  
     document.addEventListener("mousedown", handleClickOutside);
@@ -88,10 +89,11 @@ export function DatePicker({
   }, [open, onOpenChange]);
  
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className="relative w-full min-w-0" ref={wrapperRef}>
       <Input
         id={id}
         type="text"
+        inputMode="numeric"
         placeholder={placeholder}
         value={text}
         aria-invalid={isInvalid}
@@ -99,15 +101,15 @@ export function DatePicker({
         onClick={() => onOpenChange?.(!open)}
         onBlur={onBlur}
         className={cn(
-          "h-12 cursor-pointer rounded-2xl border-slate-300 bg-white px-4 pr-11 text-sm transition-all duration-150 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.12)]",
+          "h-12 w-full rounded-2xl border-slate-300 bg-white px-4 pr-11 text-sm transition-all duration-150 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.12)]",
           inputClassName,
         )}
         style={{
           borderColor: isInvalid
             ? "#ef4444"
             : open
-            ? "var(--primary-color)"
-            : undefined,
+              ? "var(--primary-color)"
+              : undefined,
         }}
       />
  
@@ -117,13 +119,13 @@ export function DatePicker({
         size="sm"
         tabIndex={-1}
         aria-label="Open calendar"
-        // onClick={() => onOpenChange(!open)}
-        onClick={() => onOpenChange?.(!open)}
-        // ✅ STYLING CHANGE — icon button now sits inside a soft rounded "chip" that tints purple when the picker is open
+        onClick={() => onOpenChange(!open)}
         className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full p-0 transition-colors"
         style={{
           color: open ? "var(--primary-color)" : "#94A3B8",
-          backgroundColor: open ? "rgba(124,58,237,0.1)" : "transparent",
+          backgroundColor: open
+            ? "rgba(124,58,237,0.1)"
+            : "transparent",
         }}
       >
         <CalendarDays className="h-4 w-4" />
@@ -151,7 +153,7 @@ export function DatePicker({
       duration-200
     `}
         >
-          {/* ✅ STYLING CHANGE — header is now a full purple gradient band (brand color), white text, replacing the plain flex row */}
+          {/* Header */}
           <div
             className="flex items-center justify-between px-3 py-3 sm:px-4"
             style={{
@@ -164,7 +166,6 @@ export function DatePicker({
               variant="ghost"
               size="sm"
               onClick={onPrevMonth}
-              // ✅ STYLING CHANGE — white icon on gradient header, translucent hover
               className="h-8 w-8 rounded-full p-0 text-white hover:bg-white/20 hover:text-white"
               aria-label="Previous month"
             >
@@ -190,7 +191,7 @@ export function DatePicker({
  
           {/* ✅ STYLING CHANGE — body padding wrapper, since header now bleeds edge-to-edge above it */}
           <div className="p-3 sm:p-4">
-            {/* ✅ STYLING CHANGE — weekday row styled as small purple-tinted pill labels */}
+            {/* Weekdays */}
             <div
               className="mb-2 grid grid-cols-7 text-center text-[10px] font-bold uppercase tracking-wide sm:text-xs"
               style={{ color: "var(--primary-color)" }}
@@ -261,7 +262,6 @@ export function DatePicker({
                 variant="ghost"
                 size="sm"
                 onClick={onToday}
-                // ✅ STYLING CHANGE — "Today" is now a solid tinted pill (bg + text in brand color) instead of plain ghost text, to stand out as the primary quick-action
                 className="h-8 rounded-full px-4 font-semibold shadow-sm transition hover:opacity-90"
                 style={{
                   color: "var(--primary-color)",

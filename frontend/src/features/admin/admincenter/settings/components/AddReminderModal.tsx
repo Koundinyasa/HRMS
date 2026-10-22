@@ -124,7 +124,7 @@
 
 
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -139,14 +139,16 @@ export default function AddReminderModal({ open, onClose }: AddReminderModalProp
   const [reminderName, setReminderName] = useState("");
   const [reminderType, setReminderType] = useState("Birthday");
   const [days, setDays] = useState("7");
+  const [previousOpen, setPreviousOpen] = useState<boolean | undefined>();
 
-  useEffect(() => {
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
     if (!open) {
       setReminderName("");
       setReminderType("Birthday");
       setDays("7");
     }
-  }, [open]);
+  }
 
   function handleSave() {
     if (!reminderName.trim()) {

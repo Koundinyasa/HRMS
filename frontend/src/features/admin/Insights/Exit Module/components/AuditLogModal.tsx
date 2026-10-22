@@ -741,7 +741,7 @@ shadow-lg
             {/* TABLE BODY */}
             <tbody>
               {auditLog.rows.map(
-                (row, index) => (
+                (row) => (
                   <tr
                     key={row.id}
                     className="

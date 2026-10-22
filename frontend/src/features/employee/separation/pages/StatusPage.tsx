@@ -1,11 +1,4 @@
-import { Menu, UserCircle2 } from "lucide-react";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import SeparationNavbar from "../components/SeparationNavbar";
 import SeparationStatusTimeline from "../components/SeparationStatusTimeline";

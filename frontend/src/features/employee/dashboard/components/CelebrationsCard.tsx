@@ -6,15 +6,20 @@ import { Button } from "@/components/ui/button";
 import { useDashboard } from "../hooks/useDashboard";
 import { useSendWishMutation } from "../api/dashboardApi";
 import { toast } from "react-toastify";
+import type { UpcomingEvent } from "../types/dashboard.types";
 export default function CelebrationsCard() {
   const { profileData } = useDashboard();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openWishModal, setOpenWishModal] = useState(false);
   const [openAllCelebrations, setOpenAllCelebrations,] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] =
+    useState<UpcomingEvent | null>(null);
   const [wishMessage, setWishMessage] = useState("");
   const [sendWish, { isLoading: isSendingWish }] = useSendWishMutation();
-  const celebrations = profileData?.data?.upcomingEvents ?? [];
+  const celebrations = useMemo(
+    () => profileData?.data?.upcomingEvents ?? [],
+    [profileData?.data?.upcomingEvents]
+  );
   const celebration = celebrations[currentIndex];
  
   // Auto Change Celebration

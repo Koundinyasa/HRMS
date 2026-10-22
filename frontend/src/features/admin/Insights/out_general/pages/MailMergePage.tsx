@@ -1522,17 +1522,9 @@ export function MailMergeToolbar({
 }
 
 export default function MailMergePage({
-  document: documentProp,
-  setDocument: setDocumentProp,
-  month: monthProp,
-  setMonth: setMonthProp,
   filters: filtersProp,
   setFilters: setFiltersProp,
 }: MailMergeStateProps = {}) {
-  const [localDocument, setLocalDocument] =
-    useState("");
-  const [localMonth, setLocalMonth] =
-    useState("Sep/2026");
   const [localFilters, setLocalFilters] =
     useState<string[]>([]);
 
@@ -1549,16 +1541,6 @@ export default function MailMergePage({
       Designation: [],
       "Emp Status": [],
     });
-
-  const document =
-    documentProp ?? localDocument;
-  const setDocument =
-    setDocumentProp ?? setLocalDocument;
-
-  const month =
-    monthProp ?? localMonth;
-  const setMonth =
-    setMonthProp ?? setLocalMonth;
 
   const filters =
     filtersProp ?? localFilters;

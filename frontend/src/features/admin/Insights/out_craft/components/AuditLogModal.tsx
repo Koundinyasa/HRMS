@@ -114,6 +114,7 @@ export default function AuditLogModal({
             <button
               type="button"
               onClick={() => setEmployeeOpen((v) => !v)}
+              aria-expanded={employeeOpen}
               className="font-[Urbanist] flex h-9 w-full sm:w-32 items-center justify-between rounded-md border border-black px-3 text-xs text-slate-600 flex-wrap min-w-0 max-w-full"
             >
               Employee
@@ -122,6 +123,7 @@ export default function AuditLogModal({
             <button
               type="button"
               onClick={() => setActionOpen((v) => !v)}
+              aria-expanded={actionOpen}
               className="font-[Urbanist] flex h-9 w-full sm:w-28 items-center justify-between rounded-md border border-black px-3 text-xs text-slate-600 flex-wrap min-w-0 max-w-full"
             >
               Action

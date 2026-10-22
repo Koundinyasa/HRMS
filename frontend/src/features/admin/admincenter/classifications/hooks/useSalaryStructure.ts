@@ -91,7 +91,10 @@ export const useSalaryStructure = (allComponents: SalaryComponent[], selectedStr
     });
   }, [allComponents, seededStructures]);
 
-  const assignedIds = assignedByStructure[selectedStructureId] ?? [];
+  const assignedIds = useMemo(
+    () => assignedByStructure[selectedStructureId] ?? [],
+    [assignedByStructure, selectedStructureId]
+  );
   const assignedComponents = useMemo(
     () => allComponents.filter((c) => assignedIds.includes(c.Id)),
     [allComponents, assignedIds]

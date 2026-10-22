@@ -19,9 +19,6 @@
 //   );
 // }
 
-import { Link, useParams } from "react-router-dom";
-import { Filter } from "lucide-react";
-
 /**
  * Small breadcrumb shown above every Exit Module screen
  * ("Exit Module / Exit Module Report"), matching the reference product.

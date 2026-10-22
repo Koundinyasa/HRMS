@@ -39,8 +39,12 @@ const EnrollmentToolbarPortal = ({ children }: { children: ReactNode }) => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setHost(document.getElementById(ENROLLMENT_ACTIONS_SLOT_ID));
-    setReady(true);
+    const frame = window.requestAnimationFrame(() => {
+      setHost(document.getElementById(ENROLLMENT_ACTIONS_SLOT_ID));
+      setReady(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   if (!ready) return null;

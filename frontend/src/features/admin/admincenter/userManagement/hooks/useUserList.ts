@@ -17,7 +17,6 @@ export const useUserList = () => {
   useEffect(() => {
     let cancelled = false;
 
-    setLoading(true);
     Promise.all([fetchUsers(), fetchUserSummary()]).then(([userRows, summary]) => {
       if (cancelled) return;
       setUsers(userRows);

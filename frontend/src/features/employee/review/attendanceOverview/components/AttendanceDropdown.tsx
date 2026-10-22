@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -68,7 +69,7 @@ export default function AttendanceDropdown({
     widthClassToPx[widthClass] ??
     224;
 
-  const updatePosition =
+  const updatePosition = useCallback(
     () => {
       if (!triggerRef.current)
         return;
@@ -99,7 +100,9 @@ export default function AttendanceDropdown({
         top,
         left,
       });
-    };
+    },
+    [align, width]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -181,7 +184,7 @@ export default function AttendanceDropdown({
         true,
       );
     };
-  }, [open]);
+  }, [open, updatePosition]);
 
   return (
     <div

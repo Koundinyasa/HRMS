@@ -13,7 +13,6 @@ import {
   Users,
   IndianRupee,
   X,
-  FileText,
 } from "lucide-react";
 
 /* =========================================================

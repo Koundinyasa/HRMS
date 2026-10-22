@@ -95,16 +95,33 @@ export default function HolidayImportPanel() {
         holidayListNameMatch: "pass",
       });
       setFile(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // ⚠️ ASSUMED error shape — adjust field names to match the real
       // backend error payload for /holidaysettings/import once known.
-      const code: string | undefined = err?.data?.code;
+      const errorData =
+        typeof err === "object" && err !== null && "data" in err
+          ? err.data
+          : undefined;
+      const code =
+        typeof errorData === "object" &&
+        errorData !== null &&
+        "code" in errorData &&
+        typeof errorData.code === "string"
+          ? errorData.code
+          : undefined;
+      const message =
+        typeof errorData === "object" &&
+        errorData !== null &&
+        "message" in errorData &&
+        typeof errorData.message === "string"
+          ? errorData.message
+          : "Import failed. Please check the file and try again.";
       setRequirements((r) => ({
         ...r,
         calendarYearMatch: code === "CALENDAR_YEAR_MISMATCH" ? "fail" : r.calendarYearMatch,
         holidayListNameMatch: code === "HOLIDAY_LIST_NAME_MISMATCH" ? "fail" : r.holidayListNameMatch,
       }));
-      setErrorMessage(err?.data?.message ?? "Import failed. Please check the file and try again.");
+      setErrorMessage(message);
     }
   };
 

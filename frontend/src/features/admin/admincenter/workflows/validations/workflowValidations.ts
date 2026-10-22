@@ -1,7 +1,6 @@
 import type {
   WorkflowItem,
   EmployeeGroup,
-  ModuleSetting,
 } from "../types/workflowTypes";
 
 export interface ValidationResult {

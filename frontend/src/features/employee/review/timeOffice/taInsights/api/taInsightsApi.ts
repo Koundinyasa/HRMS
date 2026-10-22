@@ -4,26 +4,10 @@ import type {
   TAInsightsCounts,
   TAInsightsDetailsParams,
   TAInsightsEmployee,
-  TAInsightsDashboardResponse,
   TAInsightsParams,
 } from "../types/taInsights.types";
 
 type ApiRecord = Record<string, unknown>;
-
-interface CountsResponse {
-  totalAbsent?: unknown;
-  lopOverride?: unknown;
-  leaveAndPunch?: unknown;
-  otPendingAuth?: unknown;
-  cwPendingAuth?: unknown;
-  cwStatus?: unknown;
-  overTime?: unknown;
-  pendingPermissionPunches?: unknown;
-  punchProcessPending?: unknown;
-  integrationPending?: unknown;
-
-  [key: string]: unknown;
-}
 
 interface DetailsResponse {
   data?: unknown[];
@@ -330,19 +314,6 @@ function normalizeDetailsResponse(
   }
 
   return [];
-}
-
-/**
- * Optional combined normalizer.
- */
-function normalizeDashboard(
-  counts: TAInsightsCounts,
-  details: TAInsightsEmployee[]
-): TAInsightsDashboardResponse {
-  return {
-    counts,
-    details,
-  };
 }
 
 export const taInsightsApi =

@@ -17,7 +17,10 @@ export const useBlockedHolidays = () => {
  
   // works for both { success, data: [...] } and a plain array
   const raw = data as Holiday[] | { data?: Holiday[] } | undefined;
-  const list: Holiday[] = Array.isArray(raw) ? raw : raw?.data ?? [];
+  const list: Holiday[] = useMemo(
+    () => (Array.isArray(raw) ? raw : raw?.data ?? []),
+    [raw]
+  );
  
   // non-optional holidays only (optional ones like Eid stay selectable)
   const blockedHolidayIsos = useMemo(

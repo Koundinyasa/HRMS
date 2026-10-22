@@ -1,5 +1,5 @@
 // LeaveReport/hooks/useDatePickerField.ts
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { DatePickerCell } from "@/components/ui/datepicker";
 
 const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -78,13 +78,14 @@ export function useDatePickerField({ value, onChange, minDate, maxDate }: UseDat
   const [viewYear, setViewYear] = useState(initial.getFullYear());
   const [viewMonth, setViewMonth] = useState(initial.getMonth());
 
-  // Keep the text box in sync if `value` changes from outside (e.g. a "Clear All" filter reset).
-  const lastSyncedValue = useRef(value);
-  if (lastSyncedValue.current !== value) {
-    lastSyncedValue.current = value;
-    setText(isoToText(value));
-    setIsInvalid(false);
-  }
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setText(isoToText(value));
+      setIsInvalid(false);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [value]);
 
   const monthLabel = `${MONTH_LABELS[viewMonth]} ${viewYear}`;
 

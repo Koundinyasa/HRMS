@@ -241,17 +241,12 @@ export default function FactoryActFormsPage() {
   const [loading, setLoading] =
     useState(true);
 
-  const [error, setError] =
-    useState<string | null>(null);
-
   useEffect(() => {
     let cancelled = false;
 
     const loadForms = async () => {
       try {
         setLoading(true);
-        setError(null);
-
         const response = await fetch(
           FACTORY_ACT_FORMS_API,
           {
@@ -275,14 +270,8 @@ export default function FactoryActFormsPage() {
         if (!cancelled) {
           setForms(getForms(result));
         }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load Factory Act Forms.",
-          );
-        }
+      } catch {
+        if (!cancelled) setForms([]);
       } finally {
         if (!cancelled) {
           setLoading(false);

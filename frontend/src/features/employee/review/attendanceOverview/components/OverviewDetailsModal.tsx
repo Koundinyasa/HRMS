@@ -591,32 +591,19 @@ export default function OverviewDetailsModal({
   const timeRows =
     filteredDays.map(
       (day, index) => {
-        let time = "";
-
-        switch (detailKey) {
-          case "earlyIn":
-          case "lateIn":
-            time =
-              day.checkIn ??
-              "";
-            break;
-
-          case "earlyOut":
-            time =
-              day.checkOut ??
-              "";
-            break;
-
-          case "overstay":
-            time =
-              day.overtime ??
-              day.overTime ??
-              "";
-            break;
-
-          default:
-            time = "";
-        }
+        const time = (() => {
+          switch (detailKey) {
+            case "earlyIn":
+            case "lateIn":
+              return day.checkIn ?? "";
+            case "earlyOut":
+              return day.checkOut ?? "";
+            case "overstay":
+              return day.overtime ?? day.overTime ?? "";
+            default:
+              return "";
+          }
+        })();
 
         return {
           slNo: index + 1,

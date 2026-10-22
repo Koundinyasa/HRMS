@@ -141,7 +141,6 @@ import { validateDateRange } from "../validations/timeOffice.validation";
 
 import {
   exportTimeOfficeExcel,
-  exportTimeOfficePdf,
 } from "../utils/timeOfficeExport";
 
 /* =========================================================
@@ -275,16 +274,6 @@ export default function EmployeeCWDetailsPage() {
 
   const handleExcelExport = () => {
     exportTimeOfficeExcel(
-      exportOptions
-    );
-  };
-
-  /* =======================================================
-     PDF EXPORT
-  ======================================================= */
-
-  const handlePdfExport = () => {
-    exportTimeOfficePdf(
       exportOptions
     );
   };

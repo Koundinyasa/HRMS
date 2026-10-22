@@ -565,25 +565,30 @@ export default function VerifyOtpForm() {
     (state) => state.auth.otpRemainingSeconds ?? 0
   );
  
-  const [remainingSeconds, setRemainingSeconds] = useState(
-    otpRemainingSeconds
-  );
+  const [countdownState, setCountdownState] = useState({
+    source: otpRemainingSeconds,
+    seconds: otpRemainingSeconds,
+  });
+  const remainingSeconds =
+    countdownState.source === otpRemainingSeconds
+      ? countdownState.seconds
+      : otpRemainingSeconds;
  
   // --------------------------------------------------
   // Start / continue countdown
   // --------------------------------------------------
-  useEffect(() => {
-    setRemainingSeconds(otpRemainingSeconds);
-  }, [otpRemainingSeconds]);
- 
   useEffect(() => {
     if (remainingSeconds <= 0) {
       return;
     }
  
     const timer = setInterval(() => {
-      setRemainingSeconds((previous) => {
-        if (previous <= 1) {
+      setCountdownState((previous) => {
+        const previousSeconds =
+          previous.source === otpRemainingSeconds
+            ? previous.seconds
+            : otpRemainingSeconds;
+        if (previousSeconds <= 1) {
           clearInterval(timer);
  
           dispatch(
@@ -593,15 +598,18 @@ export default function VerifyOtpForm() {
             })
           );
  
-          return 0;
+          return { source: otpRemainingSeconds, seconds: 0 };
         }
- 
-        return previous - 1;
+
+        return {
+          source: otpRemainingSeconds,
+          seconds: previousSeconds - 1,
+        };
       });
     }, 1000);
  
     return () => clearInterval(timer);
-  }, [remainingSeconds, dispatch]);
+  }, [remainingSeconds, otpRemainingSeconds, dispatch]);
  
   // --------------------------------------------------
   // Format timer: 03:00, 02:59, 02:58...

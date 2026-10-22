@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, X } from "lucide-react";
 
 export interface FilterOption {
@@ -32,17 +33,83 @@ type FilterDropdownProps = CheckboxFilterDropdownProps | TextFilterDropdownProps
 export default function FilterDropdown(props: FilterDropdownProps) {
   const { label, icon: Icon, variant = "chip" } = props;
   const [open, setOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({
+    left: 8,
+    top: 8,
+    width: 288,
+    maxHeight: undefined as number | undefined,
+  });
   const ref = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const panelContentVersion = props.type === "text" ? null : props.options;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        ref.current &&
+        !ref.current.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    const positionPanel = () => {
+      const trigger = ref.current?.getBoundingClientRect();
+      const panelElement = panelRef.current;
+      if (!trigger || !panelElement) return;
+
+      const padding = 8;
+      const gap = 6;
+      const boundary =
+        ref.current?.closest<HTMLElement>("[data-dropdown-boundary]") ??
+        ref.current?.closest<HTMLElement>("main");
+      const content = boundary?.getBoundingClientRect();
+      const leftBoundary = Math.max(padding, content?.left ?? padding);
+      const rightBoundary = Math.min(
+        window.innerWidth - padding,
+        content?.right ?? window.innerWidth - padding
+      );
+      const topBoundary = Math.max(padding, content?.top ?? padding);
+      const bottomBoundary = Math.min(
+        window.innerHeight - padding,
+        content?.bottom ?? window.innerHeight - padding
+      );
+      const width = Math.max(0, Math.min(288, rightBoundary - leftBoundary - padding * 2));
+
+      panelElement.style.width = `${width}px`;
+      panelElement.style.maxHeight = `${Math.max(0, bottomBoundary - topBoundary)}px`;
+      const panelHeight = panelElement.getBoundingClientRect().height;
+      const left = Math.min(
+        Math.max(trigger.left, leftBoundary + padding),
+        rightBoundary - width - padding
+      );
+      const roomBelow = Math.max(0, bottomBoundary - trigger.bottom - gap);
+      const roomAbove = Math.max(0, trigger.top - gap - topBoundary);
+      const placeBelow = roomBelow >= panelHeight || roomBelow >= roomAbove;
+      const maxHeight = placeBelow ? roomBelow : roomAbove;
+      const top = placeBelow
+        ? trigger.bottom + gap
+        : Math.max(topBoundary, trigger.top - Math.min(panelHeight, roomAbove) - gap);
+
+      setPanelPosition({ left, top, width, maxHeight });
+    };
+
+    positionPanel();
+    window.addEventListener("resize", positionPanel);
+    window.addEventListener("scroll", positionPanel, true);
+    return () => {
+      window.removeEventListener("resize", positionPanel);
+      window.removeEventListener("scroll", positionPanel, true);
+    };
+  }, [open, panelContentVersion]);
 
   const activeCount = props.type === "text" ? (props.value ? 1 : 0) : props.selected.length;
 
@@ -84,22 +151,34 @@ export default function FilterDropdown(props: FilterDropdownProps) {
       </button>
 
       {open && (
-        <div className="absolute left-0 mt-1.5 w-72 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-20">
-          {props.type === "text" ? (
-            <TextPanel value={props.value} onChange={props.onChange} />
-          ) : (
-            <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} />
-          )}
-
-          <button
-            type="button"
-            onClick={clear}
-            className="flex items-center justify-center gap-1.5 w-full py-2.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-50 border-t border-slate-100 transition-colors"
+        createPortal(
+          <div
+            ref={panelRef}
+            className="fixed z-[60] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+            style={{
+              left: panelPosition.left,
+              top: panelPosition.top,
+              width: panelPosition.width,
+              maxHeight: panelPosition.maxHeight ?? "calc(100dvh - 1rem)",
+            }}
           >
-            <X size={12} />
-            Clear
-          </button>
-        </div>
+            {props.type === "text" ? (
+              <TextPanel value={props.value} onChange={props.onChange} />
+            ) : (
+              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} />
+            )}
+
+            <button
+              type="button"
+              onClick={clear}
+              className="flex items-center justify-center gap-1.5 w-full py-2.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-50 border-t border-slate-100 transition-colors"
+            >
+              <X size={12} />
+              Clear
+            </button>
+          </div>,
+          document.body
+        )
       )}
     </div>
   );

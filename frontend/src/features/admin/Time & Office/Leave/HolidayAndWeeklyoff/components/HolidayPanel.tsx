@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Plus, Pencil, Trash2, History } from "lucide-react";
 import * as XLSX from "xlsx";
 import HolidayFormModal from "./HolidayFormModal";
@@ -90,8 +90,6 @@ export default function HolidayPanel() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Holidays");
     XLSX.writeFile(workbook, `holidays-${MONTHS[month]}-${year}.xlsx`);
   };
-
-  const monthLabel = useMemo(() => `${MONTHS[month]}/${year}`, [month, year]);
 
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
@@ -222,14 +220,16 @@ export default function HolidayPanel() {
         </div>
       </div>
 
-      <HolidayFormModal
-        isOpen={modalOpen}
-        masterLabel={activeMasterLabel}
-        initialData={editingHoliday}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        isSubmitting={isCreating || isUpdating}
-      />
+      {modalOpen && (
+        <HolidayFormModal
+          isOpen={modalOpen}
+          masterLabel={activeMasterLabel}
+          initialData={editingHoliday}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          isSubmitting={isCreating || isUpdating}
+        />
+      )}
     </div>
   );
 }

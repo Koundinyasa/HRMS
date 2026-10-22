@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { UploadCloud, X, Save } from "lucide-react";
 
 import ComboField from "./ComboField";
@@ -28,11 +28,10 @@ export default function CreateNewFileModal({
   const subCategoryOptions =
     CRAFT_REPORT_SUBCATEGORY_OPTIONS[category.trim().toLowerCase()] ?? [];
 
-  // Reset the picked sub category whenever the category changes,
-  // so a stale sub category from a previous category can't linger.
-  useEffect(() => {
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
     setSubCategory("");
-  }, [category]);
+  };
 
   const isValid = category.trim() !== "" && fileName.trim() !== "";
 
@@ -68,7 +67,7 @@ export default function CreateNewFileModal({
             label="Category"
             required
             value={category}
-            onChange={setCategory}
+            onChange={handleCategoryChange}
             options={CRAFT_REPORT_CATEGORY_OPTIONS}
           />
 

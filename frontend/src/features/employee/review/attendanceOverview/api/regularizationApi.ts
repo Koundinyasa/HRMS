@@ -54,7 +54,10 @@ export const regularizationApi = baseApi.injectEndpoints({
         if (
           Array.isArray(response) &&
           response.length > 0 &&
-          (response[0] as any)?.StatusCode === 400
+          response[0] &&
+          typeof response[0] === "object" &&
+          "StatusCode" in response[0] &&
+          Number(response[0].StatusCode) === 400
         ) {
           console.warn(
             "Monthly attendance API returned 400:",
@@ -79,8 +82,9 @@ export const regularizationApi = baseApi.injectEndpoints({
           if (Array.isArray(data.recordset)) {
             return data.recordset as AttendanceDay[];
           }
-          if (Array.isArray((data as any).recordsets?.[0])) {
-            return (data as any).recordsets[0] as AttendanceDay[];
+          const recordsets = data.recordsets;
+          if (Array.isArray(recordsets) && Array.isArray(recordsets[0])) {
+            return recordsets[0] as AttendanceDay[];
           }
         }
 
@@ -129,8 +133,9 @@ export const regularizationApi = baseApi.injectEndpoints({
           if (Array.isArray(data.recordset)) {
             return data.recordset as AttendanceOverviewResponse;
           }
-          if (Array.isArray((data as any).recordsets?.[0])) {
-            return (data as any).recordsets[0] as AttendanceOverviewResponse;
+          const recordsets = data.recordsets;
+          if (Array.isArray(recordsets) && Array.isArray(recordsets[0])) {
+            return recordsets[0] as AttendanceOverviewResponse;
           }
         }
 
@@ -264,8 +269,9 @@ export const regularizationApi = baseApi.injectEndpoints({
           if (Array.isArray(data.recordset)) {
             return data.recordset as ReportingEmployee[];
           }
-          if (Array.isArray((data as any).recordsets?.[0])) {
-            return (data as any).recordsets[0] as ReportingEmployee[];
+          const recordsets = data.recordsets;
+          if (Array.isArray(recordsets) && Array.isArray(recordsets[0])) {
+            return recordsets[0] as ReportingEmployee[];
           }
         }
 

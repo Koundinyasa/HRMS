@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import React from "react";
 
 // Chrome/Edge ship SpeechRecognition natively; Firefox/Safari don't support it
@@ -479,11 +479,31 @@ export default function ChatbotWidget({
 
   const employeeName = employee?.FullName;
 
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+  const [messageState, setMessageState] = useState(() => {
     const saved = loadWidgetMessages(employeeId);
-
-    return saved ?? [];
+    return { employeeId, messages: saved ?? [] };
   });
+  const messages = useMemo(
+    () =>
+      messageState.employeeId === employeeId
+        ? messageState.messages
+        : (loadWidgetMessages(employeeId) ?? []),
+    [employeeId, messageState]
+  );
+  const setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>> =
+    useCallback((update) => {
+      setMessageState((previous) => {
+        const current =
+          previous.employeeId === employeeId
+            ? previous.messages
+            : (loadWidgetMessages(employeeId) ?? []);
+        return {
+          employeeId,
+          messages:
+            typeof update === "function" ? update(current) : update,
+        };
+      });
+    }, [employeeId]);
 
   const [inputValue, setInputValue] = useState("");
 
@@ -560,16 +580,10 @@ export default function ChatbotWidget({
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
       });
-    } else {
-      setNewMessageCount((c) => c + 1);
     }
-  }, [messages]);
+  }, [messages, isNearBottom]);
   useEffect(() => {
     pruneOtherWidgetStorage(employeeId);
-
-    const saved = loadWidgetMessages(employeeId);
-
-    setMessages(saved ?? []);
 
     menuShownRef.current = false;
   }, [employeeId, employeeName]);
@@ -593,23 +607,12 @@ export default function ChatbotWidget({
     };
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setHasUnread(false);
-    }
-  }, [isOpen]);
+  const handleToggle = () => {
+    if (!isOpen) setHasUnread(false);
+    onToggle();
+  };
 
-  useEffect(() => {
-    if (isOpen && !menuShownRef.current && messages.length === 0) {
-      menuShownRef.current = true;
-
-      void sendText("menu:main", {
-        silent: true,
-      });
-    }
-  }, [isOpen, messages.length]);
-
-  const sendText = async (
+  const sendText = useCallback(async (
     text: string,
     options?: {
       silent?: boolean;
@@ -624,6 +627,7 @@ export default function ChatbotWidget({
 
     // Add user message unless silent
     if (!options?.silent) {
+      if (!isNearBottom) setNewMessageCount((count) => count + 1);
       const userMessage: ChatMessage = {
         id: Date.now(),
         text: trimmed,
@@ -684,6 +688,7 @@ export default function ChatbotWidget({
       if (!isOpen) {
         setHasUnread(true);
       }
+      if (!isNearBottom) setNewMessageCount((count) => count + 1);
 
       setMessages((prev) => {
         const updated = [...prev, botMessage];
@@ -710,6 +715,7 @@ export default function ChatbotWidget({
         widget: { type: "notice", noticeTone: "danger" },
         retryText: trimmed,
       };
+      if (!isNearBottom) setNewMessageCount((count) => count + 1);
 
       setMessages((prev) => {
         const updated = [...prev, errorMessage];
@@ -726,7 +732,25 @@ export default function ChatbotWidget({
         setLoading(false);
       }
     }
-  };
+  }, [
+    employeeId,
+    employeeName,
+    isNearBottom,
+    isOpen,
+    messages.length,
+    sendChat,
+    setMessages,
+  ]);
+
+  useEffect(() => {
+    if (isOpen && !menuShownRef.current && messages.length === 0) {
+      menuShownRef.current = true;
+
+      void sendText("menu:main", {
+        silent: true,
+      });
+    }
+  }, [isOpen, messages.length, sendText]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -752,7 +776,7 @@ export default function ChatbotWidget({
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionResultEvent) => {
       let transcript = "";
       for (let i = 0; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
@@ -832,7 +856,7 @@ export default function ChatbotWidget({
             `}</style>
       {/* Toggle Button */}
       <button
-        onClick={onToggle}
+        onClick={handleToggle}
         title="Chat with us"
         style={GRADIENT_STYLE}
         className={`fixed bottom-[30px] right-[30px] w-[62px] h-[62px] rounded-full text-white border-none cursor-pointer text-[26px] flex items-center justify-center shadow-[0_10px_26px_rgba(109,94,252,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:shadow-[0_14px_34px_rgba(109,94,252,0.62)] z-[999]`}
@@ -1034,7 +1058,7 @@ export default function ChatbotWidget({
               </IconTooltip>
               <IconTooltip label="Close chat" position="bottom">
                 <button
-                  onClick={onToggle}
+                  onClick={handleToggle}
                   aria-label="Close chat"
                   className="text-white text-2xl w-[30px] h-[30px] flex items-center justify-center rounded-lg hover:bg-white/20 transition-colors"
                 >
@@ -1722,8 +1746,13 @@ function ChatWidgetRenderer({
   const [dateValue, setDateValue] = useState("");
   const [selectedLeaves, setSelectedLeaves] = useState<CalendarLeave[]>([]);
   const [dateError, setDateError] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(
+    () => widget.type === "date" && !disabled,
+  );
   const [calendarMonth, setCalendarMonth] = useState(() => {
+    if (widget.type === "date" && widget.minDate) {
+      return isoToMonthStart(widget.minDate);
+    }
     const month = new Date();
     month.setDate(1);
     return month;
@@ -1732,23 +1761,10 @@ function ChatWidgetRenderer({
   const [downloaded, setDownloaded] = useState(false);
   const widgetRowRef = useRef<HTMLDivElement>(null);
 
-  // The leave-date step should open straight into the calendar instead of
-  // making the person click the calendar icon first — this fires once when
-  // this widget message first mounts (each date-widget message gets a fresh
-  // instance via its `key` in the parent, so this reliably re-fires every
-  // time a new "pick your leave date" step appears).
   useEffect(() => {
-    if (widget.type === "date" && !disabled) {
-      setShowCalendar(true);
-      if (widget.minDate) {
-        setCalendarMonth(isoToMonthStart(widget.minDate));
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (resetConfirmOpen) setShowCalendar(false);
+    if (!resetConfirmOpen) return;
+    const frame = requestAnimationFrame(() => setShowCalendar(false));
+    return () => cancelAnimationFrame(frame);
   }, [resetConfirmOpen]);
 
   // The calendar pops open ABOVE the date field (it needs to, since that

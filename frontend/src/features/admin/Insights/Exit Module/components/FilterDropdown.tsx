@@ -507,6 +507,7 @@
 // }
 
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -813,7 +814,7 @@ export default function FilterDropdown({
   /*
    * POSITION
    */
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (!buttonRef.current) {
       return;
     }
@@ -841,7 +842,7 @@ export default function FilterDropdown({
       top: rect.bottom + 4,
       left,
     });
-  };
+  }, [dropdownWidth]);
 
   /*
    * OPEN
@@ -923,7 +924,7 @@ export default function FilterDropdown({
         true
       );
     };
-  }, [open]);
+  }, [open, updatePosition]);
 
   /*
    * SELECT OPTION

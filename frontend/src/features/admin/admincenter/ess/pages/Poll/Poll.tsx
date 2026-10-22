@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   X,
@@ -62,11 +62,13 @@ export default function Poll() {
     )}-${date.getFullYear()}`;
   };
 
-  const formatISO = (date: Date) => {
-    return `${date.getFullYear()}-${pad(
+  const formatISO = useCallback((date: Date) => {
+    const padDatePart = (value: number) =>
+      String(value).padStart(2, "0");
+    return `${date.getFullYear()}-${padDatePart(
       date.getMonth() + 1
-    )}-${pad(date.getDate())}`;
-  };
+    )}-${padDatePart(date.getDate())}`;
+  }, []);
 
   const parseDate = (value: string): Date | null => {
     if (!value) return null;
@@ -428,6 +430,7 @@ export default function Poll() {
     }, [
       startCalendarDate,
       startDate,
+      formatISO,
     ]);
 
   // =====================================================
@@ -550,6 +553,7 @@ export default function Poll() {
     }, [
       endCalendarDate,
       endDate,
+      formatISO,
     ]);
 
   // =====================================================

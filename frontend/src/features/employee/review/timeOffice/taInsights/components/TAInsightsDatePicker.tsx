@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import type { SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import {
   addMonths,
@@ -68,35 +69,46 @@ export default function TAInsightsDatePicker({
   const { blockedHolidayIsos, holidayInfo } =
     useBlockedHolidays();
 
-  const selectedDate =
-    value &&
-    !Number.isNaN(
-      parse(value, ISO_FORMAT, new Date()).getTime(),
-    )
-      ? parse(value, ISO_FORMAT, new Date())
-      : undefined;
+  const selectedDate = useMemo(() => {
+    if (!value) return undefined;
+    const parsed = parse(value, ISO_FORMAT, new Date());
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  }, [value]);
 
   const [open, setOpen] = useState(false);
 
-  const [viewMonth, setViewMonth] = useState(
-    selectedDate ?? new Date(),
+  const [viewMonthState, setViewMonthState] = useState({
+    value,
+    month: selectedDate ?? new Date(),
+  });
+  const viewMonth = useMemo(
+    () =>
+      viewMonthState.value === value
+        ? viewMonthState.month
+        : (selectedDate ?? viewMonthState.month),
+    [selectedDate, value, viewMonthState]
   );
+  const setViewMonth = (update: SetStateAction<Date>) =>
+    setViewMonthState((previous) => {
+      const current =
+        previous.value === value
+          ? previous.month
+          : (selectedDate ?? previous.month);
+      return {
+        value,
+        month: typeof update === "function" ? update(current) : update,
+      };
+    });
 
   const [tip, setTip] =
     useState<HolidayTip | null>(null);
 
   const lastIsoRef = useRef("");
 
-  useEffect(() => {
-    if (selectedDate) {
-      setViewMonth(selectedDate);
-    }
-  }, [value]);
-
   /*
    * Same holiday/weekend logic as PunchDatePicker
    */
-  const isDisabled = (iso: string) => {
+  const isDisabled = useCallback((iso: string) => {
     // Weekend
     if (isWeekendIso(iso)) {
       return true;
@@ -116,7 +128,7 @@ export default function TAInsightsDatePicker({
 
     // Optional holiday can be selected
     return false;
-  };
+  }, [blockedHolidayIsos, holidayInfo]);
 
   const cells = useMemo<DatePickerCell[]>(() => {
     const gridStart = startOfWeek(
@@ -145,9 +157,8 @@ export default function TAInsightsDatePicker({
     });
   }, [
     viewMonth,
-    value,
-    blockedHolidayIsos,
-    holidayInfo,
+    isDisabled,
+    selectedDate,
   ]);
 
   /*

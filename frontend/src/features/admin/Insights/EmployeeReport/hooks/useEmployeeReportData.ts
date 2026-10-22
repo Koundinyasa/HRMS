@@ -144,7 +144,10 @@ export function useEmployeeReportData({
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetEmployeeReportQuery(queryParams);
 
-  const rows: EmployeeReportRow[] = data?.data ?? [];
+  const rows: EmployeeReportRow[] = useMemo(
+    () => data?.data ?? [],
+    [data?.data]
+  );
   const totalCount = data?.totalCount ?? 0;
   const stats: ResignationReportStats | undefined = data?.stats;
 
@@ -174,9 +177,25 @@ export function useEmployeeReportData({
     setPageSize,
     loading: isLoading || isFetching,
     error: isError
-      ? (error as any)?.data?.message || "Failed to load report"
+      ? getReportErrorMessage(error)
       : null,
     refetch,
     handleExport,
   };
+}
+
+function getReportErrorMessage(error: unknown): string {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "data" in error &&
+    typeof error.data === "object" &&
+    error.data !== null &&
+    "message" in error.data &&
+    typeof error.data.message === "string"
+  ) {
+    return error.data.message;
+  }
+
+  return "Failed to load report";
 }
