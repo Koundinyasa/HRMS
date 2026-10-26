@@ -1,5 +1,6 @@
 export interface JobOpeningFormValues {
   title: string;
+  jobDescription: string;
   branchId: number;
   designationId: number;
   vacancies: number;
@@ -18,6 +19,7 @@ export function validateJobOpening(
 ): JobOpeningValidationResult {
   const values: JobOpeningFormValues = {
     title: String(formData.get("title") ?? "").trim(),
+    jobDescription: String(formData.get("jobDescription") ?? "").trim(),
     branchId: Number(formData.get("branchId")),
     designationId: Number(formData.get("designationId")),
     vacancies: Number(formData.get("vacancies")),
@@ -33,6 +35,7 @@ export function validateJobOpening(
 
   if (
     !values.title ||
+    !values.jobDescription ||
     !Number.isInteger(values.branchId) ||
     values.branchId <= 0 ||
     !Number.isInteger(values.designationId) ||
@@ -42,7 +45,8 @@ export function validateJobOpening(
   ) {
     return {
       valid: false,
-      message: "Enter a job title, valid branch/designation IDs, and vacancies.",
+      message:
+        "Enter a job title and description, valid branch/designation IDs, and vacancies.",
     };
   }
 

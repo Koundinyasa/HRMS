@@ -288,6 +288,7 @@ export function ApprovalsPanel({
                 ["Vacancies", String(selectedApproval.positions)],
                 ["Salary Range", selectedApproval.salaryBand],
                 ["Experience", selectedApproval.experienceRequired ?? "—"],
+                ["Job Description", selectedApproval.jobDescription],
                 ["Priority", selectedApproval.priority ?? "—"],
                 ["Hiring Manager", selectedApproval.requestedBy],
                 ["Status", selectedApproval.status === "waiting"

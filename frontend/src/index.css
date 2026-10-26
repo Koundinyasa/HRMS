@@ -159,6 +159,18 @@ ol {
   border-radius: 14px;
 }
 
+.recruitment-font-scale [class~="text-xs"],
+.recruitment-font-scale [class~="text-[10px]"],
+.recruitment-font-scale [class~="text-[11px]"] {
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.recruitment-font-scale [class~="text-sm"] {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
 .classification-typography {
   font-family: "Urbanist", "Segoe UI", sans-serif;
   letter-spacing: -0.01em;

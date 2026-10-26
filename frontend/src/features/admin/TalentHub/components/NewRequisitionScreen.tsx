@@ -198,6 +198,9 @@ export function NewRequisitionScreen({
     const form = event.currentTarget;
     const formData = new FormData(form);
     const jobTitle = String(formData.get("jobTitle") ?? "").trim();
+    const jobDescription = String(
+      formData.get("jobDescription") ?? "",
+    ).trim();
     const branchId = Number(formData.get("branchId"));
     const designationId = Number(formData.get("designationId"));
     const vacancies = Number(formData.get("vacancies"));
@@ -210,6 +213,7 @@ export function NewRequisitionScreen({
 
     if (
       !jobTitle ||
+      !jobDescription ||
       !Number.isInteger(branchId) ||
       !Number.isInteger(designationId) ||
       !Number.isInteger(vacancies) ||
@@ -217,7 +221,7 @@ export function NewRequisitionScreen({
       !Number.isInteger(priority) ||
       priority < 0
     ) {
-      setError("Complete all required fields with valid values.");
+      setError("Complete all required fields, including the job description.");
       return;
     }
 
@@ -244,6 +248,7 @@ export function NewRequisitionScreen({
         branchId,
         designationId,
         jobTitle,
+        jobDescription,
         vacancies,
         ...(salaryRangeMin !== undefined ? { salaryRangeMin } : {}),
         ...(salaryRangeMax !== undefined ? { salaryRangeMax } : {}),
@@ -311,6 +316,17 @@ export function NewRequisitionScreen({
             autoFocus
             placeholder="e.g. Backend Developer"
             className={fieldClass}
+          />
+        </RequisitionField>
+
+        <RequisitionField label="Job description">
+          <textarea
+            name="jobDescription"
+            required
+            maxLength={4000}
+            rows={5}
+            placeholder="Describe the role, responsibilities, and requirements."
+            className="w-full rounded-lg border border-[#dfe4df] bg-white px-3 py-2 text-sm text-[#354239] outline-none placeholder:text-[#929c95] focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f5f7f5] disabled:opacity-70"
           />
         </RequisitionField>
 

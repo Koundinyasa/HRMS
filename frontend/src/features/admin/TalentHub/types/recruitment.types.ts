@@ -90,6 +90,7 @@ export type CreateRequisitionRequest = {
   branchId: number;
   designationId: number;
   jobTitle: string;
+  jobDescription: string;
   vacancies: number;
   salaryRangeMin?: number;
   salaryRangeMax?: number;
@@ -235,11 +236,11 @@ export type ScheduledCandidateInterview = {
 export type RecruitmentInterview = {
   id: number;
   code: string;
-  applicationId: number;
-  applicationCode: string;
+  applicationId?: number;
+  applicationCode?: string;
   candidateCode: string;
   candidateName: string;
-  candidateEmail: string;
+  candidateEmail?: string;
   position: string;
   roundName: string;
   scheduledAt: string;
@@ -265,6 +266,10 @@ export type InterviewerFeedbackWorklistItem = {
   scheduledAt: string;
   status: "scheduled" | "completed";
   interviewerName: string;
+  feedbackSubmitted: boolean;
+  canSubmitFeedback: boolean;
+  feedbackRating: number | null;
+  feedbackText: string | null;
 };
 
 export type InterviewFeedbackCategory = {

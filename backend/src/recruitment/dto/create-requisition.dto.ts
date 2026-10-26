@@ -24,6 +24,11 @@ export class CreateRequisitionDto {
   @MaxLength(100)
   jobTitle!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(4000)
+  jobDescription!: string;
+
   @IsInt()
   @Min(1)
   vacancies!: number;
