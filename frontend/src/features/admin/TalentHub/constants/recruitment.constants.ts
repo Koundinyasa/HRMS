@@ -6,6 +6,8 @@ import type {
   JobOpening,
 } from "../types/recruitment.types";
 
+export const REQUISITION_APPROVER_EMPLOYEE_ID = "294690";
+
 export const INITIAL_CANDIDATES: Candidate[] = [
   {
     id: 1,
@@ -381,9 +383,9 @@ export const INITIAL_APPROVALS: Approval[] = [
 ];
 
 export const APPROVAL_TABS: { status: ApprovalStatus; label: string }[] = [
-  { status: "waiting", label: "Waiting on approvers" },
-  { status: "ready", label: "Ready to publish" },
-  { status: "sent-back", label: "Sent back" },
+  { status: "waiting", label: "Pending approval" },
+  { status: "ready", label: "Approved" },
+  { status: "sent-back", label: "Rejected" },
 ];
 
 export const APPROVAL_CHAIN_BY_DEPARTMENT: Record<string, string> = {

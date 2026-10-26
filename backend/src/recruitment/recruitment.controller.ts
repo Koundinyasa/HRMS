@@ -11,9 +11,9 @@ import {
   UnauthorizedException,
   UploadedFile,
   UseInterceptors,
-  FileTypeValidator,
   MaxFileSizeValidator,
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
   StreamableFile,
   Query,
@@ -36,7 +36,6 @@ import { CreateRequisitionDto } from './dto/create-requisition.dto';
 import { ResumeScreeningDto } from './dto/resume-screening.dto';
 import { CreateCandidateApplicationDto } from './dto/create-candidate-application.dto';
 import { ScheduleCandidateAssessmentDto } from './dto/schedule-candidate-assessment.dto';
-import { ScheduleCandidateInterviewDto } from './dto/schedule-candidate-interview.dto';
 import { UpdateCandidateAssessmentResultDto } from './dto/update-candidate-assessment-result.dto';
 import { FinalInterviewApprovalDto } from './dto/final-interview-approval.dto';
 import { SubmitInterviewFeedbackDto } from './dto/submit-interview-feedback.dto';
@@ -53,6 +52,9 @@ import { MailService } from '../mail/mail.service';
 // import { SendInterviewInvitationDto } from './dto/send-interview-invitation.dto';
 const uploadPath = join(process.cwd(), 'uploads', 'recruitment', 'resumes');
 mkdirSync(uploadPath, { recursive: true });
+const REQUISITION_APPROVER_EMPLOYEE_ID = '294690';
+const REQUISITION_LIST_HR_EMPLOYEE_ID = '294676';
+
 @Controller('recruitment')
 export class RecruitmentController {
   constructor(
@@ -70,6 +72,12 @@ export class RecruitmentController {
   @UseGuards(JwtAuthGuard)
   @Post('requisitionaction')
   async requisitionAction(@Body() dto: RequisitionActionDto, @Req() req) {
+    if (String(req.user.employeeId) !== REQUISITION_APPROVER_EMPLOYEE_ID) {
+      throw new ForbiddenException(
+        'Only Mounika, the designated requisition approver, can approve or reject requisitions.',
+      );
+    }
+
     return this.recruitmentService.requisitionAction(
       dto.requisitionId,
       dto.action,
@@ -81,6 +89,12 @@ export class RecruitmentController {
   @UseGuards(JwtAuthGuard)
   @Post('jobopening')
   async createJobOpening(@Body() dto: CreateJobOpeningDto, @Req() req) {
+    if (String(req.user.employeeId) !== REQUISITION_APPROVER_EMPLOYEE_ID) {
+      throw new ForbiddenException(
+        'Only Mounika, the designated requisition approver, can create job openings from requisitions.',
+      );
+    }
+
     return this.recruitmentService.createJobOpening(
       dto.requisitionId,
       req.user.employeeId,
@@ -95,6 +109,7 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
+  @UseGuards(JwtAuthGuard)
   @Get('jobopenings')
   async getJobOpenings() {
     return this.recruitmentService.getJobOpenings();
@@ -375,50 +390,9 @@ export class RecruitmentController {
     return this.recruitmentService.getCandidatesForAssessmentScheduling();
   }
   @UseGuards(JwtAuthGuard)
-  @Post('assessmentschedule')
-  async scheduleCandidateAssessment(
-    @Body() dto: ScheduleCandidateAssessmentDto,
-    @Req() req,
-  ) {
-    return this.recruitmentService.scheduleCandidateAssessment(
-      dto.applicationId,
-      dto.assessmentType,
-      dto.scheduledDate,
-      req.user.employeeId,
-    );
-  }
-  @UseGuards(JwtAuthGuard)
   @Get('intervieweligible')
-  async getCandidatesEligibleForInterview() {
-    return this.recruitmentService.getCandidatesEligibleForInterview();
-  }
-  @UseGuards(JwtAuthGuard)
-  @Post('interviewschedule')
-  async scheduleCandidateInterview(
-    @Body() dto: ScheduleCandidateInterviewDto,
-    @Req() req: any,
-  ) {
-    return this.recruitmentService.scheduleCandidateInterview(
-      dto.applicationId,
-      dto.interviewTypeId,
-      dto.scheduledDate,
-      dto.interviewerEmployeeId,
-      req.user.employeeId,
-    );
-  }
-  @UseGuards(JwtAuthGuard)
-  @Post('assessmentresult')
-  async updateCandidateAssessmentResult(
-    @Body() dto: UpdateCandidateAssessmentResultDto,
-    @Req() req,
-  ) {
-    return this.recruitmentService.updateCandidateAssessmentResult(
-      dto.assessmentId,
-      dto.score,
-      dto.isQualified,
-      dto.remarks,
-      req.user.employeeId,
-    );
+  async getInterviewEligibleCandidates() {
+    return this.recruitmentService.getInterviewEligibleCandidates();
   }
   @UseGuards(JwtAuthGuard)
   @Post('finalinterviewapproval')
@@ -458,6 +432,49 @@ export class RecruitmentController {
 
     return this.recruitmentService.getCandidatesForVerification(
       hrManagerEmployeeId,
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('all-verification-candidates')
+  async getAllVerificationCandidates(@Req() req: any) {
+    return this.recruitmentService.getAllVerificationCandidates(
+      String(req.user.employeeId),
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('pending-bgv-documents')
+  async getPendingBgvDocuments(
+    @Query('applicationId') applicationId: string | undefined,
+    @Query('flag') flag: string | undefined,
+    @Req() req: { user: { employeeId: string } },
+  ) {
+    const parsedFlag = flag === undefined ? 1 : Number(flag);
+    if (!Number.isInteger(parsedFlag) || ![1, 2].includes(parsedFlag)) {
+      throw new BadRequestException('flag must be 1 or 2.');
+    }
+
+    let parsedApplicationId: number | undefined;
+
+    if (applicationId !== undefined) {
+      parsedApplicationId = Number(applicationId);
+
+      if (!Number.isInteger(parsedApplicationId) || parsedApplicationId <= 0) {
+        throw new BadRequestException(
+          'applicationId must be a positive integer.',
+        );
+      }
+    }
+
+    if (parsedFlag === 2 && parsedApplicationId === undefined) {
+      throw new BadRequestException(
+        'applicationId is required when flag is 2.',
+      );
+    }
+
+    return this.recruitmentService.getPendingBgvDocuments(
+      String(req.user.employeeId),
+      parsedApplicationId,
+      parsedFlag,
     );
   }
   @UseGuards(JwtAuthGuard)
@@ -576,5 +593,63 @@ export class RecruitmentController {
   async getRecruitmentSources() {
     return this.recruitmentService.getRecruitmentSources();
   }
- 
+ @UseGuards(JwtAuthGuard)
+  @Get('all-requisitions-for-hr')
+  async getAllRequisitionsForHR(@Req() req: any) {
+   if (!req.user?.employeeId) {
+     throw new UnauthorizedException(
+       'Authenticated user is missing an employee ID.',
+     );
+   }
+
+   // The stored procedure requires an active HR Manager to read the shared list.
+   return this.recruitmentService.getAllRequisitionsForHR(
+     REQUISITION_LIST_HR_EMPLOYEE_ID,
+   );
+ }
+ // scheduled candidate assessment start from here
+  @UseGuards(JwtAuthGuard)
+  @Post('assessmentschedule')
+  async scheduleCandidateAssessment(
+    @Body() dto: ScheduleCandidateAssessmentDto,
+    @Req() req,
+  ) {
+    return this.recruitmentService.scheduleCandidateAssessment(
+      dto.applicationId,
+      dto.assessmentTypeId,
+      dto.scheduledDate,
+      req.user.employeeId,
+    );
+  }
+// Assessment Scheduling Dropdowns
+  @UseGuards(JwtAuthGuard)
+  @Get('assessment-schedule-dropdowns')
+  async getAssessmentScheduleDropdowns(@Req() req) {
+    return this.recruitmentService.getAssessmentScheduleDropdowns(
+      req.user.companyId,
+    );
+  }
+  //update candidate assessment result
+  @UseGuards(JwtAuthGuard)
+  @Post('assessmentresult')
+  async updateCandidateAssessmentResult(
+    @Body() dto: UpdateCandidateAssessmentResultDto,
+    @Req() req,
+  ) {
+    return this.recruitmentService.updateCandidateAssessmentResult(
+      dto.assessmentId,
+      dto.score,
+      dto.isQualified,
+      dto.remarks,
+      req.user.employeeId,
+    );
+  }
+  // Job Requisition Details Endpoint
+  @UseGuards(JwtAuthGuard)
+  @Get('jobrequisitiondetails/:requisitionId')
+  async getJobRequisitionDetails(
+    @Param('requisitionId', ParseIntPipe) requisitionId: number,
+  ) {
+    return this.recruitmentService.getJobRequisitionDetails(requisitionId);
+  }
 }

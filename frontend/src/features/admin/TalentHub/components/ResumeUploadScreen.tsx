@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, FileUp, LoaderCircle, Upload, X } from "lucide-react";
 import {
-  getApiErrorMessage,
   useCreateCandidateApplicationMutation,
   useGetJobOpeningMasterQuery,
   useGetRecruitmentSourcesQuery,
-} from "../hooks/useRecruitment";
+} from "../api/recruitment.api";
+import { getApiErrorMessage } from "../utils/recruitmentErrors";
 
 interface LookupOption {
   value: string;
@@ -172,10 +172,11 @@ export function ResumeUploadScreen() {
       )
     : (lookups?.error ?? "");
 
-  const defaultSource = sources.find(
-    (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
-  )?.value;
-  const selectedSource = source || defaultSource || "";
+  const defaultSource =
+    sources.find(
+      (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
+    )?.value ?? "";
+  const selectedSource = source || defaultSource;
 
   const isEmployeeReferral =
     selectedSource.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
@@ -238,11 +239,7 @@ export function ResumeUploadScreen() {
       }).unwrap();
       setSuccess("Resume uploaded and candidate application created.");
       setFile(null);
-      setSource(
-        sources.find(
-          (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
-        )?.value ?? "",
-      );
+      setSource(defaultSource);
       setReferralName("");
       form.reset();
     } catch (submitError) {

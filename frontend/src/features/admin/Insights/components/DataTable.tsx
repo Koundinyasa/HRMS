@@ -30,7 +30,7 @@ export default function DataTable<T extends Record<string, unknown>>({
           {data.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className="border-t border-gray-100"
+              className="border-t border-gray-100 odd:bg-white even:bg-[#fffaf0]"
             >
               {columns.map((column) => (
                 <td

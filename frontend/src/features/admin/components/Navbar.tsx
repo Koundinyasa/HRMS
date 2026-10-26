@@ -34,10 +34,11 @@ export default function Navbar() {
   }, []);
  
   return (
-    <header className="h-16 w-full flex items-center justify-between px-4 sm:px-4 lg:px-6 bg-white border-b border-slate-100 sticky top-0 z-30">
- 
+    <header className="relative z-30 flex h-16 w-full shrink-0 border-b border-slate-100 bg-white">
+      <div className="h-full w-full overflow-x-auto overflow-y-hidden [scrollbar-color:#cbd5e1_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
+      <div className="flex h-full min-w-max items-center justify-between gap-4 px-4 sm:px-4 lg:px-6">
       {/* ── Left: Logo + company name ── */}
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex shrink-0 items-center gap-3">
         <button
           onClick={() => navigate(`/${domain}/admin/dashboard`)}
           className="flex flex-col items-center gap-0.5 shrink-0 hover:opacity-80 transition-opacity"
@@ -61,7 +62,7 @@ export default function Navbar() {
           <Menu size={18} />
         </button>
  
-        <span className="text-[11px] sm:text-sm font-semibold text-slate-700 leading-tight">
+        <span className="shrink-0 whitespace-nowrap text-[11px] font-semibold leading-tight text-slate-700 sm:text-sm">
           Koundinyasa Technology Services Pvt. Ltd.
         </span>
       </div>
@@ -115,6 +116,8 @@ export default function Navbar() {
           email={welcome?.email}
           profilePhoto={welcome?.profilePhoto}
         />
+      </div>
+      </div>
       </div>
     </header>
   );

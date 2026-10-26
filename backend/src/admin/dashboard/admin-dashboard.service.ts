@@ -22,6 +22,59 @@ import {
 } from './dto/dashboard.summary.dto';
 import { ClassificationWiseCountDto } from './dto/Classification.dto';
 
+interface AdminDashboardResultRow {
+  FullName: string;
+  ShortName: string;
+  Code: string;
+  ProfilePhoto: string | null;
+  CompanyID: number;
+  CompanyCode: string;
+  CompanyName: string;
+  BranchName: string;
+  BranchCode: string;
+  RoutingUrl: string;
+  DeptID: number;
+  Department: string;
+  RoleID: number;
+  DefaultRole: string;
+  DesignationID: number;
+  Designation: string;
+  WelcomeMessage: string;
+  LastLoginDateTime: string | null;
+  LastLogoutDateTime: string | null;
+  LoginFailedCount: number;
+  Isaccountlocked: boolean;
+  Accountlockedtime: string | null;
+  EmployeeID: string;
+  Email: string;
+  Mobileno: string | null;
+  MenuId: number;
+  ParentId: number | null;
+  MenuName: string;
+  RouteUrl: string;
+  DisplayOrder: number;
+  totalEmployees: number;
+  joinedEmployee: number;
+  confirmationPending: number;
+  leftEmployee: number;
+  openPositions: number;
+  Count: number;
+  Gender: string;
+  Percentage: number;
+  AgeBetween: string;
+  Female: number;
+  Male: number;
+  AvgTenure: string;
+  LeadName: string;
+  Team: string;
+  Badgecolor: string;
+  ID: number;
+  Name: string;
+  EventName: 'Birthday' | 'Work Anniversary';
+  EventDate: string;
+  Label: string;
+}
+
 @Injectable()
 export class AdminDashboardService {
   private readonly logger = new Logger(AdminDashboardService.name);
@@ -38,7 +91,7 @@ export class AdminDashboardService {
       const result = await pool
         .request()
         .input('EmployeeID', employeeId)
-        .execute('Usp_AdminDashboard');
+        .execute<AdminDashboardResultRow>('Usp_AdminDashboard');
 
       // this.logger.log(`[3] SP executed. recordsets count: ${result.recordsets.length}`);
       // this.logger.log(`[4] recordsets lengths: ${result.recordsets.map((r: any[]) => r.length).join(', ')}`);

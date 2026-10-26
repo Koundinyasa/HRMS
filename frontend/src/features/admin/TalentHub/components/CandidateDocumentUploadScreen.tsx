@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Eye, FileUp, LoaderCircle } from "lucide-react";
 import {
-  getApiErrorMessage,
   useGetRecruitmentDashboardQuery,
   useLazyGetCandidateDocumentFileQuery,
   useUploadCandidateDocumentFileMutation,
-} from "../hooks/useRecruitment";
+} from "../api/recruitment.api";
+import { getApiErrorMessage } from "../utils/recruitmentErrors";
 
 const DOCUMENTS = [
   { id: 1, label: "Aadhaar", required: true },

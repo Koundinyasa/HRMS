@@ -1,23 +1,39 @@
+import { Type } from 'class-transformer';
 import {
-  IsBoolean,
+  ArrayNotEmpty,
+  IsArray,
+  IsIn,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsString,
   MaxLength,
+  Min,
+  ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 
-export class BgvCandidateDto {
+export class BgvDocumentVerificationDto {
   @IsInt()
-  @IsNotEmpty()
-  applicationId!: number;
+  @Min(1)
+  documentId!: number;
 
-  @IsBoolean()
-  @IsNotEmpty()
-  isClear!: boolean;
-
-  @IsOptional()
   @IsString()
+  @IsIn(['Approved', 'Rejected'])
+  verificationStatus!: 'Approved' | 'Rejected';
+
+  @ValidateIf((document: BgvDocumentVerificationDto) =>
+    document.verificationStatus === 'Rejected',
+  )
+  @IsString()
+  @IsNotEmpty()
   @MaxLength(500)
   remarks?: string;
+}
+
+export class BgvCandidateDto {
+  @IsArray()
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => BgvDocumentVerificationDto)
+  documents!: BgvDocumentVerificationDto[];
 }

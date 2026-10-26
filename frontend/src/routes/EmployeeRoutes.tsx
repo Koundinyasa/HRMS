@@ -7,7 +7,8 @@ import {
 
 import Layout from "@/features/employee/components/Layout";
 import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage";
-
+import { InterviewerFeedbackScreen } from "@/features/admin/TalentHub/components/InterviewerFeedbackScreen";
+ 
 // Profile Module
 import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
 import PersonalInformationPage from "@/features/employee/profile/pages/PersonalInformationPage";
@@ -80,11 +81,12 @@ export default function EmployeeRoutes() {
         element={<Layout />}
       >
         {/* Dashboard */}
+        <Route path="dashboard" element={<EmployeeDashboard />} />
         <Route
-          path="dashboard"
-          element={<EmployeeDashboard />}
+          path="interviewer-feedback"
+          element={<InterviewerFeedbackScreen />}
         />
-
+ 
         {/* My Profile */}
         <Route
           path="profile"

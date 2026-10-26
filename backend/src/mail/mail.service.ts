@@ -17,8 +17,135 @@ export class MailService {
       auth: { user, pass },
     });
   }
- 
-  async sendTempPassword(
+
+  async sendWelcomeEmail(
+    email: string,
+    candidateName: string,
+    position: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Welcome to ${position}`,
+      text: [
+        `Dear ${candidateName},`,
+        '',
+        `Welcome to ${position}! We are excited to have you join us.`,
+        '',
+        'Please contact the HR team if you have any questions before your joining date.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
+  async sendJoiningEmail(
+    email: string,
+    candidateName: string,
+    position: string,
+    joiningDate: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Joining Details - ${position}`,
+      text: [
+        `Dear ${candidateName},`,
+        '',
+        `We are pleased to confirm your joining for ${position} on ${joiningDate}.`,
+        '',
+        'Please contact the HR team if you have any questions before your joining date.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
+  async sendOfferLetter(
+    email: string,
+    candidateName: string,
+    position: string,
+    offerReference: string,
+    offerLetter: Buffer,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Offer of Employment - ${position}`,
+      text: [
+        `Dear ${candidateName},`,
+        '',
+        `Please find your offer letter attached. Your offer reference is ${offerReference}.`,
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+      attachments: [
+        {
+          filename: `${offerReference}.pdf`,
+          content: offerLetter,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+  }
+
+  async sendInterviewInvitation(
+    email: string,
+    candidateName: string,
+    position: string,
+    interviewerName: string,
+    scheduledDate: string,
+    scheduledTime: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Interview Invitation - ${position}`,
+      text: [
+        `Dear ${candidateName},`,
+        '',
+        `We would like to invite you to interview for the ${position} position.`,
+        `Date: ${scheduledDate}`,
+        `Time: ${scheduledTime}`,
+        `Interviewer: ${interviewerName}`,
+        '',
+        'Please reply to this email if you have any questions.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
+  async sendTeamAssignmentEmail(
+    email: string,
+    employeeName: string,
+    department: string,
+    team: string,
+    manager: string,
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `Your Team Assignment - ${team}`,
+      text: [
+        `Dear ${employeeName},`,
+        '',
+        `You have been assigned to the ${team} team in the ${department} department.`,
+        `Your reporting manager is ${manager}.`,
+        '',
+        'Please contact the HR team if you have any questions.',
+        '',
+        'Regards,',
+        'HR Team',
+      ].join('\n'),
+    });
+  }
+
+ async sendTempPassword(
     email: string,
     tempPassword: string,
     applicationUrl: string,

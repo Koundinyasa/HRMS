@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useMemo,
   useState,
   type FormEvent,
@@ -10,16 +9,18 @@ import { toast } from "react-toastify";
 import {
   INITIAL_CANDIDATES,
   OPENING_DEPARTMENTS,
+  REQUISITION_APPROVER_EMPLOYEE_ID,
 } from "../constants/recruitment.constants";
+import { useAppSelector } from "@/hooks/useAppSelector";
 
 import {
   useGetJobOpeningsQuery,
-  useGetPendingRequisitionsQuery,
+  useGetAllRequisitionsForHRQuery,
   useGetRecruitmentDashboardQuery,
   useGetCandidateApplicationsQuery,
   useCreateRequisitionMutation,
   useUpdateRequisitionMutation,
-  useCreateJobOpeningMutation,
+  useUpdateResumeScreeningMutation,
   recruitmentFileUrl,
 } from "../api/recruitment.api";
 
@@ -29,12 +30,19 @@ import type {
   ApprovalStatus,
   Candidate,
   CandidateStage,
-  InterviewSchedule,
   JobOpening,
   RecruitmentTab,
+  ResumeScreeningRequest,
 } from "../types/recruitment.types";
 
 import { validateJobOpening } from "../validation/recruitment.validation";
+import { getApiErrorMessage as getErrorMessage } from "../utils/recruitmentErrors";
+
+const EMPTY_JOB_OPENINGS: JobOpening[] = [];
+
+// ======================================================
+// HELPERS
+// ======================================================
 
 // ======================================================
 // RE-EXPORTS FOR COMPONENTS
@@ -67,6 +75,9 @@ export {
 // ======================================================
 
 type RecruitmentRow = Record<string, unknown>;
+type CandidateStageOverride = Pick<Candidate, "stage" | "daysInStage"> & {
+  sourceStage: CandidateStage;
+};
 
 function toRows(response: unknown): RecruitmentRow[] {
   if (!Array.isArray(response)) {
@@ -103,46 +114,6 @@ function readNumber(row: RecruitmentRow, aliases: string[], fallback = 0) {
   return Number.isFinite(value) ? value : fallback;
 }
 
-// Works for RTK Query errors (FetchBaseQueryError / SerializedError), plain Errors
-// and string / array `message` bodies.
-// Components import this as `getApiErrorMessage`.
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (!error) return fallback;
-
-  if (typeof error === "string") return error || fallback;
-
-  const errorResponse = error as {
-    data?: unknown;
-    message?: unknown;
-    error?: unknown;
-  };
-
-  const { data } = errorResponse;
-
-  if (data && typeof data === "object") {
-    const body = data as { message?: unknown; Message?: unknown };
-    const message = body.Message ?? body.message;
-
-    if (Array.isArray(message) && message.length > 0) {
-      return message.map(String).join(", ");
-    }
-
-    if (typeof message === "string" && message) return message;
-  }
-
-  if (typeof errorResponse.message === "string" && errorResponse.message) {
-    return errorResponse.message;
-  }
-
-  if (typeof errorResponse.error === "string" && errorResponse.error) {
-    return errorResponse.error;
-  }
-
-  return fallback;
-}
-
-export { getErrorMessage as getApiErrorMessage };
-
 // Runs a mapper and captures its error instead of throwing during render
 function safeMap<T>(
   run: () => T,
@@ -169,27 +140,69 @@ function openingStatus(value: string): JobOpening["status"] {
 }
 
 function mapOpening(row: RecruitmentRow): JobOpening {
-  const id = readNumber(row, ["JobOpeningID", "OpeningID", "ID"]);
-  const title = readText(row, ["JobTitle", "Title", "OpeningTitle"], "");
+  const requisitionNo = readText(row, ["RequisitionNo", "RequisitionNumber"], "");
+  const openingId = readValue(
+    row,
+    "JobOpeningID",
+    "OpeningID",
+    "JobID",
+    "ID",
+  );
+  const parsedOpeningId = Number(openingId);
+  const id =
+    openingId !== null &&
+    openingId !== undefined &&
+    openingId !== "" &&
+    Number.isFinite(parsedOpeningId)
+      ? parsedOpeningId
+      : requisitionNo;
+  const title = readText(
+    row,
+    ["Role", "JobTitle", "Title", "OpeningTitle", "Position"],
+    "",
+  );
   if (!id || !title) {
     throw new Error("Job opening response is missing its ID or title.");
   }
 
+  const salaryMin = readValue(row, "SalaryRangeMin");
+  const salaryMax = readValue(row, "SalaryRangeMax");
+  const salaryRange =
+    salaryMin !== undefined || salaryMax !== undefined
+      ? `${salaryMin == null ? "—" : Number(salaryMin).toLocaleString("en-IN")} – ${
+          salaryMax == null ? "—" : Number(salaryMax).toLocaleString("en-IN")
+        }`
+      : undefined;
+
   return {
     id,
+    requisitionNo: requisitionNo || undefined,
     title,
     department: readText(row, ["DepartmentName", "Department"], "—"),
     location: readText(row, ["Location", "BranchName"], "—"),
-    type: readText(row, ["EmploymentType", "JobType"], "—"),
+    type: readText(row, ["EmploymentType", "JobType", "Designation"], "—"),
     applicants: readNumber(
       row,
-      ["ApplicantCount", "ApplicantsCount", "TotalApplicants"],
+      ["ApplicantCount", "ApplicantsCount", "TotalApplicants", "Applicants"],
       0
     ),
-    positions: readNumber(row, ["Vacancies", "Positions", "NoOfPositions"], 1),
+    positions: readNumber(
+      row,
+      ["Vacancies", "Positions", "NoOfPositions", "TotalPositions"],
+      1,
+    ),
     positionsFilled: readNumber(row, ["PositionsFilled", "FilledPositions"]),
-    status: openingStatus(readText(row, ["Status", "OpeningStatus"], "Open")),
-    posted: readText(row, ["PostedDate", "CreatedDate", "CreatedOn"], "—"),
+    salaryRange,
+    experienceRequired: readText(row, ["ExperienceRequired"], ""),
+    closingDate: readText(row, ["ClosingDate"], ""),
+    status: openingStatus(
+      readText(row, ["Status", "StatusName", "OpeningStatus"], "Open")
+    ),
+    posted: readText(
+      row,
+      ["PostedDate", "PublishedDate", "CreatedDate", "CreatedOn", "Posted", "ClosingDate"],
+      "—"
+    ),
   };
 }
 
@@ -268,29 +281,180 @@ function mapPendingRequisition(row: RecruitmentRow): Approval | null {
     return null;
   }
 
+  const providedSalaryBand = readText(
+    row,
+    ["SalaryRange", "SalaryBand"],
+    "",
+  );
   const salaryMin = readValue(row, "SalaryRangeMin", "SalaryMin");
   const salaryMax = readValue(row, "SalaryRangeMax", "SalaryMax");
   const salaryBand =
-    salaryMin !== undefined || salaryMax !== undefined
+    providedSalaryBand ||
+    (salaryMin !== undefined || salaryMax !== undefined
       ? `${salaryMin ?? "—"}–${salaryMax ?? "—"}`
-      : "—";
+      : "—");
+
+  const rawStatus = readText(
+    row,
+    [
+      "RequisitionApprovalStatus",
+      "ApprovalStatus",
+      "ApprovalStatusName",
+      "RequisitionStatus",
+      "StatusName",
+      "Status",
+    ],
+    "Pending",
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  const status: Approval["status"] =
+    rawStatus.includes("reject") || rawStatus.includes("sendback")
+      ? "sent-back"
+      : rawStatus.includes("approv") ||
+          rawStatus.includes("accept") ||
+          rawStatus.includes("ready")
+        ? "ready"
+        : "waiting";
 
   return {
     id,
+    requisitionNo: readText(
+      row,
+      ["RequisitionNo", "RequisitionNumber"],
+      `REQ-${id}`,
+    ),
     title,
     department: readText(row, ["DepartmentName", "Department"], "—"),
     location: readText(row, ["BranchName", "Location"], "—"),
-    requestedBy: readText(row, ["RequestedByName", "EmployeeName"], "—"),
-    requestedDate: readText(row, ["RequestedDate", "CreatedDate"], "—"),
+    designation: readText(row, ["DesignationName", "Designation"], "—"),
+    requestedBy: readText(
+      row,
+      [
+        "HiringManagerName",
+        "HiringManager",
+        "RequestedByName",
+        "RequestedBy",
+        "EmployeeName",
+      ],
+      "—",
+    ),
+    requestedDate: readText(
+      row,
+      ["RequestedDate", "RequisitionDate", "CreatedDate", "CreatedOn"],
+      "—",
+    ),
     positions: readNumber(row, ["Vacancies", "Positions"], 0),
-    reason: readText(row, ["Reason"], "—"),
+    experienceRequired: readText(
+      row,
+      ["ExperienceRequired", "Experience", "RequiredExperience"],
+      "—",
+    ),
+    priority: readText(row, ["PriorityName", "Priority"], "—"),
+    reviewedDate: readText(row, ["ReviewedDate"], "—"),
+    reviewRemarks: readText(
+      row,
+      ["ReviewRemarks", "ApprovalRemarks", "Remarks"],
+      "—",
+    ),
+    reason: readText(row, ["Reason", "RequisitionReason"], "—"),
     salaryBand,
-    targetJoining: "—",
+    targetJoining: readText(
+      row,
+      ["TargetJoining", "TargetJoiningDate", "ExpectedJoiningDate"],
+      "—",
+    ),
     justification: readText(row, ["Justification", "Remarks"], "—"),
-    jobDescription: readText(row, ["JobDescription"], "—"),
-    status: "waiting",
+    jobDescription: readText(
+      row,
+      ["JobDescription", "RoleDescription", "Description"],
+      "—",
+    ),
+    status,
     chain: [],
   };
+}
+
+function assertStoredProcedureSuccess(
+  response: unknown,
+  fallback: string,
+): string | undefined {
+  const rows = Array.isArray(response)
+    ? response
+    : response && typeof response === "object" && "data" in response
+      ? Array.isArray(response.data)
+        ? response.data
+        : [response.data]
+      : response && typeof response === "object"
+        ? [response]
+        : [];
+  const statusRow = Array.isArray(rows)
+    ? [...rows].reverse().find(
+        (row): row is RecruitmentRow =>
+          Boolean(row) &&
+          typeof row === "object" &&
+          !Array.isArray(row) &&
+          readValue(row as RecruitmentRow, "StatusCode", "statusCode") !==
+            undefined,
+      )
+    : undefined;
+
+  if (response && typeof response === "object" && "success" in response) {
+    if (response.success === false) {
+      const message =
+        "message" in response && typeof response.message === "string"
+          ? response.message
+          : fallback;
+      throw new Error(message);
+    }
+  }
+
+  if (statusRow) {
+    const statusCode = Number(readValue(statusRow, "StatusCode", "statusCode"));
+    if (
+      Number.isFinite(statusCode) &&
+      (statusCode <= 0 || statusCode >= 400)
+    ) {
+      throw new Error(
+        readText(statusRow, ["Message", "message"], fallback),
+      );
+    }
+
+    return readText(statusRow, ["Message", "message"], "");
+  }
+
+  return undefined;
+}
+
+function verifyRequisitionStatus(
+  response: unknown,
+  requisitionId: number,
+  expectedStatus: Approval["status"],
+) {
+  if (
+    !response ||
+    typeof response !== "object" ||
+    !("success" in response) ||
+    response.success !== true ||
+    !("data" in response) ||
+    !Array.isArray(response.data)
+  ) {
+    throw new Error("Unable to verify the updated requisition status.");
+  }
+
+  const row = toRows(response.data).find(
+    (candidate) =>
+      readNumber(candidate, ["RequisitionID", "ID"]) === requisitionId,
+  );
+  const approval = row ? mapPendingRequisition(row) : null;
+  if (!approval || approval.status !== expectedStatus) {
+    throw new Error(
+      expectedStatus === "ready"
+        ? "The requisition is still pending approval. Check the action result and try again."
+        : "The requisition is still pending. Check the action result and try again.",
+    );
+  }
 }
 
 // ======================================================
@@ -298,6 +462,9 @@ function mapPendingRequisition(row: RecruitmentRow): Approval | null {
 // ======================================================
 
 export const useRecruitment = () => {
+  const employeeId = useAppSelector((state) => state.auth.employeeId);
+  const canManageRequisitionApprovals =
+    employeeId === REQUISITION_APPROVER_EMPLOYEE_ID;
 
   // ==================================================
   // LOCAL UI STATE
@@ -308,9 +475,8 @@ export const useRecruitment = () => {
   const [selectedRole, setSelectedRole] = useState("All open roles");
   const [selectedDepartment, setSelectedDepartment] =
     useState<(typeof OPENING_DEPARTMENTS)[number]>("All");
-  const [candidates, setCandidates] = useState(INITIAL_CANDIDATES);
-  const [interviewSchedules, setInterviewSchedules] = useState<
-    Record<number, InterviewSchedule>
+  const [candidateStageOverrides, setCandidateStageOverrides] = useState<
+    Record<number, CandidateStageOverride>
   >({});
   const [actionError, setActionError] = useState("");
   const [selectedApprovalStatus, setSelectedApprovalStatus] =
@@ -344,7 +510,10 @@ export const useRecruitment = () => {
     error: requisitionsQueryError,
     isFetching: requisitionsFetching,
     refetch: refetchRequisitions,
-  } = useGetPendingRequisitionsQuery();
+  } = useGetAllRequisitionsForHRQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    pollingInterval: activeTab === "approvals" ? 15000 : 0,
+  });
 
   // ==================================================
   // DASHBOARD (PIPELINE CANDIDATES)
@@ -380,19 +549,13 @@ export const useRecruitment = () => {
   ] = useUpdateRequisitionMutation();
 
   const [
-    createJobOpeningFromRequisition,
-    {
-      isLoading: isCreatingJobOpening,
-    },
-  ] = useCreateJobOpeningMutation();
-
-  const [
     createRequisition,
     {
       isLoading: isSubmittingRequisition,
     },
   ] = useCreateRequisitionMutation();
 
+  const [updateResumeScreening] = useUpdateResumeScreeningMutation();
   // ==================================================
   // MAPPED DATA
   // ==================================================
@@ -402,7 +565,18 @@ export const useRecruitment = () => {
       openingsResponse === undefined
         ? undefined
         : safeMap(
-            () => toRows(openingsResponse).map(mapOpening),
+            () => {
+              if (Array.isArray(openingsResponse)) {
+                return toRows(openingsResponse).map(mapOpening);
+              }
+              if (!openingsResponse.success || !Array.isArray(openingsResponse.data)) {
+                throw new Error(
+                  openingsResponse?.message ||
+                    "Recruitment API returned an invalid job openings response.",
+                );
+              }
+              return toRows(openingsResponse.data).map(mapOpening);
+            },
             "Unable to load job openings."
           ),
     [openingsResponse]
@@ -413,12 +587,33 @@ export const useRecruitment = () => {
       requisitionsResponse === undefined
         ? undefined
         : safeMap(
-            () =>
-              toRows(requisitionsResponse)
+            () => {
+              if (
+                !requisitionsResponse ||
+                typeof requisitionsResponse !== "object" ||
+                !("success" in requisitionsResponse) ||
+                !requisitionsResponse.success ||
+                !("data" in requisitionsResponse) ||
+                !Array.isArray(requisitionsResponse.data)
+              ) {
+                const message =
+                  requisitionsResponse &&
+                  typeof requisitionsResponse === "object" &&
+                  "message" in requisitionsResponse
+                    ? requisitionsResponse.message
+                    : undefined;
+                throw new Error(
+                  typeof message === "string"
+                    ? message
+                    : "Recruitment API returned an invalid requisition list.",
+                );
+              }
+              return toRows(requisitionsResponse.data)
                 .map(mapPendingRequisition)
                 .filter(
                   (approval): approval is Approval => approval !== null
-                ),
+                );
+            },
             "Unable to load requisitions."
           ),
     [requisitionsResponse]
@@ -491,10 +686,7 @@ export const useRecruitment = () => {
     [applicationsResponse]
   );
 
-  const openings: JobOpening[] = useMemo(
-    () => openingsResult?.value ?? [],
-    [openingsResult?.value]
-  );
+  const openings: JobOpening[] = openingsResult?.value ?? EMPTY_JOB_OPENINGS;
   const approvals: Approval[] = approvalsResult?.value ?? [];
 
   // Dashboard candidates + resume urls from the applications list
@@ -510,11 +702,15 @@ export const useRecruitment = () => {
     }));
   }, [dashboardResult, resumesResult]);
 
-  // Keep candidates editable locally (stage changes), re-synced on every fetch
-  useEffect(() => {
-    if (!serverCandidates) return;
-    queueMicrotask(() => setCandidates(serverCandidates));
-  }, [serverCandidates]);
+  const candidates = useMemo(
+    () => (serverCandidates ?? INITIAL_CANDIDATES).map((candidate) => {
+      const stageOverride = candidateStageOverrides[candidate.id];
+      return stageOverride?.sourceStage === candidate.stage
+        ? { ...candidate, ...stageOverride }
+        : candidate;
+    }),
+    [serverCandidates, candidateStageOverrides],
+  );
 
   // ==================================================
   // LOADING / ERROR
@@ -601,23 +797,29 @@ export const useRecruitment = () => {
   };
 
   // ==================================================
-  // APPROVE REQUISITION (CREATES JOB OPENING)
+  // APPROVE REQUISITION
   // ==================================================
 
   const approveOpening = async (approvalId: number) => {
+    if (!canManageRequisitionApprovals) {
+      toast.error("Only the designated HR approver can approve requisitions.");
+      return;
+    }
+
     setActionError("");
 
     try {
-      await updateRequisition({
+      const actionResponse = await updateRequisition({
         requisitionId: approvalId,
         action: "APPROVE",
       }).unwrap();
+      assertStoredProcedureSuccess(
+        actionResponse,
+        "The requisition approval was not applied.",
+      );
 
-      await createJobOpeningFromRequisition(approvalId).unwrap();
-
-      await refreshRecruitment();
-
-      toast.success("Requisition approved successfully.");
+      const requisitionsResponse = await refetchRequisitions().unwrap();
+      verifyRequisitionStatus(requisitionsResponse, approvalId, "ready");
 
     } catch (error: unknown) {
       const message = getErrorMessage(
@@ -626,7 +828,6 @@ export const useRecruitment = () => {
       );
 
       setActionError(message);
-      toast.error(message);
     }
   };
 
@@ -635,21 +836,29 @@ export const useRecruitment = () => {
   // ==================================================
 
   const sendBackOpening = async (approvalId: number) => {
+    if (!canManageRequisitionApprovals) {
+      toast.error("Only the designated HR approver can reject requisitions.");
+      return;
+    }
+
     const comment = approvalComments[approvalId]?.trim();
     setActionError("");
 
     try {
-      await updateRequisition({
+      const actionResponse = await updateRequisition({
         requisitionId: approvalId,
         action: "REJECT",
         reviewRemarks: comment,
       }).unwrap();
+      assertStoredProcedureSuccess(
+        actionResponse,
+        "The requisition rejection was not applied.",
+      );
+
+      const requisitionsResponse = await refetchRequisitions().unwrap();
+      verifyRequisitionStatus(requisitionsResponse, approvalId, "sent-back");
 
       setApprovalComments((previous) => ({ ...previous, [approvalId]: "" }));
-
-      await refreshRecruitment();
-
-      toast.success("Requisition sent back successfully.");
 
     } catch (error: unknown) {
       const message = getErrorMessage(
@@ -658,7 +867,6 @@ export const useRecruitment = () => {
       );
 
       setActionError(message);
-      toast.error(message);
     }
   };
 
@@ -710,8 +918,6 @@ export const useRecruitment = () => {
 
       await refreshRecruitment();
 
-      toast.success("Requisition submitted successfully.");
-
       return true;
 
     } catch (error: unknown) {
@@ -719,9 +925,8 @@ export const useRecruitment = () => {
         error,
         "Unable to submit this requisition."
       );
-
       setJobFormError(message);
-      toast.error(message);
+      setJobFormError(message);
 
       return false;
     }
@@ -735,23 +940,45 @@ export const useRecruitment = () => {
     candidateId: number,
     stage: CandidateStage
   ) => {
-    setCandidates((previous) =>
-      previous.map((candidate) =>
-        candidate.id === candidateId
-          ? { ...candidate, stage, daysInStage: 0 }
-          : candidate
-      )
-    );
+    const candidate = candidates.find((item) => item.id === candidateId);
+    if (!candidate) return;
+
+    setCandidateStageOverrides((previous) => ({
+      ...previous,
+      [candidateId]: {
+        stage,
+        daysInStage: 0,
+        sourceStage:
+          previous[candidateId]?.sourceStage ?? candidate.stage,
+      },
+    }));
   };
 
-  const scheduleCandidateInterview = (
-    candidateId: number,
-    schedule: InterviewSchedule
-  ) => {
-    setInterviewSchedules((previous) => ({
-      ...previous,
-      [candidateId]: schedule,
-    }));
+  const screenCandidate = async (
+    applicationId: number,
+    action: ResumeScreeningRequest["action"],
+    reviewRemarks: string
+  ): Promise<string | null> => {
+    try {
+      const response = await updateResumeScreening({
+        applicationId,
+        action,
+        reviewRemarks,
+      }).unwrap();
+      return (
+        assertStoredProcedureSuccess(
+          response,
+          action === "APPROVE"
+            ? "Unable to shortlist this candidate."
+            : "Unable to reject this candidate.",
+        ) ||
+        (action === "APPROVE"
+          ? "Candidate shortlisted successfully."
+          : "Candidate rejected successfully.")
+      );
+    } catch {
+      return null;
+    }
   };
 
   // ==================================================
@@ -787,11 +1014,11 @@ export const useRecruitment = () => {
     // ================================================
 
     candidates,
-    interviewSchedules,
     filteredCandidates,
     openings,
     filteredOpenings,
     approvals,
+    canManageRequisitionApprovals,
     approvalCount,
 
     // ================================================
@@ -800,7 +1027,6 @@ export const useRecruitment = () => {
 
     isRecruitmentLoading,
     isUpdatingRequisition,
-    isCreatingJobOpening,
     isSubmittingRequisition,
 
     // ================================================
@@ -818,6 +1044,6 @@ export const useRecruitment = () => {
     refreshRecruitment,
     createJobOpening,
     updateCandidateStage,
-    scheduleCandidateInterview,
+    screenCandidate,
   };
 };

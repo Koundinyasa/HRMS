@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ApprovalsPanel } from "../components/ApprovalsPanel";
 import { CandidateDocumentUploadScreen } from "../components/CandidateDocumentUploadScreen";
-import { InterviewsPanel } from "../components/InterviewsPanel";
 import { JobOpeningsPanel } from "../components/JobOpeningsPanel";
 import { NewRequisitionScreen } from "../components/NewRequisitionScreen";
 import { RecruitmentDashboard } from "../components/RecruitmentDashboard";
@@ -10,10 +9,18 @@ import { RecruitmentHeader } from "../components/RecruitmentHeader";
 import { ResumeUploadScreen } from "../components/ResumeUploadScreen";
 import {
   AssessmentManagementPanel,
-  InterviewSchedulePanel,
   ResumeScreeningPanel,
 } from "../components/RecruitmentWorkflowPanels";
+import {
+  InterviewProcessScreen,
+  InterviewScheduleScreen,
+} from "../components/InterviewScreens";
+import { InterviewerFeedbackScreen } from "../components/InterviewerFeedbackScreen";
 import { RecruitmentOperationalScreen } from "../components/RecruitmentOperationalScreens";
+import { FinalInterviewApprovalPanel } from "../components/FinalInterviewApprovalPanel";
+import { OffersPanel } from "../components/OffersPanel";
+import { BgvPanel } from "../components/BgvPanel";
+import { JoiningsPanel } from "../components/JoiningsPanel";
 import { EmptyState } from "../components/RecruitmentShared";
 import { RECRUITMENT_SUB_NAV } from "../constants/talenthub.constants";
 import { useRecruitment } from "../hooks/useRecruitment";
@@ -21,7 +28,6 @@ import type { RecruitmentTab } from "../types/recruitment.types";
 
 const VIEW_TABS: Record<string, RecruitmentTab> = {
   "job-openings": "openings",
-  "interview-process": "interviews",
   "requisition-approval": "approvals",
 };
 
@@ -30,8 +36,10 @@ const WORKFLOW_TITLES: Record<string, string> = {
   "job-requisition": "Job Requisition",
   "candidate-applications": "Candidate Applications",
   "resume-screening": "Resume Screening",
-  "interview-schedule": "Interview Schedule",
   "assessment-test": "Assessment / Test",
+  "interview-schedule": "Interview Schedule",
+  "interview-process": "Interview Process",
+  "interviewer-feedback": "Interviewer Feedback",
   "final-interview-approval": "Final Interview Approval",
   "document-upload": "Document Upload",
   "offer-management": "Offer Management",
@@ -61,11 +69,11 @@ export default function RecruitmentPage() {
     selectedDepartment,
     setSelectedDepartment,
     candidates,
-    interviewSchedules,
     filteredCandidates,
     openings,
     filteredOpenings,
     approvals,
+    canManageRequisitionApprovals,
     recruitmentError,
     isRecruitmentLoading,
     selectedApprovalStatus,
@@ -76,13 +84,16 @@ export default function RecruitmentPage() {
     sendBackOpening,
     refreshRecruitment,
     updateCandidateStage,
-    scheduleCandidateInterview,
+    screenCandidate,
   } = recruitment;
   const routeTab = view ? VIEW_TABS[view] : "pipeline";
   const isOperationalWorkflowView =
     view === "upload-resume" ||
     view === "job-requisition" ||
     view === "candidate-applications" ||
+    view === "interview-schedule" ||
+    view === "interview-process" ||
+    view === "interviewer-feedback" ||
     view === "final-interview-approval" ||
     view === "document-upload" ||
     view === "offer-management" ||
@@ -94,8 +105,9 @@ export default function RecruitmentPage() {
     view === "asset-assignment";
   const isDedicatedWorkflowView =
     view === "resume-screening" ||
-    view === "interview-schedule" ||
     view === "assessment-test" ||
+    view === "interview-schedule" ||
+    view === "interview-process" ||
     isOperationalWorkflowView;
   const isWorkflowPlaceholder = Boolean(
     view && !routeTab && !isDedicatedWorkflowView
@@ -117,10 +129,12 @@ export default function RecruitmentPage() {
           search={search}
           setSearch={setSearch}
           showActions={!isDedicatedWorkflowView}
-          showNewOpening={view !== "interview-process"}
+          showNewOpening={
+            view !== "job-openings" && view !== "requisition-approval"
+          }
           onNewOpening={() =>
             navigate(
-              `/${domain}/admin/talent-hub/recruitment/job-requisition/new`,
+              `/${domain}/admin/talent-hub/recruitment/job-requisition/new`
             )
           }
         />
@@ -132,7 +146,7 @@ export default function RecruitmentPage() {
             view={view}
             onCreateAction={() =>
               navigate(
-                `/${domain}/admin/talent-hub/recruitment/job-requisition/new`,
+                `/${domain}/admin/talent-hub/recruitment/job-requisition/new`
               )
             }
           />
@@ -142,22 +156,28 @@ export default function RecruitmentPage() {
           <ResumeScreeningPanel
             candidates={candidates}
             updateCandidateStage={updateCandidateStage}
-          />
-        ) : view === "interview-schedule" ? (
-          <InterviewSchedulePanel
-            candidates={candidates}
-            schedules={interviewSchedules}
-            onSchedule={scheduleCandidateInterview}
+            screenCandidate={screenCandidate}
           />
         ) : view === "document-upload" ? (
           <CandidateDocumentUploadScreen />
         ) : view === "assessment-test" ? (
           <AssessmentManagementPanel candidates={candidates} />
+        ) : view === "interview-schedule" ? (
+          <InterviewScheduleScreen />
+        ) : view === "interview-process" ? (
+          <InterviewProcessScreen />
+        ) : view === "interviewer-feedback" ? (
+          <InterviewerFeedbackScreen />
+        ) : view === "final-interview-approval" ? (
+          <FinalInterviewApprovalPanel />
+        ) : view === "offer-management" ? (
+          <OffersPanel />
+        ) : view === "verification-bgv" ? (
+          <BgvPanel />
+        ) : view === "joining" ? (
+          <JoiningsPanel />
         ) : isDedicatedWorkflowView && view ? (
-          <RecruitmentOperationalScreen
-            key={view}
-            view={view}
-          />
+          <RecruitmentOperationalScreen key={view} view={view} />
         ) : isWorkflowPlaceholder ? (
           <section>
             <h2 className="mb-4 text-xl font-bold">
@@ -165,30 +185,31 @@ export default function RecruitmentPage() {
             </h2>
             <EmptyState message="This recruitment workflow section is ready to be configured." />
           </section>
-        ) : !view && activeTab === "pipeline" && (
-          <RecruitmentDashboard
-            filteredCandidates={filteredCandidates}
-            openings={openings}
-            selectedRole={selectedRole}
-            setSelectedRole={setSelectedRole}
-            updateCandidateStage={updateCandidateStage}
-          />
+        ) : (
+          !view &&
+          activeTab === "pipeline" && (
+            <RecruitmentDashboard
+              filteredCandidates={filteredCandidates}
+              openings={openings}
+              selectedRole={selectedRole}
+              setSelectedRole={setSelectedRole}
+              updateCandidateStage={updateCandidateStage}
+            />
+          )
         )}
         {(view === "job-openings" || (!view && activeTab === "openings")) && (
           <JobOpeningsPanel
             filteredOpenings={filteredOpenings}
+            search={search}
             selectedDepartment={selectedDepartment}
             setSelectedDepartment={setSelectedDepartment}
           />
         )}
-        {(view === "interview-process" || (!view && activeTab === "interviews")) && (
-          <InterviewsPanel
-            search={search}
-          />
-        )}
-        {(view === "requisition-approval" || (!view && activeTab === "approvals")) && (
+        {(view === "requisition-approval" ||
+          (!view && activeTab === "approvals")) && (
           <ApprovalsPanel
             approvals={approvals}
+            canManageApprovals={canManageRequisitionApprovals}
             selectedApprovalStatus={selectedApprovalStatus}
             setSelectedApprovalStatus={setSelectedApprovalStatus}
             search={search}
@@ -200,8 +221,7 @@ export default function RecruitmentPage() {
         )}
         {!isOperationalWorkflowView && (
           <p className="text-center text-xs text-[#87938c]">
-            Candidate pipeline and interview workflows are currently using
-            sample data.
+            Candidate pipeline workflows are currently using sample data.
           </p>
         )}
       </main>
@@ -209,9 +229,7 @@ export default function RecruitmentPage() {
         <NewRequisitionScreen
           onCreated={refreshRecruitment}
           onClose={() =>
-            navigate(
-              `/${domain}/admin/talent-hub/recruitment/job-requisition`,
-            )
+            navigate(`/${domain}/admin/talent-hub/recruitment/job-requisition`)
           }
         />
       )}
@@ -224,7 +242,10 @@ export default function RecruitmentPage() {
         </div>
       )}
       {isRecruitmentLoading && (
-        <p role="status" className="px-5 pb-4 text-center text-sm text-[#78867e]">
+        <p
+          role="status"
+          className="px-5 pb-4 text-center text-sm text-[#78867e]"
+        >
           Loading recruitment data…
         </p>
       )}

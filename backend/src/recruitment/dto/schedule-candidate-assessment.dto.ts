@@ -1,20 +1,24 @@
+ 
+import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsInt,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
+  Min,
 } from 'class-validator';
-
+ 
 export class ScheduleCandidateAssessmentDto {
+  @Type(() => Number)
   @IsInt()
+  @Min(1)
   applicationId!: number;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
-  assessmentType!: string;
-
+ 
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  assessmentTypeId!: number;
+ 
   @IsDateString()
   scheduledDate!: string;
 }
+ 
+ 

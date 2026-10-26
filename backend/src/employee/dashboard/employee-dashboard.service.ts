@@ -155,7 +155,12 @@ export class DashboardService {
       const result = await pool
         .request()
         .input('EmployeeID', employeeId)
-        .execute('USP_GetUserInfo');
+        .execute<{
+          PendingApprovals?: number;
+          MyRequests?: string;
+          MyApprovals?: string;
+          RequestCount?: number | string;
+        }>('USP_GetUserInfo');
 
       const allRows = result.recordsets.flat();
 
@@ -232,3 +237,4 @@ export class DashboardService {
     }
   }
 }
+   

@@ -256,6 +256,7 @@ import {
   CalendarCheck,
   ClipboardCheck,
   ChartNoAxesColumnIncreasing,
+  MessageSquareText,
 } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import type { MenuItem } from "../dashboard/types/dashboard.types";
@@ -636,6 +637,27 @@ export default function Sidebar({
       >
         <nav className="py-4">
           {menuItems.map((item: MenuItem) => renderMenu(item))}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              navigate(`/${domain}/employee/interviewer-feedback`);
+              setIsSidebarOpen(false);
+            }}
+            aria-current={
+              location.pathname.endsWith("/employee/interviewer-feedback")
+                ? "page"
+                : undefined
+            }
+            className="flex h-auto w-full items-center justify-start gap-3 rounded-none px-4 py-3 text-[#1E3A5F] hover:bg-white/70 hover:text-[#1E3A5F]"
+          >
+            <MessageSquareText size={20} strokeWidth={2.2} />
+            {isSidebarOpen && (
+              <span className="truncate whitespace-nowrap">
+                Interviewer Feedback
+              </span>
+            )}
+          </Button>
         </nav>
       </aside>
     </>

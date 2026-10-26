@@ -7,6 +7,7 @@ import { loginSuccess } from "../authSlice";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { showPageLoader } from "../../employee/employeeSlice"; 
 import type { LoginFormData } from "../validation/loginSchema";
+import { baseApi } from "../../../app/baseApi";
  
 export const useLogin = () => {
   const dispatch = useAppDispatch();
@@ -38,6 +39,7 @@ export const useLogin = () => {
         captchaAnswer: data.captchaAnswer,
       }).unwrap();
  
+      dispatch(baseApi.util.resetApiState());
       dispatch(loginSuccess(response));
       localStorage.removeItem(`hrmsChatbotWidgetMessages-${response.data.employeeId}`);
       applyTheme("blue");

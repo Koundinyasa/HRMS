@@ -10,12 +10,12 @@ export class DatabaseService {
 
   async connect(): Promise<sql.ConnectionPool> {
     if (!this.pool) {
-      this.pool = await sql.connect({
-        server: this.configService.get<string>('database.host'),
-        port: this.configService.get<number>('database.port'),
-        user: this.configService.get<string>('database.user'),
-        password: this.configService.get<string>('database.password'),
-        database: this.configService.get<string>('database.name'),
+      const pool = new sql.ConnectionPool({
+        server: this.configService.getOrThrow<string>('database.host'),
+        port: this.configService.getOrThrow<number>('database.port'),
+        user: this.configService.getOrThrow<string>('database.user'),
+        password: this.configService.getOrThrow<string>('database.password'),
+        database: this.configService.getOrThrow<string>('database.name'),
         options: {
           encrypt: this.configService.get<boolean>('database.encrypt'),
           trustServerCertificate: this.configService.get<boolean>(
@@ -34,6 +34,8 @@ export class DatabaseService {
           useUTC: false,
         },
       });
+      await pool.connect();
+      this.pool = pool;
     }
 
     return this.pool;

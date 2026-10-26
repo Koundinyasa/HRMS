@@ -6,7 +6,7 @@ import {
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL,
+    baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api',
     credentials: 'include',
   }),
   tagTypes: [
@@ -30,8 +30,6 @@ export const baseApi = createApi({
     "BankFieldMapping",
     "SalaryComponents",
     "Recruitment",
-    "Payroll",
-
   ],
   endpoints: () => ({}),
 });

@@ -1,12 +1,11 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { LoaderCircle, X } from "lucide-react";
-import { toast } from "react-toastify";
 import {
-  getApiErrorMessage,
   useCreateRequisitionMutation,
   useGetRequisitionMasterQuery,
-} from "../hooks/useRecruitment";
+} from "../api/recruitment.api";
+import { getApiErrorMessage } from "../utils/recruitmentErrors";
 
 const fieldClass =
   "h-10 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm text-[#354239] outline-none placeholder:text-[#929c95] focus:border-[#d8a43b] focus:ring-2 focus:ring-[#e5a538]/15 disabled:cursor-not-allowed disabled:bg-[#f5f7f5] disabled:opacity-70";
@@ -257,12 +256,6 @@ export function NewRequisitionScreen({
       if (result.statusCode <= 0) {
         throw new Error(result.message || "Unable to create requisition.");
       }
-
-      toast.success(
-        result.requisitionNo
-          ? `${result.message} (${result.requisitionNo})`
-          : result.message,
-      );
 
       await onCreated();
       navigate(`/${domain}/admin/talent-hub/recruitment/requisition-approval`);
