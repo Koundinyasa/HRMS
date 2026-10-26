@@ -48,6 +48,16 @@ export interface AddLeaveTypeFormValues {
   policyId: number;
   leaveTypeId: number; // "Select Leave Type" dropdown — reuses the leave types listed under GET #2 for now
   effectiveFrom: string; // e.g. "Sep/2026"
+  annualQuota: number;
+  creditDay: number | null;
+  carryForwardLimit: number;
+  maxBalance: number;
+  encashmentLimit: number;
+  probationEligible: boolean;
+  noticePeriodEligible: boolean;
+  sandwichApplicable: boolean;
+  includeHoliday: boolean;
+  includeWeekOff: boolean;
 }
 
 // ---- Leave Behaviour settings (Image 4) → GET/PUT #3 #4 ----

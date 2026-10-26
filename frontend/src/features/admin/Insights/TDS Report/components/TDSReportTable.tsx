@@ -150,11 +150,11 @@ export default function TDSReportTable({
 
   return (
     <div className="w-full overflow-hidden rounded-xl border border-[#b9b9b9] bg-white">
-      <div className={fitColumns ? "w-full" : "w-full overflow-x-auto"}>
+      <div className="w-full min-w-0 overflow-x-auto overscroll-x-contain [scrollbar-color:#c58b7f_#f3e5e1] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-[#f3e5e1] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#c58b7f]">
         <table
           className={
             fitColumns
-              ? "w-full table-fixed border-collapse"
+              ? "w-full min-w-[640px] table-fixed border-collapse lg:min-w-0"
               : "w-full min-w-max border-collapse"
           }
         >

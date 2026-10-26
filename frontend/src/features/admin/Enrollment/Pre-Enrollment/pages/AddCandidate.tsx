@@ -2878,13 +2878,13 @@ import {
   Mail,
 } from "lucide-react";
 
+import noDataImage from "@/assets/images/no-data.png";
+
 import AuditLogModal from "./AuditLog";
 import PreOnboardPageShell from "../components/PreEnrollmentPageShell";
-import {
-  addCandidates,
-  getAddedCandidates,
-  type AddCandidateRow,
-} from "../constants/add-candidate.constants";
+import { useGetCandidatesQuery } from "../api/candidateApi";
+import type { AddCandidateRow } from "../constants/add-candidate.constants";
+import type { Candidate as ApiCandidate } from "../types/preEnrollment.types";
 
 type Candidate = AddCandidateRow;
 

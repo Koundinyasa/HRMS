@@ -1376,7 +1376,6 @@ export default function TimeOfficeReportHeader({
 
   showAdvanceFilter = false,
   onAdvanceFilter,
-  onShowFilters,
 
   onExcelExport,
 
@@ -1675,7 +1674,6 @@ export default function TimeOfficeReportHeader({
                 type="button"
                 variant="ghost"
                 title="Filter"
-                onClick={onShowFilters}
                 className="
                   flex
                   h-[34px]

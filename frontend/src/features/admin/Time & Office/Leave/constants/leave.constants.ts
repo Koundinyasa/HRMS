@@ -24,10 +24,6 @@ export const Daily_Details_Tab=[
     { label:"Import",path:"import"}
 ]
 
-export const ForceLeaveApproval_Details_Tab=[
-    { label:"Leave Approval",path:"leave-approval"}
-]
-
 export const Report_Details_Tab=[
     {label:"Report",path:"report"}
 ]

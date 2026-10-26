@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImportDailyDto } from './dto/import-daily.dto';
 import { GetMonthlyLeaveCalendarDto } from './dto/get-monthly-leave-calendar.dto';
+import { HierarchicalLeaveActionDto } from './dto/hierarchical-leave-action.dto';
 
 @Controller('admin/ta/leave/daily')
 @UseGuards(JwtAuthGuard)
@@ -115,5 +116,17 @@ export class DailyController {
     @Body() dto: GetMonthlyLeaveCalendarDto,
   ) {
     return this.dailyService.getMonthlyLeaveCalendar(dto, req.user.companyId);
+  }
+  @Post('approval')
+  async hierarchicalLeaveAction(
+    @Req() req: any,
+    @Body() body: HierarchicalLeaveActionDto,
+  ) {
+    return this.dailyService.hierarchicalLeaveAction(
+      body.approvalId,
+      req.user.employeeId,
+      body.actionStatusId,
+      body.remarks,
+    );
   }
 }

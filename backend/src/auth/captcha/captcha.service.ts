@@ -1,54 +1,52 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-
 interface CaptchaEntry {
   answer: string;
   expiresAt: number;
 }
-
 @Injectable()
 export class CaptchaService {
   private readonly store = new Map<string, CaptchaEntry>();
   private readonly ttlMs: number;
   private readonly isProd: boolean;
-
+ 
   constructor(private readonly configService: ConfigService) {
     const ttlMinutes =
       this.configService.get<number>('captcha.ttlMinutes') ?? 5;
-
+ 
     this.ttlMs = ttlMinutes * 60 * 1000;
-
+ 
     this.isProd =
       this.configService.get<string>('environment') === 'production';
   }
-
+ 
   generate(): {
     captchaId: string;
     image: string;
     debugAnswer?: string;
   } {
     this.purgeExpired();
-
+ 
     const text = this.generateText();
-
+ 
     const image = this.createCaptcha(text);
-
+ 
     const captchaId = randomUUID();
-
+ 
     this.store.set(captchaId, {
       // Store exact CAPTCHA text
       answer: text,
       expiresAt: Date.now() + this.ttlMs,
     });
-
+ 
     return {
       captchaId,
       image,
       ...(this.isProd ? {} : { debugAnswer: text }),
     };
   }
-
+ 
   validate(captchaId: string, input: string): boolean {
     const entry = this.store.get(captchaId);
 
@@ -110,7 +108,7 @@ export class CaptchaService {
 
     return result.join('');
   }
-
+ 
   private createCaptcha(text: string): string {
     const width = 220;
     const height = 80;
@@ -143,7 +141,7 @@ export class CaptchaService {
 
   private purgeExpired(): void {
     const now = Date.now();
-
+ 
     for (const [id, entry] of this.store.entries()) {
       if (now > entry.expiresAt) {
         this.store.delete(id);

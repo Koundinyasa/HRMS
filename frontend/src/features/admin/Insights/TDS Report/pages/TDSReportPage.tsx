@@ -80,13 +80,13 @@ export default function TDSReportPage() {
   const navigate = useNavigate();
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-5">
-      <header className="mb-6 flex h-[53px] items-center justify-between rounded-xl border border-[#c98f82] bg-[#fff5f2] px-4 shadow-sm">
-        <div className="flex h-[34px] w-[176px] items-center justify-center gap-2 rounded-lg border border-[#c98f82] bg-white font-[Urbanist] text-[22px] font-extrabold text-[#9d6155] shadow-sm">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-5">
+      <header className="mb-6 flex min-h-[53px] flex-wrap items-center justify-between gap-2 rounded-xl border border-[#c98f82] bg-[#fff5f2] px-3 py-2 shadow-sm sm:px-4">
+        <div className="flex h-[34px] min-w-0 items-center justify-center gap-2 rounded-lg border border-[#c98f82] bg-white px-2 font-[Urbanist] text-[18px] font-extrabold text-[#9d6155] shadow-sm sm:w-[176px] sm:px-0 sm:text-[22px]">
           <Percent size={15} strokeWidth={1.8} />
 
           {/* Display/SM — Urbanist ExtraBold — 22px */}
-          <span className="font-[Urbanist] text-[22px] font-extrabold">
+          <span className="font-[Urbanist] text-[18px] font-extrabold sm:text-[22px]">
             TDS Report
           </span>
         </div>
@@ -112,7 +112,7 @@ export default function TDSReportPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 xl:gap-8">
         {TDS_REPORT_GROUPS.map((group) => (
           <section
             key={group.title}

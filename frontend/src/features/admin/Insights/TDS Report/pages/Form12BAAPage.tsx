@@ -9,10 +9,10 @@ import { TDS_REPORT_ENDPOINTS } from "../api/tdsReport.endpoints";
 
 export default function Form12BAAPage() {
   const navigate = useNavigate();
-  const { rows, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.form12BBReport);
+  const { rows, filteredRows, searchValue, setSearchValue, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.form12BBReport);
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-6">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-4 lg:p-6">
       <div className="space-y-5">
         {/* TDS Report Top Bar */}
         <TDSReportTopBar />
@@ -30,10 +30,10 @@ export default function Form12BAAPage() {
         />
 
         {/* Filters */}
-        <TDSReportFilters rows={rows} />
+        <TDSReportFilters rows={rows} searchValue={searchValue} onSearchChange={setSearchValue} />
         <TDSReportTable
           columns={["Sl.No.", "Employee ID", "Employee Name"]}
-          rows={rows}
+          rows={filteredRows}
           loading={loading}
           emptyMessage="No Form-12BAA data found."
         />

@@ -56,7 +56,7 @@ function parseDeviceLabel(userAgent: string | undefined): string {
   else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/'))
     browser = 'Safari';
 
-    let os = 'Unknown OS';
+  let os = 'Unknown OS';
   if (userAgent.includes('Windows')) os = 'Windows';
   else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
   else if (userAgent.includes('Mac OS X')) os = 'macOS';
@@ -149,7 +149,7 @@ export class AttendanceController {
   // full attendance report.
   @UseGuards(JwtAuthGuard)
   @Get('recent')
-  async recentPunches(@Req() req: any) {
+async recentPunches(@Req() req: any) {
     const employeeId = req.user.employeeId;
     return this.attendanceService.getRecentPunches(employeeId);
   }
@@ -185,7 +185,6 @@ export class AttendanceController {
   }
 
   // REMOVED — today-summary endpoint. That data now comes from the
-  // dashboard's GET /employee/dashboard/profile instead (USP_GetUserInfo
   // merges it in directly) — see employee-dashboard.service.ts.
 
   // Live, per-step quality feedback during enrollment — fires once per

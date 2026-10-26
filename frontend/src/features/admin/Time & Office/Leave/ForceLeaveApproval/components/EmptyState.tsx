@@ -1,8 +1,5 @@
 import noDataImage from "@/assets/images/no-data.png";
-
-interface EmptyStateProps {
-  message: string;
-}
+import type { EmptyStateProps } from "../types/forceapproval.types";
 
 export default function EmptyState({ message }: EmptyStateProps) {
   return (

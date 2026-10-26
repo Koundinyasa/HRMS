@@ -7,16 +7,45 @@ import type {
   AddLeaveTypeFormValues,
 } from '../types/leavesettings.types';
 
+const pick = (row: Record<string, unknown>, ...keys: string[]) => {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null) return row[key];
+  }
+  return undefined;
+};
+
+const normalizePolicy = (value: unknown): LeavePolicySummary => {
+  const row = value as Record<string, unknown>;
+  const policyId = Number(pick(row, 'policyId', 'PolicyId', 'PolicyID', 'leavePolicyId', 'LeavePolicyId', 'LeavePolicyID', 'id', 'ID'));
+  const name = String(pick(row, 'policyName', 'PolicyName', 'name', 'Name') ?? 'Leave Policy');
+  return { policyId, name, shortLabel: name.slice(0, 1).toUpperCase() };
+};
+
+const normalizePolicyLeave = (value: unknown): PolicyLeaveRow => {
+  const row = value as Record<string, unknown>;
+  const leaveName = String(pick(row, 'leaveName', 'LeaveName', 'leaveTypeName', 'LeaveTypeName', 'name', 'Name') ?? 'Leave');
+  return {
+    leaveId: Number(pick(row, 'leaveId', 'LeaveId', 'LeaveID', 'id', 'ID', 'leaveTypeId', 'LeaveTypeId', 'LeaveTypeID')),
+    leaveName,
+    shortName: String(pick(row, 'shortName', 'ShortName', 'code', 'Code') ?? ''),
+    active: Boolean(pick(row, 'active', 'Active', 'isActive', 'IsActive') ?? true),
+    icon: 'lop',
+  };
+};
+
 export const leaveSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // 1. GET /admin/ta/leave/settings/policies
     getLeavePolicies: builder.query<LeavePolicySummary[], void>({
       query: () => 'admin/ta/leave/settings/policies',
+      transformResponse: (rows: unknown[]) => (rows ?? []).map(normalizePolicy).filter((row) => Number.isFinite(row.policyId)),
     }),
 
     // 2. GET /admin/ta/leave/settings/policies/:policyId/leaves
     getPolicyLeaves: builder.query<PolicyLeaveRow[], number>({
       query: (policyId) => `admin/ta/leave/settings/policies/${policyId}/leaves`,
+      transformResponse: (rows: unknown[]) => (rows ?? []).map(normalizePolicyLeave).filter((row) => Number.isFinite(row.leaveId)),
+      providesTags: (_result, _error, policyId) => [{ type: 'Leave', id: `POLICY_${policyId}` }],
     }),
 
     // 3. GET /admin/ta/leave/settings/policies/:policyId/leaves/:leaveId
@@ -66,6 +95,7 @@ export const leaveSettingsApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
+      invalidatesTags: (_result, _error, body) => [{ type: 'Leave', id: `POLICY_${body.policyId}` }],
     }),
 
     // 8. PUT /admin/ta/leave/settings/leave-policy/details

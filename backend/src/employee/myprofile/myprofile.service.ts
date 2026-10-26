@@ -9,7 +9,6 @@
 //   constructor(
 //     private readonly dbService: DatabaseService,
 //   ) {}
-
 //   // Friendly labels
 //   private readonly labelMap: Record<string, string> = {
 //     EmployeeId: 'Employee ID',
@@ -32,7 +31,6 @@
 //     GradeValue: 'Grade Value',
 //     GradeType: 'Grade Type',
 //   };
-
 //   /**
 //    * Convert DB column name to readable label.
 //    */
@@ -42,13 +40,11 @@
 //       .replace(/([a-z])([A-Z])/g, '$1 $2')
 //       .trim();
 //   }
-
 //   /**
 //    * Format values before sending to frontend.
 //    */
 //   private formatValue(value: any): any {
 //     if (value === null || value === undefined) return '';
-
 //     if (value instanceof Date) {
 //       return value.toLocaleDateString('en-GB', {
 //         day: '2-digit',
@@ -65,7 +61,6 @@
 //    */
 //   private mapFields(record: any) {
 //     if (!record) return [];
-
 //     return Object.entries(record)
 //       .filter(([_, value]) => value !== null && value !== undefined)
 //       .map(([key, value]) => ({
@@ -73,18 +68,15 @@
 //         value: this.formatValue(value),
 //       }));
 //   }
-
 //   /**
 //    * Generic mapper.
 //    */
 //   private mapRecords(records: any[]) {
 //     if (!records || records.length === 0) return [];
-
 //     return records.map((record) => ({
 //       fields: this.mapFields(record),
 //     }));
 //   }
-
 //   /**
 //    * Address mapper (Present / Permanent heading)
 //    */
@@ -105,14 +97,12 @@
 //           label: this.labelMap[key] || this.formatLabel(key),
 //           value: this.formatValue(value),
 //         }));
-
 //       return {
 //         heading,
 //         fields,
 //       };
 //     });
 //   }
-
 //   /**
 //    * Documents mapper with Actions
 //    */
@@ -129,7 +119,6 @@
 //           download: true,
 //         },
 //       });
-
 //       return {
 //         fields,
 //       };
@@ -138,12 +127,10 @@
 //     async getEmployeeInfo(employeeId: string) {
 //     try {
 //       const pool = await this.dbService.connect();
-
 //       const result = await pool
 //         .request()
 //         .input('EmployeeID', sql.VarChar(20), employeeId)
 //         .execute('USP_GetEmployeeInfo');
-
 //       return {
 //         sections: [
 //           {
@@ -151,37 +138,31 @@
 //             icon: 'user',
 //             fields: this.mapFields(result.recordsets[0]?.[0]),
 //           },
-
 //           {
 //             title: 'Address',
 //             icon: 'map-pin',
 //             records: this.mapAddressRecords(result.recordsets[1]),
 //           },
-
 //           {
 //             title: 'Bank Details',
 //             icon: 'bank',
 //             fields: this.mapFields(result.recordsets[2]?.[0]),
 //           },
-
 //           {
 //             title: 'Family Details',
 //             icon: 'users',
 //             records: this.mapRecords(result.recordsets[3]),
 //           },
-
 //           {
 //             title: 'Documents',
 //             icon: 'file-text',
 //             records: this.mapDocumentRecords(result.recordsets[4]),
 //           },
-
 //           {
 //             title: 'Experience',
 //             icon: 'briefcase',
 //             records: this.mapRecords(result.recordsets[5]),
 //           },
-
 //           {
 //             title: 'Education',
 //             icon: 'graduation-cap',
@@ -223,12 +204,10 @@
 //       uploadDir,
 //       fileName,
 //     );
-
 //     fs.writeFileSync(
 //       fullFilePath,
 //       file.buffer,
 //     );
-
 // const dbFilePath = fullFilePath;
 //     await pool
 //       .request()
@@ -306,7 +285,6 @@
 //           GETDATE()
 //         )
 //       `);
-
 //     return {
 //       success: true,
 //       message: 'Document uploaded successfully',
@@ -353,7 +331,7 @@ export class MyprofileService {
     GradeValue: 'Grade Value',
     GradeType: 'Grade Type',
   };
-
+ 
   /**
    * Convert DB column name to readable label.
    */
@@ -363,13 +341,13 @@ export class MyprofileService {
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .trim();
   }
-
+ 
   /**
    * Format values before sending to frontend.
    */
   private formatValue(value: any): any {
     if (value === null || value === undefined) return '';
-
+ 
     if (value instanceof Date) {
       return value.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -377,16 +355,16 @@ export class MyprofileService {
         year: 'numeric',
       });
     }
-
+ 
     return value;
   }
-
+ 
   /**
    * Map one record.
    */
   private mapFields(record: any) {
     if (!record) return [];
-
+ 
     return Object.entries(record)
       .filter(([_, value]) => value !== null && value !== undefined)
       .map(([key, value]) => ({
@@ -394,27 +372,27 @@ export class MyprofileService {
         value: this.formatValue(value),
       }));
   }
-
+ 
   /**
    * Generic mapper.
    */
   private mapRecords(records: any[]) {
     if (!records || records.length === 0) return [];
-
+ 
     return records.map((record) => ({
       fields: this.mapFields(record),
     }));
   }
-
+ 
   /**
    * Address mapper (Present / Permanent heading)
    */
   private mapAddressRecords(records: any[]) {
     if (!records || records.length === 0) return [];
-
+ 
     return records.map((record) => {
       const heading = record.AddressType;
-
+ 
       const fields = Object.entries(record)
         .filter(
           ([key, value]) =>
@@ -424,23 +402,23 @@ export class MyprofileService {
           label: this.labelMap[key] || this.formatLabel(key),
           value: this.formatValue(value),
         }));
-
+ 
       return {
         heading,
         fields,
       };
     });
   }
-
+ 
   /**
    * Documents mapper with Actions
    */
   private mapDocumentRecords(records: any[]) {
     if (!records || records.length === 0) return [];
-
+ 
     return records.map((record) => {
       const fields = this.mapFields(record);
-
+ 
       fields.push({
         label: 'Actions',
         value: {
@@ -448,7 +426,7 @@ export class MyprofileService {
           download: true,
         },
       });
-
+ 
       return {
         fields,
       };
@@ -457,12 +435,12 @@ export class MyprofileService {
   async getEmployeeInfo(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('EmployeeID', sql.VarChar(20), employeeId)
         .execute('USP_GetEmployeeInfo');
-
+ 
       return {
         sections: [
           {
@@ -470,37 +448,37 @@ export class MyprofileService {
             icon: 'user',
             fields: this.mapFields(result.recordsets[0]?.[0]),
           },
-
+ 
           {
             title: 'Address',
             icon: 'map-pin',
             records: this.mapAddressRecords(result.recordsets[1]),
           },
-
+ 
           {
             title: 'Bank Details',
             icon: 'bank',
             fields: this.mapFields(result.recordsets[2]?.[0]),
           },
-
+ 
           {
             title: 'Family Details',
             icon: 'users',
             records: this.mapRecords(result.recordsets[3]),
           },
-
+ 
           {
             title: 'Documents',
             icon: 'file-text',
             records: this.mapDocumentRecords(result.recordsets[4]),
           },
-
+ 
           {
             title: 'Experience',
             icon: 'briefcase',
             records: this.mapRecords(result.recordsets[5]),
           },
-
+ 
           {
             title: 'Education',
             icon: 'graduation-cap',

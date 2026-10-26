@@ -1,6 +1,11 @@
 import { Type } from 'class-transformer';
 
-import { IsInt, IsOptional, Min, Max } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class EmployeeMonthlyAttendanceDetailsDto {
   @Type(() => Number)

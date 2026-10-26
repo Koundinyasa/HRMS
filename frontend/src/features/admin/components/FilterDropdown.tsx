@@ -5,6 +5,7 @@ import { ChevronDown, X } from "lucide-react";
 export interface FilterOption {
   value: string;
   label: string;
+  aliases?: string[];
 }
 
 type Variant = "chip" | "plain";
@@ -17,6 +18,13 @@ interface CheckboxFilterDropdownProps {
   selected: string[];
   onChange: (next: string[]) => void;
   variant?: Variant;
+  /** Render the menu outside clipping containers such as horizontal scrollers. */
+  portal?: boolean;
+  /** Replace the current selection when choosing an option. */
+  singleSelect?: boolean;
+  compact?: boolean;
+  triggerClassName?: string;
+  hideScrollbar?: boolean;
 }
 
 interface TextFilterDropdownProps {
@@ -26,12 +34,19 @@ interface TextFilterDropdownProps {
   value: string;
   onChange: (next: string) => void;
   variant?: Variant;
+  /** Render the menu outside clipping containers such as horizontal scrollers. */
+  portal?: boolean;
+  singleSelect?: boolean;
+  compact?: boolean;
+  triggerClassName?: string;
+  hideScrollbar?: boolean;
 }
 
 type FilterDropdownProps = CheckboxFilterDropdownProps | TextFilterDropdownProps;
 
 export default function FilterDropdown(props: FilterDropdownProps) {
-  const { label, icon: Icon, variant = "chip" } = props;
+  const { label, icon: Icon, variant = "chip", triggerClassName, hideScrollbar = false } = props;
+  const compact = props.compact ?? false;
   const [open, setOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState({
     left: 8,
@@ -123,18 +138,18 @@ export default function FilterDropdown(props: FilterDropdownProps) {
 
   const triggerClass =
     variant === "chip"
-      ? `flex items-center gap-1.5 h-9 px-3 rounded-lg border text-sm transition-colors ${
+      ? `flex items-center ${compact ? "gap-1.5 h-8 px-2.5 text-xs" : "gap-1.5 h-9 px-3 text-sm"} rounded-lg border transition-colors ${
           activeCount > 0
             ? "border-indigo-300 bg-indigo-50 text-indigo-700"
             : "border-slate-200 text-slate-600 hover:bg-slate-50"
         }`
-      : `flex items-center gap-1 text-sm transition-colors ${
+      : `flex items-center gap-1 ${compact ? "text-xs" : "text-sm"} transition-colors ${
           activeCount > 0 ? "text-indigo-600 font-medium" : "text-slate-600 hover:text-slate-800"
         }`;
 
   return (
     <div className="relative shrink-0" ref={ref}>
-      <button type="button" onClick={() => setOpen((o) => !o)} className={triggerClass}>
+      <button type="button" onClick={() => setOpen((o) => !o)} className={`${triggerClass} ${triggerClassName ?? ""}`}>
         {Icon && (
           <Icon
             size={14}
@@ -154,7 +169,7 @@ export default function FilterDropdown(props: FilterDropdownProps) {
         createPortal(
           <div
             ref={panelRef}
-            className="fixed z-[60] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+            className={`fixed z-[60] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg ${hideScrollbar ? "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : ""}`}
             style={{
               left: panelPosition.left,
               top: panelPosition.top,
@@ -165,7 +180,7 @@ export default function FilterDropdown(props: FilterDropdownProps) {
             {props.type === "text" ? (
               <TextPanel value={props.value} onChange={props.onChange} />
             ) : (
-              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} />
+              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} hideScrollbar={hideScrollbar} />
             )}
 
             <button
@@ -189,11 +204,15 @@ function CheckboxPanel({
   options,
   selected,
   onChange,
+  singleSelect = false,
+  hideScrollbar = false,
 }: {
   label: string;
   options: FilterOption[];
   selected: string[];
   onChange: (next: string[]) => void;
+  singleSelect?: boolean;
+  hideScrollbar?: boolean;
 }) {
   const allSelected = options.length > 0 && selected.length === options.length;
 
@@ -202,6 +221,10 @@ function CheckboxPanel({
   };
 
   const toggleOne = (value: string) => {
+    if (singleSelect) {
+      onChange(selected.includes(value) ? [] : [value]);
+      return;
+    }
     onChange(
       selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]
     );
@@ -209,17 +232,19 @@ function CheckboxPanel({
 
   return (
     <>
-      <label className="flex items-center gap-2 px-3 py-2.5 bg-rose-50 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={allSelected}
-          onChange={toggleAll}
-          className="rounded border-slate-300 text-indigo-600"
-        />
-        <span className="text-sm font-semibold text-slate-800">{label}</span>
-      </label>
+      {!singleSelect && (
+        <label className="flex items-center gap-2 px-3 py-2.5 bg-rose-50 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="rounded border-slate-300 text-indigo-600"
+          />
+          <span className="text-sm font-semibold text-slate-800">{label}</span>
+        </label>
+      )}
 
-      <div className="max-h-72 overflow-y-auto">
+      <div className={`max-h-72 overflow-y-auto ${hideScrollbar ? "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : ""}`}>
         {options.length === 0 ? (
           <p className="px-3 py-4 text-xs text-slate-400 text-center">No options available.</p>
         ) : (

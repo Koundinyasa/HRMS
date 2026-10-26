@@ -376,11 +376,6 @@ export class AttendanceService {
 
     const locationInfo = await this.resolveEmployeeLocation(employeeId);
 
-    // NEW — Office keeps the existing real-geofence check, unchanged.
-    // WFH skips it entirely — comparing a home address to the office's
-    // GeoFences would never make sense — and gets its own check further
-    // below instead (self-referential, against that session's own
-    // punch-in location, not the office).
     const geoFenceId =
       !isWfhPunch &&
       latitude !== undefined &&

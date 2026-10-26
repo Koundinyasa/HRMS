@@ -13,6 +13,10 @@ export class SaveManualLeaveAllotmentDto {
   @IsNotEmpty()
   employeeId!: string;
 
+  @IsInt()
+  @Min(1)
+  leaveTypeId!: number;
+
   @IsOptional()
   @IsInt()
   @Min(1)

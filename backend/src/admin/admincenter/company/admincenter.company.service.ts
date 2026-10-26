@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../../database/database.service';
 import * as sql from 'mssql';
-
+ 
 import { CompanyConfigurationDto } from './dto/company-configuration.dto';
 import {
   PFConfigurationDto,
@@ -21,38 +21,42 @@ import {
   LWFDefaultConfigurationDto,
 } from './dto/lwf-configuration.dto';
 import { EstablishmentConfigurationDto } from './dto/establishment-configuration.dto';
-
+ 
 @Injectable()
 export class AdmincentercompanyService {
-  constructor(private readonly dbService: DatabaseService) {}
-
+  constructor(
+    private readonly dbService: DatabaseService,
+  ) {}
+ 
   async getCompanyConfiguration(
     companyId: number,
   ): Promise<CompanyConfigurationDto> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetAdminConfigurationData');
-
+ 
       return result.recordsets[0][0];
     } catch (error) {
       console.error(error);
       throw new BadRequestException('Failed to fetch company configuration.');
     }
   }
-
-  async getPFConfiguration(companyId: number): Promise<PFConfigurationDto> {
+ 
+  async getPFConfiguration(
+    companyId: number,
+  ): Promise<PFConfigurationDto> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetAdminConfigurationData');
-
+ 
       return {
         group: result.recordsets[1],
         configuration: result.recordsets[2],
@@ -62,16 +66,18 @@ export class AdmincentercompanyService {
       throw new BadRequestException('Failed to fetch PF configuration.');
     }
   }
-
-  async getESIConfiguration(companyId: number): Promise<ESIConfigurationDto> {
+ 
+  async getESIConfiguration(
+    companyId: number,
+  ): Promise<ESIConfigurationDto> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetAdminConfigurationData');
-
+ 
       return {
         group: result.recordsets[3],
         configuration: result.recordsets[4],
@@ -81,18 +87,18 @@ export class AdmincentercompanyService {
       throw new BadRequestException('Failed to fetch ESI configuration.');
     }
   }
-
+ 
   async getPTConfiguration(
     companyId: number,
   ): Promise<PTConfigurationResponseDto> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetAdminConfigurationData');
-
+ 
       return {
         group: result.recordsets[5],
         slabs: result.recordsets[6],
@@ -106,12 +112,12 @@ export class AdmincentercompanyService {
   async getLWFConfiguration(companyId: number): Promise<LWFConfigurationDto> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetAdminConfigurationData');
-
+ 
       return {
         group: result.recordsets[7],
         configuration: result.recordsets[8],
@@ -121,19 +127,19 @@ export class AdmincentercompanyService {
       throw new BadRequestException('Failed to fetch LWF configuration.');
     }
   }
-
+ 
   // Get Establishment Configuration
   async getEstablishmentConfiguration(
     companyId: number,
   ): Promise<EstablishmentConfigurationDto> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetAdminConfigurationData');
-
+ 
       return result.recordsets[9][0];
     } catch (error) {
       console.error(error);
@@ -142,7 +148,7 @@ export class AdmincentercompanyService {
       );
     }
   }
-
+ 
   //Update Company Configuration
   async updateCompanyConfiguration(
     companyId: number,
@@ -151,7 +157,6 @@ export class AdmincentercompanyService {
   ): Promise<any> {
     try {
       const pool = await this.dbService.connect();
-
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
@@ -172,33 +177,57 @@ export class AdmincentercompanyService {
         .input('Address3', sql.VarChar(255), dto.address3)
         .input('Modifiedby', sql.VarChar(100), String(modifiedBy))
         .execute('USP_UpdateCompanyDetails');
-
+ 
       return result.recordset[0];
     } catch (error) {
       console.error(error);
       throw new BadRequestException('Failed to update company configuration.');
     }
   }
-
   async updatePFConfiguration(
     companyId: number,
     modifiedBy: number,
     dto: PFDefaultConfigurationDto,
   ): Promise<any> {
     try {
+ 
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyId', sql.Int, companyId)
         .input('PFGroupId', sql.Int, Number(dto.pfGroupId))
         .input('EffectiveFrom', sql.Date, dto.effectiveFrom)
-        .input('EmployeeEPFRate', sql.Decimal(10, 2), dto.epfPercentage)
-        .input('EmployerEPFRate', sql.Decimal(10, 2), dto.employerEPFPercentage)
-        .input('PensionFundRate', sql.Decimal(10, 2), dto.pensionFundPercentage)
-        .input('SalaryCutOff', sql.Decimal(18, 2), dto.cutoff)
-        .input('AccountNo02Rate', sql.Decimal(10, 2), dto.accountNo02Rate)
-        .input('AccountNo21Rate', sql.Decimal(10, 2), dto.accountNo21Rate)
+        .input(
+          'EmployeeEPFRate',
+          sql.Decimal(10, 2),
+          dto.epfPercentage,
+        )
+        .input(
+          'EmployerEPFRate',
+          sql.Decimal(10, 2),
+          dto.employerEPFPercentage,
+        )
+        .input(
+          'PensionFundRate',
+          sql.Decimal(10, 2),
+          dto.pensionFundPercentage,
+        )
+        .input(
+          'SalaryCutOff',
+          sql.Decimal(18, 2),
+          dto.cutoff,
+        )
+        .input(
+          'AccountNo02Rate',
+          sql.Decimal(10, 2),
+          dto.accountNo02Rate,
+        )
+        .input(
+          'AccountNo21Rate',
+          sql.Decimal(10, 2),
+          dto.accountNo21Rate,
+        )
         .input(
           'MinimumChargesAccNo02',
           sql.Decimal(18, 2),
@@ -216,11 +245,12 @@ export class AdmincentercompanyService {
         .input('IsActive', sql.Bit, dto.isActive)
         .input('ModifiedBy', sql.BigInt, Number(modifiedBy))
         .execute('USP_UpdatePFDetails');
-
+ 
+     
+ 
       return result.recordset?.[0];
     } catch (error) {
       console.error('❌ PF Update Error:', error);
-
       throw new BadRequestException(
         error instanceof Error
           ? error.message
@@ -228,7 +258,6 @@ export class AdmincentercompanyService {
       );
     }
   }
-
   // //Update PF Configuration
   // async updatePFConfiguration(
   //   companyId: number,
@@ -237,7 +266,6 @@ export class AdmincentercompanyService {
   // ): Promise<any> {
   //   try {
   //     const pool = await this.dbService.connect();
-
   //     const result = await pool
   //       .request()
   //       .input('CompanyId', sql.Int, companyId)
@@ -270,7 +298,6 @@ export class AdmincentercompanyService {
   //       .input('IsActive', sql.Bit, dto.isActive)
   //       .input('ModifiedBy', sql.BigInt, modifiedBy)
   //       .execute('USP_UpdatePFDetails');
-
   //     return result.recordset?.[0];
   //   } catch (error) {
   //     console.error(error);
@@ -288,7 +315,7 @@ export class AdmincentercompanyService {
   ): Promise<any> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('CompanyId', sql.Int, companyId)
@@ -303,7 +330,7 @@ export class AdmincentercompanyService {
         .input('IsActive', sql.Bit, dto.isActive)
         .input('ModifiedBy', sql.BigInt, modifiedBy)
         .execute('USP_UpdateESIDetails');
-
+ 
       return result.recordset?.[0];
     } catch (error) {
       console.error(error);
@@ -319,7 +346,7 @@ export class AdmincentercompanyService {
   ): Promise<any> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       console.log({
         companyId,
         modifiedBy,
@@ -360,14 +387,13 @@ export class AdmincentercompanyService {
         .input('IsActive', sql.Bit, dto.isActive)
         .input('IsDefault', sql.Bit, dto.isDefault)
         .execute('USP_UpdateLWFConfigurationDetails');
-
+ 
       return result.recordset?.[0];
     } catch (error) {
       console.error(error);
       throw new BadRequestException('Failed to update LWF configuration.');
     }
   }
-
   //Update PT Configuration
   // async updatePTConfiguration(
   //   companyId: number,
@@ -385,22 +411,18 @@ export class AdmincentercompanyService {
   //       sql.Int,
   //       { nullable: true },
   //     );
-
   //     ptSlabs.columns.add(
   //       'FromSalary',
   //       sql.Decimal(18, 2),
   //     );
-
   //     ptSlabs.columns.add(
   //       'ToSalary',
   //       sql.Decimal(18, 2),
   //     );
-
   //     ptSlabs.columns.add(
   //       'PTAmount',
   //       sql.Decimal(18, 2),
   //     );
-
   //     // Add slab records
   //     dto.slabs.forEach((slab) => {
   //       ptSlabs.rows.add(
@@ -410,7 +432,6 @@ export class AdmincentercompanyService {
   //         slab.ptAmount,
   //       );
   //     });
-
   //     const result = await pool
   //       .request()
   //       .input(
@@ -456,13 +477,11 @@ export class AdmincentercompanyService {
   //       'Update PT Configuration Error:',
   //       error,
   //     );
-
   //     throw new BadRequestException(
   //       'Failed to update PT configuration.',
   //     );
   //   }
   // }
-
   //Update PT Configuration
   async updatePTConfiguration(
     companyId: number,
@@ -471,7 +490,7 @@ export class AdmincentercompanyService {
   ): Promise<any> {
     try {
       const pool = await this.dbService.connect();
-
+ 
       // Create Table-Valued Parameter
       const ptSlabs = new sql.Table('dbo.PTSlabType');
 

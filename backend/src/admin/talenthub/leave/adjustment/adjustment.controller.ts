@@ -20,6 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { GetManualLeaveAllotmentListDto } from './dto/get-manual-leave-allotment-list.dto';
+import { GetLeaveAdjustmentDto } from './dto/get-leave-adjustment.dto';
 
 @Controller('admin/ta/leave/adjustment')
 @UseGuards(JwtAuthGuard)
@@ -120,7 +121,43 @@ export class AdjustmentController {
   //   );
   // }
 
-  //starting from here actual SPs
+//starting from here actual SPs
+@Get('leavetypes')
+async getLeaveTypes() {
+  return this.adjustmentService.getLeaveTypes();
+}
+
+@Get('configuration')
+async getLeaveAdjustmentConfiguration(
+  @Query() dto: GetLeaveAdjustmentDto,
+) {
+  return this.adjustmentService.getLeaveAdjustmentConfiguration(
+    dto.leaveTypeId,
+  );
+}
+
+@Get('employees')
+async getEmployees() {
+  return this.adjustmentService.getEmployees();
+}
+
+@Get('manualallotment/policies')
+async getLeavePolicies() {
+  return this.adjustmentService.getLeavePolicies();
+}
+
+@Get('import/paymonths')
+async getPayMonths() {
+  return this.adjustmentService.getPayMonths();
+}
+
+@Get('manualallotment/policies/:policyId/leaves')
+async getPolicyLeaves(
+  @Param('policyId', ParseIntPipe) policyId: number,
+) {
+  return this.adjustmentService.getPolicyLeaves(policyId);
+}
+
   @Post('configuration')
   async createLeaveAdjustment(
     @Req() req: any,

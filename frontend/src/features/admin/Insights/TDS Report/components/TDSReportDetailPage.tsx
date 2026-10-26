@@ -39,11 +39,11 @@ export default function TDSReportDetailPage({
   endpoint,
 }: TDSReportDetailPageProps) {
   const navigate = useNavigate();
-  const { rows, loading, error, financialYears } = useTDSReport(endpoint);
+  const { rows, filteredRows, searchValue, setSearchValue, loading, error, financialYears } = useTDSReport(endpoint);
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-6">
-      <div className="space-y-5">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-4 lg:p-6">
+      <div className="min-w-0 space-y-4 sm:space-y-5">
         <TDSReportTopBar />
         <TDSReportHeader
           title={title}
@@ -59,11 +59,11 @@ export default function TDSReportDetailPage({
           financialYearOptions={financialYears}
         />
 
-        <TDSReportFilters rows={rows} />
+        <TDSReportFilters rows={rows} searchValue={searchValue} onSearchChange={setSearchValue} />
 
         <TDSReportTable
           columns={COLUMNS}
-          rows={rows}
+          rows={filteredRows}
           loading={loading}
           emptyMessage={error ?? `No ${title} data found.`}
         />

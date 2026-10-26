@@ -56,7 +56,7 @@ export default function LeaveNavbar() {
       // }}
 
       style={{
-        backgroundColor: "#f7f5ff",
+        backgroundColor: "#F5F3FF",
       }}
     >
       <div className="flex w-full min-w-0 justify-between">
@@ -93,7 +93,7 @@ export default function LeaveNavbar() {
                 rounded-md
                 border
                 bg-white
-                border-[#c5b0ff]
+                border-[#D9CCFB]
                 h-[2.3244375rem]
                 px-[0.9961875rem]
                 py-0
@@ -104,7 +104,7 @@ export default function LeaveNavbar() {
                 duration-300
 
                 ${isActive
-                  ? "text-[#7c3aed]"
+                  ? "text-[#7A5BED]"
                   : "text-black hover:text-slate-700"
                 }
                 `
@@ -112,8 +112,8 @@ export default function LeaveNavbar() {
               style={({ isActive }) =>
                 isActive
                   ? {
-                    color: "#7c3aed",
-                    borderColor: "#7c3aed",
+                    color: "#7A5BED",
+                    borderColor: "#7A5BED",
                   }
                   : {}
               }

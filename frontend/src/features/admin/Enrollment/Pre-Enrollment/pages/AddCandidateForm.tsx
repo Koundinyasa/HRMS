@@ -144,6 +144,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 
 import PreOnboardPageShell from "../components/PreEnrollmentPageShell";
+import DatePickerField from "../components/DatePickerField";
+import { useDatePicker } from "../hooks/useDatePicker";
 import { saveAddedCandidate } from "../constants/add-candidate.constants";
 import type { CandidateForm } from "../types/preEnrollment.types";
 

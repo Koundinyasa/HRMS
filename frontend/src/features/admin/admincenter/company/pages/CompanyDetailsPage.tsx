@@ -37,6 +37,7 @@ import { COMPANY_DETAILS_TABS } from "../constants/company.constants";
 
 export default function CompanyDetailsPage() {
   const { domain } = useParams();
+
   const basePath = `/${domain}/admin/admin-center/company/details`;
 
   return (

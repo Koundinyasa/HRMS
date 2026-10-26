@@ -14,7 +14,7 @@ export default function RentLandlordPage() {
   const { rows, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.rentLandlord);
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-6">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-4 lg:p-6">
       <div className="space-y-5">
         {/* TDS Report Top Bar */}
         <TDSReportTopBar showFilterIcon={false} />

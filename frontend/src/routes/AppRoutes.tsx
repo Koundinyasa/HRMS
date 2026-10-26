@@ -4,12 +4,13 @@ import DomainVerification from "../features/domain-verification/pages/DomainVeri
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import VerifyOtp from "../features/auth/pages/VerifyOtp";
 import ResetPassword from "../features/auth/pages/ResetPassword";
-import AdminRoutes from "./AdminRoutes";
- 
+import { AdminChildRoutes } from "./AdminRoutes";
+import AdminLayout from "@/features/admin/components/AdminLayout";
+
 import ProtectedRoute from "./ProtectedRoute";
 import EmployeeRoutes from "./EmployeeRoutes";
 import FirstLoginResetPassword from "@/features/auth/pages/FirstLoginResetPassword";
- 
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -25,10 +26,16 @@ function AppRoutes() {
  
         {/* ✅ Admin routes, role-protected */}
         <Route element={<ProtectedRoute allowedRoles={[1, 2]} />}>
-          <Route path="/:domain/admin/*" element={<AdminRoutes />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            {AdminChildRoutes}
+          </Route>
+          <Route path="/:domain/admin" element={<AdminLayout />}>
+            {AdminChildRoutes}
+          </Route>
         </Route>
  
         <Route element={<ProtectedRoute allowedRoles={[3]} />}>
+          <Route path="/employee/*" element={<EmployeeRoutes />} />
           <Route path="/:domain/employee/*" element={<EmployeeRoutes />} />
         </Route>
       </Routes>

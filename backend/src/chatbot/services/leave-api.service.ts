@@ -60,7 +60,7 @@ export class LeaveApiService {
     return res.data;
   }
 
-  async getEmployeeLeaveDetails(user: Record<string, unknown>) {
+  async getEmployeeLeaveDetails(user: Record<string, any>) {
     const res = await firstValueFrom(
       this.http.get(`${BASE_URL}/employee-details`, {
         params: { employeeId: String(user.employeeId ?? '') },

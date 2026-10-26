@@ -9,10 +9,10 @@ import { TDS_REPORT_ENDPOINTS } from "../api/tdsReport.endpoints";
 
 export default function Form12BBWithDataPage() {
   const navigate = useNavigate();
-  const { rows, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.form12BBWithData);
+  const { rows, filteredRows, searchValue, setSearchValue, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.form12BBWithData);
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-6">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-4 lg:p-6">
       <div className="space-y-5">
         {/* TDS Report Top Bar */}
         <TDSReportTopBar />
@@ -30,7 +30,7 @@ export default function Form12BBWithDataPage() {
         />
 
         {/* Filters */}
-        <TDSReportFilters rows={rows} />
+        <TDSReportFilters rows={rows} searchValue={searchValue} onSearchChange={setSearchValue} />
 
         {/* Report Table */}
         <TDSReportTable
@@ -41,7 +41,7 @@ export default function Form12BBWithDataPage() {
             "Email ID",
             "Email Verification Status",
           ]}
-          rows={rows}
+          rows={filteredRows}
           loading={loading}
           emptyMessage="No Form-12BB (With Data) data found."
           onAction={() => undefined}

@@ -40,7 +40,7 @@ export default function Navbar() {
       {/* ── Left: Logo + company name ── */}
       <div className="flex shrink-0 items-center gap-3">
         <button
-          onClick={() => navigate(`/${domain}/admin/dashboard`)}
+          onClick={() => navigate(`${adminBasePath}/dashboard`)}
           className="flex flex-col items-center gap-0.5 shrink-0 hover:opacity-80 transition-opacity"
           title="Go to Dashboard"
         >

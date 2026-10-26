@@ -2,12 +2,14 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronLeft,
+  Clock3,
   ClockFading,
   SendHorizontal,
   FileSpreadsheet,
   MoreVertical,
 } from "lucide-react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 
@@ -47,6 +49,7 @@ export default function TDSReportHeader({
   const isBlue = variant === "blue";
   const [auditLogOpen, setAuditLogOpen] = useState(false);
   const [financialYearOpen, setFinancialYearOpen] = useState(false);
+  const [financialYearPosition, setFinancialYearPosition] = useState({ top: 0, left: 0, width: 185 });
   const [selectedFinancialYear, setSelectedFinancialYear] =
     useState(financialYear);
 
@@ -62,7 +65,7 @@ export default function TDSReportHeader({
       onClick={onBack}
       variant="default"
       size="sm"
-      className="gap-1.5 bg-[#8b4f40] px-5 font-[Urbanist] text-[13px] font-medium text-white hover:bg-[#754033]"
+      className="gap-1.5 bg-[#8b4f40] px-3 font-[Urbanist] text-[13px] font-medium text-white hover:bg-[#754033]"
     >
       <ChevronLeft size={17} />
 
@@ -74,21 +77,23 @@ export default function TDSReportHeader({
   ) : null;
 
   return (
-    <section className="flex min-h-[68px] w-full items-center justify-between rounded-xl border border-[#d7d7d7] bg-white px-4 py-3 shadow-sm">
+    <section className="w-full min-w-0 overflow-x-auto overscroll-x-contain rounded-xl border border-[#d7d7d7] bg-white px-3 py-2 shadow-sm [scrollbar-color:#c58b7f_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#c58b7f] lg:overflow-x-visible lg:[scrollbar-width:none] lg:[&::-webkit-scrollbar]:hidden">
+      <div className="flex min-h-[52px] w-max min-w-full flex-nowrap items-center gap-2 lg:w-full lg:flex-wrap lg:justify-between lg:gap-4">
       <div
         className={
           isBlue
-            ? "border-b-[3px] border-[#2196e5] pb-2 font-[Urbanist] text-[22px] font-extrabold text-[#2196e5]"
-            : "flex min-h-10 items-center gap-2 rounded-lg border border-[#c98f82] px-4 font-[Urbanist] text-[22px] font-extrabold text-[#9d6155]"
+            ? "shrink-0 border-b-[3px] border-[#2196e5] pb-2 font-[Urbanist] text-[18px] font-extrabold text-[#2196e5] sm:text-[22px]"
+            : "flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-[#c98f82] px-3 font-[Urbanist] text-[18px] font-extrabold text-[#9d6155] sm:px-4 sm:text-[22px]"
         }
       >
         {/* Display/SM — Urbanist ExtraBold — 22px */}
-        <span className="font-[Urbanist] text-[22px] font-extrabold">
+        <Clock3 size={18} strokeWidth={1.8} className="shrink-0 sm:h-5 sm:w-5" />
+        <span className="whitespace-nowrap font-[Urbanist] text-[18px] font-extrabold leading-tight sm:text-[22px]">
           {title}
         </span>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 whitespace-nowrap lg:ml-auto lg:flex-wrap lg:justify-end lg:gap-4">
         {backFirst && backButton}
 
         {showFinancialYear && (
@@ -99,8 +104,21 @@ export default function TDSReportHeader({
               size="sm"
               aria-haspopup="listbox"
               aria-expanded={financialYearOpen}
-              onClick={() => setFinancialYearOpen((open) => !open)}
-              className="min-w-[185px] justify-between border-[#d8dee8] bg-[#f4f6fa] font-[Urbanist] text-[13px] font-medium text-[#333]"
+              onClick={(event) => {
+                if (financialYearOpen) {
+                  setFinancialYearOpen(false);
+                  return;
+                }
+                const rect = event.currentTarget.getBoundingClientRect();
+                const width = Math.min(185, window.innerWidth - 16);
+                setFinancialYearPosition({
+                  top: Math.min(rect.bottom + 4, window.innerHeight - 180 - 8),
+                  left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)),
+                  width,
+                });
+                setFinancialYearOpen(true);
+              }}
+              className="min-w-[145px] justify-between border-[#d8dee8] bg-[#f4f6fa] font-[Urbanist] text-[13px] font-medium text-[#333] sm:min-w-[185px]"
             >
               {/* Label/SM — Urbanist Medium — 13px */}
               <span className="font-[Urbanist] text-[13px] font-medium">
@@ -110,10 +128,11 @@ export default function TDSReportHeader({
               <ChevronDown size={15} className="text-[#7d8796]" />
             </Button>
 
-            {financialYearOpen && (
+            {financialYearOpen && createPortal(
               <div
                 role="listbox"
-                className="absolute right-0 z-40 mt-1 w-full min-w-[185px] overflow-hidden rounded-md border border-[#e1e5eb] bg-white py-1 shadow-lg"
+                style={{ top: financialYearPosition.top, left: financialYearPosition.left, width: financialYearPosition.width }}
+                className="fixed z-[100] max-h-[min(60vh,180px)] overflow-y-auto rounded-md border border-[#e1e5eb] bg-white py-1 shadow-lg"
               >
                 {[
                   "Select Month",
@@ -143,7 +162,8 @@ export default function TDSReportHeader({
                       {option}
                     </button>
                   ))}
-              </div>
+              </div>,
+              document.body,
             )}
           </div>
         )}
@@ -229,6 +249,7 @@ export default function TDSReportHeader({
         )}
 
         {!backFirst && backButton}
+      </div>
       </div>
 
       {auditLogOpen && (

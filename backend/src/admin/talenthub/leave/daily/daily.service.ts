@@ -228,4 +228,27 @@ export class DailyService {
       );
     }
   }
+  // Approval / Rejection
+  async hierarchicalLeaveAction(
+    approvalId: number,
+    approverEmployeeId: string,
+    actionStatusId: number,
+    remarks?: string,
+  ) {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool
+        .request()
+        .input('ApprovalId', approvalId)
+        .input('ApproverEmployeeId', approverEmployeeId)
+        .input('ActionStatusId', actionStatusId)
+        .input('Remarks', remarks ?? null)
+        .execute('USP_HierarchicalLeaveAction');
+
+      return result.recordset;
+    } catch (error) {
+      console.error('Error in hierarchicalLeaveAction:', error);
+      throw error;
+    }
+  }
 }

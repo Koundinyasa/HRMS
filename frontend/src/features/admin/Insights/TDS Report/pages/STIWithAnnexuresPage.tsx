@@ -55,10 +55,10 @@ import { TDS_REPORT_ENDPOINTS } from "../api/tdsReport.endpoints";
 
 export default function STIWithAnnexuresPage() {
   const navigate = useNavigate();
-  const { rows, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.stiWithAnnexures);
+  const { rows, filteredRows, searchValue, setSearchValue, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.stiWithAnnexures);
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-6">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-4 lg:p-6">
       <div className="space-y-5">
         <TDSReportTopBar />
 
@@ -72,7 +72,7 @@ export default function STIWithAnnexuresPage() {
           backFirst
         />
 
-        <TDSReportFilters rows={rows} />
+        <TDSReportFilters rows={rows} searchValue={searchValue} onSearchChange={setSearchValue} />
 
         <TDSReportTable
           columns={[
@@ -80,7 +80,7 @@ export default function STIWithAnnexuresPage() {
             "Employee ID",
             "Employee Name",
           ]}
-          rows={rows}
+          rows={filteredRows}
           loading={loading}
           emptyMessage="No STI With Annexures data found."
           onAction={() => undefined}

@@ -288,6 +288,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 export interface FilterOption {
   value: string;
@@ -335,13 +336,32 @@ export default function FilterDropdown(
   } = props;
 
   const [open, setOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0, width: 288 });
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  const updatePanelPosition = () => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const container = ref.current?.closest<HTMLElement>("[data-filter-scroll-container]");
+    const bounds = container?.getBoundingClientRect();
+    const leftBound = Math.max(8, bounds?.left ?? 8);
+    const rightBound = Math.min(window.innerWidth - 8, bounds?.right ?? window.innerWidth - 8);
+    const panelWidth = Math.max(0, Math.min(288, rightBound - leftBound));
+    setPanelPosition({
+      top: rect.bottom + 6,
+      left: Math.max(leftBound, Math.min(rect.left, rightBound - panelWidth)),
+      width: panelWidth,
+    });
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
-        ref.current &&
-        !ref.current.contains(e.target as Node)
+        !ref.current?.contains(e.target as Node) &&
+        !panelRef.current?.contains(e.target as Node)
       ) {
         setOpen(false);
       }
@@ -360,6 +380,17 @@ export default function FilterDropdown(
     };
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    updatePanelPosition();
+    window.addEventListener("resize", updatePanelPosition);
+    window.addEventListener("scroll", updatePanelPosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePanelPosition);
+      window.removeEventListener("scroll", updatePanelPosition, true);
+    };
+  }, [open]);
+
   const activeCount =
     props.type === "text"
       ? props.value
@@ -377,7 +408,7 @@ export default function FilterDropdown(
 
   const triggerClass =
     variant === "chip"
-      ? `flex h-9 shrink-0 items-center gap-1 rounded-lg border px-2.5 font-[Urbanist] text-[13px] transition-colors whitespace-nowrap ${
+      ? `flex h-9 shrink-0 items-center gap-1 rounded-lg border px-2.5 font-[Urbanist] text-[13px] transition-colors whitespace-nowrap lg:gap-0.5 lg:px-1.5 ${
           activeCount > 0
             ? "border-[#d7d7d7] bg-[#f3f8ff] text-[#374151]"
             : "border-[#d7d7d7] bg-white text-[#374151] hover:bg-slate-50"
@@ -396,6 +427,7 @@ export default function FilterDropdown(
       {/* Filter Button */}
       <button
         type="button"
+        ref={triggerRef}
         onClick={() =>
           setOpen((value) => !value)
         }
@@ -437,8 +469,12 @@ export default function FilterDropdown(
       </button>
 
       {/* Dropdown Panel */}
-      {open && (
-        <div className="absolute left-0 z-20 mt-1.5 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+      {open && createPortal(
+        <div
+          ref={panelRef}
+          style={{ top: panelPosition.top, left: panelPosition.left, width: panelPosition.width }}
+          className="fixed z-[100] max-h-[calc(100vh-1rem)] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+        >
           {props.type === "text" ? (
             <TextPanel
               value={props.value}
@@ -462,7 +498,8 @@ export default function FilterDropdown(
             {/* Label */}
             Clear
           </button>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

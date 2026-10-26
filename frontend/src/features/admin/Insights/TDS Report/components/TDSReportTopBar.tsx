@@ -17,7 +17,7 @@ export default function TDSReportTopBar({
 
   return (
     <header
-      className={`relative flex h-[62px] items-center justify-between rounded-xl px-5 shadow-sm ${
+      className={`relative flex min-h-[62px] w-full min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2 shadow-sm sm:px-5 ${
         isBlue
           ? "border border-[#e2e8f0] bg-white"
           : "border border-[#c98f82] bg-[#fff5f2]"
@@ -27,7 +27,7 @@ export default function TDSReportTopBar({
         className={
           isBlue
             ? "flex h-full items-center border-b-[3px] border-[#2196e5] font-[Urbanist] text-[22px] font-extrabold text-[#2196e5]"
-            : "flex h-10 min-w-[204px] items-center justify-center gap-2 rounded-lg border border-[#c98f82] bg-white px-5 font-[Urbanist] text-[22px] font-extrabold text-[#9d6155] shadow-sm"
+            : "flex h-10 min-w-0 items-center justify-center gap-2 rounded-lg border border-[#c98f82] bg-white px-3 font-[Urbanist] text-[18px] font-extrabold text-[#9d6155] shadow-sm sm:min-w-[204px] sm:px-5 sm:text-[22px]"
         }
       >
         {!isBlue && (
@@ -38,13 +38,13 @@ export default function TDSReportTopBar({
         )}
 
         {/* Display/SM — Urbanist ExtraBold — 22px */}
-        <span className="font-[Urbanist] text-[22px] font-extrabold">
+        <span className="font-[Urbanist] text-[18px] font-extrabold sm:text-[22px]">
           TDS Report
         </span>
       </div>
 
       {showSearch && (
-        <div className="absolute left-1/2 flex h-11 w-[238px] -translate-x-1/2 items-center gap-3 rounded-lg bg-[#f3f4f6] px-4 text-[#9ca3af]">
+        <div className="relative order-3 flex h-10 w-full min-w-0 items-center gap-3 rounded-lg bg-[#f3f4f6] px-4 text-[#9ca3af] sm:absolute sm:left-1/2 sm:order-none sm:w-[min(238px,40%)] sm:-translate-x-1/2">
           <Search size={20} />
 
           <input

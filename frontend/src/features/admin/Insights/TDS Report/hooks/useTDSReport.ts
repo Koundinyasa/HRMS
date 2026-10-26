@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { fetchTDSReport } from "../api/tdsReport.api";
 
 export default function useTDSReport(endpoint?: string) {
@@ -6,6 +6,18 @@ export default function useTDSReport(endpoint?: string) {
   const [financialYears, setFinancialYears] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState("");
+
+  const filteredRows = useMemo(() => {
+    const search = searchValue.trim().toLocaleLowerCase();
+    if (!search) return rows;
+
+    return rows.filter((row) =>
+      Object.entries(row)
+        .filter(([key]) => /employee|emp|staff|email/i.test(key))
+        .some(([, value]) => String(value ?? "").toLocaleLowerCase().includes(search)),
+    );
+  }, [rows, searchValue]);
 
   const fetchReport = useCallback(async () => {
     if (!endpoint) return;
@@ -45,6 +57,9 @@ export default function useTDSReport(endpoint?: string) {
 
   return {
     rows,
+    filteredRows,
+    searchValue,
+    setSearchValue,
     financialYears,
     loading,
     error,

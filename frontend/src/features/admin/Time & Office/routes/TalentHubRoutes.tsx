@@ -1,4 +1,4 @@
-// import {Route,Navigate} from "react-router-dom";
+﻿// import {Route,Navigate} from "react-router-dom";
 // import TalentHubPage from "../pages/TalentHubPage";
 // // import AttendancePage from "../Attendance/pages/AttendancePage";
 
@@ -194,6 +194,7 @@ import ReconcileLeavePanel from "../Attendance/components/ReconileLeavePanel";
  
 //Leave //Settings
 import LeaveSettingsPage from "../Leave/Settings/pages/leavesettingspage";
+import LeaveSettingsSectionPage from "../Leave/Settings/pages/LeaveSettingsSectionPage";
 import LeavePolicyPage from "../Leave/Settings/pages/policypage";
 import LeaveBehaviorPage from "../Leave/Settings/pages/leavebehaviourpage";
  
@@ -280,6 +281,11 @@ export const TalentHubRoutes = (
       <Route path="settings" element={<LeaveSettingsPage />}>
         <Route index element={<Navigate to="policy" replace />} />
         <Route path="policy" element={<LeavePolicyPage />} />
+        <Route path="definitions" element={<LeaveSettingsSectionPage section="definitions" />} />
+        <Route path="allot-avail-date" element={<LeaveSettingsSectionPage section="allot-avail-date" />} />
+        <Route path="allot-avail-dates" element={<Navigate to="../allot-avail-date" replace />} />
+        <Route path="opening-balance" element={<LeaveSettingsSectionPage section="opening-balance" />} />
+        <Route path="import" element={<LeaveSettingsSectionPage section="import" />} />
         <Route path="policy/:policyId/leave/:leaveId/behavior" element={<LeaveBehaviorPage />} />
       </Route>
       <Route path="adjustment" element={<AdjustmentPage />}>

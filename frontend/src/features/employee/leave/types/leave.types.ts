@@ -218,6 +218,7 @@ export interface DateFieldProps {
   id?: string;
   value: string;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   min?: string;
   max?: string;
   isInvalid?: boolean;

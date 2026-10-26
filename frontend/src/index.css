@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/urbanist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -295,4 +296,76 @@ ol {
 
 .animate-circle3 {
   animation: circle3 10s ease-in-out infinite;
+}
+
+/* Reports typography used by the TDS Report and Pre-Enrollment modules. */
+.pre-enrollment-typography {
+  font-family: "Urbanist Variable", Urbanist, sans-serif;
+}
+
+.pre-enrollment-typography h1 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  line-height: 28px !important;
+}
+
+.pre-enrollment-typography h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 24px !important;
+}
+
+.pre-enrollment-typography h3 {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 22px !important;
+}
+
+.pre-enrollment-typography h4 {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 20px !important;
+}
+
+.pre-enrollment-typography p {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.pre-enrollment-typography button,
+.pre-enrollment-typography nav,
+.pre-enrollment-typography label {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.pre-enrollment-typography input,
+.pre-enrollment-typography select,
+.pre-enrollment-typography textarea {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.pre-enrollment-typography table th {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+}
+
+.pre-enrollment-typography table td {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
 }

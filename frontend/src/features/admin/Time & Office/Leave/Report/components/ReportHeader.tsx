@@ -41,7 +41,7 @@ export default function ReportHeader({
   groupBy = "Leave Policy", onGroupByChange, groupByOptions = ["Leave Policy"],
   groupByMultiSelect = false, groupByRadioSelect = false,
   groupByPlaceholder = "Group by Leave Policy", onBack,
-  onShowFilters, onPdfExport, onExcelExport, onRefresh, showFilterButton = true,
+  onPdfExport, onExcelExport, onRefresh, showFilterButton = true,
   showPdfExport = true, showExcelExport = true, showRefresh = true, showSubHeader = true,
   showTopRefresh = false,
   showGroupBy = true,
@@ -49,6 +49,51 @@ export default function ReportHeader({
 }: ReportHeaderProps) {
   const [groupByOpen, setGroupByOpen] = useState(false);
   const [groupByMenuPosition, setGroupByMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [monthMenu, setMonthMenu] = useState<{ key: string; top: number; left: number } | null>(null);
+  const openMonthMenu = (key: string, event: React.MouseEvent<HTMLButtonElement>) => {
+    if (monthMenu?.key === key) {
+      setMonthMenu(null);
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    const menuHeight = Math.min(420, window.innerHeight * 0.6);
+    setMonthMenu({
+      key,
+      top: Math.min(rect.bottom + 4, window.innerHeight - menuHeight - 8),
+      left: Math.max(8, Math.min(rect.left, window.innerWidth - Math.min(288, window.innerWidth - 16) - 8)),
+    });
+  };
+  const renderMonthMenu = (key: string, value: string, onChange?: (value: string) => void, width = "w-[176px]", includePlaceholder = false) => (
+    <>
+      <button
+        type="button"
+        onClick={(event) => openMonthMenu(key, event)}
+        className={`flex h-10 ${width} shrink-0 items-center justify-between gap-2 rounded-[7px] border border-[#CBD5E1] bg-[#F4F6FA] px-3 text-left text-[13px] font-medium text-[#344054] outline-none focus:border-[#9a5547]`}
+        aria-haspopup="listbox"
+        aria-expanded={monthMenu?.key === key}
+      >
+        <span>{value || (includePlaceholder ? "Select Month" : "")}</span>
+        <ChevronDown size={15} className="shrink-0 text-[#7b8794]" />
+      </button>
+      {monthMenu?.key === key && createPortal(
+        <div
+          role="listbox"
+          style={{ top: monthMenu.top, left: monthMenu.left }}
+          className="fixed z-[100] max-h-[min(60vh,420px)] w-[min(288px,calc(100vw-16px))] overflow-y-auto rounded-[7px] border border-[#CBD5E1] bg-[#F4F6FA] py-1 shadow-[0_8px_25px_rgba(15,23,42,0.18)]"
+        >
+          {includePlaceholder && (
+            <button type="button" role="option" aria-selected={!value} onClick={() => { onChange?.(""); setMonthMenu(null); }} className="block w-full px-3 py-2 text-left text-[13px] text-[#344054] hover:bg-[#e8edf4]">Select Month</button>
+          )}
+          {MONTHS.map((month) => (
+            <button key={month} type="button" role="option" aria-selected={value === month} onClick={() => { onChange?.(month); setMonthMenu(null); }} className={`block w-full px-3 py-2 text-left text-[13px] text-[#344054] hover:bg-[#e8edf4] ${value === month ? "bg-[#a8dff0]" : ""}`}>
+              {month}
+            </button>
+          ))}
+        </div>,
+        document.body,
+      )}
+    </>
+  );
   const toggleGroupByMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (groupByOpen) {
       setGroupByOpen(false);
@@ -100,7 +145,7 @@ export default function ReportHeader({
         <span>Report</span>
       </div>
       {(showFilterButton || showTopRefresh) && <div className="ml-auto flex items-center gap-1">
-        {showFilterButton && <button type="button" onClick={onShowFilters} aria-label="Show filters" className="flex h-8 w-8 items-center justify-center text-[#7D8790] hover:text-[#9a5547]"><Funnel size={18} /></button>}
+        {showFilterButton && <button type="button" aria-label="Show filters" className="flex h-8 w-8 items-center justify-center text-[#7D8790] hover:text-[#9a5547]"><Funnel size={18} /></button>}
         {showTopRefresh && <button type="button" onClick={onRefresh} title="Recent report history" aria-label="Recent report history" className="flex h-8 w-8 items-center justify-center text-[#a45a4a] hover:text-[#914f3f]"><ClockFading size={20}/></button>}
       </div>}
     </div>
@@ -113,23 +158,16 @@ export default function ReportHeader({
         {dateRange ? (
           <DateField value={fromMonth} onChange={value => onFromMonthChange?.(value)} className="w-[176px] shrink-0" inputClassName="h-10 rounded-[7px] border-[#CBD5E1] bg-[#F4F6FA] px-3 pr-10 text-[13px] font-medium text-[#344054] focus:shadow-none" />
         ) : (
-          <select value={fromMonth} onChange={e=>onFromMonthChange?.(e.target.value)} className="h-10 w-[176px] rounded-[7px] border border-[#CBD5E1] bg-[#F4F6FA] px-3 text-[13px] font-medium text-[#344054] outline-none focus:border-[#9a5547]">
-            {MONTHS.map(m=><option key={m}>{m}</option>)}
-          </select>
+          renderMonthMenu("from", fromMonth, onFromMonthChange)
         )}
         <span className="text-[13px] font-medium text-[#202124]">{dateRange ? "To Date" : "To Month"}</span>
         {dateRange ? (
           <DateField value={toMonth} onChange={value => onToMonthChange?.(value)} className="w-[176px] shrink-0" inputClassName="h-10 rounded-[7px] border-[#CBD5E1] bg-[#F4F6FA] px-3 pr-10 text-[13px] font-medium text-[#344054] focus:shadow-none" />
         ) : (
-          <select value={toMonth} onChange={e=>onToMonthChange?.(e.target.value)} className="h-10 w-[176px] rounded-[7px] border border-[#CBD5E1] bg-[#F4F6FA] px-3 text-[13px] font-medium text-[#344054] outline-none focus:border-[#9a5547]">
-            {MONTHS.map(m=><option key={m}>{m}</option>)}
-          </select>
+          renderMonthMenu("to", toMonth, onToMonthChange)
         )}
       </>}
-      {singleMonth && <select value={fromMonth} onChange={e=>onFromMonthChange?.(e.target.value)} className="h-10 w-[188px] rounded-[7px] border border-[#CBD5E1] bg-[#F4F6FA] px-3 text-[13px] font-medium text-[#344054] outline-none focus:border-[#168fe5]">
-        <option value="">Select Month</option>
-        {MONTHS.map(m=><option key={m}>{m}</option>)}
-      </select>}
+      {singleMonth && renderMonthMenu("single", fromMonth, onFromMonthChange, "w-[188px]", true)}
       {showGroupBy && (groupByRadioSelect ? (
         <div className="relative min-w-0 flex-1 sm:flex-none">
           <button

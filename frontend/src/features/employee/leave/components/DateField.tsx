@@ -364,6 +364,7 @@ const formatTipDate = (iso: string) =>
 export default function DateField({
   value,
   onChange,
+  onBlur,
   min,
   max,
   id,
@@ -455,6 +456,8 @@ export default function DateField({
     if (!iso || !isDisabled(iso)) {
       setText(toDisplay(value));
     }
+
+    onBlur?.();
   };
 
   const handleSelectDay = (iso: string) => {

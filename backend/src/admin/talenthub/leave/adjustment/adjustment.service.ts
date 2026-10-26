@@ -5,6 +5,7 @@ import { CreateLeaveAdjustmentDto } from './dto/create-leave-adjustment.dto';
 import { UpdateManualAllotmentDto } from './dto/update-manual-allotment.dto';
 import { ImportLeaveAdjustmentDto } from './dto/import-leave-adjustment.dto';
 import { GetManualLeaveAllotmentListDto } from './dto/get-manual-leave-allotment-list.dto';
+import { GetLeaveAdjustmentDto } from './dto/get-leave-adjustment.dto';
 
 @Injectable()
 export class AdjustmentService {
@@ -35,14 +36,17 @@ export class AdjustmentService {
   // Leave Adjustment Configuration
   // ==========================================
 
-  async getLeaveAdjustmentConfiguration(leaveId: number) {
+  async getLeaveAdjustmentConfiguration(leaveId?: number) {
     try {
       const pool = await this.databaseService.connect();
 
-      const result = await pool
-        .request()
-        .input('LeaveId', leaveId)
-        .execute('USP_GetLeaveAdjustmentConfiguration'); // Placeholder SP
+      const request = pool.request();
+      if (leaveId !== undefined) {
+        request.input('LeaveId', leaveId);
+      }
+      const result = await request.execute(
+        'USP_GetLeaveAdjustmentConfiguration',
+      ); // Placeholder SP
 
       return result.recordset;
     } catch (error) {

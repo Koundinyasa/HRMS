@@ -9,10 +9,10 @@ import { TDS_REPORT_ENDPOINTS } from "../api/tdsReport.endpoints";
 
 export default function STIWithSalaryExtractPage() {
   const navigate = useNavigate();
-  const { rows, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.stiWithSalaryExtract);
+  const { rows, filteredRows, searchValue, setSearchValue, loading, financialYears } = useTDSReport(TDS_REPORT_ENDPOINTS.stiWithSalaryExtract);
 
   return (
-    <main className="min-h-full bg-white p-4 sm:p-6">
+    <main className="min-h-full min-w-0 bg-white p-3 sm:p-4 lg:p-6">
       <div className="space-y-5">
         <TDSReportTopBar />
         <TDSReportHeader
@@ -24,7 +24,7 @@ export default function STIWithSalaryExtractPage() {
           showStatusIcon
           backFirst
         />
-        <TDSReportFilters rows={rows} />
+        <TDSReportFilters rows={rows} searchValue={searchValue} onSearchChange={setSearchValue} />
         <TDSReportTable
           columns={[
             "Sl.No.",
@@ -33,7 +33,7 @@ export default function STIWithSalaryExtractPage() {
             "Email ID",
             "Email Verification Status",
           ]}
-          rows={rows}
+          rows={filteredRows}
           loading={loading}
           emptyMessage="No STI With Salary Extract data found."
           onAction={() => undefined}

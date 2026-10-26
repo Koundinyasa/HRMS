@@ -25,14 +25,13 @@ import { LeaveRequestDto } from './dto/leave-request.dto';
 import { HierarchicalLeaveActionDto } from './dto/hierarchical-leave-action.dto';
 import { WithdrawCancelDto } from './dto/withdraw-cancel.dto'; // NEW IMPORT
 import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
-import { PendingLeaveRequestDto } from './dto/pending-leave-request.dto';
 @Controller('employee/leave')
 export class LeaveController {
   constructor(private readonly leaveService: LeaveService) {}
 
+  // Leave Types
   @UseGuards(JwtAuthGuard)
   @Get('leavetypes')
-  @UseGuards(JwtAuthGuard)
   async getLeaveTypes(
     @Req() req: any,
     @Query('employeeId') employeeId?: string,

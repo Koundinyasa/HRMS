@@ -20,7 +20,6 @@ export class DraftService {
     Stamped<EmployeeDirectoryDraft>
   >();
   readonly pendingEmployeeExport = new Map<string, 'excel' | 'pdf'>();
-
   // Tracks the numbered leave list shown by "cancel leave" and the pending
   // confirmation target, keyed by employeeId.
   readonly cancelList = new Map<
@@ -102,26 +101,24 @@ export class DraftService {
     }
     map.set(key, { data, savedAt: Date.now() });
   }
-
+ 
   hasDraft<T>(map: Map<string, Stamped<T>>, key: string): boolean {
     return this.getDraft(map, key) !== undefined;
   }
-
+ 
   deleteDraft<T>(map: Map<string, Stamped<T>>, key: string): void {
     map.delete(key);
   }
-
+ 
   hasLeaveDraft(employeeId: string): boolean {
     return this.hasDraft(this.leaveDrafts, employeeId);
   }
-
   resetConversation(employeeId: string): void {
     this.leaveDrafts.delete(employeeId);
     this.partialCancelDrafts.delete(employeeId);
     this.cancelChoiceDrafts.delete(employeeId);
     this.teamDrafts.delete(employeeId);
     this.employeeDirectoryDrafts.delete(employeeId);
-
     this.cancelList.delete(employeeId);
     this.cancelTarget.delete(employeeId);
 

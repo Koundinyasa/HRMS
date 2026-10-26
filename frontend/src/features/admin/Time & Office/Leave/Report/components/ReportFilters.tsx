@@ -117,11 +117,14 @@ export default function ReportFilters({
         </div>
       ))}
 
-      {filterOptions.length > 7 && (
-        <button type="button" className="flex h-9 w-8 items-center justify-center text-[#a45a4a]">
-          <MoreVertical size={18} />
-        </button>
-      )}
+      <button
+        type="button"
+        className="flex h-9 w-8 shrink-0 items-center justify-center text-[#a45a4a]"
+        aria-label="More filter options"
+        title="More filter options"
+      >
+        <MoreVertical size={18} />
+      </button>
       <button
         type="button"
         onClick={onHideFilters}

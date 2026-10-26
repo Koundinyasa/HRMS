@@ -10,6 +10,8 @@ import {
 
 interface TDSReportFiltersProps {
   rows?: Record<string, unknown>[];
+  searchValue: string;
+  onSearchChange: (value: string) => void;
 }
 
 const ROW_FIELD_ALIASES: Record<FilterFieldKey, string[]> = {
@@ -29,10 +31,11 @@ const ROW_FIELD_ALIASES: Record<FilterFieldKey, string[]> = {
 
 export default function TDSReportFilters({
   rows = [],
+  searchValue,
+  onSearchChange,
 }: TDSReportFiltersProps) {
   const [showFilters, setShowFilters] = useState(true);
   const [values, setValues] = useState<FilterValues>({});
-  const [searchValue, setSearchValue] = useState("");
 
   const fieldOptions = useMemo<
     Partial<Record<FilterFieldKey, FilterOption[]>>
@@ -83,7 +86,7 @@ export default function TDSReportFilters({
         fieldOptions={fieldOptions}
         values={values}
         searchValue={searchValue}
-        onSearchChange={setSearchValue}
+        onSearchChange={onSearchChange}
         onChange={(key, value) =>
           setValues((previous) => ({
             ...previous,
@@ -92,7 +95,7 @@ export default function TDSReportFilters({
         }
         onClearAll={() => {
           setValues({});
-          setSearchValue("");
+          onSearchChange("");
           setShowFilters(false);
         }}
         variant="chip"

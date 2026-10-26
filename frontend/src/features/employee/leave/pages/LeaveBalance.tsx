@@ -185,7 +185,7 @@ export default function LeaveBalance() {
                 <thead
                   className="text-white"
                   style={{
-                    backgroundColor: "#7C3AED",
+                    backgroundColor: "#7A5BED",
                   }}
                 >
                   <tr>

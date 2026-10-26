@@ -55,12 +55,14 @@ interface DatePickerFieldProps {
   id?: string;
   label: string;
   datePicker: UseDatePickerResult;
+  compact?: boolean;
 }
 
 export default function DatePickerField({
   id,
   label,
   datePicker,
+  compact = false,
 }: DatePickerFieldProps) {
   const placeholder = useMemo(() => "DD/MM/YYYY", []);
 
@@ -105,6 +107,8 @@ export default function DatePickerField({
           onToday={datePicker.onToday}
           placeholder={placeholder}
           isInvalid={false}
+          inputClassName={compact ? "h-10 rounded-lg text-xs" : undefined}
+          compact={compact}
           align={id === "to-month" ? "right" : "left"}
         />
       </div>

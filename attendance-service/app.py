@@ -9,6 +9,12 @@
  
 from fastapi import FastAPI, File, UploadFile, Form
 from typing import List
+import os
+import sys
+
+if os.name == "nt":
+    _dll_directory = os.add_dll_directory(sys.prefix)
+
 import face_recognition
 import numpy as np
 import cv2

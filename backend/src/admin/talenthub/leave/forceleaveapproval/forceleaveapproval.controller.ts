@@ -1,3 +1,4 @@
+import { GetLeaveApprovalDto } from './dto/get-leave-approval.dto';
 import {
   Controller,
   Get,
@@ -38,27 +39,45 @@ export class ForceLeaveApprovalController {
 
   // Starting from here actual SPs
 
-  @Get()
-  async getLeaveApproval(
-    @Req() req: any,
-    @Body()
-    body: {
-      approverId?: string;
-      fromDate?: string;
-      toDate?: string;
-      isCurrentMonth?: boolean;
-    },
-  ) {
-    console.log('JWT User:', req.user);
-    console.log('Company ID:', req.user?.companyId);
-    console.log('Request Body:', body);
+  // @Get()
+  // async getLeaveApproval(
+  //   @Req() req: any,
+  //   @Query() query: {
+  //     approverId?: string;
+  //     fromDate?: string;
+  //     toDate?: string;
+  //     isCurrentMonth?: string;
+  //   },
+  // ) {
+  //   return this.forceLeaveApprovalService.getLeaveApproval(
+  //     Number(req.user.companyId),
+  //     query.approverId,
+  //     query.fromDate,
+  //     query.toDate,
+  //     query.isCurrentMonth === undefined
+  //       ? true
+  //       : query.isCurrentMonth.toLowerCase() === 'true',
+  //   );
+  // }
 
-    return this.forceLeaveApprovalService.getLeaveApproval(
-      Number(req.user.companyId),
-      body.approverId,
-      body.fromDate,
-      body.toDate,
-      body.isCurrentMonth ?? true,
-    );
-  }
+ 
+@Post()
+async getLeaveApproval(
+  @Req() req: any,
+  @Body() dto: GetLeaveApprovalDto,
+) {
+  return this.forceLeaveApprovalService.getLeaveApproval(
+    dto,
+    req.user.companyId,
+  );
+}
+ 
+ // Company dropdown (filters: branch, salary structure, leave, attendance, designation, emp status)
+// Actual SP is used here
+ 
+@Get('company-dropdown')
+@UseGuards(JwtAuthGuard)
+async getCompanyDropdownData(@Req() req: any) {
+  return this.forceLeaveApprovalService.getCompanyDropdownData(req.user.companyId);
+}
 }

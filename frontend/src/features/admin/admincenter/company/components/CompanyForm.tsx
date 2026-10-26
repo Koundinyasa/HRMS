@@ -94,7 +94,7 @@ const CompanyInformationIcon = ({
     <rect x="5.5" y="13" width="1.8" height="1.8" />
   </svg>
 );
-
+ 
 const ApplicableIcon = ({
   color = "#7A5BED",
   size = 18,
@@ -117,7 +117,7 @@ const ApplicableIcon = ({
     <line x1="4" y1="19" x2="15" y2="19" />
   </svg>
 );
-
+ 
 const EMPTY_COMPANY: CompanyDetails = {
   companyName: "",
   dateOfEstablishment: "",
@@ -138,7 +138,7 @@ const EMPTY_COMPANY: CompanyDetails = {
   isLWFAvailable: true,
   companyLogoPath: "",
 };
-
+ 
 export default function CompanyForm() {
   const { company, isLoading, updateCompany, isSaving, refetch } = useCompany();
   const [companyData, setCompanyData] = useState<CompanyDetails>(EMPTY_COMPANY);
@@ -243,11 +243,11 @@ export default function CompanyForm() {
     }
     setLogo(file);
   }
-
+ 
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     handleLogoSelect(e.target.files?.[0] ?? null);
   }
-
+ 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragging(false);
@@ -302,11 +302,11 @@ export default function CompanyForm() {
       showToast(msg, "error");
     }
   }
-
+ 
   if (isLoading) {
     return <div className="text-sm text-[#626262] p-6">Loading company details…</div>;
   }
-
+ 
   return (
     <div className="grid w-full min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-3">
       <Toast toast={toast} />
@@ -334,7 +334,7 @@ export default function CompanyForm() {
               onChange={handleChange}
             />
           </div>
-
+ 
           <div>
             <Label htmlFor="dateOfEstablishment">Date of Establishment</Label>
             <div className="mt-2">
@@ -357,7 +357,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
-
+ 
           <div>
             <Label htmlFor="cin_LPIN">CIN / LLPIN</Label>
             <div className="relative mt-2">
@@ -374,7 +374,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
-
+ 
           <div>
             <Label htmlFor="tan">TAN</Label>
             <div className="relative mt-2">
@@ -391,7 +391,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
-
+ 
           <div>
             <Label htmlFor="website">Website</Label>
             <Input
@@ -404,7 +404,7 @@ export default function CompanyForm() {
           </div>
         </div>
       </Card>
-
+ 
       {/* Address Details */}
       <Card data-company-module-card className="min-w-0 rounded-2xl border border-[#EDEDED] p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
@@ -473,7 +473,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
-
+ 
           <div>
             <p className="mb-2 text-xs text-[#626262]">
               Note: This ShortName will be used as ESS Login URL.
@@ -550,7 +550,7 @@ export default function CompanyForm() {
                 <h2 className="text-[16px] leading-6 font-semibold text-[#5932E9]">Company Logo</h2>
               </div>
             </div>
-
+ 
             {logo && (
               <button
                 type="button"
@@ -598,7 +598,7 @@ export default function CompanyForm() {
                 </Button>
               </div>
             )}
-
+ 
             <input
               ref={fileInputRef}
               type="file"

@@ -219,7 +219,6 @@ export class DashboardService {
   ) {
     try {
       const pool = await this.dbService.connect();
-
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)

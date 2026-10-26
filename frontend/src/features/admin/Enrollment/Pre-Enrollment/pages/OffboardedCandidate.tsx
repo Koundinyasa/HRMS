@@ -10,7 +10,11 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import noDataImage from "@/assets/images/no-data.png";
+
 import PreOnboardPageShell from "../components/PreEnrollmentPageShell";
+import { useGetOffboardedCandidatesQuery } from "../api/candidateApi";
+import type { OffboardCandidate as ApiOffboardCandidate } from "../types/preEnrollment.types";
 
 interface OffboardedCandidate {
   id: number;
@@ -23,71 +27,35 @@ interface OffboardedCandidate {
   initials: string;
 }
 
-const candidates: OffboardedCandidate[] = [
-  {
-    id: 1,
-    name: "Sai Chandu",
-    email: "saichandu@gmail.com",
-    mobile: "9876543210",
-    joiningDate: "27/May/2026",
-    offboardDate: "10/Jun/2026",
-    reason: "Candidate Withdrawn",
-    initials: "SC",
-  },
-  {
-    id: 2,
-    name: "Ravi Kumar",
-    email: "ravikumar@gmail.com",
-    mobile: "9876543211",
-    joiningDate: "15/May/2026",
-    offboardDate: "05/Jun/2026",
-    reason: "Background Verification",
-    initials: "RK",
-  },
-  {
-    id: 3,
-    name: "Anusha M.",
-    email: "anusha@gmail.com",
-    mobile: "9876543212",
-    joiningDate: "02/May/2026",
-    offboardDate: "01/Jun/2026",
-    reason: "Candidate Declined",
-    initials: "AM",
-  },
-  {
-    id: 4,
-    name: "Vijay R.",
-    email: "vijayr@gmail.com",
-    mobile: "9876543213",
-    joiningDate: "28/Apr/2026",
-    offboardDate: "30/May/2026",
-    reason: "Skills Not Matched",
-    initials: "VJ",
-  },
-  {
-    id: 5,
-    name: "Priya Sharma",
-    email: "priyasharma@gmail.com",
-    mobile: "9876543214",
-    joiningDate: "10/May/2026",
-    offboardDate: "25/May/2026",
-    reason: "Not Responding",
-    initials: "PS",
-  },
-  {
-    id: 6,
-    name: "Suresh K.",
-    email: "sureshk@gmail.com",
-    mobile: "9876543215",
-    joiningDate: "20/Apr/2026",
-    offboardDate: "18/May/2026",
-    reason: "Other Reasons",
-    initials: "SK",
-  },
-];
-
 export default function OffboardedCandidate() {
   const [search, setSearch] = useState("");
+  const { data: apiCandidates = [], isLoading } =
+    useGetOffboardedCandidatesQuery();
+
+  const candidates = useMemo<OffboardedCandidate[]>(
+    () =>
+      (apiCandidates as ApiOffboardCandidate[]).map((candidate) => {
+        const name = candidate.candidateName;
+
+        return {
+          id: candidate.id,
+          name,
+          email: candidate.email,
+          mobile: candidate.mobile,
+          joiningDate: candidate.joiningDate ?? "-",
+          offboardDate: candidate.offboardDate ?? "-",
+          reason: candidate.reason ?? "-",
+          initials: name
+            .split(" ")
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0])
+            .join("")
+            .toUpperCase(),
+        };
+      }),
+    [apiCandidates],
+  );
 
   const filteredCandidates = useMemo(() => {
     const value = search.trim().toLowerCase();
@@ -352,8 +320,17 @@ export default function OffboardedCandidate() {
 
             {/* Empty State */}
             {filteredCandidates.length === 0 && (
-              <div className="flex h-40 items-center justify-center text-sm text-slate-500">
-                No offboarded candidates found.
+              <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-sm text-slate-500">
+                <img
+                  src={noDataImage}
+                  alt="No offboarded candidates"
+                  className="h-auto w-[220px]"
+                />
+                <span>
+                  {isLoading
+                    ? "Loading offboarded candidates..."
+                    : "No offboarded candidates found."}
+                </span>
               </div>
             )}
 
