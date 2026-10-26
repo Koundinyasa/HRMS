@@ -1,0 +1,162 @@
+
+
+
+
+import type {
+  Dispatch,
+  SetStateAction,
+} from "react";
+
+// ===============================
+// Monthly Leave Calendar Params
+// ===============================
+
+export interface UseMonthlyLeaveCalendarParams {
+  companyId: number;
+  year?: number;
+  month?: number;
+  branchId?: number;
+}
+
+// ===============================
+// Employee Attendance Count Params
+// ===============================
+
+export interface GetEmployeeAttendanceCountParams {
+  year?: number;
+  month?: number;
+  branchId?: number;
+}
+
+// ===============================
+// Leave Calendar Employee
+// ===============================
+
+export interface LeaveCalendarEmployee {
+  EmployeeID: string;
+  FullName: string;
+
+  [dayKey: string]:
+    | string
+    | undefined;
+}
+
+// ===============================
+// Attendance Count
+// ===============================
+
+export type AttendanceCountEmployee = Record<string, unknown>;
+
+export interface EmployeeAttendanceCountResponse {
+  success: boolean;
+  message: string;
+  data: AttendanceCountEmployee[];
+}
+
+// ===============================
+// Attendance History
+// ===============================
+
+export interface AttendanceHistoryEmployee {
+  employeeId: string;
+  employeeName: string;
+  present: number;
+  absent: number;
+}
+
+// ===============================
+// Calendar Day
+// ===============================
+
+export interface LeaveCalendarDay {
+  date: number;
+  weekday: string;
+  key: string;
+}
+
+// ===============================
+// Attendance Click Handler
+// ===============================
+
+export type AttendanceClickHandler = (
+  employee: LeaveCalendarEmployee,
+  day: LeaveCalendarDay,
+  status: string,
+) => void;
+
+// ===============================
+// Header
+// ===============================
+
+export interface LeaveCalendarHeaderProps {
+  selectedMonth: number;
+  setSelectedMonth: Dispatch<
+    SetStateAction<number>
+  >;
+}
+
+// ===============================
+// Search
+// ===============================
+
+export interface LeaveCalendarSearchProps {
+  searchTerm: string;
+  compact?: boolean;
+  setSearchTerm: Dispatch<
+    SetStateAction<string>
+  >;
+}
+
+// ===============================
+// Table
+// ===============================
+
+export interface LeaveCalendarTableProps {
+  employees: LeaveCalendarEmployee[];
+  days: LeaveCalendarDay[];
+  onAttendanceClick: AttendanceClickHandler;
+}
+
+// ===============================
+// Employee Row
+// ===============================
+
+export interface EmployeeRowProps {
+  employee: LeaveCalendarEmployee;
+  days: LeaveCalendarDay[];
+  onAttendanceClick: AttendanceClickHandler;
+}
+
+// ===============================
+// Status Badge
+// ===============================
+
+export interface StatusBadgeProps {
+  status: string | null | undefined;
+}
+
+// ===============================
+// Footer
+// ===============================
+
+export interface LeaveCalendarFooterProps {
+  totalItems: number;
+  currentPage: number;
+  rowsPerPage: number;
+  legendCodes: string[];
+  onRowsPerPageChange: (
+    rowsPerPage: number,
+  ) => void;
+  onPrevPage: () => void;
+  onNextPage: () => void;
+}
+
+// ===============================
+// Leave Status
+// ===============================
+
+export interface LeaveStatusConfig {
+  code: string;
+  label: string;
+  className?: string;
+}
