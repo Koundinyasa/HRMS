@@ -86,7 +86,6 @@ export class AdminDashboardService {
       this.logger.log(`[1] getDashboard called with employeeId: ${employeeId}`);
 
       const pool = await this.db.connect();
-      // this.logger.log(`[2] DB pool connected`);
 
       const result = await pool
         .request()
@@ -110,8 +109,6 @@ export class AdminDashboardService {
         tenureBucketRows,
       ] = result.recordsets;
 
-      // this.logger.log(`[5] welcomeRows[0]: ${JSON.stringify(welcomeRows?.[0])}`);
-      // this.logger.log(`[6] summaryRows[0]: ${JSON.stringify(summaryRows?.[0])}`);
 
       // ── Result Set 0 : Welcome ──────────────────────────────
       const w = welcomeRows[0];
@@ -142,7 +139,6 @@ export class AdminDashboardService {
         email: w.Email,
         mobileNo: w.Mobileno ?? null,
       };
-      // this.logger.log(`[7] welcome mapped`);
 
       // ── Result Set 1 : Menus ────────────────────────────────
       const menus: MenuDto[] = menuRows.map((m: any) => ({
@@ -152,7 +148,6 @@ export class AdminDashboardService {
         routeUrl: m.RouteUrl,
         displayOrder: Number(m.DisplayOrder),
       }));
-      // this.logger.log(`[8] menus mapped: ${menus.length} items`);
 
       // ── Result Set 2 : KPI Summary ──────────────────────────
       const s = summaryRows[0];
@@ -163,7 +158,6 @@ export class AdminDashboardService {
         leftEmployee: Number(s.leftEmployee),
         openPositions: Number(s.openPositions),
       };
-      // this.logger.log(`[9] summary mapped`);
 
       // ── Result Set 3 : Department Wise Count ────────────────
       const departmentWiseCount: DepartmentCountDto[] = departmentRows.map(

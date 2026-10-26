@@ -1,8 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+import React, { useEffect, useMemo, useRef,useState,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
@@ -1286,9 +1282,8 @@ export default function EmployeePage1() {
         <button
           type="button"
           onClick={() =>
-            navigate(
-              `/${domain}/admin/enrollment/EmployeeDetails/add-employee`
-            )
+            // ✅ CHANGED: "Add Employee" now opens the Admin Center > Add Employee page
+            navigate(`/${domain}/admin/admin-center/add-employee`)
           }
           className="flex h-[27px] items-center gap-[6px] rounded-[5px] bg-[#FF6200] px-[12px] text-[11.5px] font-semibold text-white shadow-[0_2px_5px_rgba(255,98,0,0.2)] transition hover:bg-[#E55600]"
         >
