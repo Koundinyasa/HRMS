@@ -6,7 +6,6 @@ import {
   useGetCandidateApplicationsQuery,
   useGetJobOpeningMasterQuery,
   useGetAllRequisitionsForHRQuery,
-  useGetPendingRequisitionsQuery,
   useGetJobRequisitionDetailsQuery,
   useGetRecruitmentSourcesQuery,
   useSendJoiningEmailMutation,
@@ -27,14 +26,15 @@ import {
   mapLookupRows,
 } from "../components/recruitmentOperationalConfig";
 import type { WorkflowFormField } from "../components/WorkflowFieldsForm";
+import { REQUISITION_APPROVER_EMPLOYEE_ID } from "../constants/recruitment.constants";
 
 export function useRecruitmentOperationalScreen(
   view: string,
   config: WorkflowScreenConfig | undefined,
 ) {
-  const roleId = useAppSelector((state) => state.auth.roleId);
-  const isHrRole = roleId === "1" || roleId === "2";
-  const canManageRequisitionApprovals = roleId === "3";
+  const employeeId = useAppSelector((state) => state.auth.employeeId);
+  const canManageRequisitionApprovals =
+    employeeId === REQUISITION_APPROVER_EMPLOYEE_ID;
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
   const [selectedRow, setSelectedRow] = useState<WorkflowRow | null>(null);
@@ -137,25 +137,15 @@ export function useRecruitmentOperationalScreen(
     skip: !isCandidateApplicationsView,
   });
 
-  const hrRequisitionsQuery = useGetAllRequisitionsForHRQuery(undefined, {
-    skip: !isJobRequisitionView || !isHrRole,
+  const {
+    data: jobRequisitionsResponse,
+    error: jobRequisitionsQueryError,
+    isFetching: jobRequisitionsLoading,
+  } = useGetAllRequisitionsForHRQuery(undefined, {
+    skip: !isJobRequisitionView,
     refetchOnMountOrArgChange: true,
     pollingInterval: isJobRequisitionView ? 15000 : 0,
   });
-  const managerRequisitionsQuery = useGetPendingRequisitionsQuery(undefined, {
-    skip: !isJobRequisitionView || !canManageRequisitionApprovals,
-    refetchOnMountOrArgChange: true,
-    pollingInterval: isJobRequisitionView ? 15000 : 0,
-  });
-  const jobRequisitionsResponse = isHrRole
-    ? hrRequisitionsQuery.data
-    : managerRequisitionsQuery.data;
-  const jobRequisitionsQueryError = isHrRole
-    ? hrRequisitionsQuery.error
-    : managerRequisitionsQuery.error;
-  const jobRequisitionsLoading = isHrRole
-    ? hrRequisitionsQuery.isFetching
-    : managerRequisitionsQuery.isFetching;
 
   const selectedRequisitionId = Number(selectedRow?.requisitionId);
   const hasSelectedRequisitionId =
@@ -198,12 +188,6 @@ export function useRecruitmentOperationalScreen(
   const jobRequisitionsResult = useMemo(() => {
     if (jobRequisitionsResponse === undefined) return undefined;
     try {
-      if (Array.isArray(jobRequisitionsResponse)) {
-        return {
-          rows: jobRequisitionsResponse.map(mapJobRequisition),
-          error: "",
-        };
-      }
       if (
         !jobRequisitionsResponse ||
         typeof jobRequisitionsResponse !== "object" ||
@@ -418,7 +402,7 @@ export function useRecruitmentOperationalScreen(
   ) => {
     if (!canManageRequisitionApprovals) {
       setRequisitionActionError(
-        "Only an authorized hiring manager can approve or reject requisitions.",
+        "Only Mounika, the designated requisition approver, can approve or reject requisitions.",
       );
       return;
     }

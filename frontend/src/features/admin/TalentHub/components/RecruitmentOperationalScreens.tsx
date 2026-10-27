@@ -448,7 +448,7 @@ export function RecruitmentOperationalScreen({
                 )}
                 {!canManageRequisitionApprovals ? (
                   <p className="text-right text-xs text-[#78867e]">
-                    Only an authorized hiring manager can approve or reject requisitions.
+                    Only Mounika can approve or reject requisitions.
                   </p>
                 ) : (
                   <div className="flex justify-end gap-2">

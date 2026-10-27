@@ -19,6 +19,11 @@ import { RecruitmentPagination } from "./RecruitmentPagination";
 
 type ReviewDecision = "Reviewing" | "Shortlisted" | "Rejected";
 
+const SCREENING_REMARKS = {
+  APPROVE: "Resume shortlisted for the next recruitment stage.",
+  REJECT: "Candidate does not meet the required experience.",
+} as const;
+
 function candidateCode(candidate: Candidate) {
   return (
     candidate.candidateCode ||

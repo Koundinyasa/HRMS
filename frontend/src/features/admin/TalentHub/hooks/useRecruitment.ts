@@ -16,7 +16,6 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import {
   useGetJobOpeningsQuery,
   useGetAllRequisitionsForHRQuery,
-  useGetPendingRequisitionsQuery,
   useGetRecruitmentDashboardQuery,
   useGetCandidateApplicationsQuery,
   useCreateRequisitionMutation,
@@ -463,9 +462,9 @@ function verifyRequisitionStatus(
 // ======================================================
 
 export const useRecruitment = () => {
-  const roleId = useAppSelector((state) => state.auth.roleId);
-  const isHrRole = roleId === "1" || roleId === "2";
-  const canManageRequisitionApprovals = roleId === "3";
+  const employeeId = useAppSelector((state) => state.auth.employeeId);
+  const canManageRequisitionApprovals =
+    employeeId === REQUISITION_APPROVER_EMPLOYEE_ID;
 
   // ==================================================
   // LOCAL UI STATE
@@ -506,28 +505,15 @@ export const useRecruitment = () => {
   // PENDING REQUISITIONS (APPROVALS)
   // ==================================================
 
-  const hrRequisitionsQuery = useGetAllRequisitionsForHRQuery(undefined, {
-    skip: !isHrRole,
+  const {
+    data: requisitionsResponse,
+    error: requisitionsQueryError,
+    isFetching: requisitionsFetching,
+    refetch: refetchRequisitions,
+  } = useGetAllRequisitionsForHRQuery(undefined, {
     refetchOnMountOrArgChange: true,
     pollingInterval: activeTab === "approvals" ? 15000 : 0,
   });
-  const managerRequisitionsQuery = useGetPendingRequisitionsQuery(undefined, {
-    skip: !canManageRequisitionApprovals,
-    refetchOnMountOrArgChange: true,
-    pollingInterval: activeTab === "approvals" ? 15000 : 0,
-  });
-  const requisitionsResponse = isHrRole
-    ? hrRequisitionsQuery.data
-    : managerRequisitionsQuery.data;
-  const requisitionsQueryError = isHrRole
-    ? hrRequisitionsQuery.error
-    : managerRequisitionsQuery.error;
-  const requisitionsFetching = isHrRole
-    ? hrRequisitionsQuery.isFetching
-    : managerRequisitionsQuery.isFetching;
-  const refetchRequisitions = isHrRole
-    ? hrRequisitionsQuery.refetch
-    : managerRequisitionsQuery.refetch;
 
   // ==================================================
   // DASHBOARD (PIPELINE CANDIDATES)
@@ -602,14 +588,6 @@ export const useRecruitment = () => {
         ? undefined
         : safeMap(
             () => {
-              if (Array.isArray(requisitionsResponse)) {
-                return toRows(requisitionsResponse)
-                  .map(mapPendingRequisition)
-                  .filter(
-                    (approval): approval is Approval => approval !== null,
-                  );
-              }
-
               if (
                 !requisitionsResponse ||
                 typeof requisitionsResponse !== "object" ||
@@ -708,7 +686,10 @@ export const useRecruitment = () => {
     [applicationsResponse]
   );
 
-  const openings: JobOpening[] = openingsResult?.value ?? EMPTY_JOB_OPENINGS;
+  const openings: JobOpening[] = useMemo(
+    () => openingsResult?.value ?? [],
+    [openingsResult?.value]
+  );
   const approvals: Approval[] = approvalsResult?.value ?? [];
 
   // Dashboard candidates + resume urls from the applications list
@@ -724,15 +705,11 @@ export const useRecruitment = () => {
     }));
   }, [dashboardResult, resumesResult]);
 
-  const candidates = useMemo(
-    () => (serverCandidates ?? INITIAL_CANDIDATES).map((candidate) => {
-      const stageOverride = candidateStageOverrides[candidate.id];
-      return stageOverride?.sourceStage === candidate.stage
-        ? { ...candidate, ...stageOverride }
-        : candidate;
-    }),
-    [serverCandidates, candidateStageOverrides],
-  );
+  // Keep candidates editable locally (stage changes), re-synced on every fetch
+  useEffect(() => {
+    if (!serverCandidates) return;
+    queueMicrotask(() => setCandidates(serverCandidates));
+  }, [serverCandidates]);
 
   // ==================================================
   // LOADING / ERROR
@@ -824,7 +801,7 @@ export const useRecruitment = () => {
 
   const approveOpening = async (approvalId: number) => {
     if (!canManageRequisitionApprovals) {
-      toast.error("Only an authorized hiring manager can approve requisitions.");
+      toast.error("Only the designated HR approver can approve requisitions.");
       return;
     }
 
@@ -859,7 +836,7 @@ export const useRecruitment = () => {
 
   const sendBackOpening = async (approvalId: number) => {
     if (!canManageRequisitionApprovals) {
-      toast.error("Only an authorized hiring manager can reject requisitions.");
+      toast.error("Only the designated HR approver can reject requisitions.");
       return;
     }
 
@@ -908,7 +885,6 @@ export const useRecruitment = () => {
 
     const {
       title,
-      jobDescription,
       branchId,
       designationId,
       vacancies,
@@ -920,7 +896,6 @@ export const useRecruitment = () => {
 
     const request: CreateRequisitionRequest = {
       jobTitle: title,
-      jobDescription,
       branchId,
       designationId,
       vacancies,

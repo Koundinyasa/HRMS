@@ -122,7 +122,7 @@ export default function RecruitmentPage() {
   }, [routeTab, setActiveTab]);
 
   return (
-    <div className="recruitment-font-scale -m-4 min-h-full min-w-0 bg-[#f5f7f5] text-[#202a26] sm:-m-6">
+    <div className="-m-4 min-h-full min-w-0 bg-[#f5f7f5] text-[#202a26] sm:-m-6">
       {!isOperationalWorkflowView && (
         <RecruitmentHeader
           pageTitle={selectedPageTitle}

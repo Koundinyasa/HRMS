@@ -43,12 +43,13 @@
 
 import { useState } from "react";
 import { Outlet, useLocation, useParams } from "react-router-dom";
-import { Menu } from "lucide-react";
+
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import SubSidebar from "./subSidebar";
 import { SUB_NAV_REGISTRY } from "./subNav.registry";
-import { SidebarProvider, useSidebar } from "./SidebarContext";
+import { SidebarProvider } from "./SidebarContext";
+
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
 
 export default function AdminLayout() {
@@ -62,10 +63,7 @@ export default function AdminLayout() {
 function AdminLayoutContent() {
   const [chatbotOpen, setChatbotOpen] = useState(false);
 
-function AdminLayoutContent() {
-  const [chatbotOpen, setChatbotOpen] = useState(false);
-  const { toggleSubSidebar } = useSidebar();
-  const { domain } = useParams();
+  const { domain } = useParams<{ domain: string }>();
   const location = useLocation();
 
   const afterAdmin =
@@ -76,8 +74,8 @@ function AdminLayoutContent() {
   const subNavItems = SUB_NAV_REGISTRY[section];
 
   return (
-    <>
-      {/* Full viewport shell — nothing on this level scrolls */}
+    <SidebarProvider>
+      {/* Full viewport shell */}
       <div className="flex h-screen flex-col overflow-hidden bg-[#F4F8FE]">
         <Navbar />
 

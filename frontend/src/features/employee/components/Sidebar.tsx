@@ -28,12 +28,14 @@
 //   dashboard: "#0F172A", // black
 // };
 
-// const DEFAULT_ICON_COLOR = "#0F172A"; // black by default
 
+ 
+// const DEFAULT_ICON_COLOR = "#0F172A"; // black by default
+ 
 // /* Detect which module the current page belongs to */
 // const getActiveModuleKey = (pathname: string): string | null => {
 //   const path = pathname.toLowerCase();
-
+ 
 //   if (path.includes("/profile")) return "profile";
 //   if (path.includes("/leave")) return "leave";
 //   if (path.includes("/asset")) return "asset"; // matches /asset and /assets
@@ -42,7 +44,7 @@
 //   if (path.includes("/separation")) return "separation";
 //   if (path.includes("/learning") || path.includes("/lnd")) return "learning";
 //   if (path.includes("/dashboard")) return "dashboard";
-
+ 
 //   return null;
 // };
 
@@ -72,6 +74,7 @@
 //   const iconColor = activeModule
 //     ? MODULE_COLORS[activeModule] || DEFAULT_ICON_COLOR
 //     : DEFAULT_ICON_COLOR;
+
 
 //   const handleNavigation = (child: MenuItem) => {
 //     if (!child.routeUrl) return;
@@ -119,11 +122,11 @@
 //         className={`
 //           z-50 overflow-y-auto border-r border-[#B8E0F5]
 //           transition-all duration-300 ease-in-out
-
+ 
 //           /* Desktop */
 //           lg:relative lg:h-[calc(100vh-64px)] lg:translate-x-0
 //           ${isSidebarOpen ? "lg:w-72" : "lg:w-20"}
-
+ 
 //           /* Mobile - slide in/out */
 //           max-lg:fixed max-lg:left-0 max-lg:top-16
 //           max-lg:h-[calc(100vh-64px)] max-lg:w-[280px] max-lg:max-w-[80vw]
@@ -132,7 +135,7 @@
 //         `}
 //         // style={{ backgroundColor: "var(--primary-color)" }}
 
-//         style={{ backgroundColor: "#E8F6FF",
+//         style={{ backgroundColor: "#E8F6FF", 
 //           borderRightColor: iconColor,
 //         }}
 //       >
@@ -257,11 +260,11 @@ import {
 } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import type { MenuItem } from "../dashboard/types/dashboard.types";
-
+ 
 // ======================================================
 // MODULE COLORS
 // ======================================================
-
+ 
 const MODULE_COLORS: Record<string, string> = {
   profile: "#2563EB",
   leave: "#8B5CF6",
@@ -273,13 +276,13 @@ const MODULE_COLORS: Record<string, string> = {
   review: "#994d00",
   reports: "#26cab7",
 };
-
+ 
 const DEFAULT_ICON_COLOR = "#0F172A";
-
+ 
 // ======================================================
 // FIND ACTIVE MODULE
 // ======================================================
-
+ 
 const getActiveModuleKey = (pathname: string): string | null => {
   const path = pathname.toLowerCase();
 
@@ -298,11 +301,11 @@ const getActiveModuleKey = (pathname: string): string | null => {
 
   return null;
 };
-
+ 
 // ======================================================
 // MENU ICONS
 // ======================================================
-
+ 
 const menuIcons: Record<string, React.ReactNode> = {
   Dashboard: <LayoutDashboard size={20} strokeWidth={2.2} />,
   "My Profile": <UserRound size={20} strokeWidth={2.2} />,
@@ -312,8 +315,8 @@ const menuIcons: Record<string, React.ReactNode> = {
   "Learning & Development": <GraduationCap size={20} strokeWidth={2.2} />,
   Separation: <LogOut size={20} strokeWidth={2.2} />,
   Review: <ClipboardCheck size={20} strokeWidth={2.2} />,
-  Reports: <ChartNoAxesColumnIncreasing size={20} strokeWidth={2.2} />,
-  Recruitment: <ClipboardCheck size={20} strokeWidth={2.2} />,
+  Reports: (<ChartNoAxesColumnIncreasing size={20} strokeWidth={2.2}/>
+  ),
 };
 
 const getMenuIcon = (menuName: string) => {
@@ -341,13 +344,15 @@ const getMenuIcon = (menuName: string) => {
     return <ClipboardCheck size={20} strokeWidth={2.2} />;
   }
 
-  return menuIcons[menuName] || <UserRound size={20} strokeWidth={2.2} />;
+  return menuIcons[menuName] || (
+    <UserRound size={20} strokeWidth={2.2} />
+  );
 };
-
+ 
 // ======================================================
 // SIDEBAR
 // ======================================================
-
+ 
 export default function Sidebar({
   isSidebarOpen,
   setIsSidebarOpen,
@@ -359,76 +364,37 @@ export default function Sidebar({
   const [expandedMenus, setExpandedMenus] = useState<
     Record<number, number | null>
   >({});
-
+ 
   // ====================================================
   // GET MENU DATA FROM BACKEND
   // ====================================================
-
+ 
   const menuItems = menuData?.data?.[0]?.children || [];
-  const reviewMenuItems = menuItems.some(
-    (item) => item.menuName.trim().toLowerCase() === "review"
-  )
-    ? menuItems.map((item) => {
-        if (item.menuName.trim().toLowerCase() !== "review") return item;
-        const children = item.children ?? [];
-        if (
-          children.some(
-            (child) => child.menuName.trim().toLowerCase() === "recruitment"
-          )
-        ) {
-          return item;
-        }
-        return {
-          ...item,
-          children: [
-            ...children,
-            {
-              menuId: -1,
-              menuName: "Recruitment",
-              routeUrl: "/Employee/review/recruitment",
-            },
-          ],
-        };
-      })
-    : [
-        ...menuItems,
-        {
-          menuId: -1,
-          menuName: "Review",
-          children: [
-            {
-              menuId: -2,
-              menuName: "Recruitment",
-              routeUrl: "/Employee/review/recruitment",
-            },
-          ],
-        },
-      ];
-
+ 
   // ====================================================
   // ACTIVE MODULE COLOR
   // ====================================================
-
+ 
   const activeModule = getActiveModuleKey(location.pathname);
   const iconColor = activeModule
     ? MODULE_COLORS[activeModule] || DEFAULT_ICON_COLOR
     : DEFAULT_ICON_COLOR;
-
+ 
   // ====================================================
   // TOGGLE MENU
   // ====================================================
-
+ 
   const toggleMenu = (parentId: number, menuId: number) => {
     setExpandedMenus((prev) => ({
       ...prev,
       [parentId]: prev[parentId] === menuId ? null : menuId,
     }));
   };
-
+ 
   // ====================================================
   // BUILD ROUTE
   // ====================================================
-
+ 
   const getRoute = (menu: MenuItem) => {
     if (menu.menuName === "Applied Leave") {
       return `/${domain}/employee/review/requisition`;
@@ -436,74 +402,74 @@ export default function Sidebar({
 
     let route =
       menu.routeUrl?.replace(/^\/Employee/i, `/${domain}/employee`) ?? "";
-
+ 
     // ==================================================
     // PROFILE DOCUMENTS FIX
     // ==================================================
-
+ 
     if (menu.menuName === "Uploaded Documents") {
       route = `/${domain}/employee/profile/documents`;
     }
-
+ 
     return route;
   };
-
+ 
   // ====================================================
   // NAVIGATE TO MENU
   // ====================================================
-
+ 
   const handleNavigation = (menu: MenuItem) => {
     const route = getRoute(menu);
     if (!route) return;
     navigate(route);
-
+ 
     // Close mobile sidebar
     setIsSidebarOpen(false);
   };
-
+ 
   // ====================================================
   // RENDER MENU RECURSIVELY
   // ====================================================
-
+ 
   const renderMenu = (
     item: MenuItem,
     level = 0,
-    parentId = 0
+    parentId = 0,
   ): React.ReactNode => {
     const hasChildren = !!item.children && item.children.length > 0;
     const isExpanded = expandedMenus[parentId] === item.menuId;
-
+ 
     return (
       <div key={item.menuId} className="w-full">
         {/* =================================================
             MAIN MENU / CHILD MENU
            ================================================= */}
-
+ 
         <Button
           type="button"
           variant="ghost"
           onClick={() => {
             if (item.menuName === "Dashboard") {
               navigate(`/${domain}/employee/dashboard`);
-
+ 
               setIsSidebarOpen(false);
-
+ 
               return;
             }
             if (hasChildren) {
               if (!isSidebarOpen) {
                 const firstChild = item.children?.[0];
-
+ 
                 if (firstChild) {
                   const route = getRoute(firstChild);
-
+ 
                   if (route) {
                     navigate(route);
-
+ 
                     setIsSidebarOpen(false);
                   }
                 }
-
+ 
                 return;
               }
               toggleMenu(parentId, item.menuId);
@@ -546,9 +512,9 @@ export default function Sidebar({
             >
               {getMenuIcon(item.menuName)}
             </span>
-
+ 
             {/* Menu name */}
-
+ 
             {isSidebarOpen && (
               <span
                 className="
@@ -560,11 +526,11 @@ export default function Sidebar({
               </span>
             )}
           </div>
-
+ 
           {/* =================================================
               ARROW
              ================================================= */}
-
+ 
           {isSidebarOpen &&
             hasChildren &&
             (isExpanded ? (
@@ -591,32 +557,32 @@ export default function Sidebar({
               />
             ))}
         </Button>
-
+ 
         {/* =================================================
             CHILDREN
            ================================================= */}
-
+ 
         {isSidebarOpen && isExpanded && hasChildren && (
           <div className="w-full">
             {item.children?.map((child: MenuItem) =>
-              renderMenu(child, level + 1, item.menuId)
+              renderMenu(child, level + 1, item.menuId),
             )}
           </div>
         )}
       </div>
     );
   };
-
+ 
   // ======================================================
   // RETURN
   // ======================================================
-
+ 
   return (
     <>
       {/* ==================================================
           MOBILE BACKDROP
          ================================================== */}
-
+ 
       {isSidebarOpen && (
         <div
           className="
@@ -629,11 +595,11 @@ export default function Sidebar({
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
-
+ 
       {/* ==================================================
           SIDEBAR
          ================================================== */}
-
+ 
       <aside
         className={`
           z-50
@@ -665,14 +631,37 @@ export default function Sidebar({
         `}
         style={{
           backgroundColor: "#E8F6FF",
-
+ 
           borderRightColor: iconColor,
         }}
       >
         <nav className="py-4">
-          {reviewMenuItems.map((item: MenuItem) => renderMenu(item))}
+          {menuItems.map((item: MenuItem) => renderMenu(item))}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              navigate(`/${domain}/employee/interviewer-feedback`);
+              setIsSidebarOpen(false);
+            }}
+            aria-current={
+              location.pathname.endsWith("/employee/interviewer-feedback")
+                ? "page"
+                : undefined
+            }
+            className="flex h-auto w-full items-center justify-start gap-3 rounded-none px-4 py-3 text-[#1E3A5F] hover:bg-white/70 hover:text-[#1E3A5F]"
+          >
+            <MessageSquareText size={20} strokeWidth={2.2} />
+            {isSidebarOpen && (
+              <span className="truncate whitespace-nowrap">
+                Interviewer Feedback
+              </span>
+            )}
+          </Button>
         </nav>
       </aside>
     </>
   );
 }
+ 
+ 

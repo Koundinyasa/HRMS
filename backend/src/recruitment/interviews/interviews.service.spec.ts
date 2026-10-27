@@ -89,57 +89,22 @@ describe('InterviewsService', () => {
     });
   });
 
-  it('gets the interviewer feedback worklist from USP_GetMyInterviews', async () => {
-    const pastDate = new Date();
-    pastDate.setDate(pastDate.getDate() - 1);
-    pastDate.setHours(0, 0, 0, 0);
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 1);
-    const interviewExecute = jest.fn().mockResolvedValue({
+  it('builds the interviewer feedback worklist from existing scheduled interview data', async () => {
+    const interviewQuery = jest.fn().mockResolvedValue({
       recordset: [
         {
-          InterviewID: 55,
-          CandidateID: 'CAND-101',
-          CandidateName: 'Test candidate',
-          JobTitle: 'Engineer',
-          Round: 1,
-          InterviewType: 'Technical',
-          ScheduledDate: pastDate,
-          ScheduledTime: '10:30 AM',
-          InterviewerEmployeeID: '294676',
-          InterviewStatus: 'Scheduled',
-          Rating: null,
-          Feedback: null,
-        },
-        {
-          InterviewID: 56,
-          CandidateID: 'CAND-102',
-          CandidateName: 'Future candidate',
-          JobTitle: 'Engineer',
-          ScheduledDate: futureDate,
-          ScheduledTime: '10:30 AM',
-          Rating: null,
-          Feedback: null,
-        },
-        {
-          InterviewID: 57,
-          CandidateID: 'CAND-103',
-          CandidateName: 'Rated candidate',
-          JobTitle: 'Engineer',
-          ScheduledDate: pastDate,
-          ScheduledTime: '10:30 AM',
-          Rating: 8,
-          Feedback: null,
-        },
-        {
-          InterviewID: 58,
-          CandidateID: 'CAND-104',
-          CandidateName: 'Submitted candidate',
-          JobTitle: 'Engineer',
-          ScheduledDate: pastDate,
-          ScheduledTime: '10:30 AM',
-          Rating: null,
-          Feedback: 'Already submitted',
+          id: 55,
+          code: 'INT-55',
+          applicationId: 101,
+          applicationCode: 'APP-101',
+          candidateCode: 'CAND-101',
+          candidateName: 'Test candidate',
+          candidateEmail: 'candidate@example.com',
+          position: 'Engineer',
+          roundName: 'Technical',
+          scheduledAt: new Date('2026-10-16T10:30:00'),
+          status: 'scheduled',
+          interviewerName: 'Test interviewer',
         },
       ],
     });
@@ -148,7 +113,7 @@ describe('InterviewsService', () => {
     });
     const interviewRequest = {
       input: jest.fn().mockReturnThis(),
-      execute: interviewExecute,
+      query: interviewQuery,
     };
     const categoryRequest = { query: categoryQuery };
     const requestMock = jest
@@ -165,54 +130,21 @@ describe('InterviewsService', () => {
       interviews: [
         {
           id: 55,
-          candidateCode: 'CAND-101',
+          applicationId: 101,
           candidateName: 'Test candidate',
-          position: 'Engineer',
-          roundName: '1 · Technical',
-          status: 'completed',
-          interviewerName: '294676',
-          feedbackSubmitted: false,
-          canSubmitFeedback: true,
-          feedbackRating: null,
-          feedbackText: null,
-        },
-        {
-          id: 56,
-          candidateCode: 'CAND-102',
-          candidateName: 'Future candidate',
-          status: 'scheduled',
-          feedbackSubmitted: false,
-          canSubmitFeedback: false,
-        },
-        {
-          id: 57,
-          candidateCode: 'CAND-103',
-          candidateName: 'Rated candidate',
-          status: 'completed',
-          feedbackSubmitted: true,
-          canSubmitFeedback: false,
-          feedbackRating: 8,
-          feedbackText: null,
-        },
-        {
-          id: 58,
-          candidateCode: 'CAND-104',
-          candidateName: 'Submitted candidate',
-          status: 'completed',
-          feedbackSubmitted: true,
-          canSubmitFeedback: false,
-          feedbackRating: null,
-          feedbackText: 'Already submitted',
+          interviewerName: 'Test interviewer',
         },
       ],
       categories: [{ categoryId: 1, categoryName: 'Technical Knowledge' }],
     });
     expect(interviewRequest.input).toHaveBeenCalledWith(
-      'EmployeeID',
+      'InterviewerID',
       expect.anything(),
       '294676',
     );
-    expect(interviewExecute).toHaveBeenCalledWith('USP_GetMyInterviews');
+    expect(interviewQuery).toHaveBeenCalledWith(
+      expect.stringContaining('FROM dbo.Interviews I'),
+    );
     expect(categoryQuery).toHaveBeenCalledWith(
       expect.stringContaining('FROM dbo.Mst_InterviewFeedbackCategories'),
     );

@@ -172,11 +172,10 @@ export function ResumeUploadScreen() {
       )
     : (lookups?.error ?? "");
 
-  const defaultSource =
-    sources.find(
-      (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
-    )?.value ?? "";
-  const selectedSource = source || defaultSource;
+  const defaultSource = sources.find(
+    (item) => item.value.toLowerCase() === DEFAULT_SOURCE.toLowerCase(),
+  )?.value;
+  const selectedSource = source || defaultSource || "";
 
   const isEmployeeReferral =
     selectedSource.toLowerCase() === DEFAULT_SOURCE.toLowerCase();
