@@ -1,412 +1,16 @@
-// import { useEffect } from "react";
-// import { useEditor, EditorContent } from "@tiptap/react";
-// import StarterKit from "@tiptap/starter-kit";
-// import Underline from "@tiptap/extension-underline";
-// import TextAlign from "@tiptap/extension-text-align";
-// import { Mark, mergeAttributes } from "@tiptap/core";
-
-// import {
-//   Bold,
-//   Italic,
-//   Underline as UnderlineIcon,
-//   AlignLeft,
-//   AlignCenter,
-//   AlignRight,
-//   List,
-//   ListOrdered,
-//   Wand2,
-//   ChevronDown,
-//   AlertTriangle,
-//   Info,
-//   Save,
-// } from "lucide-react";
-
-// import { Card } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-
-// import { useEmailSettings } from "./hooks/useEmailSettings";
-
-// // Custom font-size mark — built on @tiptap/core only, no extra package needed
-// const FontSize = Mark.create({
-//   name: "fontSize",
-//   addAttributes() {
-//     return {
-//       size: {
-//         default: null,
-//         parseHTML: (element: HTMLElement) => element.style.fontSize || null,
-//         renderHTML: (attributes: { size?: string }) => {
-//           if (!attributes.size) return {};
-//           return { style: `font-size: ${attributes.size}` };
-//         },
-//       },
-//     };
-//   },
-//   parseHTML() {
-//     return [{ style: "font-size" }];
-//   },
-//   renderHTML({ HTMLAttributes }: any) {
-//     return ["span", mergeAttributes(HTMLAttributes), 0];
-//   },
-//   addCommands() {
-//     return {
-//       setFontSize:
-//         (size: string) =>
-//         ({ chain }: any) =>
-//           chain().setMark("fontSize", { size }).run(),
-//       unsetFontSize:
-//         () =>
-//         ({ chain }: any) =>
-//           chain().unsetMark("fontSize").run(),
-//     } as any;
-//   },
-// });
-
-// const variablesList = [
-//   { label: "User Name", value: "{username}" },
-//   { label: "Employee Name", value: "{empname}" },
-//   { label: "Company Name", value: "{companyname}" },
-//   { label: "HR Name", value: "{hrname}" },
-//   { label: "Designation", value: "{designation}" },
-//   { label: "Link", value: "{link}" },
-//   { label: "Logo", value: "{logo}" },
-//   { label: "Month Year", value: "{monthyear}" },
-//   { label: "Password", value: "{password}" },
-//   { label: "Login User", value: "{loginuser}" },
-//   { label: "Leave Date", value: "{leavedate}" },
-//   { label: "From Date", value: "{fromdate}" },
-//   { label: "To Date", value: "{todate}" },
-//   { label: "Reason", value: "{reason}" },
-//   { label: "Leave", value: "{leave}" },
-//   { label: "Approver Name", value: "{approvername}" },
-//   { label: "Portal Link", value: "{portallink}" },
-//   { label: "Emp Leave Details", value: "{empleavedetails}" },
-// ];
-
-// export default function EmailSettings() {
-//   const {
-//     emailTypes,
-//     type,
-//     setType,
-//     subject,
-//     setSubject,
-//     body,
-//     setBody,
-//     isLoading,
-//     isSaving,
-//     handleSave,
-//   } = useEmailSettings();
-
-//   const editor = useEditor({
-//     extensions: [
-//       StarterKit,
-//       Underline,
-//       FontSize,
-//       TextAlign.configure({
-//         types: ["heading", "paragraph"],
-//       }),
-//     ],
-//     content: body,
-//     onUpdate: ({ editor }) => {
-//       setBody(editor.getHTML());
-//     },
-//   });
-
-//   // Sync content from hook → editor
-//   useEffect(() => {
-//     if (editor && body && body !== editor.getHTML()) {
-//       editor.commands.setContent(body);
-//     }
-//   }, [body, editor]);
-
-//   // Insert variable tag into TipTap editor
-//   const handleInsertVariable = (varValue: string) => {
-//     if (!editor) return;
-//     editor.chain().focus().insertContent(varValue).run();
-//   };
-
-//   if (isLoading) {
-//     return (
-//       <div className="p-6 text-xs text-slate-500">Loading email settings…</div>
-//     );
-//   }
-
-//   return (
-//     <div className="w-full space-y-5 bg-[#F5F6FA] text-slate-700">
-//       <div className="grid grid-cols-12 gap-6">
-//         {/* LEFT PANEL */}
-//         <Card className="col-span-4 rounded-2xl border-none bg-white p-5 shadow-sm space-y-4">
-//           {/* Email Type */}
-//           <div className="space-y-1.5">
-//             <Label className="text-xs font-medium text-slate-700">
-//               Type <span className="text-red-500">*</span>
-//             </Label>
-//             <div className="relative">
-//               <select
-//                 value={type}
-//                 onChange={(e) => setType(e.target.value)}
-//                 className="w-full h-10 appearance-none rounded-xl border border-slate-200 bg-white px-3 pr-8 text-xs text-slate-800 outline-none focus:border-violet-500"
-//               >
-//                 {emailTypes && emailTypes.length > 0 ? (
-//                   emailTypes.map((et) => (
-//                     <option key={et.id} value={et.name}>
-//                       {et.name}
-//                     </option>
-//                   ))
-//                 ) : (
-//                   <>
-//                     <option value="Pay Slip">Pay Slip</option>
-//                     <option value="Offer Letter">Offer Letter</option>
-//                     <option value="Appointment Letter">
-//                       Appointment Letter
-//                     </option>
-//                   </>
-//                 )}
-//               </select>
-//               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-violet-600 pointer-events-none" />
-//             </div>
-//             {type !== "Pay Slip" && (
-//               <p className="mt-1 text-[11px] text-amber-600">
-//                 Saving isn't available yet for this email type.
-//               </p>
-//             )}
-//           </div>
-
-//           {/* Email Subject */}
-//           <div className="space-y-1.5">
-//             <Label className="text-xs font-medium text-slate-700">
-//               Subject <span className="text-red-500">*</span>
-//             </Label>
-//             <Input
-//               value={subject}
-//               onChange={(e) => setSubject(e.target.value)}
-//               className="h-10 border-slate-200 text-xs rounded-xl focus-visible:ring-violet-500"
-//             />
-//           </div>
-
-//           {/* Variables Container */}
-//           <div className="rounded-xl bg-[#F0EEFF] p-4 space-y-2.5 max-h-[480px] overflow-y-auto">
-//             {variablesList.map((item, idx) => (
-//               <div
-//                 key={idx}
-//                 onClick={() => handleInsertVariable(item.value)}
-//                 className="text-xs text-slate-700 font-medium cursor-pointer hover:text-violet-700 transition-colors"
-//               >
-//                 {item.label} :{" "}
-//                 <span className="text-slate-600">{item.value}</span>
-//               </div>
-//             ))}
-//           </div>
-//         </Card>
-//         {/* RIGHT PANEL */}
-//         <div className="col-span-8 space-y-4">
-//           <Card className="rounded-2xl border-none bg-white p-6 shadow-sm space-y-4">
-//             {/* Header / Action */}
-//             <div className="flex items-center justify-between">
-//               <span className="text-xs font-bold text-violet-600 tracking-wide uppercase">
-//                 MESSAGE 1
-//               </span>
-//               <Button
-//                 type="button"
-//                 className="h-8 rounded-lg bg-[#EBE8FC] px-3 text-xs font-semibold text-[#7C5CFC] hover:bg-violet-100 shadow-none border-none flex items-center gap-1.5"
-//               >
-//                 <Wand2 className="h-3.5 w-3.5" />
-//                 Generate
-//               </Button>
-//             </div>
-
-//             {/* Editor Box */}
-//             <div className="rounded-xl border border-slate-200 overflow-hidden">
-//               {/* Toolbar */}
-//               <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50/50 p-2 text-slate-600 text-xs">
-//                 <select className="h-7 rounded border border-slate-200 bg-white px-2 text-xs text-slate-600 outline-none">
-//                   <option>Arial</option>
-//                   <option>Calibri</option>
-//                   <option>Times New Roman</option>
-//                 </select>
-//                 <select
-//                   onChange={(e) =>
-//                     editor?.chain().focus().setFontSize(e.target.value).run()
-//                   }
-//                   className="h-7 rounded border border-slate-200 bg-white px-2 text-xs text-slate-600 outline-none"
-//                   defaultValue="16px"
-//                 >
-//                   <option value="12px">Size 1</option>
-//                   <option value="14px">Size 2</option>
-//                   <option value="16px">Size 3</option>
-//                   <option value="18px">Size 4</option>
-//                   <option value="24px">Size 5</option>
-//                   <option value="32px">Size 6</option>
-//                 </select>
-//                 <select
-//                   onChange={(e) => {
-//                     const value = e.target.value;
-//                     if (value === "normal") {
-//                       editor?.chain().focus().setParagraph().run();
-//                     } else {
-//                       const level = Number(value) as 1 | 2 | 3;
-//                       editor?.chain().focus().toggleHeading({ level }).run();
-//                     }
-//                   }}
-//                   className="h-7 rounded border border-slate-200 bg-white px-2 text-xs text-slate-600 outline-none"
-//                   defaultValue="normal"
-//                 >
-//                   <option value="normal">Normal</option>
-//                   <option value="1">Heading 1</option>
-//                   <option value="2">Heading 2</option>
-//                   <option value="3">Heading 3</option>
-//                 </select>
-
-//                 <div className="h-4 w-[1px] bg-slate-300 mx-1" />
-
-//                 {/* Styling Buttons */}
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().toggleBold().run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive("bold") ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <Bold className="h-3.5 w-3.5" />
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().toggleItalic().run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive("italic") ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <Italic className="h-3.5 w-3.5" />
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().toggleUnderline().run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive("underline") ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <UnderlineIcon className="h-3.5 w-3.5" />
-//                 </button>
-
-//                 <div className="h-4 w-[1px] bg-slate-300 mx-1" />
-//                 {/* Alignments */}
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().setTextAlign("left").run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive({ textAlign: "left" }) ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <AlignLeft className="h-3.5 w-3.5" />
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().setTextAlign("center").run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive({ textAlign: "center" }) ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <AlignCenter className="h-3.5 w-3.5" />
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().setTextAlign("right").run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive({ textAlign: "right" }) ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <AlignRight className="h-3.5 w-3.5" />
-//                 </button>
-
-//                 <div className="h-4 w-[1px] bg-slate-300 mx-1" />
-//                 {/* Lists */}
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().toggleBulletList().run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive("bulletList") ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <List className="h-3.5 w-3.5" />
-//                 </button>
-//                 <button
-//                   type="button"
-//                   onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-//                   className={`p-1.5 rounded hover:bg-slate-200 ${
-//                     editor?.isActive("orderedList") ? "bg-slate-200 text-violet-700" : ""
-//                   }`}
-//                 >
-//                   <ListOrdered className="h-3.5 w-3.5" />
-//                 </button>
-//               </div>
-
-//               {/* TipTap Editor Area */}
-//               <div className="min-h-[340px] p-5 text-xs leading-relaxed text-slate-700 outline-none">
-//                 <EditorContent
-//                   editor={editor}
-//                   className="prose max-w-none focus:outline-none min-h-[300px]"
-//                 />
-//               </div>
-//             </div>
-//           </Card>
-
-//           {/* Warning Banner */}
-//           <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50/60 p-3.5 text-xs text-red-600">
-//             <AlertTriangle className="h-4 w-4 shrink-0 text-red-500" />
-//             <span>
-//               Please do not modify the variables (e.g. <strong>{"{username}"}</strong>) or insert extra spaces between the lines.
-//             </span>
-//           </div>
-
-//           {/* Info Banner */}
-//           <div className="flex items-center gap-2.5 rounded-xl border border-violet-100 bg-violet-50/60 p-3.5 text-xs text-slate-600">
-//             <Info className="h-4 w-4 shrink-0 text-violet-500" />
-//             <span>
-//               Click the security icon to enable password protection for the Employee Payslip.
-//             </span>
-//           </div>
-
-//           {/* Action Buttons */}
-//           <div className="flex justify-end gap-3 pt-2">
-//             <Button
-//               type="button"
-//               onClick={handleSave}
-//               disabled={isSaving || type !== "Pay Slip"}
-//               className="h-10 rounded-xl bg-[#7C5CFC] px-5 text-xs font-semibold text-white hover:bg-violet-700 shadow-sm flex items-center gap-2"
-//             >
-//               <Save className="h-4 w-4" />
-//               {isSaving ? "Saving..." : "Save Changes"}
-//             </Button>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import { Mark, mergeAttributes, type CommandProps } from "@tiptap/core";
+import { Mark, mergeAttributes } from "@tiptap/core";
 
 import {
   Bold,
@@ -421,26 +25,241 @@ import {
   AlertTriangle,
   Info,
   Save,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StyledSelect } from "@/components/ui/select";
 
 import { useEmailSettings } from "./hooks/useEmailSettings";
 
-declare module "@tiptap/core" {
-  interface Commands<ReturnType> {
-    fontSize: {
-      setFontSize: (size: string) => ReturnType;
-      unsetFontSize: () => ReturnType;
+/**
+ * Compact, fully responsive dropdown (same props as StyledSelect: value / onValueChange / options).
+ * - Shows 4 rows at a time and scrolls for the rest (e.g. days 1-31).
+ * - The list is rendered in a portal with fixed positioning, so no card / editor box can clip it.
+ * - Opens under the field, flips upward when there is no room, and never leaves the screen.
+ * className is applied to the wrapper (height / width overrides).
+ */
+const SELECT_ITEM_HEIGHT = 40;
+const SELECT_VISIBLE_ROWS = 4;
+
+function ResponsiveSelect({
+  value,
+  onValueChange,
+  options,
+  className = "",
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  options: string[];
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [pos, setPos] = useState<{
+    left: number;
+    width: number;
+    top?: number;
+    bottom?: number;
+    maxHeight: number;
+  } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const place = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const wanted =
+      SELECT_ITEM_HEIGHT * Math.min(options.length, SELECT_VISIBLE_ROWS) + 10;
+    const spaceBelow = vh - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+    const openUp = spaceBelow < wanted && spaceAbove > spaceBelow;
+    const width = Math.min(Math.max(rect.width, 140), vw - 16);
+    const left = Math.max(8, Math.min(rect.left, vw - width - 8));
+    const room = openUp ? spaceAbove : spaceBelow;
+    setPos({
+      left,
+      width,
+      maxHeight: Math.max(Math.min(wanted, room), SELECT_ITEM_HEIGHT + 10),
+      ...(openUp
+        ? { bottom: vh - rect.top + 4 }
+        : { top: rect.bottom + 4 }),
+    });
+  }, [options.length]);
+
+  const openList = () => {
+    const idx = options.indexOf(value);
+    setActiveIndex(idx >= 0 ? idx : 0);
+    place();
+    setOpen(true);
+  };
+
+  const choose = (option: string) => {
+    onValueChange(option);
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  // keep the list attached to the field, close on outside click / page scroll
+  useEffect(() => {
+    if (!open) return;
+    const onResize = () => place();
+    const onScroll = (e: Event) => {
+      if (listRef.current && listRef.current.contains(e.target as Node)) return;
+      setOpen(false);
     };
-  }
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (listRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll, true);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll, true);
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+    };
+  }, [open, place]);
+
+  // bring the highlighted row into view (also on first open)
+  useEffect(() => {
+    if (!open || !pos || !listRef.current) return;
+    const top = activeIndex * SELECT_ITEM_HEIGHT;
+    const box = listRef.current;
+    if (top < box.scrollTop) box.scrollTop = top;
+    else if (top + SELECT_ITEM_HEIGHT > box.scrollTop + box.clientHeight - 8)
+      box.scrollTop = top + SELECT_ITEM_HEIGHT - box.clientHeight + 8;
+  }, [open, pos, activeIndex]);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (!open) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        openList();
+      }
+      return;
+    }
+    if (e.key === "Escape" || e.key === "Tab") setOpen(false);
+    else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, options.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (options[activeIndex] !== undefined) choose(options[activeIndex]);
+    }
+  };
+
+  return (
+    <div
+      className={`relative h-11 w-full min-w-0 max-w-full rounded-xl text-[14px] ${className}`}
+    >
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => (open ? setOpen(false) : openList())}
+        onKeyDown={onKeyDown}
+        className={`flex h-full w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 rounded-[inherit] border bg-[#F9F7FF] px-3 text-left text-[length:inherit] font-medium text-[#131313] outline-none transition-colors ${
+          open
+            ? "border-[#5932E9] ring-1 ring-[#ECE7FF]"
+            : "border-[#2E2E2E] focus:border-[#5932E9] focus:ring-1 focus:ring-[#ECE7FF]"
+        }`}
+      >
+        <span className="min-w-0 flex-1 truncate">{value}</span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-[#626262] transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={listRef}
+            role="listbox"
+            style={{
+              position: "fixed",
+              left: pos.left,
+              width: pos.width,
+              top: pos.top,
+              bottom: pos.bottom,
+              maxHeight: pos.maxHeight,
+              zIndex: 2147483000,
+              boxSizing: "border-box",
+              overflowY: "auto",
+              overscrollBehavior: "contain",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "thin",
+              scrollbarColor: "#C9BDF7 transparent",
+              padding: 4,
+              background: "#FFFFFF",
+              border: "1px solid #DCD3FF",
+              borderRadius: 12,
+              boxShadow: "0 12px 28px rgba(89, 50, 233, 0.18)",
+              fontFamily: "'Urbanist', sans-serif",
+            }}
+          >
+            {options.map((option, index) => {
+              const selected = option === value;
+              const active = index === activeIndex;
+              return (
+                <div
+                  key={option}
+                  role="option"
+                  aria-selected={selected}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => choose(option)}
+                  style={{
+                    height: SELECT_ITEM_HEIGHT,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "0 10px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    fontWeight: selected ? 600 : 500,
+                    color: selected ? "#5932E9" : "#2E2E2E",
+                    background: active ? "#ECE7FF" : "transparent",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 16,
+                      flexShrink: 0,
+                      display: "inline-flex",
+                    }}
+                  >
+                    {selected && <Check className="h-4 w-4 text-[#5932E9]" />}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">{option}</span>
+                </div>
+              );
+            })}
+          </div>,
+          document.body
+        )}
+    </div>
+  );
 }
 
-// Custom font-size mark — built on @tiptap/core only, no extra package needed
 const FontSize = Mark.create({
   name: "fontSize",
   addAttributes() {
@@ -458,21 +277,21 @@ const FontSize = Mark.create({
   parseHTML() {
     return [{ style: "font-size" }];
   },
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }: any) {
     return ["span", mergeAttributes(HTMLAttributes), 0];
   },
   addCommands() {
     return {
       setFontSize:
         (size: string) =>
-        ({ chain }: CommandProps) =>
+        ({ chain }: any) =>
           chain().setMark("fontSize", { size }).run(),
       unsetFontSize:
         () =>
-        ({ chain }: CommandProps) =>
+        ({ chain }: any) =>
           chain().unsetMark("fontSize").run(),
-    };
-  },                
+    } as any;
+  },
 });
 
 const variablesList = [
@@ -496,49 +315,52 @@ const variablesList = [
   { label: "Emp Leave Details", value: "{empleavedetails}" },
 ];
 
-const fontSizeOptions = [
-  { label: "Size 1", value: "12px" },
-  { label: "Size 2", value: "14px" },
-  { label: "Size 3", value: "16px" },
-  { label: "Size 4", value: "18px" },
-  { label: "Size 5", value: "24px" },
-  { label: "Size 6", value: "32px" },
-];
+// Dropdown options are plain strings, so labels are mapped to real values here.
+const FONT_SIZE_MAP: Record<string, string> = {
+  "Size 1": "12px",
+  "Size 2": "14px",
+  "Size 3": "16px",
+  "Size 4": "18px",
+  "Size 5": "24px",
+  "Size 6": "32px",
+};
+const fontSizeOptions = Object.keys(FONT_SIZE_MAP);
 
-const headingOptions = [
-  { label: "Normal", value: "normal" },
-  { label: "Heading 1", value: "1" },
-  { label: "Heading 2", value: "2" },
-  { label: "Heading 3", value: "3" },
-];
+const HEADING_MAP: Record<string, string> = {
+  Normal: "normal",
+  "Heading 1": "1",
+  "Heading 2": "2",
+  "Heading 3": "3",
+};
+const headingOptions = Object.keys(HEADING_MAP);
+
+const FONT_FAMILIES = ["Arial", "Calibri", "Times New Roman"];
 
 export default function EmailSettings() {
   const {
-    emailTypes,                
+    emailTypes,
     type,
     setType,
     subject,
-    setSubject,          
+    setSubject,
     body,
     setBody,
     isLoading,
     isSaving,
+    loadError,
+    message,
     handleSave,
   } = useEmailSettings();
 
   const [fontFamily, setFontFamily] = useState("Arial");
-  const [fontSize, setFontSize] = useState("16px");
-  const [headingLevel, setHeadingLevel] = useState("normal");
+  const [fontSize, setFontSize] = useState("Size 3");
+  const [headingLevel, setHeadingLevel] = useState("Normal");
 
   const allTypeOptions =
     emailTypes && emailTypes.length > 0
       ? emailTypes.map((et) => et.name)
       : ["Pay Slip", "Offer Letter", "Appointment Letter"];
 
-  // Show only the OTHER items — the currently selected type is already
-  // shown in the closed trigger via `value`, so it must not also appear
-  // inside the option list or it renders twice (once in the trigger,
-  // once again as a list item).
   const typeOptions = [
   type,
   ...allTypeOptions.filter((option) => option !== type),
@@ -558,14 +380,12 @@ export default function EmailSettings() {
     },
   });
 
-  // Sync content from hook → editor
   useEffect(() => {
     if (editor && body && body !== editor.getHTML()) {
       editor.commands.setContent(body);
     }
   }, [body, editor]);
 
-  // Insert variable tag into TipTap editor
   const handleInsertVariable = (varValue: string) => {
     if (!editor) return;
     editor.chain().focus().insertContent(varValue).run();
@@ -573,70 +393,78 @@ export default function EmailSettings() {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-xs text-slate-500">Loading email settings…</div>
+      <div className="p-4 text-xs text-[#626262] sm:p-6">Loading email settings…</div>
     );
   }
 
   return (
-    <div className="w-full space-y-5 bg-[#F5F6FA] text-slate-700">
-      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+    <div className="w-full min-w-0 space-y-4 bg-[#F6F3FF] text-[#2E2E2E] sm:space-y-5">
+      {loadError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-[#FAD5D1] bg-[#FAD5D1]/40 px-3 py-2 text-xs font-medium text-[#DD3232]"
+        >
+          Could not load email settings from the server. Showing default template.
+        </div>
+      )}
+      <div className="grid w-full min-w-0 grid-cols-12 gap-3 sm:gap-6">
         {/* LEFT PANEL */}
-        <Card className="col-span-12 lg:col-span-4 rounded-2xl border-none bg-white p-4 shadow-sm space-y-4 sm:p-5">
+        <Card className="col-span-12 min-w-0 space-y-4 rounded-2xl border-none bg-white p-3 shadow-sm sm:p-5 lg:col-span-4">
           {/* Email Type */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-700">
-              Type <span className="text-red-500">*</span>
+          <div className="min-w-0 space-y-1.5">
+            <Label className="font-['Urbanist',_sans-serif] text-[13px] font-semibold text-[#2E2E2E]">
+              Type <span className="text-[#DD3232]">*</span>
             </Label>
-            <StyledSelect
+            <ResponsiveSelect
               value={type}
               onValueChange={setType}
               options={typeOptions}
               className="!h-10 !text-xs"
             />
             {type !== "Pay Slip" && (
-              <p className="mt-1 text-[11px] text-amber-600">
+              <p className="mt-1 text-[11px] text-[#FF6200]">
                 Saving isn't available yet for this email type.
               </p>
             )}
           </div>
 
           {/* Email Subject */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-700">
-              Subject <span className="text-red-500">*</span>
+          <div className="min-w-0 space-y-1.5">
+            <Label className="font-['Urbanist',_sans-serif] text-[13px] font-semibold text-[#2E2E2E]">
+              Subject <span className="text-[#DD3232]">*</span>
             </Label>
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="h-10 border-slate-200 text-xs rounded-xl focus-visible:ring-violet-500"
+              className="h-10 rounded-xl border-[#EDEDED] text-base focus-visible:ring-[#5932E9] sm:text-xs"
             />
           </div>
 
           {/* Variables Container */}
-          <div className="rounded-xl bg-[#F0EEFF] p-4 space-y-2.5 max-h-[260px] overflow-y-auto lg:max-h-[480px]">
+          <div className="grid max-h-[200px] grid-cols-1 gap-x-4 gap-y-1 overflow-y-auto rounded-xl bg-[#ECE7FF] p-3 sm:max-h-[240px] sm:grid-cols-2 sm:p-4 lg:max-h-[480px] lg:grid-cols-1 lg:gap-y-2.5">
             {variablesList.map((item, idx) => (
               <div
                 key={idx}
                 onClick={() => handleInsertVariable(item.value)}
-                className="text-xs text-slate-700 font-medium cursor-pointer hover:text-violet-700 transition-colors"
+                className="cursor-pointer break-all rounded-md py-1.5 text-xs font-medium text-[#2E2E2E] transition-colors hover:text-[#4726BA] active:bg-white/60 lg:py-0"
               >
                 {item.label} :{" "}
-                <span className="text-slate-600">{item.value}</span>
+                <span className="text-[#2E2E2E]">{item.value}</span>
               </div>
             ))}
           </div>
         </Card>
         {/* RIGHT PANEL */}
-        <div className="col-span-12 lg:col-span-8 space-y-4">
-          <Card className="rounded-2xl border-none bg-white p-4 shadow-sm space-y-4 sm:p-6">
+        <div className="col-span-12 min-w-0 space-y-3 sm:space-y-4 lg:col-span-8">
+          <Card className="min-w-0 space-y-3 rounded-2xl border-none bg-white p-3 shadow-sm sm:space-y-4 sm:p-6">
             {/* Header / Action */}
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold text-violet-600 tracking-wide uppercase">
+              <span className="text-xs font-bold text-[#5932E9] tracking-wide uppercase">
                 MESSAGE 1
               </span>
               <Button
                 type="button"
-                className="h-8 shrink-0 rounded-lg bg-[#EBE8FC] px-3 text-xs font-semibold text-[#7C5CFC] hover:bg-violet-100 shadow-none border-none flex items-center gap-1.5"
+                className="h-8 shrink-0 rounded-lg bg-[#ECE7FF] px-3 text-xs font-semibold text-[#5932E9] hover:bg-[#ECE7FF] shadow-none border-none flex items-center gap-1.5"
               >
                 <Wand2 className="h-3.5 w-3.5" />
                 Generate
@@ -644,28 +472,33 @@ export default function EmailSettings() {
             </div>
 
             {/* Editor Box */}
-            <div className="rounded-xl border border-slate-200 overflow-hidden">
+            <div className="min-w-0 overflow-hidden rounded-xl border border-[#EDEDED]">
               {/* Toolbar */}
-              <div className="flex flex-wrap items-center gap-1 border-b border-slate-200 bg-slate-50/50 p-2 text-slate-600 text-xs">
-                <StyledSelect
+              <div className="settings-toolbar flex flex-wrap items-center gap-1.5 border-b border-[#EDEDED] bg-[#EDEDED]/50 p-1.5 text-xs text-[#2E2E2E] sm:gap-1 sm:p-2">
+                <ResponsiveSelect
                   value={fontFamily}
                   onValueChange={setFontFamily}
-                  options={["Arial", "Calibri", "Times New Roman"]}
-                  className="!h-7 !w-auto !min-w-[112px] !text-xs !px-2 !rounded-md"
+                  options={FONT_FAMILIES}
+                  className="!h-9 !w-auto !min-w-[110px] !text-xs !rounded-lg sm:!h-8 sm:!min-w-[120px]"
                 />
-                <StyledSelect
+                <ResponsiveSelect
                   value={fontSize}
-                  onValueChange={(value) => {
-                    setFontSize(value);
-                    editor?.chain().focus().setFontSize(value).run();      
+                  onValueChange={(label) => {
+                    setFontSize(label);
+                    editor
+                      ?.chain()
+                      .focus()
+                      .setFontSize(FONT_SIZE_MAP[label] ?? "16px")
+                      .run();
                   }}
                   options={fontSizeOptions}
-                  className="!h-7 !w-auto !min-w-[80px] !text-xs !px-2 !rounded-md"
+                  className="!h-9 !w-auto !min-w-[90px] !text-xs !rounded-lg sm:!h-8 sm:!min-w-[96px]"
                 />
-                <StyledSelect
+                <ResponsiveSelect
                   value={headingLevel}
-                  onValueChange={(value) => {
-                    setHeadingLevel(value);
+                  onValueChange={(label) => {
+                    setHeadingLevel(label);
+                    const value = HEADING_MAP[label] ?? "normal";
                     if (value === "normal") {
                       editor?.chain().focus().setParagraph().run();
                     } else {
@@ -673,27 +506,27 @@ export default function EmailSettings() {
                       editor?.chain().focus().toggleHeading({ level }).run();
                     }
                   }}
-                  options={headingOptions}              
-                  className="!h-7 !w-auto !min-w-[112px] !text-xs !px-2 !rounded-md"                          
+                  options={headingOptions}
+                  className="!h-9 !w-auto !min-w-[110px] !text-xs !rounded-lg sm:!h-8 sm:!min-w-[120px]"
                 />
 
-                <div className="h-4 w-[1px] bg-slate-300 mx-1" />             
+                <div className="mx-0.5 hidden h-4 w-px bg-[#DDDDDD] sm:mx-1 sm:block" />
 
-                {/* Styling Buttons */}                   
+                {/* Styling Buttons */}
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().toggleBold().run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive("bold") ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive("bold") ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
-                  <Bold className="h-3.5 w-3.5" />         
+                  <Bold className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().toggleItalic().run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive("italic") ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive("italic") ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <Italic className="h-3.5 w-3.5" />
@@ -701,20 +534,20 @@ export default function EmailSettings() {
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().toggleUnderline().run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive("underline") ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive("underline") ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <UnderlineIcon className="h-3.5 w-3.5" />
                 </button>
 
-                <div className="h-4 w-[1px] bg-slate-300 mx-1" />
+                <div className="mx-0.5 hidden h-4 w-px bg-[#DDDDDD] sm:mx-1 sm:block" />
                 {/* Alignments */}
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().setTextAlign("left").run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive({ textAlign: "left" }) ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive({ textAlign: "left" }) ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <AlignLeft className="h-3.5 w-3.5" />
@@ -722,8 +555,8 @@ export default function EmailSettings() {
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().setTextAlign("center").run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive({ textAlign: "center" }) ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive({ textAlign: "center" }) ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <AlignCenter className="h-3.5 w-3.5" />
@@ -731,20 +564,20 @@ export default function EmailSettings() {
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().setTextAlign("right").run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive({ textAlign: "right" }) ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive({ textAlign: "right" }) ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <AlignRight className="h-3.5 w-3.5" />
                 </button>
 
-                <div className="h-4 w-[1px] bg-slate-300 mx-1" />
+                <div className="mx-0.5 hidden h-4 w-px bg-[#DDDDDD] sm:mx-1 sm:block" />
                 {/* Lists */}
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive("bulletList") ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive("bulletList") ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <List className="h-3.5 w-3.5" />
@@ -752,8 +585,8 @@ export default function EmailSettings() {
                 <button
                   type="button"
                   onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                  className={`p-1.5 rounded hover:bg-slate-200 ${
-                    editor?.isActive("orderedList") ? "bg-slate-200 text-violet-700" : ""
+                  className={`rounded p-2 hover:bg-[#DDDDDD] sm:p-1.5 ${
+                    editor?.isActive("orderedList") ? "bg-[#DDDDDD] text-[#4726BA]" : ""
                   }`}
                 >
                   <ListOrdered className="h-3.5 w-3.5" />
@@ -761,30 +594,43 @@ export default function EmailSettings() {
               </div>
 
               {/* TipTap Editor Area */}
-              <div className="min-h-[220px] p-3 text-xs leading-relaxed text-slate-700 outline-none sm:min-h-[340px] sm:p-5">
+              <div className="min-h-[200px] overflow-x-auto p-3 text-sm leading-relaxed text-[#2E2E2E] outline-none sm:min-h-[340px] sm:p-5 sm:text-xs">
                 <EditorContent
                   editor={editor}
-                  className="prose max-w-none focus:outline-none min-h-[180px] sm:min-h-[300px]"
+                  className="prose max-w-none break-words focus:outline-none min-h-[160px] sm:min-h-[300px] [&_.ProseMirror]:break-words [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_.ProseMirror]:min-h-[160px] [&_.ProseMirror]:outline-none sm:[&_.ProseMirror]:min-h-[300px]"
                 />
               </div>
             </div>
           </Card>
 
           {/* Warning Banner */}
-          <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50/60 p-3.5 text-xs text-red-600">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-red-500 mt-0.5" />
-            <span>
+          <div className="flex items-start gap-2.5 rounded-xl border border-[#FAD5D1] bg-[#FAD5D1]/40 p-3 text-xs text-[#DD3232] sm:p-3.5">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-[#DD3232] mt-0.5" />
+            <span className="min-w-0 break-words">
               Please do not modify the variables (e.g. <strong>{"{username}"}</strong>) or insert extra spaces between the lines.
             </span>
           </div>
 
           {/* Info Banner */}
-          <div className="flex items-start gap-2.5 rounded-xl border border-violet-100 bg-violet-50/60 p-3.5 text-xs text-slate-600">
-            <Info className="h-4 w-4 shrink-0 text-violet-500 mt-0.5" />
-            <span>
+          <div className="flex items-start gap-2.5 rounded-xl border border-[#ECE7FF] bg-[#ECE7FF]/60 p-3 text-xs text-[#2E2E2E] sm:p-3.5">
+            <Info className="h-4 w-4 shrink-0 text-[#5932E9] mt-0.5" />
+            <span className="min-w-0 break-words">
               Click the security icon to enable password protection for the Employee Payslip.
             </span>
           </div>
+
+          {message && (
+            <div
+              role="status"
+              className={`rounded-xl border px-3 py-2 text-xs font-medium ${
+                message.type === "success"
+                  ? "border-[#F5FFFA] bg-[#F5FFFA] text-[#10B981]"
+                  : "border-[#FAD5D1] bg-[#FAD5D1]/40 text-[#DD3232]"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-2">
@@ -792,7 +638,7 @@ export default function EmailSettings() {
               type="button"
               onClick={handleSave}
               disabled={isSaving || type !== "Pay Slip"}
-              className="h-10 w-full rounded-xl bg-[#7C5CFC] px-5 text-xs font-semibold text-white hover:bg-violet-700 shadow-sm flex items-center justify-center gap-2 sm:w-auto"
+              className="h-10 w-full rounded-xl bg-[#5932E9] px-5 text-xs font-semibold text-white hover:bg-[#4726BA] shadow-sm flex items-center justify-center gap-2 sm:w-auto"
             >
               <Save className="h-4 w-4" />
               {isSaving ? "Saving..." : "Save Changes"}

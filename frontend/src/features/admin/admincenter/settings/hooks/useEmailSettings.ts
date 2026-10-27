@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useGetEmailTypesQuery,
   useGetEmailPayslipSettingsQuery,
   useUpdateEmailPayslipSettingsMutation,
+  getApiErrorMessage,
 } from "../api/settingsapi";
 
 const DEFAULT_PAYSLIP_BODY = `
@@ -21,27 +22,42 @@ const DEFAULT_PAYSLIP_BODY = `
 
 export function useEmailSettings() {
   const { data: emailTypes } = useGetEmailTypesQuery();
-  const { data: payslipSettings, isLoading } =
-    useGetEmailPayslipSettingsQuery();
+  const {
+    data: payslipSettings,
+    isLoading,
+    isError: loadError,
+  } = useGetEmailPayslipSettingsQuery();
   const [updateEmailPayslipSettings, { isLoading: isSaving }] =
     useUpdateEmailPayslipSettingsMutation();
 
   const [type, setType] = useState("Pay Slip");
   const [subject, setSubject] = useState("Pay Slip for {monthyear}");
   const [body, setBody] = useState(DEFAULT_PAYSLIP_BODY);
-  const [previousPayslipSettings, setPreviousPayslipSettings] = useState<
-    typeof payslipSettings
-  >();
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
-  if (payslipSettings && payslipSettings !== previousPayslipSettings) {
-    setPreviousPayslipSettings(payslipSettings);
-    setSubject(payslipSettings.subject || "Pay Slip for {monthyear}");
-    setBody(payslipSettings.body || DEFAULT_PAYSLIP_BODY);
-  }
+  // auto-hide the status message after 4 seconds
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(null), 4000);
+    return () => clearTimeout(t);
+  }, [message]);
+
+  useEffect(() => {
+    if (payslipSettings) {
+      setSubject(payslipSettings.subject || "Pay Slip for {monthyear}");
+      setBody(payslipSettings.body || DEFAULT_PAYSLIP_BODY);
+    }
+  }, [payslipSettings]);
 
   const handleSave = async () => {
     if (type !== "Pay Slip") {
-      console.warn(`No save endpoint exists yet for email type "${type}"`);
+      setMessage({
+        type: "error",
+        text: `Saving is not available yet for "${type}".`,
+      });
       return;
     }
 
@@ -54,8 +70,13 @@ export function useEmailSettings() {
         subject,
         body,
       }).unwrap();
+      setMessage({ type: "success", text: "Email settings saved." });
     } catch (err) {
       console.error("Failed to save email settings", err);
+      setMessage({
+        type: "error",
+        text: getApiErrorMessage(err, "Failed to save email settings"),
+      });
     }
   };
 
@@ -74,6 +95,8 @@ export function useEmailSettings() {
     setBody,
     isLoading,
     isSaving,
+    loadError,
+    message,
     handleSave,
     handleReset,
     DEFAULT_PAYSLIP_BODY,
