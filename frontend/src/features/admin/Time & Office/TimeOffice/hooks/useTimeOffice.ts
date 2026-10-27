@@ -26,7 +26,7 @@ import {
   useGetAverageOtHoursQuery,
   useGetAverageWorkingHoursQuery,
   useGetDashboardEmployeesQuery,
-  useGetDashboardSummaryQuery,
+  useGetTimeOfficeDashboardSummaryQuery,
   useGetIrregularitiesQuery,
   useGetPendingRequestsQuery,
   useGetPoliciesQuery,
@@ -50,7 +50,7 @@ export const useTimeOffice = () => {
 
   // Every query falls back to the mock, so the dashboard renders before the
   // backend exists. Delete punch.mock.ts and the `?? MOCK` tails once it does.
-  const summaryQuery = useGetDashboardSummaryQuery(period);
+  const summaryQuery = useGetTimeOfficeDashboardSummaryQuery(period);
   const employeesQuery = useGetDashboardEmployeesQuery(
     { metric: metric as PunchMetric, period },
     { skip: !metric }

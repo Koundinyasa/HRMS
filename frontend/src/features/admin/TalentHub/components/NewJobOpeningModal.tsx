@@ -60,6 +60,16 @@ export function NewJobOpeningModal({
               className={formInputClass}
             />
           </FormField>
+          <FormField label="Job description">
+            <textarea
+              name="jobDescription"
+              required
+              maxLength={4000}
+              rows={5}
+              placeholder="Describe the role, responsibilities, and requirements."
+              className={formInputClass}
+            />
+          </FormField>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Branch ID">
               <input

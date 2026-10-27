@@ -4,6 +4,9 @@
 /build
 /private-uploads/
 
+# Face enrollment photos (personal data - never commit)
+/src/employee/attendance/photos/
+
 # Logs
 logs
 *.log

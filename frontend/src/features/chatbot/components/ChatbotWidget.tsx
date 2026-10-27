@@ -989,7 +989,7 @@ export default function ChatbotWidget({
             </div>
 
             <div className="flex flex-col leading-tight z-10">
-              <h3 className="m-0 text-[15.5px] font-bold">NYRA</h3>
+              <h3 className="m-0 text-[15.5px] font-bold">VEDA</h3>
               <span className="text-[11.5px] opacity-90">Online</span>
             </div>
 

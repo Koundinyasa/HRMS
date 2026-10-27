@@ -41,6 +41,23 @@ function recruitmentValue(
   return undefined;
 }
 
+type FinalApprovalQueryRow = {
+  id: number;
+  applicationId: number;
+  applicationCode: string;
+  candidateCode: string;
+  candidateName: string;
+  candidateEmail: string | null;
+  position: string;
+  decision: string;
+  remarks: string | null;
+  feedbackCount: number;
+  avgRating: number | null;
+  latestInterviewId: number | null;
+  applicationDate: Date;
+  totalCount: number;
+};
+
 @Injectable()
 export class RecruitmentService {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -54,7 +71,20 @@ export class RecruitmentService {
         .input('EmployeeID', sql.VarChar(25), employeeId)
         .execute('USP_GetPendingRequisition');
 
-      return result.recordset;
+      const rows = result.recordset ?? [];
+      const statusRow = rows.find(
+        (row) => row?.StatusCode !== undefined && Number(row.StatusCode) <= 0,
+      );
+      if (statusRow) {
+        const message =
+          statusRow.Message ?? 'Unable to retrieve pending requisitions.';
+        if (String(message).toLowerCase().includes('hiring manager')) {
+          throw new ForbiddenException(message);
+        }
+        throw new BadRequestException(message);
+      }
+
+      return rows;
     } catch (error) {
       console.error('Error in getPendingRequisitions:', error);
       throw error;
@@ -70,6 +100,21 @@ export class RecruitmentService {
   ) {
     try {
       const pool = await this.databaseService.connect();
+      const pendingRequisitions = await this.getPendingRequisitions(employeeId);
+      const isAssignedHiringManager = pendingRequisitions.some((row) => {
+        if (!row || typeof row !== 'object') return false;
+        const rowId = recruitmentValue(
+          row as Record<string, unknown>,
+          'RequisitionID',
+          'ID',
+        );
+        return Number(rowId) === requisitionId;
+      });
+      if (!isAssignedHiringManager) {
+        throw new ForbiddenException(
+          'Only the assigned active hiring manager can approve or reject this requisition.',
+        );
+      }
 
       const result = await pool
         .request()
@@ -138,6 +183,7 @@ export class RecruitmentService {
       .input('BranchID', sql.Int, dto.branchId)
       .input('DesignationID', sql.Int, dto.designationId)
       .input('JobTitle', sql.NVarChar(100), dto.jobTitle)
+      .input('JobDescription', sql.NVarChar(4000), dto.jobDescription)
       .input('Vacancies', sql.Int, dto.vacancies)
       .input('SalaryRangeMin', sql.Decimal(12, 2), dto.salaryRangeMin ?? null)
       .input('SalaryRangeMax', sql.Decimal(12, 2), dto.salaryRangeMax ?? null)
@@ -375,12 +421,87 @@ export class RecruitmentService {
     }
 
     const pool = await this.databaseService.connect();
+    const progressTableResult = await pool
+      .request()
+      .query<{ tableExists: number }>(`
+        SELECT CASE
+          WHEN OBJECT_ID('dbo.RecruitmentTechnicalRoundProgress', 'U') IS NULL
+          THEN 0
+          ELSE 1
+        END AS tableExists;
+      `);
+    const hasTechnicalRoundProgress =
+      Number(progressTableResult.recordset[0]?.tableExists) === 1;
+    const technicalRoundEligibility = hasTechnicalRoundProgress
+      ? `
+          NOT EXISTS (
+            SELECT 1
+            FROM dbo.Interviews TechnicalOne
+            INNER JOIN dbo.InterviewSchedules TechnicalOneSchedule
+              ON TechnicalOneSchedule.ID = TechnicalOne.InterviewScheduleID
+            INNER JOIN dbo.Mst_InterviewType TechnicalOneType
+              ON TechnicalOneType.ID = TechnicalOne.InterviewType
+            WHERE TechnicalOneSchedule.ApplicationID = CA.ID
+              AND TechnicalOne.FeedbackSubmitted = 1
+              AND LOWER(REPLACE(LTRIM(RTRIM(TechnicalOneType.Name)), ' ', ''))
+                IN ('technical', 'technical1')
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM dbo.RecruitmentTechnicalRoundProgress Progress
+            WHERE Progress.ApplicationID = CA.ID
+              AND (
+                Progress.Technical2Required = 0
+                OR (
+                  Progress.Technical2Required = 1
+                  AND EXISTS (
+                    SELECT 1
+                    FROM dbo.Interviews TechnicalTwo
+                    INNER JOIN dbo.InterviewSchedules TechnicalTwoSchedule
+                      ON TechnicalTwoSchedule.ID = TechnicalTwo.InterviewScheduleID
+                    INNER JOIN dbo.Mst_InterviewType TechnicalTwoType
+                      ON TechnicalTwoType.ID = TechnicalTwo.InterviewType
+                    WHERE TechnicalTwoSchedule.ApplicationID = CA.ID
+                      AND TechnicalTwo.FeedbackSubmitted = 1
+                      AND LOWER(REPLACE(LTRIM(RTRIM(TechnicalTwoType.Name)), ' ', ''))
+                        = 'technical2'
+                  )
+                )
+              )
+          )
+        `
+      : `
+          NOT EXISTS (
+            SELECT 1
+            FROM dbo.Interviews TechnicalOne
+            INNER JOIN dbo.InterviewSchedules TechnicalOneSchedule
+              ON TechnicalOneSchedule.ID = TechnicalOne.InterviewScheduleID
+            INNER JOIN dbo.Mst_InterviewType TechnicalOneType
+              ON TechnicalOneType.ID = TechnicalOne.InterviewType
+            WHERE TechnicalOneSchedule.ApplicationID = CA.ID
+              AND TechnicalOne.FeedbackSubmitted = 1
+              AND LOWER(REPLACE(LTRIM(RTRIM(TechnicalOneType.Name)), ' ', ''))
+                IN ('technical', 'technical1')
+          )
+          OR NOT EXISTS (
+            SELECT 1
+            FROM dbo.Interviews TechnicalTwo
+            INNER JOIN dbo.InterviewSchedules TechnicalTwoSchedule
+              ON TechnicalTwoSchedule.ID = TechnicalTwo.InterviewScheduleID
+            INNER JOIN dbo.Mst_InterviewType TechnicalTwoType
+              ON TechnicalTwoType.ID = TechnicalTwo.InterviewType
+            WHERE TechnicalTwoSchedule.ApplicationID = CA.ID
+              AND TechnicalTwo.FeedbackSubmitted = 0
+              AND LOWER(REPLACE(LTRIM(RTRIM(TechnicalTwoType.Name)), ' ', ''))
+                = 'technical2'
+          )
+        `;
     const result = await pool
       .request()
       .input('Decision', sql.VarChar(20), query.decision)
       .input('Search', sql.NVarChar(200), query.search?.trim() || null)
       .input('Offset', sql.Int, (page - 1) * limit)
-      .input('Limit', sql.Int, limit).query(`
+      .input('Limit', sql.Int, limit).query<FinalApprovalQueryRow>(`
         WITH ApprovalRows AS (
           SELECT
             CA.ID AS id,
@@ -412,10 +533,19 @@ export class RecruitmentService {
           CROSS APPLY (
             SELECT
               COUNT(*) AS feedbackCount,
-              AVG(CAST(I.Rating AS DECIMAL(5, 2))) AS avgRating
+              COALESCE(
+                AVG(CASE
+                  WHEN LOWER(REPLACE(LTRIM(RTRIM(IT.Name)), ' ', ''))
+                    IN ('technical', 'technical1', 'technical2')
+                  THEN CAST(I.Rating AS DECIMAL(5, 2))
+                END),
+                AVG(CAST(I.Rating AS DECIMAL(5, 2)))
+              ) AS avgRating
             FROM dbo.Interviews I
             INNER JOIN dbo.InterviewSchedules S
               ON S.ID = I.InterviewScheduleID
+            LEFT JOIN dbo.Mst_InterviewType IT
+              ON IT.ID = I.InterviewType
             WHERE S.ApplicationID = CA.ID
               AND I.FeedbackSubmitted = 1
           ) InterviewStats
@@ -424,11 +554,29 @@ export class RecruitmentService {
             FROM dbo.Interviews I
             INNER JOIN dbo.InterviewSchedules S
               ON S.ID = I.InterviewScheduleID
+            LEFT JOIN dbo.Mst_InterviewType IT
+              ON IT.ID = I.InterviewType
             WHERE S.ApplicationID = CA.ID
               AND I.FeedbackSubmitted = 1
-            ORDER BY I.InterviewDate DESC, I.ID DESC
+            ORDER BY
+              CASE
+                WHEN LOWER(REPLACE(LTRIM(RTRIM(IT.Name)), ' ', ''))
+                  IN ('technical', 'technical1', 'technical2') THEN 0
+                ELSE 1
+              END,
+              I.InterviewDate DESC,
+              I.ID DESC
           ) LatestInterview
           WHERE InterviewStats.feedbackCount > 0
+            AND (
+              (
+                FIA.ID IS NOT NULL
+                AND LOWER(FinalStatus.Name) IN ('selected', 'rejected')
+              )
+              OR (
+                ${technicalRoundEligibility}
+              )
+            )
             AND (
               @Decision = 'all'
               OR (@Decision = 'pending' AND FIA.ID IS NULL)

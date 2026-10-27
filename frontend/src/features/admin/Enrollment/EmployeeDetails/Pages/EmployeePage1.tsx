@@ -1,8 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+import React, { useEffect, useMemo, useRef,useState,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
@@ -60,9 +56,6 @@ type Column = {
   key: string;
   label: string;
 };
-
-const employeeField = (employee: Employee, key: string): unknown =>
-  (employee as unknown as Record<string, unknown>)[key];
 
 /* ============================================================
    VALID EMPLOYEE FILTER TYPES
@@ -145,12 +138,12 @@ function useOutsideClick(
 ============================================================ */
 
 function FixedDropdown({
-  anchorRef,
+  anchor,
   children,
   width = 220,
   onClose,
 }: {
-  anchorRef: React.RefObject<HTMLButtonElement | null>;
+  anchor: HTMLElement | null;
   children: ReactNode;
   width?: number;
   onClose: () => void;
@@ -163,8 +156,9 @@ function FixedDropdown({
   });
 
   useEffect(() => {
-    const anchor = anchorRef.current;
-    if (!anchor) return;
+    if (!anchor) {
+      return;
+    }
 
     const update = () => {
       const rect = anchor.getBoundingClientRect();
@@ -194,9 +188,13 @@ function FixedDropdown({
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [anchorRef, width]);
+  }, [anchor, width]);
 
   useOutsideClick(ref, onClose);
+
+  if (!anchor) {
+    return null;
+  }
 
   return (
     <div
@@ -310,7 +308,7 @@ function MultiFilter({
 
       {open && (
         <FixedDropdown
-          anchorRef={buttonRef}
+          anchor={buttonRef.current}
           width={224}
           onClose={() => setOpen(false)}
         >
@@ -427,7 +425,7 @@ function ColumnHeader({
 
       {open && (
         <FixedDropdown
-          anchorRef={buttonRef}
+          anchor={buttonRef.current}
           width={220}
           onClose={() => setOpen(false)}
         >
@@ -563,7 +561,7 @@ export default function EmployeePage1() {
       if (type === "male") {
         return (
           String(
-            employeeField(employee, "Gender") ?? ""
+            (employee as any).Gender ?? ""
           )
             .trim()
             .toLowerCase() === "male"
@@ -577,7 +575,7 @@ export default function EmployeePage1() {
       if (type === "female") {
         return (
           String(
-            employeeField(employee, "Gender") ?? ""
+            (employee as any).Gender ?? ""
           )
             .trim()
             .toLowerCase() === "female"
@@ -593,7 +591,7 @@ export default function EmployeePage1() {
 
       if (type === "joined") {
         return Boolean(
-          employeeField(employee, "JoiningDate")
+          (employee as any).JoiningDate
         );
       }
 
@@ -606,7 +604,7 @@ export default function EmployeePage1() {
 
       if (type === "left") {
         return Boolean(
-          employeeField(employee, "ExitDate")
+          (employee as any).ExitDate
         );
       }
 
@@ -616,9 +614,9 @@ export default function EmployeePage1() {
 
       if (type === "confirmation-pending") {
         const confirmationStatus = String(
-          employeeField(employee, "ConfirmationStatus") ??
-            employeeField(employee, "EmpStatus") ??
-            employeeField(employee, "EmployeeStatus") ??
+          (employee as any).ConfirmationStatus ??
+            (employee as any).EmpStatus ??
+            (employee as any).EmployeeStatus ??
             ""
         )
           .trim()
@@ -782,8 +780,10 @@ export default function EmployeePage1() {
       salary: uniq(
         fullRows.map(
           (e) =>
-            employeeField(e, "SalaryStructureName") ??
-            employeeField(e, "SalaryStructure")
+            (e as any)
+              .SalaryStructureName ??
+            (e as any)
+              .SalaryStructure
         )
       ),
 
@@ -796,8 +796,8 @@ export default function EmployeePage1() {
       empStatus: uniq(
         fullRows.map(
           (e) =>
-            employeeField(e, "EmpStatus") ??
-            employeeField(e, "EmployeeStatus") ??
+            (e as any).EmpStatus ??
+            (e as any).EmployeeStatus ??
             (e.ExitDate
               ? "Left"
               : "Active")
@@ -821,8 +821,9 @@ export default function EmployeePage1() {
     employee: Employee
   ) =>
     String(
-      employeeField(employee, "EmpStatus") ??
-        employeeField(employee, "EmployeeStatus") ??
+      (employee as any).EmpStatus ??
+        (employee as any)
+          .EmployeeStatus ??
         (isEmployeeFull(employee) &&
         employee.ExitDate
           ? "Left"
@@ -888,8 +889,10 @@ export default function EmployeePage1() {
             (salaryFilter.length === 0 ||
               salaryFilter.includes(
                 String(
-                  employeeField(employee, "SalaryStructureName") ??
-                    employeeField(employee, "SalaryStructure") ??
+                  (employee as any)
+                    .SalaryStructureName ??
+                    (employee as any)
+                      .SalaryStructure ??
                     ""
                 )
               )) &&
@@ -921,7 +924,7 @@ export default function EmployeePage1() {
 
             const employeeValue =
               String(
-                employeeField(employee, key) ??
+                (employee as any)[key] ??
                   ""
               ).toLowerCase();
 
@@ -946,13 +949,13 @@ export default function EmployeePage1() {
       result = [...result].sort(
         (a, b) => {
           const first = String(
-            (a as unknown as Record<string, unknown>)[
+            (a as any)[
               sortConfig.key!
             ] ?? ""
           ).toLowerCase();
 
           const second = String(
-            (b as unknown as Record<string, unknown>)[
+            (b as any)[
               sortConfig.key!
             ] ?? ""
           ).toLowerCase();
@@ -1031,11 +1034,7 @@ export default function EmployeePage1() {
   ============================================================ */
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setPage(1);
-    });
-
-    return () => window.cancelAnimationFrame(frame);
+    setPage(1);
   }, [
     search,
     branchFilter,
@@ -1286,9 +1285,8 @@ export default function EmployeePage1() {
         <button
           type="button"
           onClick={() =>
-            navigate(
-              `/${domain}/admin/enrollment/EmployeeDetails/add-employee`
-            )
+            // ✅ CHANGED: "Add Employee" now opens the Admin Center > Add Employee page
+            navigate(`/${domain}/admin/admin-center/add-employee`)
           }
           className="flex h-[27px] items-center gap-[6px] rounded-[5px] bg-[#FF6200] px-[12px] text-[11.5px] font-semibold text-white shadow-[0_2px_5px_rgba(255,98,0,0.2)] transition hover:bg-[#E55600]"
         >

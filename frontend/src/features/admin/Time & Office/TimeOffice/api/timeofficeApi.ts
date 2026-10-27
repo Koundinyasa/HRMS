@@ -90,7 +90,7 @@ export interface HoursPoint {
 export const timeofficeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    getDashboardSummary: builder.query<DashboardSummary, PunchPeriod>({
+    getTimeOfficeDashboardSummary: builder.query<DashboardSummary, PunchPeriod>({
       query: (period) => ({ url: `${BASE}/summary`, params: { period } }),
       providesTags: [{ type: "TimeOffice", id: "SUMMARY" }],
     }),
@@ -506,7 +506,7 @@ export const timeofficeApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetDashboardSummaryQuery,
+  useGetTimeOfficeDashboardSummaryQuery,
   useGetDashboardEmployeesQuery,
   useGetAttendanceOverviewQuery,
   useGetPunchModeDistributionQuery,

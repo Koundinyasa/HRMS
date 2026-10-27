@@ -30,6 +30,7 @@ export const baseApi = createApi({
     "BankFieldMapping",
     "SalaryComponents",
     "Recruitment",
+    "TimeOffice",
   ],
   endpoints: () => ({}),
 });

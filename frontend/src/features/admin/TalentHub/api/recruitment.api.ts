@@ -66,6 +66,7 @@ import type {
   SubmitInterviewerCompetencyFeedbackRequest,
   SubmitInterviewerCompetencyFeedbackResponse,
   RecruitmentInterviewStatusRequest,
+  TechnicalRoundTwoScheduleRequest,
   JobOpeningsApiResponse,
 } from "../types/recruitment.types";
 
@@ -545,6 +546,32 @@ export const recruitmentApi = baseApi.injectEndpoints({
         body,
       }),
       ...submissionToasts("Interviewer competency feedback submitted successfully."),
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    scheduleTechnicalRoundTwo: builder.mutation<
+      ScheduleRecruitmentInterviewResponse,
+      TechnicalRoundTwoScheduleRequest
+    >({
+      query: ({ interviewId, ...body }) => ({
+        url: `/recruitment/interviews/${interviewId}/technical-round-2`,
+        method: "POST",
+        body,
+      }),
+      ...submissionToasts("Technical 2 interview scheduled successfully."),
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    skipTechnicalRoundTwo: builder.mutation<
+      { success: boolean; message: string },
+      number
+    >({
+      query: (interviewId) => ({
+        url: `/recruitment/interviews/${interviewId}/technical-round-decision`,
+        method: "POST",
+        body: { needsTechnical2: false },
+      }),
+      ...submissionToasts("Candidate moved to Final Interview Approval."),
       invalidatesTags: ["Recruitment"],
     }),
 
@@ -1085,6 +1112,8 @@ export const {
   useCancelRecruitmentInterviewMutation,
   useSubmitRecruitmentInterviewFeedbackMutation,
   useSubmitInterviewerCompetencyFeedbackMutation,
+  useScheduleTechnicalRoundTwoMutation,
+  useSkipTechnicalRoundTwoMutation,
   useUpdateRecruitmentInterviewStatusMutation,
   useGetAssessmentScheduleDropdownsQuery,
   useScheduleAssessmentMutation,

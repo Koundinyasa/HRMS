@@ -56,39 +56,12 @@ import RequisitionPage from "@/features/employee/review/requisition/pages/Requis
 
 // Attendance Module — NEW
 import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
-import RaiseTicket from "@/features/employee/helpdesk/pages/RaiseTicket";
-import TicketStatus from "@/features/employee/helpdesk/pages/TicketStatus";
-import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
-import ApplyLeaveForEmployee from "@/features/employee/leave/components/Applyforemployee";
-import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
-import HolidayListPage from "@/features/employee/leave/pages/HolidayListPage";
-import LeaveApply from "@/features/employee/leave/pages/LeaveApply";
-import LeaveBalance from "@/features/employee/leave/pages/LeaveBalance";
-import LeaveCancellation from "@/features/employee/leave/pages/LeaveCancellation";
-import LeaveHistory from "@/features/employee/leave/pages/LeaveHistory";
-import LeaveStatus from "@/features/employee/leave/pages/LeaveStatus";
-import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
-import BankInformationPage from "@/features/employee/profile/pages/BankInformationPage";
-import EducationDetailsPage from "@/features/employee/profile/pages/EducationDetailsPage";
-import ExperienceDetailsPage from "@/features/employee/profile/pages/ExperienceDetailsPage";
-import FamilyDetailsPage from "@/features/employee/profile/pages/FamilyDetailsPage";
-import PersonalInformationPage from "@/features/employee/profile/pages/PersonalInformationPage";
-import UploadedDocumentsPage from "@/features/employee/profile/pages/UploadedDocumentsPage";
+//import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
+//import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
 import AssetRequestsApprovalPage from "@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage";
-import AttendanceOverview from "@/features/employee/review/attendanceOverview/pages/AttendanceOverview";
 import HelpdeskRequestsPage from "@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage";
-import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
-import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendance/components/LeaveCalendarHistory";
-import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
-import MissedPunchPage from "@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage";
-import PunchPage from "@/features/employee/review/timeOffice/punch/pages/PunchPage";
-import TAInsightsPage from "@/features/employee/review/timeOffice/taInsights/pages/TAInsightsPage";
 import ResignationRequestPage from "@/features/employee/review/resignationRequest/pages/ResignationRequestPage";
-import RequisitionPage from "@/features/employee/review/requisition/pages/RequisitionPage";
 import ReportsComingSoon from "@/features/employee/reports/pages/ReportsComingSoon";
-import ResignationPage from "@/features/employee/separation/pages/ResignationPage";
-import StatusPage from "@/features/employee/separation/pages/StatusPage";
-import WithdrawPage from "@/features/employee/separation/pages/WithdrawPage";
 
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {
@@ -390,3 +363,4 @@ export default function EmployeeRoutes() {
     </Routes>
   );
 }
+

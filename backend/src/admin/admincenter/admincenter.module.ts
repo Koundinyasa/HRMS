@@ -7,6 +7,7 @@ import { AdmincenterClassificationModule } from './classification/admincenter.cl
 // import { AdmincenterWorkFlowsModule } from './workflows/admincenter.workflows.module';
 // import { AdmincenteradminConfigModule } from './adminconfig/admincenter.adminconfig.module';
 
+import { EssModule } from './ess/ess.module';
 @Module({
   imports: [
     AdmincentercompanyModule,
@@ -16,6 +17,8 @@ import { AdmincenterClassificationModule } from './classification/admincenter.cl
     // AdmincenterEssModule,
     // AdmincenterWorkFlowsModule,
     // AdmincenteradminConfigModule,
+     EssModule,
+ 
   ],
 })
 export class AdmincenterModule {}

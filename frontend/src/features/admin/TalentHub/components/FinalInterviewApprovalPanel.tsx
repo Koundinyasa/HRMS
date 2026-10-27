@@ -358,7 +358,7 @@ export function FinalInterviewApprovalPanel() {
                     const rating =
                       rawRating === null || rawRating === undefined
                         ? "—"
-                        : `${text(rawRating)} / 5`;
+                        : `${text(rawRating)} / 10`;
                     return (
                       <tr
                         key={text(field(row, "id", "approvalId"), String(index))}

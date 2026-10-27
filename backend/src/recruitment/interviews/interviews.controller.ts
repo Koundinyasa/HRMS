@@ -19,6 +19,8 @@ import {
   InterviewListQueryDto,
   InterviewScheduleDto,
   InterviewStatusDto,
+  TechnicalRoundDecisionDto,
+  TechnicalRoundTwoScheduleDto,
   UpdateInterviewDto,
 } from './interviews.dto';
 
@@ -124,6 +126,32 @@ export class InterviewsController {
     return this.interviews.submitCompetencyFeedback(
       id,
       dto,
+      request.user.employeeId,
+    );
+  }
+
+  @Post('interviews/:id/technical-round-2')
+  scheduleTechnicalRoundTwo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: TechnicalRoundTwoScheduleDto,
+    @Req() request: { user: { employeeId: string } },
+  ) {
+    return this.interviews.scheduleTechnicalRoundTwo(
+      id,
+      dto,
+      request.user.employeeId,
+    );
+  }
+
+  @Post('interviews/:id/technical-round-decision')
+  technicalRoundDecision(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: TechnicalRoundDecisionDto,
+    @Req() request: { user: { employeeId: string } },
+  ) {
+    return this.interviews.setTechnicalRoundDecision(
+      id,
+      dto.needsTechnical2,
       request.user.employeeId,
     );
   }

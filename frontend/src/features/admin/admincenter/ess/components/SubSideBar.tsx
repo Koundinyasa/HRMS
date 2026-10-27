@@ -31,29 +31,9 @@ const ESS_LINKS = [
     icon: "Zap",
   },
   {
-    label: "Help Desk",
-    path: "help-desk",
-    icon: "Headphones",
-  },
-  {
     label: "Poll",
     path: "poll",
     icon: "BarChart3",
-  },
-  {
-    label: "Feeds",
-    path: "feeds",
-    icon: "Rss",
-  },
-  {
-    label: "Memories",
-    path: "memories",
-    icon: "Image",
-  },
-  {
-    label: "Wall Of Fame",
-    path: "wall-of-fame",
-    icon: "Award",
   },
 ];
 
@@ -61,14 +41,14 @@ export default function SubSideBar() {
   const { domain } = useParams();
 
   const {
-    subSidebarOpen,
-    closeSidebar,
+    isOpen,
+    toggleSidebar,
   } = useSidebar();
 
   // ESS dropdown state
   const [essOpen, setEssOpen] = useState(false);
 
-  if (!subSidebarOpen) {
+  if (!isOpen) {
     return null;
   }
 
@@ -179,7 +159,7 @@ export default function SubSideBar() {
                   onClick={() => {
                     // Navigate first through NavLink,
                     // then close the sidebar.
-                    closeSidebar();
+                    toggleSidebar();
                   }}
                   className={({ isActive }) =>
                     `

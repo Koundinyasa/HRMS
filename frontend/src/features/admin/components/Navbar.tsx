@@ -15,10 +15,11 @@ export default function Navbar() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
  
-  const { toggleSidebar } = useSidebar();
+  const { isOpen, toggleSidebar } = useSidebar();
   const { welcome } = useDashboard();
   const navigate = useNavigate();
   const { domain } = useParams();
+  const adminBasePath = domain ? `/${domain}/admin` : "/admin";
  
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -40,9 +41,11 @@ export default function Navbar() {
       {/* ── Left: Logo + company name ── */}
       <div className="flex shrink-0 items-center gap-3">
         <button
+          type="button"
           onClick={() => navigate(`${adminBasePath}/dashboard`)}
           className="flex flex-col items-center gap-0.5 shrink-0 hover:opacity-80 transition-opacity"
           title="Go to Dashboard"
+          aria-label="Go to Dashboard"
         >
           <div
             className="flex items-center justify-center rounded-lg shrink-0"
@@ -56,7 +59,10 @@ export default function Navbar() {
         </button>
  
         <button
+          type="button"
           onClick={toggleSidebar}
+          aria-label="Toggle sidebar"
+          aria-expanded={isOpen}
           className="text-slate-400 hover:text-slate-600 transition-colors shrink-0"
         >
           <Menu size={18} />

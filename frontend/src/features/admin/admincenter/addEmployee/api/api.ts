@@ -314,59 +314,59 @@ function authHeaders(): Record<string, string> {
  
 /** Map backend USP_GetCompanyMasterData_N shape → form MasterData */
 function mapMasterData(data: Record<string, unknown>): MasterData {
-  const companies = ((data.companies as Record<string, unknown>[]) || []).map((r) => ({
+  const companies = ((data.companies as any[]) || []).map((r) => ({
     id: Number(r.CompanyID),
     name: String(r.CompanyName ?? ""),
   })) as Option[];
  
-  const branches = ((data.branches as Record<string, unknown>[]) || []).map((r) => ({
+  const branches = ((data.branches as any[]) || []).map((r) => ({
     id: Number(r.BranchID),
     name: String(r.BranchName ?? ""),
     companyId: Number(r.companyId ?? r.CompanyID),
   })) as Branch[];
  
-  const departments = ((data.departments as Record<string, unknown>[]) || []).map((r) => ({
+  const departments = ((data.departments as any[]) || []).map((r) => ({
     id: Number(r.DepartmentID ?? r.DeptID),
     name: String(r.DepartmentName ?? r.DeptName ?? ""),
   })) as Option[];
  
-  const designations = ((data.designations as Record<string, unknown>[]) || []).map((r) => ({
+  const designations = ((data.designations as any[]) || []).map((r) => ({
     id: Number(r.DesignationID),
     name: String(r.DesignationName ?? "").trim(),
     deptId: Number(r.deptId ?? r.DeptID ?? r.DepartmentID),
   })) as Designation[];
  
-  const roles = ((data.roles as Record<string, unknown>[]) || []).map((r) => ({
+  const roles = ((data.roles as any[]) || []).map((r) => ({
     id: Number(r.Roleid ?? r.RoleID ?? r.RoleId),
     name: String(r.name ?? r.RoleName ?? r.Name ?? ""),
   })) as Option[];
  
-  const genders = ((data.genders as Record<string, unknown>[]) || []).map((r) => ({
+  const genders = ((data.genders as any[]) || []).map((r) => ({
     id: Number(r.GenderId ?? r.GenderID),
     name: String(r.Gendername ?? r.GenderName ?? r.name ?? ""),
   })) as Option[];
  
-  const employmentTypes = ((data.employmentTypes as Record<string, unknown>[]) || []).map((r) => ({
+  const employmentTypes = ((data.employmentTypes as any[]) || []).map((r) => ({
     id: Number(r.EmploymentTypeId ?? r.EmploymentTypeID),
     name: String(r.EmploymentType ?? r.EmploymentTypeName ?? r.name ?? ""),
   })) as Option[];
  
-  const employmentStatuses = ((data.employmentStatuses as Record<string, unknown>[]) || []).map((r) => ({
+  const employmentStatuses = ((data.employmentStatuses as any[]) || []).map((r) => ({
     id: Number(r.EmploymentStatusId ?? r.EmploymentStatusID),
     name: String(r.EmploymentStatus ?? r.EmploymentStatusName ?? r.name ?? ""),
   })) as Option[];
  
-  const maritalStatuses = ((data.maritalStatuses as Record<string, unknown>[]) || []).map((r) => ({
+  const maritalStatuses = ((data.maritalStatuses as any[]) || []).map((r) => ({
     id: Number(r.id ?? r.MaritalStatusID ?? r.MaritalStatusId),
     name: String(r.name ?? r.MaritalStatusName ?? ""),
   })) as Option[];
  
-  const grades = ((data.grades as Record<string, unknown>[]) || []).map((r) => ({
+  const grades = ((data.grades as any[]) || []).map((r) => ({
     id: String(r.Gradeid ?? r.GradeID ?? r.Grade ?? ""),
     name: String(r.Gradename ?? r.GradeName ?? r.Grade ?? ""),
   })) as Option<string>[];
  
-  const managers = ((data.managers as Record<string, unknown>[]) || []).map((r) => ({
+  const managers = ((data.managers as any[]) || []).map((r) => ({
     id: String(r.EmployeeID ?? r.EmployeeId ?? "").trim(),
     name: String(r.Employeename ?? r.EmployeeName ?? r.name ?? "").trim(),
     branchId: Number(r.branchId ?? r.BranchID),
@@ -410,9 +410,7 @@ export async function fetchMasterData(): Promise<MasterData> {
     });
     return mapMasterData(res.data ?? {});
   } catch (err) {
-    throw new Error(axiosErrorMessage(err, "Failed to load dropdown data"), {
-      cause: err,
-    });
+    throw new Error(axiosErrorMessage(err, "Failed to load dropdown data"));
   }
 }
  
@@ -425,7 +423,6 @@ export function buildPayload(
   photo: File | null,
   _createdBy?: string,
 ): CreateEmployeePayload {
-  void _createdBy;
   const str = (n: FieldName): string | null => values[n].trim() || null;
   const num = (n: FieldName): number | null => (values[n] ? Number(values[n]) : null);
   const email = values.Email.trim().toLowerCase();
@@ -492,10 +489,7 @@ export async function saveEmployee(
     void photo;
     return res.data as CreateEmployeeResult;
   } catch (err) {
-    throw new Error(
-      axiosErrorMessage(err, "Employee could not be created. Try again."),
-      { cause: err },
-    );
+    throw new Error(axiosErrorMessage(err, "Employee could not be created. Try again."));
   }
 }
  

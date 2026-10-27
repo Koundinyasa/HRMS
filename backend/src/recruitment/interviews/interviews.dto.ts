@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsIn,
   IsInt,
   IsNumber,
@@ -197,4 +198,29 @@ export class InterviewStatusDto {
   @IsString()
   @MaxLength(500)
   note?: string;
+}
+
+export class TechnicalRoundTwoScheduleDto {
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  date!: string;
+
+  @IsString()
+  @Matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+  time!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsIn([19, 20])
+  interviewModeId!: number;
+
+  @IsString()
+  @MaxLength(25)
+  @Matches(/\S/)
+  interviewerEmployeeId!: string;
+}
+
+export class TechnicalRoundDecisionDto {
+  @IsBoolean()
+  needsTechnical2!: boolean;
 }

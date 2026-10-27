@@ -90,6 +90,7 @@ export type CreateRequisitionRequest = {
   branchId: number;
   designationId: number;
   jobTitle: string;
+  jobDescription: string;
   vacancies: number;
   salaryRangeMin?: number;
   salaryRangeMax?: number;
@@ -235,12 +236,13 @@ export type ScheduledCandidateInterview = {
 export type RecruitmentInterview = {
   id: number;
   code: string;
-  applicationId: number;
-  applicationCode: string;
+  applicationId?: number;
+  applicationCode?: string;
   candidateCode: string;
   candidateName: string;
-  candidateEmail: string;
+  candidateEmail?: string;
   position: string;
+  interviewType: string;
   roundName: string;
   scheduledAt: string;
   durationMinutes: number;
@@ -255,16 +257,26 @@ export type RecruitmentInterview = {
 export type InterviewerFeedbackWorklistItem = {
   id: number;
   code: string;
-  applicationId: number;
-  applicationCode: string;
+  applicationId?: number;
+  applicationCode?: string;
   candidateCode: string;
   candidateName: string;
-  candidateEmail: string;
+  candidateEmail?: string;
   position: string;
+  interviewType: string;
   roundName: string;
   scheduledAt: string;
   status: "scheduled" | "completed";
   interviewerName: string;
+  feedbackSubmitted: boolean;
+  canSubmitFeedback: boolean;
+  feedbackRating: number | null;
+  feedbackText: string | null;
+  feedbackDetails: Array<{
+    categoryName: string;
+    rating: number | null;
+    comments: string | null;
+  }>;
 };
 
 export type InterviewFeedbackCategory = {
@@ -365,6 +377,14 @@ export type RecruitmentInterviewStatusRequest = {
   interviewId: number;
   status: "completed" | "no_show";
   note?: string;
+};
+
+export type TechnicalRoundTwoScheduleRequest = {
+  interviewId: number;
+  date: string;
+  time: string;
+  interviewModeId: number;
+  interviewerEmployeeId: string;
 };
 
 export type FinalApprovalDecision = "pending" | "selected" | "rejected" | "all";

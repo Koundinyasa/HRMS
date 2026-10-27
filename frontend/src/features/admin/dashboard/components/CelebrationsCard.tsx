@@ -22,6 +22,8 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
   const [openAllModal, setOpenAllModal] = useState(false);
   const [selected, setSelected] = useState<UpcomingEvent | null>(null);
 
+  const celebration = events[currentIndex];
+
   useEffect(() => {
     if (events.length <= 1) return;
     const interval = setInterval(() => {
@@ -30,9 +32,11 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
     return () => clearInterval(interval);
   }, [events]);
 
-  const celebration = events.length
-    ? events[currentIndex % events.length]
-    : undefined;
+  // Keep index in range if the events array shrinks (e.g. refetch)
+  useEffect(() => {
+    if (currentIndex >= events.length) setCurrentIndex(0);
+  }, [events, currentIndex]);
+
   return (
     <>
       {/* Celebration Card */}
