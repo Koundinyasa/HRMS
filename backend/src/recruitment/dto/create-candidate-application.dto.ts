@@ -35,3 +35,4 @@ export class CreateCandidateApplicationDto {
   @IsString()
   referredBy?: string;
 }
+ 

@@ -217,19 +217,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { usePtDetails } from "../hooks/usePtDetails";
 import { useToast, Toast } from "./common/Toast";
-import { Plus, Loader2 } from "lucide-react";
-import { EffectiveFromBar } from "./common/EffectiveFromBar";
-import { FormSelect } from "./common/FormSelect";
+import { CalendarDays, Clock3, Plus, Loader2 } from "lucide-react";
+import { MonthPicker } from "@/components/ui/monthpicker";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 type LocalSlab = { fromSalary: string; toSalary: string; ptAmount: string };
-
-const PERIOD_OPTIONS = ["Monthly", "Quarterly", "Half Yearly", "Yearly"];
-
-const DEFAULT_SLABS: LocalSlab[] = [
-  { fromSalary: "0", toSalary: "15000", ptAmount: "0" },
-  { fromSalary: "15001", toSalary: "20000", ptAmount: "150" },
-  { fromSalary: "20001", toSalary: "999999999", ptAmount: "200" },
-];
 
 export default function PtDetailsForm() {
   const { ptSlabs, isLoading, updatePt, isSaving, refetch } = usePtDetails();
@@ -245,7 +237,7 @@ export default function PtDetailsForm() {
   if (ptSlabs && ptSlabs.length > 0 && ptSlabs !== previousSlabs) {
       setPreviousSlabs(ptSlabs);
       setEffectiveFrom(ptSlabs[0].effectiveFrom);
-      setPeriod(ptSlabs[0].period || "Monthly");
+      setPeriod(ptSlabs[0].period);
       setSlabs(
         ptSlabs.map((item) => ({
           fromSalary: String(item.fromSalary),
@@ -264,6 +256,8 @@ export default function PtDetailsForm() {
   function addRow() {
     setSlabs((prev) => [...prev, { fromSalary: "", toSalary: "", ptAmount: "" }]);
   }
+
+  const { toast, showToast } = useToast();
 
   async function handleSave() {
     const payload = {
@@ -286,21 +280,33 @@ export default function PtDetailsForm() {
   }
 
   if (isLoading) {
-    return <div className="p-4 text-sm text-[#626262] sm:p-6">Loading PT Details...</div>;
+    return <div className="p-4 sm:p-6 text-sm text-[#626262]">Loading PT Details...</div>;
   }
 
   return (
-    <div className="w-full min-w-0 max-w-full font-['Urbanist'] text-[#131313]">
+    <div className="w-full min-w-0 max-w-full">
       <Toast toast={toast} />
-      <Card
-        data-company-module-card
-        className="w-full min-w-0 rounded-2xl border border-[#EDEDED] bg-white shadow-sm"
-      >
-        <CardContent className="space-y-6 p-4 sm:space-y-8 sm:p-6">
-          <EffectiveFromBar value={effectiveFrom} onChange={setEffectiveFrom} />
+      <Card data-company-module-card className="w-full min-w-0 rounded-2xl border border-[#EDEDED] bg-white shadow-sm">
+        <CardContent className="p-4 sm:p-6 space-y-6 sm:space-y-8">
+          <div className="rounded-2xl bg-[#ECE7FF] px-3 sm:px-4 py-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-white shrink-0">
+                <CalendarDays className="h-5 w-5 text-[#7A5BED]" />
+              </div>
+              <Label className="text-sm font-semibold whitespace-nowrap">Effective From</Label>
+              <div className="w-full max-w-[160px] sm:w-36 shrink-0">
+                <MonthPicker
+                  value={effectiveFrom}
+                  onChange={(value) => setEffectiveFrom(value)}
+                  className="h-9"
+                />
+              </div>
+              <Clock3 className="h-5 w-5 text-[#2E2E2E] hidden sm:block shrink-0 ml-1" />
+            </div>
+          </div>
 
           <div className="space-y-2">
-            <Label className="text-[13px] font-medium leading-5 text-[#2E2E2E]">
+            <Label className="text-sm font-medium">
               Period <span className="text-[#DD3232]">*</span>
             </Label>
             <div className="w-full sm:w-72 max-w-full">
@@ -324,40 +330,40 @@ export default function PtDetailsForm() {
           </div>
 
           <div>
-            <div className="mb-4 flex items-center gap-4 sm:mb-5">
+            <div className="mb-4 sm:mb-5 flex items-center gap-4">
               <h3 className="whitespace-nowrap text-base font-semibold text-black">Slab Rates</h3>
               <div className="h-px flex-1 bg-[#DDDDDD]" />
             </div>
 
-            <div className="-mx-1 overflow-x-auto sm:mx-0">
+            <div className="overflow-x-auto -mx-1 sm:mx-0">
               <div className="min-w-[480px] sm:min-w-0">
-                <div className="grid grid-cols-4 gap-2 rounded-xl bg-[#DDDDDD] px-3 py-3 text-xs font-semibold text-[#2E2E2E] sm:gap-4 sm:px-4 sm:text-sm">
+                <div className="grid grid-cols-4 gap-2 sm:gap-4 rounded-xl bg-[#DDDDDD] px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-[#2E2E2E]">
                   <div>From Salary</div>
                   <div>To Salary</div>
                   <div>PT Amount</div>
                   <div className="text-center">Action</div>
                 </div>
 
-                <div className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
+                <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
                   {slabs.map((slab, index) => (
                     <div key={index} className="grid grid-cols-4 items-center gap-2 sm:gap-4">
                       <Input
                         value={slab.fromSalary}
                         onChange={(e) => handleSlabChange(index, "fromSalary", e.target.value)}
                         placeholder="0"
-                        className="h-10 w-full rounded-xl border-[#DDDDDD] text-sm sm:h-11"
+                        className="h-10 sm:h-11 rounded-xl border-[#DDDDDD] w-full text-sm"
                       />
                       <Input
                         value={slab.toSalary}
                         onChange={(e) => handleSlabChange(index, "toSalary", e.target.value)}
                         placeholder="0"
-                        className="h-10 w-full rounded-xl border-[#DDDDDD] text-sm sm:h-11"
+                        className="h-10 sm:h-11 rounded-xl border-[#DDDDDD] w-full text-sm"
                       />
                       <Input
                         value={slab.ptAmount}
                         onChange={(e) => handleSlabChange(index, "ptAmount", e.target.value)}
                         placeholder="0"
-                        className="h-10 w-full rounded-xl border-[#DDDDDD] text-sm sm:h-11"
+                        className="h-10 sm:h-11 rounded-xl border-[#DDDDDD] w-full text-sm"
                       />
                       <div className="flex justify-center">
                         {index === slabs.length - 1 && (
@@ -365,7 +371,7 @@ export default function PtDetailsForm() {
                             type="button"
                             variant="outline"
                             onClick={addRow}
-                            className="h-10 w-10 rounded-xl border border-[#ECE7FF] p-0 hover:bg-[#F6F3FF] sm:h-11 sm:w-11"
+                            className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-[#ECE7FF] p-0 hover:bg-[#F6F3FF]"
                           >
                             <Plus className="h-5 w-5 text-[#7A5BED]" />
                           </Button>
@@ -378,15 +384,11 @@ export default function PtDetailsForm() {
             </div>
           </div>
 
-          <div className="flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#EDEDED] pt-4 sm:flex-row sm:items-center sm:gap-4 sm:pt-6">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 border-t border-[#EDEDED] pt-4 sm:pt-6">
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setPeriod("Monthly");
-                setSlabs(DEFAULT_SLABS);
-              }}
-              className="h-10 w-full rounded-xl border border-[#DDDDDD] px-6 font-medium text-[#2E2E2E] hover:bg-[#DDDDDD] sm:h-11 sm:w-auto"
+              className="h-10 sm:h-11 rounded-xl border border-[#DDDDDD] px-6 font-medium text-[#2E2E2E] hover:bg-[#DDDDDD] w-full sm:w-auto"
             >
               Load Default Value
             </Button>
@@ -394,7 +396,7 @@ export default function PtDetailsForm() {
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-10 w-full rounded-xl bg-[#7A5BED] px-8 font-medium text-white hover:bg-[#5932E9] disabled:opacity-50 sm:h-11 sm:w-auto"
+              className="h-10 sm:h-11 rounded-xl bg-[#7A5BED] px-8 font-medium text-white hover:bg-[#5932E9] disabled:opacity-50 w-full sm:w-auto"
             >
               {isSaving && <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />}
               {isSaving ? "Saving..." : "Save"}

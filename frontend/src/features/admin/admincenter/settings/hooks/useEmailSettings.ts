@@ -3,7 +3,6 @@ import {
   useGetEmailTypesQuery,
   useGetEmailPayslipSettingsQuery,
   useUpdateEmailPayslipSettingsMutation,
-  getApiErrorMessage,
 } from "../api/settingsapi";
 
 const DEFAULT_PAYSLIP_BODY = `
@@ -22,11 +21,8 @@ const DEFAULT_PAYSLIP_BODY = `
 
 export function useEmailSettings() {
   const { data: emailTypes } = useGetEmailTypesQuery();
-  const {
-    data: payslipSettings,
-    isLoading,
-    isError: loadError,
-  } = useGetEmailPayslipSettingsQuery();
+  const { data: payslipSettings, isLoading } =
+    useGetEmailPayslipSettingsQuery();
   const [updateEmailPayslipSettings, { isLoading: isSaving }] =
     useUpdateEmailPayslipSettingsMutation();
 
@@ -45,10 +41,7 @@ export function useEmailSettings() {
 
   const handleSave = async () => {
     if (type !== "Pay Slip") {
-      setMessage({
-        type: "error",
-        text: `Saving is not available yet for "${type}".`,
-      });
+      console.warn(`No save endpoint exists yet for email type "${type}"`);
       return;
     }
 
@@ -61,13 +54,8 @@ export function useEmailSettings() {
         subject,
         body,
       }).unwrap();
-      setMessage({ type: "success", text: "Email settings saved." });
     } catch (err) {
       console.error("Failed to save email settings", err);
-      setMessage({
-        type: "error",
-        text: getApiErrorMessage(err, "Failed to save email settings"),
-      });
     }
   };
 
@@ -86,8 +74,6 @@ export function useEmailSettings() {
     setBody,
     isLoading,
     isSaving,
-    loadError,
-    message,
     handleSave,
     handleReset,
     DEFAULT_PAYSLIP_BODY,

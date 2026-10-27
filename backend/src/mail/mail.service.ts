@@ -1318,6 +1318,7 @@ export class MailService {
 `,
     });
   }
+ 
   async sendOtp(email: string, otp: string): Promise<void> {
     await this.transporter.sendMail({
       from: `"HRMS System" <${this.fromAddress}>`,
@@ -1345,300 +1346,23 @@ export class MailService {
         </div>`,
     });
   }
-
-  async sendCelebrationWish(
-    email: string,
-    employeeName: string,
-    eventType: 'BIRTHDAY' | 'WORK_ANNIVERSARY',
-    message: string,
-    senderName: string,
-    senderEmail: string,
-  ): Promise<void> {
-    const isBirthday = eventType === 'BIRTHDAY';
-
-    const title = isBirthday ? 'Happy Birthday!' : 'Happy Work Anniversary!';
-
-    const icon = isBirthday ? '🎂' : '🎉';
-
-    const safeEmployeeName = employeeName || 'Colleague';
-    const safeSenderName = senderName || 'HRMS Team';
-
-    await this.transporter.sendMail({
-      from: `"HRMS System" <${this.fromAddress}>`,
-      to: email,
-
-      subject: isBirthday
-        ? `🎂 Birthday Wishes from ${safeSenderName}`
-        : `🎉 Work Anniversary Wishes from ${safeSenderName}`,
-
-      html: `
-<!DOCTYPE html>
-<html lang="en">
  
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <title>${title}</title>
-</head>
- 
-<body
-  style="
-    margin:0;
-    padding:0;
-    background:#f4f6f9;
-    font-family:Arial, Helvetica, sans-serif;
-    color:#1f2937;
-  "
->
- 
-  <!-- OUTER BACKGROUND -->
-  <table
-    width="100%"
-    cellpadding="0"
-    cellspacing="0"
-    border="0"
-    style="
-      background:#f4f6f9;
-      padding:28px 15px;
-    "
-  >
-    <tr>
-      <td align="center">
- 
-        <!-- MAIN CARD -->
-        <table
-          width="840"
-          cellpadding="0"
-          cellspacing="0"
-          border="0"
-          style="
-            max-width:840px;
-            width:100%;
-            background:#ffffff;
-            border-radius:14px;
-            overflow:hidden;
-            box-shadow:0 6px 20px rgba(0,0,0,0.08);
-          "
-        >
- 
-          <!-- HEADER -->
-          <tr>
-            <td
-              align="center"
-              style="
-                padding:42px 45px 30px;
-                background:#ffffff;
-              "
-            >
- 
-              <!-- CELEBRATION ICON -->
-              <div
-                style="
-                  font-size:56px;
-                  line-height:1;
-                  margin-bottom:18px;
-                "
-              >
-                ${icon}
-              </div>
- 
-              <!-- TITLE -->
-              <h1
-                style="
-                  margin:0;
-                  color:#2563eb;
-                  font-size:36px;
-                  line-height:1.3;
-                  font-weight:700;
-                "
-              >
-                ${title}
-              </h1>
- 
-            </td>
-          </tr>
- 
- 
-          <!-- TOP DIVIDER -->
-          <tr>
-            <td style="padding:0 45px;">
-              <div
-                style="
-                  height:1px;
-                  background:#d9dee7;
-                "
-              ></div>
-            </td>
-          </tr>
- 
- 
-          <!-- MESSAGE CONTENT -->
-          <tr>
-            <td
-              style="
-                padding:28px 45px 30px;
-              "
-            >
- 
-              <!-- GREETING -->
-              <p
-                style="
-                  margin:0 0 22px;
-                  font-size:23px;
-                  line-height:1.5;
-                  color:#222222;
-                "
-              >
-                Dear
-                <strong>${safeEmployeeName}</strong>,
-              </p>
- 
- 
-              <!-- MESSAGE BOX -->
-              <table
-                width="100%"
-                cellpadding="0"
-                cellspacing="0"
-                border="0"
-                style="
-                  background:#f8fafc;
-                  border-radius:6px;
-                  border-left:6px solid #2563eb;
-                  margin-bottom:34px;
-                "
-              >
-                <tr>
-                  <td
-                    style="
-                      padding:24px 30px;
-                    "
-                  >
- 
-                    <p
-                      style="
-                        margin:0;
-                        font-size:21px;
-                        line-height:1.55;
-                        color:#355274;
-                      "
-                    >
-                      ${message}
-                    </p>
- 
-                  </td>
-                </tr>
-              </table>
- 
- 
-              <!-- SENDER -->
-              <p
-                style="
-                  margin:0 0 3px;
-                  font-size:20px;
-                  line-height:1.5;
-                  color:#374151;
-                "
-              >
-                Best wishes,
-              </p>
- 
- 
-              <p
-                style="
-                  margin:0;
-                  font-size:20px;
-                  line-height:1.5;
-                  font-weight:700;
-                  color:#355274;
-                  text-transform:uppercase;
-                "
-              >
-                ${safeSenderName}
-              </p>
- 
-            </td>
-          </tr>
- 
- 
-          <!-- BOTTOM DIVIDER -->
-          <tr>
-            <td style="padding:0 45px;">
-              <div
-                style="
-                  height:1px;
-                  background:#d9dee7;
-                "
-              ></div>
-            </td>
-          </tr>
- 
- 
-          <!-- FOOTER -->
-          <tr>
-            <td
-              align="center"
-              style="
-                padding:24px 45px 28px;
-              "
-            >
- 
-              <!-- COPYRIGHT -->
-              <p
-                style="
-                  margin:0 0 12px;
-                  font-size:17px;
-                  line-height:1.5;
-                  color:#8da1bb;
-                "
-              >
-                © HRMS
-              </p>
- 
- 
-              <!-- AUTO GENERATED MESSAGE -->
-              <p
-                style="
-                  margin:0;
-                  font-size:16px;
-                  line-height:1.5;
-                  color:#8da1bb;
-                  font-style:italic;
-                "
-              >
-                This is an auto-generated email.
-                Please do not reply to this message.
-              </p>
- 
-            </td>
-          </tr>
- 
-        </table>
- 
-      </td>
-    </tr>
-  </table>
- 
-</body>
-</html>
-    `,
-    });
-  }
   async sendWish(
     email: string,
     eventType: 'BIRTHDAY' | 'WORK_ANNIVERSARY',
     message: string,
     senderName: string,
   ): Promise<void> {
-    await this.sendCelebrationWish(
-      email,
-      '',
-      eventType,
-      message,
-      senderName,
-      '',
-    );
+    const eventLabel =
+      eventType === 'BIRTHDAY' ? 'birthday' : 'work anniversary';
+ 
+    await this.transporter.sendMail({
+      from: `"HRMS System" <${this.fromAddress}>`,
+      to: email,
+      subject: `A ${eventLabel} wish from your colleague`,
+      text: `${senderName} sent you a ${eventLabel} wish:\n\n${message}`,
+    });
   }
 }
+ 
+ 

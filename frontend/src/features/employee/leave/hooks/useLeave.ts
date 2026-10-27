@@ -5,14 +5,14 @@ import {
   useGetLeaveStatusQuery,
   useGetLeaveTypesQuery,
 } from "../api/leaveApi";
-
+// 🔴 CHANGED (1 of 3): use the dashboard holiday API (known shape: { success, data: [...] })
 import { useGetHolidayListQuery } from "../../dashboard/api/dashboardApi";
 
 export const useLeave = (employeeId?: string) => {
   const leaveTypesQuery = useGetLeaveTypesQuery(employeeId, {
     skip: employeeId === "",
   });
-  const holidayListQuery = useGetHolidayListQuery();
+  const holidayListQuery = useGetHolidayListQuery(); // 🔴 CHANGED (2 of 3): was useGetLeaveHolidayListQuery()
   const leaveStatusQuery = useGetLeaveStatusQuery();
   const leaveHistoryQuery = useGetLeaveHistoryQuery();
   const leaveBalanceQuery = useGetLeaveBalanceQuery();
@@ -48,13 +48,24 @@ export const useLeave = (employeeId?: string) => {
     [holidays],
   );
 
-
+  // ---- DEBUG LOGGING ----
+  console.log("=== useLeave DEBUG ===");
+  console.log("HOLIDAYS:", holidays, "BLOCKED:", [...blockedHolidayIsos]);
+  console.log("BALANCE RAW DATA:", leaveBalanceQuery.data);
+  console.log("BALANCE STATUS:", leaveBalanceQuery.status);
+  console.log("BALANCE isLoading:", leaveBalanceQuery.isLoading);
+  console.log("BALANCE isFetching:", leaveBalanceQuery.isFetching);
+  console.log("BALANCE isSuccess:", leaveBalanceQuery.isSuccess);
+  console.log("BALANCE ERROR:", leaveBalanceQuery.error);
+  console.log("BALANCE SECTIONS:", leaveBalanceQuery.data?.sections);
 
   const leaveBalance =
     leaveBalanceQuery.data?.sections?.find(
       (section) => section.title?.trim().toLowerCase() === "leave balance",
     ) ?? null;
 
+  console.log("LEAVE BALANCE (matched section):", leaveBalance);
+  // ---- END DEBUG LOGGING ----
 
   return {
     leaveTypes: Array.isArray(leaveTypesQuery.currentData)

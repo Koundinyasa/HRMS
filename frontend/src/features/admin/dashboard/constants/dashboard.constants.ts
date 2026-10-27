@@ -1,17 +1,46 @@
-
-
-
-
 import type { StatCardConfig, ActivityItem } from '../types/dashboard.types';
 
-// Styling-only update: icon background colors and icons now match Figma.
-// Keys, labels, filterType and order are unchanged.
+// export const STAT_CARDS: StatCardConfig[] = [
+//   {
+//     key:    'totalEmployees',
+//     label:  'Total Current Employees',
+//     icon:   'Users',
+//     iconBg: '#6366F1',
+//   },
+//   {
+//     key:    'confirmationPending',
+//     label:  'Confirmation Pending',
+//     icon:   'UserCheck',
+//     iconBg: '#F97316',
+//   },
+//   {
+//     key:    'joinedEmployee',
+//     label:  'Joined Employee',
+//     icon:   'UserPlus',
+//     iconBg: '#10B981',
+//   },
+//   {
+//     key:    'openPositions',
+//     label:  'Open Positions',
+//     icon:   'Briefcase',
+//     iconBg: '#EC4899',
+//   },
+//   {
+//     key:    'leftEmployee',
+//     label:  'Left Employee',
+//     icon:   'UserMinus',
+//     iconBg: '#EF4444',
+//   },
+// ];
+
+
+
 export const STAT_CARDS: StatCardConfig[] = [
-  { key: 'totalEmployees', label: 'Total Current Employees', icon: 'Users', iconBg: '#2F80ED', filterType: 'all' },
-  { key: 'confirmationPending', label: 'Confirmation Pending', icon: 'UserSearch', iconBg: '#F2711C', filterType: 'confirmation-pending' },
-  { key: 'joinedEmployee', label: 'Joined Employee', icon: 'UserPlus', iconBg: '#219653', filterType: 'joined' },
-  { key: 'leftEmployee', label: 'Left Employee', icon: 'UserMinus', iconBg: '#EB3B3B', filterType: 'left' },
-  { key: 'openPositions', label: 'Open Positions', icon: 'FileUser', iconBg: '#E84C9A', filterType: 'open' },
+  { key: 'totalEmployees', label: 'Total Current Employees', icon: 'Users', iconBg: '#6366F1', filterType: 'all' },
+  { key: 'confirmationPending', label: 'Confirmation Pending', icon: 'UserCheck', iconBg: '#F97316', filterType: 'confirmation-pending' },
+  { key: 'joinedEmployee', label: 'Joined Employee', icon: 'UserPlus', iconBg: '#10B981', filterType: 'joined' },
+  { key: 'openPositions', label: 'Open Positions', icon: 'Briefcase', iconBg: '#EC4899', filterType: 'open' },
+  { key: 'leftEmployee', label: 'Left Employee', icon: 'UserMinus', iconBg: '#EF4444', filterType: 'left' },
 ];
 
 export const SIDEBAR_LINKS = [
@@ -23,6 +52,7 @@ export const SIDEBAR_LINKS = [
   { label: 'Insights', icon: 'BarChart3', path: 'insights' },
   { label: 'Organizations', icon: 'Building2', path: 'organizations' },
 ] as const;
+
 
 export const CLASSIFICATION_OPTIONS = [
   { id: '1',       label: 'Company' },
@@ -36,6 +66,7 @@ export const CLASSIFICATION_OPTIONS = [
   { id: '10',      label: 'Attendance'},
   { id: '11',      label: 'Bank' },
 ] as const;
+
 
 export type ClassificationId = (typeof CLASSIFICATION_OPTIONS)[number]['id'];
 

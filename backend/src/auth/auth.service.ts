@@ -1097,16 +1097,16 @@ export class AuthService {
           'Invalid or expired captcha. Please refresh and try again.',
         );
       }
-
+ 
       const pool = await this.dbService.connect();
-
+ 
       const result = await pool
         .request()
         .input('EmailID', dto.userId)
         .execute('USP_Validateuser');
-
+ 
       const user = result.recordset[0];
-
+ 
       if (!user) {
         throw new UnauthorizedException('Invalid UserID or Password');
       }
@@ -1136,9 +1136,9 @@ export class AuthService {
           'Invalid UserID or Password',
         );
       }
-
+ 
       const isFirstLogin = user.LastLoginDateTime === null;
-
+ 
       // update login ONLY after first login is completed
       if (!isFirstLogin) {
         await pool
@@ -1170,7 +1170,7 @@ export class AuthService {
       // Fresh session boundary — wipe any chatbot flow left over
       // from a previous session for this employee.
       this.clearChatbotState(String(user.EmployeeID));
-
+ 
       return {
         success: true,
         message: loginMessage,
@@ -1186,7 +1186,7 @@ export class AuthService {
       throw error;
     }
   }
-
+ 
   // ================= VERIFY COMPANY =================
  async verifyCompany(tenantCode: string) {
   try {
@@ -1626,14 +1626,14 @@ export class AuthService {
     throw error;
   }
   }
-
+ 
   async sendWish(senderEmployeeId: string, dto: SendWishDto) {
     const pool = await this.dbService.connect();
     const result = await pool
       .request()
       .input('EmployeeID', dto.employeeId)
       .execute('USP_GetUserInfo');
-
+ 
     const employee = result.recordset?.[0];
     if (!employee) {
       throw new NotFoundException('Employee not found');
@@ -1641,7 +1641,7 @@ export class AuthService {
     if (!employee.Email) {
       throw new BadRequestException('Employee does not have an email address');
     }
-
+ 
     const senderResult = await pool
       .request()
       .input('EmployeeID', senderEmployeeId)
@@ -1650,14 +1650,14 @@ export class AuthService {
     if (!sender) {
       throw new NotFoundException('Sender not found');
     }
-
+ 
     await this.mailService.sendWish(
       employee.Email,
       dto.eventType,
       dto.message,
       sender.FullName,
     );
-
+ 
     return {
       success: true,
       message: 'Wish sent successfully',
