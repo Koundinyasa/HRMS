@@ -44,6 +44,4 @@ export interface RegistrationStatusResponse {
   registeredAngles: string[];
   missingAngles: string[];
   lastUpdated: string | null;
-  // True when the active registration has a saved profile photo.
-  hasPhoto?: boolean;
 }

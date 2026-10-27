@@ -3,9 +3,6 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import FormData from 'form-data';
 import * as sql from 'mssql';
-import { promises as fs } from 'fs';
-import * as path from 'path';
-import { randomUUID } from 'crypto';
 import { DatabaseService } from '../../database/database.service';
 
 const PYTHON_ATTENDANCE_URL = 'http://127.0.0.1:8000';
@@ -40,8 +37,6 @@ export interface RegistrationStatusResult {
   registeredAngles: string[];
   missingAngles: string[];
   lastUpdated: string | null;
-  // PHOTO — true when the active enrollment has a saved profile photo.
-  hasPhoto?: boolean;
 }
 
 export interface FaceStatusResult {
@@ -120,18 +115,6 @@ export class AttendanceService {
   private readonly ACCURACY_THRESHOLD_METERS = 200;
   private readonly ESS_DEVICE_ID = 4;
   private readonly ANGLE_LABEL_COLUMN_READY = true;
-
-  // PHOTO — step-6 profile photo saved at enrollment. The image file goes
-  // in FACE_PHOTO_DIR and only its RELATIVE path (<EmployeeID>/<guid>.jpg)
-  // is stored, in EmployeeFaceVectors.ImagePath. Run the ImagePath
-  // migration first; until then the photo is skipped (and logged) but
-  // enrollment itself still succeeds. Override the folder with the
-  // FACE_PHOTO_DIR env var if the photos should live elsewhere.
-  private readonly IMAGE_PATH_COLUMN_READY = true;
-  private readonly FACE_PHOTO_DIR =
-    process.env.FACE_PHOTO_DIR ??
-    path.join(process.cwd(), 'src', 'employee', 'attendance', 'photos');
-  private readonly FACE_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
   // NEW — WFH's punch-out-vs-punch-in self-check. Flag only, never
   // blocks, same philosophy as GEOFENCE_REQUIRED/ACCURACY_CHECK_REQUIRED
@@ -245,7 +228,7 @@ export class AttendanceService {
       const result = await pool
         .request()
         .input('EmployeeID', sql.VarChar(25), employeeId).query(`
-          SELECT AngleLabel, EnrolledDateTime${this.IMAGE_PATH_COLUMN_READY ? ', ImagePath' : ''}
+          SELECT AngleLabel, EnrolledDateTime
           FROM EmployeeFaceVectors
           WHERE EmployeeID = @EmployeeID AND IsActive = 1
           ORDER BY EnrolledDateTime DESC
@@ -276,7 +259,6 @@ export class AttendanceService {
         lastUpdated: rows[0]?.EnrolledDateTime
           ? new Date(rows[0].EnrolledDateTime).toISOString()
           : null,
-        hasPhoto: rows.some((r) => !!r.ImagePath),
       };
     } catch (err) {
       this.logger.error(
@@ -1028,7 +1010,6 @@ export class AttendanceService {
   async enrollFace(
     employeeId: string,
     frames: Express.Multer.File[],
-    photo?: Express.Multer.File,
   ): Promise<EnrollResult> {
     const computed = await this.computeFaceVectors(frames);
 
@@ -1096,12 +1077,6 @@ export class AttendanceService {
         };
       }
 
-      // PHOTO — only after the vectors are safely saved. Never throws: a
-      // photo problem must not undo or fail a successful registration.
-      if (photo) {
-        await this.saveEnrollmentPhoto(employeeId, photo);
-      }
-
       return {
         success: true,
         message: `Face registered successfully (${savedCount} angle${savedCount === 1 ? '' : 's'} saved). You can now use it to punch in and out.`,
@@ -1114,109 +1089,6 @@ export class AttendanceService {
         success: false,
         message: 'Could not register your face. Please try again.',
       };
-    }
-  }
-
-  // PHOTO — the relative path of the active enrollment's profile photo, or
-  // null when there is none (older registrations, or the column not there
-  // yet). Never throws.
-  private async getActivePhotoPath(employeeId: string): Promise<string | null> {
-    if (!this.IMAGE_PATH_COLUMN_READY) return null;
-    try {
-      const pool = await this.databaseService.connect();
-      const result = await pool
-        .request()
-        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
-          SELECT TOP 1 ImagePath
-          FROM EmployeeFaceVectors
-          WHERE EmployeeID = @EmployeeID AND IsActive = 1 AND ImagePath IS NOT NULL
-          ORDER BY EnrolledDateTime DESC
-        `);
-      return (result.recordset?.[0]?.ImagePath as string | undefined) ?? null;
-    } catch (err) {
-      this.logger.error(
-        `getActivePhotoPath failed for ${employeeId} - ${(err as Error).message}`,
-      );
-      return null;
-    }
-  }
-
-  // PHOTO — the logged-in employee's own enrollment photo as bytes, or null
-  // if there is none or the file can't be read. The stored path is checked
-  // to stay inside FACE_PHOTO_DIR before anything is read from disk.
-  async getFacePhoto(employeeId: string): Promise<Buffer | null> {
-    const relativePath = await this.getActivePhotoPath(employeeId);
-    if (!relativePath) return null;
-
-    const root = path.resolve(this.FACE_PHOTO_DIR);
-    const absolutePath = path.resolve(root, relativePath);
-    if (!absolutePath.startsWith(root + path.sep)) {
-      this.logger.warn(
-        `getFacePhoto: stored path for ${employeeId} points outside the photos folder - refused`,
-      );
-      return null;
-    }
-    try {
-      return await fs.readFile(absolutePath);
-    } catch (err) {
-      this.logger.warn(
-        `getFacePhoto: could not read the photo file for ${employeeId} - ${(err as Error).message}`,
-      );
-      return null;
-    }
-  }
-
-  // PHOTO — writes the step-6 photo to disk and records its relative path
-  // on this employee's ACTIVE face-vector rows (the ones just enrolled).
-  // Best-effort: every failure is logged and swallowed, and a file whose
-  // DB update failed is removed so no orphan images pile up.
-  private async saveEnrollmentPhoto(
-    employeeId: string,
-    photo: Express.Multer.File,
-  ): Promise<void> {
-    if (!this.IMAGE_PATH_COLUMN_READY) return;
-
-    let absolutePath: string | null = null;
-    try {
-      const data = photo.buffer;
-      const isJpeg =
-        !!data &&
-        data.length > 3 &&
-        data[0] === 0xff &&
-        data[1] === 0xd8 &&
-        data[2] === 0xff;
-      if (!isJpeg || data.length > this.FACE_PHOTO_MAX_BYTES) {
-        this.logger.warn(
-          `saveEnrollmentPhoto: photo for ${employeeId} skipped (not a JPEG or over ${this.FACE_PHOTO_MAX_BYTES} bytes)`,
-        );
-        return;
-      }
-
-      // EmployeeID comes from the JWT, but is still stripped to safe
-      // characters so it can never form a path outside the photos folder.
-      const safeId = employeeId.replace(/[^A-Za-z0-9_-]/g, '');
-      if (!safeId) return;
-
-      const relativePath = `${safeId}/${randomUUID()}.jpg`;
-      absolutePath = path.join(this.FACE_PHOTO_DIR, relativePath);
-      await fs.mkdir(path.dirname(absolutePath), { recursive: true });
-      await fs.writeFile(absolutePath, data);
-
-      const pool = await this.databaseService.connect();
-      await pool
-        .request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .input('ImagePath', sql.NVarChar(260), relativePath)
-        .query(
-          'UPDATE EmployeeFaceVectors SET ImagePath = @ImagePath WHERE EmployeeID = @EmployeeID AND IsActive = 1',
-        );
-    } catch (err) {
-      this.logger.error(
-        `saveEnrollmentPhoto failed for ${employeeId} - ${(err as Error).message}`,
-      );
-      if (absolutePath) {
-        await fs.unlink(absolutePath).catch(() => undefined);
-      }
     }
   }
 

@@ -10,18 +10,10 @@ import {
   UseInterceptors,
   UseGuards,
   BadRequestException,
-  NotFoundException,
-  Res,
-  StreamableFile,
 } from '@nestjs/common';
-import {
-  AnyFilesInterceptor,
-  FileInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AttendanceService } from './attendance.service';
-import type { Response } from 'express';
 
 // Sent alongside the frame files as ordinary multipart text fields (not
 // JSON) — the frontend appends these to the same FormData as the frames.
@@ -171,28 +163,6 @@ async recentPunches(@Req() req: any) {
     return this.attendanceService.getRegistrationStatus(employeeId);
   }
 
-  // PHOTO — the logged-in employee's own enrollment photo. The employee id
-  // comes from the token, so nobody can request someone else's photo here.
-  // It is served only through this guarded route, never as a public file.
-  @UseGuards(JwtAuthGuard)
-  @Get('face-photo')
-  async facePhoto(
-    @Req() req: any,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const photo = await this.attendanceService.getFacePhoto(
-      req.user.employeeId,
-    );
-    if (!photo) {
-      throw new NotFoundException('No profile photo on file.');
-    }
-    res.set({
-      'Content-Type': 'image/jpeg',
-      'Cache-Control': 'private, no-store',
-    });
-    return new StreamableFile(photo);
-  }
-
   // Development aid: powers the coordinates/distance panel in the punch
   // modal. Read-only. See LOCATION_DEBUG_ENABLED in attendance.service.ts.
   @UseGuards(JwtAuthGuard)
@@ -236,26 +206,17 @@ async recentPunches(@Req() req: any) {
   // in. There is no "enroll someone else" path; HR is never involved.
   @UseGuards(JwtAuthGuard)
   @Post('enroll')
-  // PHOTO — the request now carries the face-angle frames (field
-  // "frames") AND, optionally, the step-6 profile photo (field "photo").
-  // AnyFilesInterceptor is used so both fields arrive in one array; the
-  // photo is split out by field name below. An older client that sends
-  // only "frames" keeps working exactly as before.
-  @UseInterceptors(AnyFilesInterceptor({ limits: { files: 31 } }))
+  @UseInterceptors(FilesInterceptor('frames', 30))
   async enroll(
     @Req() req: any,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() frames: Express.Multer.File[],
   ) {
-    const photo = files?.find((f) => f.fieldname === 'photo');
-    const frames = files?.filter((f) => f.fieldname !== 'photo');
     if (!frames || frames.length === 0) {
       throw new BadRequestException(
         'At least one photo is required to register your face.',
       );
     }
     const employeeId = req.user.employeeId;
-    return photo
-      ? this.attendanceService.enrollFace(employeeId, frames, photo)
-      : this.attendanceService.enrollFace(employeeId, frames);
+    return this.attendanceService.enrollFace(employeeId, frames);
   }
 }
