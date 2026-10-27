@@ -686,10 +686,7 @@ export const useRecruitment = () => {
     [applicationsResponse]
   );
 
-  const openings: JobOpening[] = useMemo(
-    () => openingsResult?.value ?? [],
-    [openingsResult?.value]
-  );
+  const openings: JobOpening[] = openingsResult?.value ?? EMPTY_JOB_OPENINGS;
   const approvals: Approval[] = approvalsResult?.value ?? [];
 
   // Dashboard candidates + resume urls from the applications list
@@ -705,11 +702,15 @@ export const useRecruitment = () => {
     }));
   }, [dashboardResult, resumesResult]);
 
-  // Keep candidates editable locally (stage changes), re-synced on every fetch
-  useEffect(() => {
-    if (!serverCandidates) return;
-    queueMicrotask(() => setCandidates(serverCandidates));
-  }, [serverCandidates]);
+  const candidates = useMemo(
+    () => (serverCandidates ?? INITIAL_CANDIDATES).map((candidate) => {
+      const stageOverride = candidateStageOverrides[candidate.id];
+      return stageOverride?.sourceStage === candidate.stage
+        ? { ...candidate, ...stageOverride }
+        : candidate;
+    }),
+    [serverCandidates, candidateStageOverrides],
+  );
 
   // ==================================================
   // LOADING / ERROR

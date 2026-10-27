@@ -169,7 +169,7 @@ export default function FilterDropdown(props: FilterDropdownProps) {
         createPortal(
           <div
             ref={panelRef}
-            className="fixed z-[60] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg"
+            className={`fixed z-[60] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg ${hideScrollbar ? "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : ""}`}
             style={{
               left: panelPosition.left,
               top: panelPosition.top,
@@ -180,7 +180,7 @@ export default function FilterDropdown(props: FilterDropdownProps) {
             {props.type === "text" ? (
               <TextPanel value={props.value} onChange={props.onChange} />
             ) : (
-              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} />
+              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} hideScrollbar={hideScrollbar} />
             )}
 
             <button
