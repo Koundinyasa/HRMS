@@ -1,0 +1,15 @@
+import { Outlet, useParams } from "react-router-dom";
+import TabBar from "@/features/admin/components/TabBar";
+import { Holiday_WeeklyOff_Details_Tab } from "../constants/holidayweeklyoff.constants";
+
+export default function HolidayWeeklyOffPage() {
+  const { domain } = useParams();
+  const basePath = `/${domain}/admin/time-office/leave/holidayandweekOff`;
+
+  return (
+    <div className="w-full min-w-0 space-y-3">
+      <TabBar basePath={basePath} tabs={Holiday_WeeklyOff_Details_Tab} />
+      <Outlet />
+    </div>
+  );
+}

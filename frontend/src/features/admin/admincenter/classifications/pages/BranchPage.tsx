@@ -151,10 +151,9 @@ function RowsPerPageDropdown({
                   text-xs
                   whitespace-nowrap
                   cursor-pointer
-                  ${
-                    selected
-                      ? "bg-violet-50 text-violet-700"
-                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  ${selected
+                    ? "bg-violet-50 text-violet-700"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
                   }
                 `}
               >
@@ -215,11 +214,11 @@ export default function BranchPage() {
 
     const base = q
       ? branches.filter(
-          (b) =>
-            b.BranchName.toLowerCase().includes(q) ||
-            b.Address.toLowerCase().includes(q) ||
-            b.State.toLowerCase().includes(q),
-        )
+        (b) =>
+          b.BranchName.toLowerCase().includes(q) ||
+          b.Address.toLowerCase().includes(q) ||
+          b.State.toLowerCase().includes(q),
+      )
       : branches;
 
     if (!sortKey) {
@@ -442,15 +441,14 @@ export default function BranchPage() {
                       <SelectValue placeholder="Select state" />
                     </SelectTrigger>
                     <SelectContent
-                      position="popper"
                       sideOffset={4}
-                      className="!w-(--anchor-width) !min-w-0"
+                      className="!w-[var(--radix-select-trigger-width)] !min-w-0"
                     >
-                    {STATES.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
+                      {STATES.map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {state}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

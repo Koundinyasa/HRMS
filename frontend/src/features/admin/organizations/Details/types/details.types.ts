@@ -33,7 +33,7 @@ export type DashboardApiResponse = {
 };
 
 export type GroupDashboardRequest = {
-  branchId: number;
+  branchId?: number;
   month: number;
   year: number;
 };

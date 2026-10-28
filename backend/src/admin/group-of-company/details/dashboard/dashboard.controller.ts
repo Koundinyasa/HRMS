@@ -1,41 +1,29 @@
-
-import {
-  Controller,
-  Post,
-  Body,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-
-import { DashboardService } from './dashboard.service';
-
-import { AttendanceOverviewDto } from './dto/attendance-overview.dto';
-import { EmployeeDashboardDto } from './dto/employee-dashboard.dto';
-
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import type { Request } from 'express';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
+import { EmployeeDashboardDto } from './employee-dashboard.dto';
+import { GroupCompanyDashboardService } from './dashboard.service';
 
-@Controller(
-  'admin/group-of-company/details/dashboard',
-)
-export class DashboardController {
+type AuthenticatedRequest = Request & {
+  user: {
+    companyId: number;
+  };
+};
+
+@Controller('admin/group-of-company/details/dashboard')
+export class GroupCompanyDashboardController {
   constructor(
-    private readonly dashboardService: DashboardService,
+    private readonly dashboardService: GroupCompanyDashboardService,
   ) {}
-
-  // ==========================================
-  // Employee Dashboard
-  // ==========================================
 
   @UseGuards(JwtAuthGuard)
   @Post('employee-dashboard')
-  async getEmployeeDashboard(
-    @Req() req: any,
+  getEmployeeDashboard(
+    @Req() request: AuthenticatedRequest,
     @Body() dto: EmployeeDashboardDto,
   ) {
-    const companyId = req.user.companyId;
-
     return this.dashboardService.getEmployeeDashboard(
-      companyId,
+      request.user.companyId,
       dto,
     );
   }
