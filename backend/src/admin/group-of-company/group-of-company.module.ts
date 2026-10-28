@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
+
 import { DatabaseModule } from '../../database/database.module';
-import { GroupCompanyDashboardController } from './details/dashboard/dashboard.controller';
-import { GroupCompanyDashboardService } from './details/dashboard/dashboard.service';
+
+import { GroupCompanyDetailsModule } from './details/group-company-details.module';
+// import { ApprovalsModule } from './approvals/approvals.module';
 
 @Module({
-  imports: [DatabaseModule],
-  controllers: [GroupCompanyDashboardController],
-  providers: [GroupCompanyDashboardService],
+  imports: [
+    DatabaseModule,
+    GroupCompanyDetailsModule,
+    // ApprovalsModule,
+  ],
 })
 export class GroupOfCompanyModule {}

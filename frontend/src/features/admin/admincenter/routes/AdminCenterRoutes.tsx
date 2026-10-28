@@ -61,7 +61,7 @@ import ModuleSettings from "../workflows/ModuleSettings";
 export const AdminCenterRoutes = (
   <Route path="admin-center" element={<AdminCenterPage />}>
     <Route path="applied-leave" element={<AppliedLeavePage />} />
-    <Route index element={<Navigate to="applied-leave" replace />} />
+    <Route index element={<Navigate to="add-employee" replace />} />
     <Route path="add-employee" element={<AddEmployeePage />} />
 
     {/* Company */}

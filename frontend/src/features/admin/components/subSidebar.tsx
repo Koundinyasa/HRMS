@@ -59,9 +59,6 @@ export default function SubSidebar({
     });
   };
 
-  const isGroupActive = (item: SubNavItem) =>
-    location.pathname.startsWith(`${basePath}/${item.path}/`);
-
   return (
     <>
       {/* Desktop and tablet */}
@@ -84,7 +81,6 @@ export default function SubSidebar({
               item={item}
               basePath={basePath}
               isOpen={openKeys.has(item.path)}
-              isActive={Boolean(item.children?.length && isGroupActive(item))}
               onToggle={toggle}
               recruitmentStyle={sectionPath === "talent-hub"}
             />
@@ -147,7 +143,7 @@ export default function SubSidebar({
                     text-sm font-semibold
                     transition-colors
                     ${
-                      isGroupActive(item)
+                      openKeys.has(item.path)
                         ? "bg-indigo-600 text-white"
                         : "text-slate-700 hover:bg-white/60"
                     }
@@ -232,14 +228,12 @@ function NavItem({
   item,
   basePath,
   isOpen,
-  isActive,
   onToggle,
   recruitmentStyle = false,
 }: {
   item: SubNavItem;
   basePath: string;
   isOpen: boolean;
-  isActive: boolean;
   onToggle: (key: string) => void;
   recruitmentStyle?: boolean;
 }) {
@@ -286,7 +280,7 @@ function NavItem({
           text-sm font-semibold
           transition-colors
           ${
-            isActive
+            isOpen
               ? "bg-indigo-600 text-white"
               : "text-slate-700 hover:bg-white/60"
           }

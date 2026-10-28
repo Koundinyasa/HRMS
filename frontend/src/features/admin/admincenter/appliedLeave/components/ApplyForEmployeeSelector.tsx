@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import type {
   ApplyForEmployeeSelectorProps,
 } from "../types/appliedLeave.types";
@@ -22,7 +22,6 @@ export default function ApplyForEmployeeSelector({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setOpen(false);
-        setSearch("");
       }
     };
 
@@ -56,79 +55,73 @@ export default function ApplyForEmployeeSelector({
 
   return (
     <div ref={dropdownRef} id={id} className="relative">
-      <div className="flex h-11 w-full items-center rounded-xl border border-slate-300 bg-white px-3 text-sm focus-within:border-blue-400">
-        <input
-          value={
-            open
-              ? search
-              : selected
-                ? `${selected.EmployeeName ?? selected.FullName ?? "Employee"} (${
-                    selected.EmployeeID
-                  })`
-                : ""
-          }
-          onFocus={() => setOpen(true)}
-          onChange={(event) => {
-            setSearch(event.target.value);
-            setOpen(true);
-          }}
-          placeholder={placeholder}
-          className="h-full min-w-0 flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
-          aria-label="Search and select employee"
-          aria-expanded={open}
-          aria-controls={`${id}-options`}
-        />
-        <button
-          type="button"
-          onClick={() => setOpen((previous) => !previous)}
-          aria-label={open ? "Close employee list" : "Open employee list"}
-          className="ml-2 shrink-0"
-        >
-          <ChevronDown className="h-4 w-4 text-slate-400" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setOpen((previous) => !previous)}
+        className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-3 text-sm"
+      >
+        <span className={selected ? "text-slate-900" : "text-slate-400"}>
+          {selected
+            ? `${selected.EmployeeName ?? selected.FullName ?? "Employee"} (${
+                selected.EmployeeID
+              })`
+            : placeholder}
+        </span>
+
+        <ChevronDown className="h-4 w-4 text-slate-400" />
+      </button>
 
       {open && (
-        <div
-          id={`${id}-options`}
-          className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg"
-        >
-          {loading ? (
-            <p className="px-3 py-3 text-sm text-slate-500">
-              Loading employees...
-            </p>
-          ) : filteredEmployees.length === 0 ? (
-            <p className="px-3 py-3 text-sm text-slate-500">
-              No employees found
-            </p>
-          ) : (
-            filteredEmployees.map((employee) => {
-              const name =
-                employee.EmployeeName ??
-                employee.FullName ??
-                employee.EmployeeID;
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+          <div className="mb-2 flex items-center gap-2 rounded-lg border border-slate-200 px-3">
+            <Search className="h-4 w-4 text-slate-400" />
 
-              return (
-                <button
-                  type="button"
-                  key={employee.EmployeeID}
-                  onClick={() => {
-                    onChange(employee.EmployeeID);
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search employee..."
+              className="h-10 w-full bg-transparent text-sm outline-none"
+            />
+          </div>
 
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                  className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
-                >
-                  <div className="font-medium text-slate-800">{name}</div>
+          <div className="max-h-60 overflow-y-auto">
+            {loading ? (
+              <p className="px-3 py-3 text-sm text-slate-500">
+                Loading employees...
+              </p>
+            ) : filteredEmployees.length === 0 ? (
+              <p className="px-3 py-3 text-sm text-slate-500">
+                No employees found
+              </p>
+            ) : (
+              filteredEmployees.map((employee) => {
+                const name =
+                  employee.EmployeeName ??
+                  employee.FullName ??
+                  employee.EmployeeID;
 
-                  <div className="text-xs text-slate-500">
-                    {employee.EmployeeID}
-                  </div>
-                </button>
-              );
-            })
-          )}
+                return (
+                  <button
+                    type="button"
+                    key={employee.EmployeeID}
+                    onClick={() => {
+                      onChange(employee.EmployeeID);
+
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+                  >
+                    <div className="font-medium text-slate-800">{name}</div>
+
+                    <div className="text-xs text-slate-500">
+                      {employee.EmployeeID}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
     </div>

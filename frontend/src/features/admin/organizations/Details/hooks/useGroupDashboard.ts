@@ -61,6 +61,7 @@ const EMPTY_STATS: OrganizationStat = {
 export function useGroupDashboard() {
   const { data, isLoading, isFetching, isError, refetch } =
     useGetGroupDashboardQuery({
+      branchId: 2,
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
     });

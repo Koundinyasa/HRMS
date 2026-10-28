@@ -75,7 +75,7 @@
 
 
 
-import { NavLink, useLocation, useParams } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 import * as Icons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -84,10 +84,8 @@ import { useSidebar } from "./SidebarContext";
 
 export default function Sidebar() {
   const { domain } = useParams();
-  const { pathname } = useLocation();
+
   const { isOpen, toggleSidebar } = useSidebar();
-  const isAdminCenterEssRoute =
-    /\/admin-center\/ess(?:\/|$)/.test(pathname);
 
   return (
     <>
@@ -140,12 +138,8 @@ export default function Sidebar() {
                     toggleSidebar();
                   }
                 }}
-                className={({ isActive }) => {
-                  const isSelected =
-                    isActive &&
-                    !(link.path === "admin-center" && isAdminCenterEssRoute);
-
-                  return `
+                className={({ isActive }) =>
+                  `
                     flex items-center rounded-lg text-sm font-medium
                     transition-colors
                     ${
@@ -154,21 +148,19 @@ export default function Sidebar() {
                         : "gap-3 px-2.5 py-2 lg:justify-center lg:py-2"
                     }
                     ${
-                      isSelected
+                      isActive
                         ? "bg-white font-semibold text-blue-600 shadow-sm"
                         : "text-slate-600 hover:bg-white/60"
                     }
                   `
-                }}
+                }
               >
                 {({ isActive }) => (
                   <>
                     <span
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
                       style={{
-                        background:
-                          isActive &&
-                          !(link.path === "admin-center" && isAdminCenterEssRoute)
+                        background: isActive
                           ? "var(--theme-primary, #2563EB)"
                           : "#FFFFFF",
                       }}
@@ -176,8 +168,7 @@ export default function Sidebar() {
                       <Icon
                         size={16}
                         className={
-                          isActive &&
-                          !(link.path === "admin-center" && isAdminCenterEssRoute)
+                          isActive
                             ? "text-white"
                             : "text-slate-500"
                         }
