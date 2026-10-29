@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { X, Clock3, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
-import noDataImage from "@/assets/images/no-data.png";
 
 interface AuditEvent {
   id: number;

@@ -46,10 +46,6 @@ export const candidateApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
-      transformResponse: (
-        response: Candidate[] | { data?: Candidate[] },
-      ) => (Array.isArray(response) ? response : response.data ?? []),
-
       providesTags: ["Candidate"],
     }),
 
@@ -112,12 +108,6 @@ export const candidateApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
-      transformResponse: (
-        response:
-          | CompletedCandidateRow[]
-          | { data?: CompletedCandidateRow[] },
-      ) => (Array.isArray(response) ? response : response.data ?? []),
-
       providesTags: ["Candidate"],
     }),
 
@@ -135,10 +125,6 @@ export const candidateApi = baseApi.injectEndpoints({
         url: "/pre-enrollment/offboard",
         method: "GET",
       }),
-
-      transformResponse: (
-        response: OffboardCandidate[] | { data?: OffboardCandidate[] },
-      ) => (Array.isArray(response) ? response : response.data ?? []),
 
       providesTags: ["Candidate"],
     }),

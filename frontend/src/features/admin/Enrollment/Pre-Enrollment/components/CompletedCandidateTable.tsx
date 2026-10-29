@@ -1106,20 +1106,14 @@ export default function CompletedCandidateTable({
   );
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setCurrentPage((page) =>
-        Math.min(page, totalPages),
-      );
-    });
-
-    return () => window.cancelAnimationFrame(frame);
+    setCurrentPage((page) =>
+      Math.min(page, totalPages),
+    );
   }, [totalPages]);
-
-  const visiblePage = Math.min(currentPage, totalPages);
 
   const pageRows = useMemo(() => {
     const start =
-      (visiblePage - 1) *
+      (currentPage - 1) *
       rowsPerPage;
 
     const end =
@@ -1131,7 +1125,7 @@ export default function CompletedCandidateTable({
     );
   }, [
     sortedRows,
-    visiblePage,
+    currentPage,
     rowsPerPage,
   ]);
 
@@ -1177,12 +1171,12 @@ export default function CompletedCandidateTable({
   const startItem =
     pageRows.length === 0
       ? 0
-      : (visiblePage - 1) *
+      : (currentPage - 1) *
           rowsPerPage +
         1;
 
   const endItem = Math.min(
-    visiblePage * rowsPerPage,
+    currentPage * rowsPerPage,
     sortedRows.length,
   );
 
@@ -1666,7 +1660,7 @@ export default function CompletedCandidateTable({
                     leading-5
                     transition
                     ${
-                      visiblePage === page
+                      currentPage === page
                         ? "bg-orange-500 text-white shadow-sm"
                         : "bg-transparent text-slate-600 hover:bg-orange-50 hover:text-orange-500"
                     }

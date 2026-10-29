@@ -56,7 +56,7 @@ import Card from "./Card";
 const cards = [
   {
     title: "Total",
-    value: "—",
+    value: 60,
     icon: "UsersRound" as const,
 
     iconBg: "#EFF6FF",
@@ -82,7 +82,7 @@ const cards = [
 
   {
     title: "Completed",
-    value: "—",
+    value: 57,
     icon: "CircleCheckBig" as const,
 
     iconBg: "#ECFDF5",

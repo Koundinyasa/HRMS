@@ -213,10 +213,17 @@ export const useMonthlyLeaveCalendar = ({
     policyId: Number.isInteger(policy) && policy > 0 ? policy : null,
   });
 
+  const hasUnexpectedResponse =
+    query.data !== undefined && !Array.isArray(query.data);
+
   return {
-    rows: query.data ?? NO_ROWS,
+    rows: Array.isArray(query.data) ? query.data : NO_ROWS,
     loading: query.isFetching,
-    error: query.isError ? getLeaveDailyErrorMessage(query.error) : null,
+    error: query.isError
+      ? getLeaveDailyErrorMessage(query.error)
+      : hasUnexpectedResponse
+        ? "Monthly leave calendar returned an unexpected response. Please retry."
+        : null,
     reload: query.refetch,
   };
 };
