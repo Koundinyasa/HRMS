@@ -5,6 +5,7 @@ import { ParserService } from './parser.service';
 import { LeaveApiService } from './leave-api.service';
 import { IntentCtx, IntentDefinition, LeaveTypeOption } from '../types';
 import { formatLeaveRange, formatDayCount } from '../utils/date.util';
+
 export interface ChatbotLeaveDate {
   date: string;
   leaveType: string;
@@ -92,25 +93,13 @@ export class LeaveService {
     const holiday = ctx.companyData.holidays.find(
       (item) =>
         item.date.slice(0, 10) === iso &&
-        (!item.stateCode || item.stateCode === 'ALL' || item.stateCode === stateCode),
+        (!item.stateCode ||
+          item.stateCode === 'ALL' ||
+          item.stateCode === stateCode),
     );
     return holiday?.name ?? null;
   }
- 
-  private holidaysInRange(ctx: IntentCtx, startDate: string, endDate: string): string[] {
-    const holidays: string[] = [];
-    const current = new Date(`${startDate}T00:00:00Z`);
-    const end = new Date(`${endDate}T00:00:00Z`);
- 
-    while (current <= end) {
-      const iso = current.toISOString().slice(0, 10);
-      if (this.holidayName(ctx, iso)) holidays.push(iso);
-      current.setUTCDate(current.getUTCDate() + 1);
-    }
- 
-    return holidays;
-  }
- 
+
   private eligibleWorkingDaysInRange(
     ctx: IntentCtx,
     startDate: string,
@@ -213,16 +202,13 @@ export class LeaveService {
       const stages = Array.isArray(stagesValue) ? stagesValue : [];
       const stageStates = stages
         .map((stage) =>
-          toOptionalString(this.calendarField(stage, 'StageState'))?.toUpperCase(),
+          toOptionalString(
+            this.calendarField(stage, 'StageState'),
+          )?.toUpperCase(),
         )
         .filter((state): state is string => Boolean(state));
       const explicitStatus = toOptionalString(
-        this.calendarField(
-          application,
-          'Status',
-          'StatusName',
-          'LeaveStatus',
-        ),
+        this.calendarField(application, 'Status', 'StatusName', 'LeaveStatus'),
       );
       // The status endpoint primarily exposes workflow stages. If it does not
       // include a record status, retain the same stage-derived meaning used by
@@ -249,7 +235,12 @@ export class LeaveService {
           ) ?? 'Leave',
         status,
         leaveId: toOptionalId(
-          this.calendarField(application, 'Id', 'LeaveId', 'LeaveApplicationId'),
+          this.calendarField(
+            application,
+            'Id',
+            'LeaveId',
+            'LeaveApplicationId',
+          ),
         ),
         sessionFrom: toOptionalString(
           this.calendarField(
@@ -353,18 +344,15 @@ export class LeaveService {
   ): Promise<ChatbotLeaveDate[]> {
     try {
       const companyId = Number(user.companyId);
-      const [
-        statusResult,
-        employeeDetailsResult,
-        sessionDetailsResult,
-      ] = await Promise.allSettled([
-        this.getCalendarLeaveStatusMapped(user),
-        this.getCalendarEmployeeLeaveHistoryMapped(user),
-        this.hrmsDbService.getEmployeeLeaveSessionDetails(
-          String(user.employeeId ?? ''),
-          Number.isInteger(companyId) ? companyId : undefined,
-        ),
-      ]);
+      const [statusResult, employeeDetailsResult, sessionDetailsResult] =
+        await Promise.allSettled([
+          this.getCalendarLeaveStatusMapped(user),
+          this.getCalendarEmployeeLeaveHistoryMapped(user),
+          this.hrmsDbService.getEmployeeLeaveSessionDetails(
+            String(user.employeeId ?? ''),
+            Number.isInteger(companyId) ? companyId : undefined,
+          ),
+        ]);
 
       const statusLeaves =
         statusResult.status === 'fulfilled' ? statusResult.value : [];
@@ -537,16 +525,12 @@ export class LeaveService {
       );
       return `No problem — I've cancelled that. Nothing was submitted. Say "Apply leave" to start again.`;
     }
- 
+
     const iso = this.parserService.extractIsoDate(ctx.message);
- 
+
     if (draft.step === 'awaiting_start') {
       if (!iso)
         return `Please pick your leave start date below (or type it as YYYY-MM-DD).`;
-      const holiday = this.holidayName(ctx, iso);
-      if (holiday) {
-        return `${iso} is a company holiday (${holiday}). Please choose a working day.`;
-      }
       draft.startDate = iso;
       draft.leaveDate = iso;
       draft.step = 'awaiting_end';
@@ -557,6 +541,7 @@ export class LeaveService {
       );
       return `Start date set to ${iso}. Now pick your end date (same as start for a single day).`;
     }
+
     if (draft.step === 'awaiting_end') {
       if (!iso)
         return `Please pick your leave end date below (or type it as YYYY-MM-DD).`;
@@ -583,12 +568,14 @@ export class LeaveService {
       );
       return `End date set to ${iso} (${formatDayCount(draft.duration)}). Now choose your leave type below.`;
     }
+
     if (draft.step === 'awaiting_type') {
       const code = this.parserService.extractLeaveTypeCode(
         ctx.message,
         ctx.leaveTypes,
       );
       if (!code) return `Please choose a leave type from the buttons below.`;
+
       const picked = ctx.leaveTypes.find(
         (t) => (t.code ?? '').toUpperCase() === code,
       );
@@ -598,7 +585,7 @@ export class LeaveService {
       if (isSickLeave && !isSingleDay) {
         return `Sick Leave for more than one day needs a supporting document, which I can't attach here. Please apply multi-day Sick Leave from the Leave Requests page in the portal.\n\nFor a single-day Sick Leave, pick a single date and choose Sick Leave again — or pick a different leave type from the buttons above.`;
       }
- 
+
       draft.leaveType = code;
       if (picked?.id === 4 || picked?.id === 5) {
         draft.duration =
@@ -618,6 +605,7 @@ export class LeaveService {
         );
         return `Leave type set to ${code}. Is this a full day or a half day?`;
       }
+
       draft.step = 'awaiting_reason';
       this.draftService.setDraft(
         this.draftService.leaveDrafts,
@@ -626,6 +614,7 @@ export class LeaveService {
       );
       return `Leave type set to ${code}. Finally, add a reason (or tap Skip).`;
     }
+
     if (draft.step === 'awaiting_dayChoice') {
       const m = ctx.msg;
       const choseHalf = m.includes('half');
@@ -654,6 +643,7 @@ export class LeaveService {
       );
       return `Half day — which session?`;
     }
+
     if (draft.step === 'awaiting_session') {
       const raw = ctx.message.toLowerCase();
       let session = '';
@@ -670,6 +660,7 @@ export class LeaveService {
       )
         session = 'SecondHalf';
       if (!session) return `Please tap "First Half" or "Second Half".`;
+
       draft.session = session;
       draft.step = 'awaiting_reason';
       this.draftService.setDraft(
@@ -679,6 +670,7 @@ export class LeaveService {
       );
       return `${this.parserService.sessionLabel(session)} half day. Finally, add a reason (or tap Skip).`;
     }
+
     if (draft.step === 'awaiting_reason') {
       const reason =
         ctx.msg === 'skip' || ctx.msg.includes('no reason')
@@ -693,9 +685,10 @@ export class LeaveService {
       );
       return `Got it — here's your leave request:`;
     }
- 
+
     return null;
   }
+
   // AFTER — replace with this:
   async buildLeaveTypeOptions(
     user: Record<string, any>,
@@ -709,9 +702,9 @@ export class LeaveService {
     const records =
       balRaw?.sections?.[0]?.records ?? (Array.isArray(balRaw) ? balRaw : []);
 
-    const normalize = (v: string) =>
+    const normalize = (v: unknown) =>
       String(v ?? '')
-        .trim()
+        .replace(/[^a-z0-9]/gi, '')
         .toLowerCase();
     const balByName = new Map<string, number>();
     for (const rec of records) {
@@ -725,14 +718,16 @@ export class LeaveService {
           Number(get('Closing Balance') ?? 0),
         );
     }
+
     return (
       types
         .map((t) => ({
           code: t.code,
           name: t.name,
-          balance: balByName.has(normalize(t.name))
-            ? balByName.get(normalize(t.name))!
-            : null,
+          balance:
+            balByName.get(normalize(t.name)) ??
+            balByName.get(normalize(`${t.code}${t.name}`)) ??
+            null,
         }))
         // Only offer leave types the employee can actually apply — a real,
         // positive balance — plus LOP unconditionally, since it's unpaid
@@ -745,6 +740,7 @@ export class LeaveService {
         )
     );
   }
+
   // The /balance endpoint returns the same nested
   // {sections:[{records:[{fields:[{label,value}]}]}]} shape as /history,
   // not a flat array of rows — confirmed against the real controller/service.
@@ -755,11 +751,11 @@ export class LeaveService {
     const records =
       raw?.sections?.[0]?.records ?? (Array.isArray(raw) ? raw : []);
     const year = new Date().getFullYear();
- 
+
     if (!records.length) {
       return `Your leave balance for ${year} hasn't been set up yet. Please contact HR.`;
     }
- 
+
     const rows = records.map((rec: any) => {
       const fields = rec.fields ?? [];
       const get = (label: string) =>
@@ -772,6 +768,7 @@ export class LeaveService {
         closing: Number(get('Closing Balance') ?? 0),
       };
     });
+
     this.draftService.pendingListPreview.set(ctx.employeeId, {
       title: `Leave balance (${year})`,
       rows: rows.map((r) => {
@@ -783,11 +780,13 @@ export class LeaveService {
         };
       }),
     });
+
     this.draftService.pendingSuggestedActions.set(ctx.employeeId, [
       { label: 'Apply Leave', send: 'apply leave' },
     ]);
     return `Here's your leave balance for ${year}.`;
   }
+
   // /leave-status actually returns a multi-stage approval workflow shape
   // ({ LeaveApplications: [{ Id, FromDate, ToDate, Stages: [...] }] }),
   // confirmed from a real response — not the {sections/records/fields} shape
@@ -829,21 +828,23 @@ export class LeaveService {
     const apps = raw?.LeaveApplications ?? [];
     return apps
       .map((app: any) => {
-      const stages = app.Stages ?? [];
-      const rejected = stages.some(
-        (s: any) => (s.StageState ?? '').toUpperCase() === 'REJECTED',
-      );
-      const allApproved =
-        stages.length > 0 &&
-        stages.every(
-          (s: any) => (s.StageState ?? '').toUpperCase() === 'APPROVED',
+        const stages = app.Stages ?? [];
+        const rejected = stages.some(
+          (s: any) => (s.StageState ?? '').toUpperCase() === 'REJECTED',
         );
-      const status = rejected
-        ? 'Rejected'
-        : allApproved
-          ? 'Approved'
-          : 'Pending';
-      const current = stages.find((s: any) => s.LevelNo === app.CurrentLevelNo);
+        const allApproved =
+          stages.length > 0 &&
+          stages.every(
+            (s: any) => (s.StageState ?? '').toUpperCase() === 'APPROVED',
+          );
+        const status = rejected
+          ? 'Rejected'
+          : allApproved
+            ? 'Approved'
+            : 'Pending';
+        const current = stages.find(
+          (s: any) => s.LevelNo === app.CurrentLevelNo,
+        );
         return {
           leaveId: Number(app.Id),
           leaveType: app.LeaveName,
@@ -860,6 +861,7 @@ export class LeaveService {
           right.leaveId - left.leaveId,
       );
   }
+
   // Same idea as getLeaveStatusMapped above, but for the history endpoint —
   // which returns ACTED-ON leaves (approved/rejected/cancelled/withdrawn),
   // never pending ones. Field names differ slightly from the status
@@ -874,9 +876,7 @@ export class LeaveService {
   // This currently breaks "withdraw leave" (approved leaves specifically —
   // cancelPendingOnly reads its IDs from getLeaveStatusMapped above instead,
   // which is unaffected).
-  private async getLeaveHistoryMapped(
-    user: Record<string, any>,
-  ): Promise<
+  private async getLeaveHistoryMapped(user: Record<string, any>): Promise<
     (Omit<CalendarLeaveRange, 'leaveId'> & {
       leaveId: number;
       noOfDays: number;
@@ -927,15 +927,16 @@ export class LeaveService {
         fromDate: toDateOnly(get('From Date', 'FromDate')),
         toDate: toDateOnly(get('To Date', 'ToDate')),
         noOfDays: Number(get('Days', 'NoOfDays')),
-        status: toOptionalString(
-          get('Status', 'Leave Status', 'LeaveStatus', 'Action'),
-        ) ?? '',
-        sessionFrom: toOptionalString(
-          get('Session From', 'SessionFrom'),
-        ),
+        status:
+          toOptionalString(
+            get('Status', 'Leave Status', 'LeaveStatus', 'Action'),
+          ) ?? '',
+        sessionFrom: toOptionalString(get('Session From', 'SessionFrom')),
         sessionTo: toOptionalString(get('Session To', 'SessionTo')),
         isHalfDay: toOptionalBoolean(get('Is Half Day', 'IsHalfDay')),
-        actionBy: toOptionalString(get('Approved By', 'ApprovedBy', 'ActionBy')),
+        actionBy: toOptionalString(
+          get('Approved By', 'ApprovedBy', 'ActionBy'),
+        ),
       };
     });
     return mapped.sort(
@@ -944,6 +945,7 @@ export class LeaveService {
         right.leaveId - left.leaveId,
     );
   }
+
   getIntents(): IntentDefinition[] {
     const realIntents: IntentDefinition[] = [
       {
@@ -1077,7 +1079,7 @@ export class LeaveService {
                   ? leave.fromDate
                   : `${leave.fromDate} to ${leave.toDate}`;
               return {
-                primary: `${leave.leaveId} - ${leave.leaveType}`,
+                primary: leave.leaveType,
                 meta: `Applied ${leave.appliedDate ?? appliedDate} · ${dateRange}${
                   leave.currentStage ? ` · Awaiting ${leave.currentStage}` : ''
                 }`,
@@ -1241,6 +1243,7 @@ export class LeaveService {
       },
       {
         name: 'cancelPick',
+
         test: (ctx) =>
           (/^cancel\s+\d+$/.test(ctx.msg) ||
             /^withdraw\s+\d+$/.test(ctx.msg) ||
@@ -1250,20 +1253,20 @@ export class LeaveService {
           ctx.msg !== 'cancel my leave' &&
           ctx.msg !== 'withdraw leave' &&
           ctx.msg !== 'withdraw my leave',
- 
+
         handle: async (ctx) => {
           const list = this.draftService.cancelList.get(ctx.employeeId);
- 
+
           if (!list?.length) {
             return `Say "cancel leave" to see your pending leave requests.`;
           }
- 
+
           const message = ctx.msg.trim();
- 
+
           const numberMatch = message.match(/^(?:cancel|withdraw)\s+(\d+)$/i);
- 
+
           let item;
- 
+
           if (numberMatch) {
             const n = Number(numberMatch[1]);
             item = list[n - 1];
@@ -1272,66 +1275,67 @@ export class LeaveService {
               .replace(/^(cancel|withdraw)\s+/i, '')
               .trim()
               .toLowerCase();
- 
+
             const normalizeLeaveType = (value: string) => {
               const v = value.trim().toLowerCase().replace(/\s+/g, ' ');
- 
+
               const aliases: Record<string, string> = {
                 cl: 'casual',
                 'casual leave': 'casual',
                 casual: 'casual',
- 
+
                 sl: 'sick',
                 'sick leave': 'sick',
                 sick: 'sick',
- 
+
                 el: 'earned',
                 'earned leave': 'earned',
                 earned: 'earned',
- 
+
                 lop: 'lop',
                 'loss of pay': 'lop',
                 'loss of pay leave': 'lop',
- 
+
                 wfh: 'wfh',
                 'work from home': 'wfh',
                 'work from home leave': 'wfh',
               };
- 
+
               return aliases[v] ?? v.replace(/\s+leave$/, '');
             };
- 
+
             const requestedNormalized = normalizeLeaveType(requestedType);
- 
+
             item = list.find((leave) => {
               const storedType = normalizeLeaveType(
                 String(leave.leaveType ?? ''),
               );
+
               console.log('Cancel leave matching:', {
                 requestedType,
                 requestedNormalized,
                 storedType,
                 leave,
               });
- 
+
               return storedType === requestedNormalized;
             });
           }
- 
+
           if (!item) {
             return `I couldn't find that leave request. Say "cancel leave" to see your pending leaves again.`;
           }
- 
+
           const actionId: 13 | 38 =
             item.status.toLowerCase() === 'approved' ? 38 : 13;
- 
+
           this.draftService.cancelTarget.set(ctx.employeeId, {
             leaveId: item.leaveId,
             actionId,
           });
- 
+
           const verb = actionId === 38 ? 'withdraw' : 'cancel';
- 
+
           return `Are you sure you want to ${verb} this leave request?`;
         },
       },
@@ -1378,22 +1382,28 @@ export class LeaveService {
       },
       {
         name: 'withdrawApprovedOnly',
- 
+
         test: (ctx) =>
           ctx.msg.includes('withdraw leave') ||
           ctx.msg.includes('withdraw my leave'),
- 
+
         handle: async (ctx) => {
           const leaves = await this.getLeaveHistoryMapped(ctx.user);
- 
+          const today = new Date();
+          const todayDate = `${today.getFullYear()}-${String(
+            today.getMonth() + 1,
+          ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
           const eligible = leaves.filter(
-            (l) => (l.status ?? '').toLowerCase() === 'approved',
+            (l) =>
+              (l.status ?? '').toLowerCase() === 'approved' &&
+              l.toDate >= todayDate,
           );
- 
+
           if (!eligible.length) {
             return `You have no approved leave requests to withdraw.`;
           }
- 
+
           this.draftService.cancelList.set(
             ctx.employeeId,
             eligible.map((l) => ({
@@ -1402,20 +1412,20 @@ export class LeaveService {
               leaveType: l.leaveType,
             })),
           );
- 
+
           this.draftService.pendingListPreview.set(ctx.employeeId, {
             title: 'Approved leave requests',
- 
+
             rows: eligible.map((l) => ({
               primary: l.leaveType,
- 
+
               meta:
                 l.fromDate === l.toDate
                   ? l.fromDate
                   : `${l.fromDate} to ${l.toDate}`,
- 
+
               status: l.status,
- 
+
               // Changed from:
               // withdraw ${i + 1}
               //
@@ -1423,6 +1433,7 @@ export class LeaveService {
               action: `withdraw ${l.leaveType.toLowerCase()}`,
             })),
           });
+
           return `Tap a request below to withdraw it.`;
         },
       },
@@ -1454,6 +1465,7 @@ export class LeaveService {
         handle: async (ctx) => this.getLeaveBalanceSummary(ctx),
       },
     ];
+
     // Admin/HR manage their own leave through a separate employee login —
     // this account should never reach any leave-management feature at all.
     // Wrapping here (rather than gating each intent individually) means

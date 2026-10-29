@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
@@ -40,15 +41,33 @@ export class LeaveService {
     }
   }
   // Employee Leave Balance
-  // Employee Leave Balance
   async getEmployeeLeaveBalance(employeeId: string) {
     try {
       const pool = await this.databaseService.connect();
+ 
       const result = await pool
         .request()
-        .input('EmployeeId', employeeId)
+        .input('EmployeeId', sql.VarChar(25), employeeId)
         .execute('USP_EmployeeLeaveBalance');
-      const records = result.recordset.map((item) => ({
+ 
+      const rows = result.recordset ?? [];
+ 
+      if (rows.length === 1 && rows[0].StatusCode !== undefined) {
+        const statusCode = Number(rows[0].StatusCode);
+        const message = rows[0].Message;
+ 
+        if (statusCode === 400) {
+          throw new BadRequestException(message);
+        }
+ 
+        if (statusCode === 404) {
+          throw new NotFoundException(message);
+        }
+ 
+        throw new InternalServerErrorException(message);
+      }
+ 
+      const records = rows.map((item) => ({
         fields: [
           {
             label: 'Leave Type',
@@ -56,7 +75,7 @@ export class LeaveService {
           },
           {
             label: 'Opening Balance',
-            value: item.OpeningBalance,
+            value: item.Opening,
           },
           {
             label: 'Accrued',
@@ -72,7 +91,7 @@ export class LeaveService {
           },
           {
             label: 'Closing Balance',
-            value: item.ClosingBalance,
+            value: item.Closing,
           },
           {
             label: 'Leave Year',
@@ -84,6 +103,7 @@ export class LeaveService {
           },
         ],
       }));
+ 
       return {
         sections: [
           {
@@ -97,6 +117,7 @@ export class LeaveService {
       throw error;
     }
   }
+ 
   // Upload Holiday Excel
   async uploadHolidayFile(file: Express.Multer.File) {
     try {
