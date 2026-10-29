@@ -6,7 +6,7 @@ import type { Approval, ApprovalStatus } from "../types/recruitment.types";
 import { APPROVAL_TABS } from "../constants/recruitment.constants";
 interface ApprovalsPanelProps {
   approvals: Approval[];
-  canManageApprovals: boolean;
+  canManageApproval: (approvalId: number) => boolean;
   selectedApprovalStatus: ApprovalStatus;
   setSelectedApprovalStatus: (status: ApprovalStatus) => void;
   search: string;
@@ -18,7 +18,7 @@ interface ApprovalsPanelProps {
 
 export function ApprovalsPanel({
   approvals,
-  canManageApprovals,
+  canManageApproval,
   selectedApprovalStatus,
   setSelectedApprovalStatus,
   search,
@@ -34,10 +34,7 @@ export function ApprovalsPanel({
     null,
   );
 
-  const visibleApprovals = canManageApprovals
-    ? approvals
-    : approvals.filter((approval) => approval.status === "waiting");
-  const filteredApprovals = visibleApprovals
+  const filteredApprovals = approvals
     .filter((approval) => approval.status === selectedApprovalStatus)
     .filter((approval) => {
       const normalizedSearch = search.trim().toLowerCase();
@@ -72,7 +69,7 @@ export function ApprovalsPanel({
         <div className="flex w-max min-w-full flex-nowrap gap-2 pb-1">
           {APPROVAL_TABS.map((tab) => {
             const isSelected = selectedApprovalStatus === tab.status;
-            const count = visibleApprovals.filter(
+            const count = approvals.filter(
               (approval) => approval.status === tab.status,
             ).length;
             return (
@@ -116,7 +113,7 @@ export function ApprovalsPanel({
                     "Department",
                     "Designation",
                     "Vacancies",
-                    "Salary Range",
+                    "Salary Range (INR)",
                     "Experience",
                     "Priority",
                     "Hiring Manager",
@@ -286,7 +283,7 @@ export function ApprovalsPanel({
                 ["Department", selectedApproval.department],
                 ["Designation", selectedApproval.designation ?? "—"],
                 ["Vacancies", String(selectedApproval.positions)],
-                ["Salary Range", selectedApproval.salaryBand],
+                ["Salary Range (INR)", selectedApproval.salaryBand],
                 ["Experience", selectedApproval.experienceRequired ?? "—"],
                 ["Job Description", selectedApproval.jobDescription],
                 ["Priority", selectedApproval.priority ?? "—"],
@@ -310,7 +307,8 @@ export function ApprovalsPanel({
                 </div>
               ))}
             </dl>
-            {canManageApprovals && selectedApproval.status === "waiting" && (
+            {canManageApproval(selectedApproval.id) &&
+              selectedApproval.status === "waiting" && (
               <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[#efeee9] px-5 py-4">
                 <input
                   aria-label={`Rejection reason for ${selectedApproval.title}`}

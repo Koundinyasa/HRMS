@@ -12,7 +12,7 @@ export default function MissedPunchTable({
   return (
     <div className="punch-horizontal-scroll mt-3 w-full min-w-0 overflow-x-auto">
       <div className="w-full min-w-[760px] space-y-3">
-        <div className="grid w-full grid-cols-[90px_minmax(0,1fr)_110px_50px] items-center gap-3 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554]">
+        <div className="grid w-full grid-cols-[90px_300px_110px_minmax(50px,1fr)] items-center gap-3 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554]">
           <div>Employee ID</div>
           <div>Employee Name</div>
           <div>Punch Date</div>

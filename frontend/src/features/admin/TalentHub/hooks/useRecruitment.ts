@@ -9,7 +9,6 @@ import { toast } from "react-toastify";
 import {
   INITIAL_CANDIDATES,
   OPENING_DEPARTMENTS,
-  REQUISITION_APPROVER_EMPLOYEE_ID,
 } from "../constants/recruitment.constants";
 import { useAppSelector } from "@/hooks/useAppSelector";
 
@@ -22,6 +21,7 @@ import {
   useCreateRequisitionMutation,
   useUpdateRequisitionMutation,
   useUpdateResumeScreeningMutation,
+  recruitmentFileName,
   recruitmentFileUrl,
 } from "../api/recruitment.api";
 
@@ -52,6 +52,7 @@ const EMPTY_JOB_OPENINGS: JobOpening[] = [];
 // ======================================================
 
 export {
+  recruitmentFileName,
   recruitmentFileUrl,
   useGetRecruitmentDashboardQuery,
   useGetRequisitionMasterQuery,
@@ -91,6 +92,25 @@ function toRows(response: unknown): RecruitmentRow[] {
     }
     return row as RecruitmentRow;
   });
+}
+
+function requisitionRowsFromResponse(
+  response: unknown,
+  source: string,
+): RecruitmentRow[] {
+  if (response === undefined) return [];
+  if (Array.isArray(response)) return toRows(response);
+  if (
+    response &&
+    typeof response === "object" &&
+    "success" in response &&
+    response.success === true &&
+    "data" in response &&
+    Array.isArray(response.data)
+  ) {
+    return toRows(response.data);
+  }
+  throw new Error(`${source} returned an invalid requisition list.`);
 }
 
 function readValue(row: RecruitmentRow, ...aliases: string[]) {
@@ -195,13 +215,24 @@ function mapOpening(row: RecruitmentRow): JobOpening {
     positionsFilled: readNumber(row, ["PositionsFilled", "FilledPositions"]),
     salaryRange,
     experienceRequired: readText(row, ["ExperienceRequired"], ""),
+    jobDescription: readText(
+      row,
+      ["JobDescription", "RoleDescription", "Description"],
+      "",
+    ),
     closingDate: readText(row, ["ClosingDate"], ""),
     status: openingStatus(
       readText(row, ["Status", "StatusName", "OpeningStatus"], "Open")
     ),
     posted: readText(
       row,
-      ["PostedDate", "PublishedDate", "CreatedDate", "CreatedOn", "Posted", "ClosingDate"],
+      [
+        "PublishedDate",
+        "PublishDate",
+        "PublishedOn",
+        "PublicationDate",
+        "PostedDate",
+      ],
       "—"
     ),
   };
@@ -253,6 +284,19 @@ function mapDashboardCandidate(row: RecruitmentRow): Candidate | null {
     stage,
     rating: 0,
     daysInStage: durationMatch ? Number(durationMatch[1]) : 0,
+    resumeFileName: (() => {
+      const resumeUrl = readText(
+        row,
+        ["ResumeURL", "ResumeUrl", "ResumePath", "ResumeFilePath"],
+        "",
+      );
+      return resumeUrl
+        ? recruitmentFileName(
+            resumeUrl,
+            readText(row, ["ActualFileName", "ResumeFileName"], ""),
+          )
+        : "";
+    })(),
     resumeUrl: (() => {
       const resumeUrl = readText(
         row,
@@ -299,9 +343,13 @@ function mapPendingRequisition(row: RecruitmentRow): Approval | null {
     row,
     [
       "RequisitionApprovalStatus",
+      "RequisitionApprovalStatusName",
+      "RequisitionStatusName",
       "ApprovalStatus",
       "ApprovalStatusName",
+      "ApprovalStatusDescription",
       "RequisitionStatus",
+      "Decision",
       "StatusName",
       "Status",
     ],
@@ -311,7 +359,9 @@ function mapPendingRequisition(row: RecruitmentRow): Approval | null {
     .toLowerCase()
     .replace(/[\s_-]+/g, "");
   const status: Approval["status"] =
-    rawStatus.includes("reject") || rawStatus.includes("sendback")
+    rawStatus.includes("reject") ||
+    rawStatus.includes("declin") ||
+    rawStatus.includes("sendback")
       ? "sent-back"
       : rawStatus.includes("approv") ||
           rawStatus.includes("accept") ||
@@ -428,44 +478,13 @@ function assertStoredProcedureSuccess(
   return undefined;
 }
 
-function verifyRequisitionStatus(
-  response: unknown,
-  requisitionId: number,
-  expectedStatus: Approval["status"],
-) {
-  if (
-    !response ||
-    typeof response !== "object" ||
-    !("success" in response) ||
-    response.success !== true ||
-    !("data" in response) ||
-    !Array.isArray(response.data)
-  ) {
-    throw new Error("Unable to verify the updated requisition status.");
-  }
-
-  const row = toRows(response.data).find(
-    (candidate) =>
-      readNumber(candidate, ["RequisitionID", "ID"]) === requisitionId,
-  );
-  const approval = row ? mapPendingRequisition(row) : null;
-  if (!approval || approval.status !== expectedStatus) {
-    throw new Error(
-      expectedStatus === "ready"
-        ? "The requisition is still pending approval. Check the action result and try again."
-        : "The requisition is still pending. Check the action result and try again.",
-    );
-  }
-}
-
 // ======================================================
 // HOOK
 // ======================================================
 
-export const useRecruitment = () => {
+export const useRecruitment = (skipPageQueries = false) => {
   const roleId = useAppSelector((state) => state.auth.roleId);
   const isHrRole = roleId === "1" || roleId === "2";
-  const canManageRequisitionApprovals = roleId === "3";
 
   // ==================================================
   // LOCAL UI STATE
@@ -500,34 +519,44 @@ export const useRecruitment = () => {
     error: openingsQueryError,
     isFetching: openingsFetching,
     refetch: refetchOpenings,
-  } = useGetJobOpeningsQuery();
+  } = useGetJobOpeningsQuery(undefined, { skip: skipPageQueries });
 
   // ==================================================
   // PENDING REQUISITIONS (APPROVALS)
   // ==================================================
 
   const hrRequisitionsQuery = useGetAllRequisitionsForHRQuery(undefined, {
-    skip: !isHrRole,
+    skip: skipPageQueries || !isHrRole,
     refetchOnMountOrArgChange: true,
     pollingInterval: activeTab === "approvals" ? 15000 : 0,
   });
   const managerRequisitionsQuery = useGetPendingRequisitionsQuery(undefined, {
-    skip: !canManageRequisitionApprovals,
+    skip: skipPageQueries || activeTab !== "approvals",
     refetchOnMountOrArgChange: true,
     pollingInterval: activeTab === "approvals" ? 15000 : 0,
   });
-  const requisitionsResponse = isHrRole
-    ? hrRequisitionsQuery.data
-    : managerRequisitionsQuery.data;
-  const requisitionsQueryError = isHrRole
-    ? hrRequisitionsQuery.error
-    : managerRequisitionsQuery.error;
-  const requisitionsFetching = isHrRole
-    ? hrRequisitionsQuery.isFetching
-    : managerRequisitionsQuery.isFetching;
-  const refetchRequisitions = isHrRole
-    ? hrRequisitionsQuery.refetch
-    : managerRequisitionsQuery.refetch;
+  const refetchRequisitions = async () => {
+    await Promise.all([
+      managerRequisitionsQuery.refetch(),
+      ...(isHrRole ? [hrRequisitionsQuery.refetch()] : []),
+    ]);
+  };
+  const managerApprovalIds = useMemo(() => {
+    const rows = Array.isArray(managerRequisitionsQuery.data)
+      ? managerRequisitionsQuery.data
+      : [];
+    return new Set(
+      rows
+        .filter(
+          (row): row is RecruitmentRow =>
+            Boolean(row) && typeof row === "object" && !Array.isArray(row),
+        )
+        .map((row) => readNumber(row, ["RequisitionID", "ID"]))
+        .filter((id) => id > 0),
+    );
+  }, [managerRequisitionsQuery.data]);
+  const canManageApproval = (requisitionId: number) =>
+    managerApprovalIds.has(requisitionId);
 
   // ==================================================
   // DASHBOARD (PIPELINE CANDIDATES)
@@ -538,7 +567,9 @@ export const useRecruitment = () => {
     error: dashboardQueryError,
     isFetching: dashboardFetching,
     refetch: refetchDashboard,
-  } = useGetRecruitmentDashboardQuery();
+  } = useGetRecruitmentDashboardQuery(undefined, {
+    skip: skipPageQueries,
+  });
 
   // ==================================================
   // CANDIDATE APPLICATIONS (RESUME URLS)
@@ -549,7 +580,9 @@ export const useRecruitment = () => {
     error: applicationsQueryError,
     isFetching: applicationsFetching,
     refetch: refetchApplications,
-  } = useGetCandidateApplicationsQuery();
+  } = useGetCandidateApplicationsQuery(undefined, {
+    skip: skipPageQueries,
+  });
 
   // ==================================================
   // MUTATIONS
@@ -596,50 +629,34 @@ export const useRecruitment = () => {
     [openingsResponse]
   );
 
-  const approvalsResult = useMemo(
-    () =>
-      requisitionsResponse === undefined
-        ? undefined
-        : safeMap(
-            () => {
-              if (Array.isArray(requisitionsResponse)) {
-                return toRows(requisitionsResponse)
-                  .map(mapPendingRequisition)
-                  .filter(
-                    (approval): approval is Approval => approval !== null,
-                  );
-              }
+  const approvalsResult = useMemo(() => {
+    if (
+      hrRequisitionsQuery.data === undefined &&
+      managerRequisitionsQuery.data === undefined
+    ) {
+      return undefined;
+    }
 
-              if (
-                !requisitionsResponse ||
-                typeof requisitionsResponse !== "object" ||
-                !("success" in requisitionsResponse) ||
-                !requisitionsResponse.success ||
-                !("data" in requisitionsResponse) ||
-                !Array.isArray(requisitionsResponse.data)
-              ) {
-                const message =
-                  requisitionsResponse &&
-                  typeof requisitionsResponse === "object" &&
-                  "message" in requisitionsResponse
-                    ? requisitionsResponse.message
-                    : undefined;
-                throw new Error(
-                  typeof message === "string"
-                    ? message
-                    : "Recruitment API returned an invalid requisition list.",
-                );
-              }
-              return toRows(requisitionsResponse.data)
-                .map(mapPendingRequisition)
-                .filter(
-                  (approval): approval is Approval => approval !== null
-                );
-            },
-            "Unable to load requisitions."
-          ),
-    [requisitionsResponse]
-  );
+    return safeMap(() => {
+      const rowsById = new Map<number, RecruitmentRow>();
+      const hrRows = requisitionRowsFromResponse(
+        hrRequisitionsQuery.data,
+        "HR requisitions",
+      );
+      const managerRows = requisitionRowsFromResponse(
+        managerRequisitionsQuery.data,
+        "Hiring manager requisitions",
+      );
+      [...hrRows, ...managerRows].forEach((row) => {
+        const id = readNumber(row, ["RequisitionID", "ID"]);
+        if (id > 0) rowsById.set(id, row);
+      });
+
+      return [...rowsById.values()]
+        .map(mapPendingRequisition)
+        .filter((approval): approval is Approval => approval !== null);
+    }, "Unable to load requisitions.");
+  }, [hrRequisitionsQuery.data, managerRequisitionsQuery.data]);
 
   const dashboardResult = useMemo(
     () =>
@@ -740,7 +757,8 @@ export const useRecruitment = () => {
 
   const isRecruitmentLoading =
     openingsFetching ||
-    requisitionsFetching ||
+    hrRequisitionsQuery.isFetching ||
+    (activeTab === "approvals" && managerRequisitionsQuery.isFetching) ||
     dashboardFetching ||
     applicationsFetching;
 
@@ -760,12 +778,18 @@ export const useRecruitment = () => {
           "Unable to load candidate application details."
         )
       : resumesResult?.error,
-    requisitionsQueryError
-      ? getErrorMessage(requisitionsQueryError, "Unable to load requisitions.")
-      : approvalsResult?.error,
+    hrRequisitionsQuery.error
+      ? getErrorMessage(
+          hrRequisitionsQuery.error,
+          "Unable to load HR requisitions.",
+        )
+      : undefined,
+    approvalsResult?.error,
   ].filter(Boolean);
 
-  const recruitmentError = actionError || loadErrors.join(" ");
+  const recruitmentError = skipPageQueries
+    ? ""
+    : actionError || loadErrors.join(" ");
 
   // ==================================================
   // FILTERS
@@ -808,6 +832,7 @@ export const useRecruitment = () => {
   // ==================================================
 
   const refreshRecruitment = async () => {
+    if (skipPageQueries) return;
     setActionError("");
 
     await Promise.allSettled([
@@ -823,7 +848,7 @@ export const useRecruitment = () => {
   // ==================================================
 
   const approveOpening = async (approvalId: number) => {
-    if (!canManageRequisitionApprovals) {
+    if (!canManageApproval(approvalId)) {
       toast.error("Only an authorized hiring manager can approve requisitions.");
       return;
     }
@@ -840,8 +865,7 @@ export const useRecruitment = () => {
         "The requisition approval was not applied.",
       );
 
-      const requisitionsResponse = await refetchRequisitions().unwrap();
-      verifyRequisitionStatus(requisitionsResponse, approvalId, "ready");
+      await refetchRequisitions();
 
     } catch (error: unknown) {
       const message = getErrorMessage(
@@ -858,7 +882,7 @@ export const useRecruitment = () => {
   // ==================================================
 
   const sendBackOpening = async (approvalId: number) => {
-    if (!canManageRequisitionApprovals) {
+    if (!canManageApproval(approvalId)) {
       toast.error("Only an authorized hiring manager can reject requisitions.");
       return;
     }
@@ -877,8 +901,7 @@ export const useRecruitment = () => {
         "The requisition rejection was not applied.",
       );
 
-      const requisitionsResponse = await refetchRequisitions().unwrap();
-      verifyRequisitionStatus(requisitionsResponse, approvalId, "sent-back");
+      await refetchRequisitions();
 
       setApprovalComments((previous) => ({ ...previous, [approvalId]: "" }));
 
@@ -1042,7 +1065,7 @@ export const useRecruitment = () => {
     openings,
     filteredOpenings,
     approvals,
-    canManageRequisitionApprovals,
+    canManageApproval,
     approvalCount,
 
     // ================================================

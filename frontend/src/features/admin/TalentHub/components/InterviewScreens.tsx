@@ -1,15 +1,18 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CalendarDays, Search, X } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, Search, X } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import {
   useGetPendingInterviewScheduleQuery,
   useGetInterviewScheduleOptionsQuery,
   useGetRecruitmentInterviewersQuery,
   useGetRecruitmentInterviewsQuery,
+  useGetCandidatesWaitingForFinalApprovalQuery,
   useGetTodayRecruitmentInterviewsQuery,
   useGetRecruitmentInterviewQuery,
   useGetRecruitmentInterviewFeedbackQuery,
+  useMoveCandidateToNextStageMutation,
+  useScheduleTechnicalRoundTwoMutation,
   useScheduleRecruitmentInterviewMutation,
   useSubmitRecruitmentInterviewFeedbackMutation,
   useUpdateRecruitmentInterviewStatusMutation,
@@ -18,6 +21,7 @@ import type {
   PendingInterviewCandidate,
   RecruitmentInterview,
   RecruitmentInterviewPeriod,
+  ScheduledCandidateInterview,
 } from "../types/recruitment.types";
 import { RecruitmentPagination } from "./RecruitmentPagination";
 import { EmptyState } from "./RecruitmentShared";
@@ -42,6 +46,17 @@ function formatDate(value: string) {
         dateStyle: "medium",
         timeStyle: "short",
       });
+}
+
+function normalizedName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function currentLocalDate() {
+  const date = new Date();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 function InterviewCard({
@@ -69,6 +84,13 @@ export function InterviewScheduleScreen() {
   const [pageSize, setPageSize] = useState(10);
   const [selectedCandidate, setSelectedCandidate] =
     useState<PendingInterviewCandidate | null>(null);
+  const [selectedReview, setSelectedReview] =
+    useState<ScheduledCandidateInterview | null>(null);
+  const [selectedFollowUp, setSelectedFollowUp] =
+    useState<ScheduledCandidateInterview | null>(null);
+  const [isMovingToApproval, setIsMovingToApproval] = useState(false);
+  const [stageMoveError, setStageMoveError] = useState("");
+  const [moveCandidateToNextStage] = useMoveCandidateToNextStageMutation();
   const {
     data: candidates = [],
     error: candidatesError,
@@ -83,6 +105,35 @@ export function InterviewScheduleScreen() {
     page: 1,
     limit: 5,
   });
+  const {
+    data: submittedFeedback = [],
+    error: submittedFeedbackError,
+    isLoading: isLoadingSubmittedFeedback,
+  } = useGetCandidatesWaitingForFinalApprovalQuery();
+  const sortedSubmittedFeedback = [...submittedFeedback].sort(
+    (first, second) =>
+      new Date(second.scheduledAt).getTime() -
+      new Date(first.scheduledAt).getTime(),
+  );
+  const moveToNextStage = async (interview: ScheduledCandidateInterview) => {
+    setStageMoveError("");
+    setIsMovingToApproval(true);
+    try {
+      await moveCandidateToNextStage(interview.applicationId).unwrap();
+      navigate(
+        `/${domain}/admin/talent-hub/recruitment/final-interview-approval`,
+      );
+    } catch (requestError) {
+      setStageMoveError(
+        errorMessage(
+          requestError,
+          "Unable to move the candidate to Final Interview Approval.",
+        ),
+      );
+    } finally {
+      setIsMovingToApproval(false);
+    }
+  };
   const totalPages = Math.max(1, Math.ceil(candidates.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const pageCandidates = candidates.slice(
@@ -273,10 +324,156 @@ export function InterviewScheduleScreen() {
         )}
       </InterviewCard>
 
+      <InterviewCard title="Submitted feedback · HR review">
+        {isLoadingSubmittedFeedback ? (
+          <p className="p-5 text-sm text-[#78867e]">
+            Loading submitted interview feedback...
+          </p>
+        ) : submittedFeedbackError ? (
+          <p role="alert" className="p-5 text-sm text-rose-700">
+            {errorMessage(
+              submittedFeedbackError,
+              "Unable to load submitted interview feedback.",
+            )}
+          </p>
+        ) : sortedSubmittedFeedback.length === 0 ? (
+          <div className="flex min-h-32 items-center justify-center p-6 text-center text-sm text-[#78867e]">
+            Submitted interviewer feedback will appear here for HR review.
+          </div>
+        ) : (
+          <>
+            {stageMoveError && (
+              <p role="alert" className="border-b border-rose-100 bg-rose-50 px-5 py-3 text-sm text-rose-700">
+                {stageMoveError}
+              </p>
+            )}
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[1250px] border-collapse whitespace-nowrap text-left">
+              <thead>
+                <tr>
+                  {[
+                    "When",
+                    "Candidate",
+                    "Round",
+                    "Interviewer",
+                    "Rating",
+                    "Feedback",
+                    "Next step",
+                    "Action",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      className="whitespace-nowrap bg-[#f8f9f7] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#758078] first:pl-5"
+                    >
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSubmittedFeedback.map((interview) => (
+                  <tr
+                    key={interview.id}
+                    className="border-t border-[#eef0eb] odd:bg-white even:bg-[#fffaf0] text-xs text-[#344138]"
+                  >
+                    <td className="px-4 py-3.5 pl-5">
+                      {formatDate(interview.scheduledAt)}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="font-semibold">
+                        {interview.candidateName}
+                      </span>
+                      <span className="ml-2 text-[#87938c]">
+                        {interview.candidateCode}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      {interview.roundName} · {interview.interviewType}
+                    </td>
+                    <td className="px-4 py-3.5">{interview.interviewerName}</td>
+                    <td className="px-4 py-3.5">
+                      {interview.feedbackRating ?? "—"}
+                    </td>
+                    <td
+                      className="max-w-[280px] truncate px-4 py-3.5"
+                      title={interview.feedbackText || "No written feedback"}
+                    >
+                      {interview.feedbackText || "No written feedback"}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      {interview.alreadyMovedToNextStage
+                        ? "Moved to Final Approval"
+                        : interview.isLatestInterview
+                          ? "Decision needed"
+                          : "Later round scheduled"}
+                      {interview.isLatestInterview &&
+                        !interview.alreadyMovedToNextStage && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {["technical", "technical1"].includes(
+                              normalizedName(interview.interviewType),
+                            ) && (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedFollowUp(interview)}
+                                className="rounded-lg bg-[#fff3d6] px-3 py-2 font-semibold text-[#986713] hover:bg-[#f8e8c5]"
+                              >
+                                Technical 2
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => void moveToNextStage(interview)}
+                              disabled={isMovingToApproval}
+                              className="rounded-lg bg-[#e8f4ec] px-3 py-2 font-semibold text-[#39724f] hover:bg-[#d9ecdf] disabled:opacity-50"
+                            >
+                              {isMovingToApproval
+                                ? "Moving..."
+                                : "Move to Next"}
+                            </button>
+                          </div>
+                        )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedReview(interview)}
+                        className="rounded-lg border border-[#ead9b7] px-3 py-2 font-semibold text-[#986713] hover:bg-[#fffaf0]"
+                      >
+                        Review feedback
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </>
+        )}
+      </InterviewCard>
+
       {selectedCandidate && (
         <ScheduleInterviewDialog
           candidate={selectedCandidate}
           onClose={() => setSelectedCandidate(null)}
+        />
+      )}
+      {selectedReview && (
+        <InterviewReviewDialog
+          interview={selectedReview}
+          onClose={() => setSelectedReview(null)}
+        />
+      )}
+      {selectedFollowUp && (
+        <ScheduleInterviewDialog
+          candidate={{
+            applicationId: selectedFollowUp.applicationId,
+            candidateName: selectedFollowUp.candidateName,
+            position: selectedFollowUp.position,
+          }}
+          preferredInterviewType="Technical 2"
+          lockInterviewType
+          technicalRoundTwoInterviewId={selectedFollowUp.id}
+          onClose={() => setSelectedFollowUp(null)}
         />
       )}
     </section>
@@ -286,9 +483,20 @@ export function InterviewScheduleScreen() {
 function ScheduleInterviewDialog({
   candidate,
   onClose,
+  onScheduled,
+  preferredInterviewType,
+  lockInterviewType = false,
+  technicalRoundTwoInterviewId,
 }: {
-  candidate: PendingInterviewCandidate;
+  candidate: Pick<
+    PendingInterviewCandidate,
+    "applicationId" | "candidateName" | "position"
+  >;
   onClose: () => void;
+  onScheduled?: () => void;
+  preferredInterviewType?: string;
+  lockInterviewType?: boolean;
+  technicalRoundTwoInterviewId?: number;
 }) {
   const currentEmployeeId = useAppSelector((state) => state.auth.employeeId);
   const {
@@ -303,27 +511,84 @@ function ScheduleInterviewDialog({
   } = useGetInterviewScheduleOptionsQuery();
   const [scheduleInterview, { isLoading: isScheduling }] =
     useScheduleRecruitmentInterviewMutation();
+  const [scheduleTechnicalRoundTwo] =
+    useScheduleTechnicalRoundTwoMutation();
   const [interviewTypeId, setInterviewTypeId] = useState("");
   const [interviewModeId, setInterviewModeId] = useState("20");
   const [date, setDate] = useState("");
+  const minimumInterviewDate = currentLocalDate();
   const [time, setTime] = useState("");
   const [interviewerEmployeeId, setInterviewerEmployeeId] = useState(
     currentEmployeeId ?? "",
   );
+  const [isInterviewerDropdownOpen, setIsInterviewerDropdownOpen] =
+    useState(false);
+  const interviewerDropdownRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
+  const preferredType = scheduleOptions?.interviewTypes.find(
+    (option) =>
+      preferredInterviewType &&
+      normalizedName(option.name) === normalizedName(preferredInterviewType),
+  );
+  const unavailablePreferredType = Boolean(
+    preferredInterviewType && !isLoadingScheduleOptions && !preferredType,
+  );
+  const selectedInterviewTypeId =
+    interviewTypeId ||
+    (preferredType ? String(preferredType.id) : "");
+
+  useEffect(() => {
+    if (!isInterviewerDropdownOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !interviewerDropdownRef.current?.contains(event.target)
+      ) {
+        setIsInterviewerDropdownOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsInterviewerDropdownOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isInterviewerDropdownOpen]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    if (unavailablePreferredType) {
+      setError(
+        `The ${preferredInterviewType} interview type is not configured.`,
+      );
+      return;
+    }
     try {
-      await scheduleInterview({
-        applicationId: candidate.applicationId,
-        interviewTypeId: Number(interviewTypeId),
-        interviewModeId: Number(interviewModeId),
-        date,
-        time,
-        interviewerEmployeeId,
-      }).unwrap();
+      if (technicalRoundTwoInterviewId) {
+        await scheduleTechnicalRoundTwo({
+          interviewId: technicalRoundTwoInterviewId,
+          interviewModeId: Number(interviewModeId),
+          date,
+          time,
+          interviewerEmployeeId,
+        }).unwrap();
+      } else {
+        await scheduleInterview({
+          applicationId: candidate.applicationId,
+          interviewTypeId: Number(selectedInterviewTypeId),
+          interviewModeId: Number(interviewModeId),
+          date,
+          time,
+          interviewerEmployeeId,
+        }).unwrap();
+      }
+      onScheduled?.();
       onClose();
     } catch (requestError) {
       setError(
@@ -344,7 +609,7 @@ function ScheduleInterviewDialog({
         aria-modal="true"
         aria-labelledby="schedule-interview-title"
         onSubmit={(event) => void submit(event)}
-        className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[#eee9dc] bg-white shadow-2xl"
+        className="max-h-[90vh] w-full max-w-xl -translate-y-10 overflow-y-auto rounded-2xl border border-[#eee9dc] bg-white shadow-2xl"
       >
         <div className="sticky top-0 flex items-center justify-between border-b border-[#efeee9] bg-white px-5 py-4">
           <div>
@@ -369,10 +634,10 @@ function ScheduleInterviewDialog({
           <label className="space-y-1.5 text-xs font-semibold text-[#59665d]">
             Interview type
             <select
-              value={interviewTypeId}
+              value={selectedInterviewTypeId}
               onChange={(event) => setInterviewTypeId(event.target.value)}
               required
-              disabled={isLoadingScheduleOptions}
+              disabled={isLoadingScheduleOptions || lockInterviewType}
               className="h-10 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
             >
               <option value="">Select interview type</option>
@@ -387,6 +652,7 @@ function ScheduleInterviewDialog({
             Interview date
             <input
               type="date"
+              min={minimumInterviewDate}
               value={date}
               onChange={(event) => setDate(event.target.value)}
               required
@@ -398,7 +664,10 @@ function ScheduleInterviewDialog({
             <input
               type="time"
               value={time}
-              onChange={(event) => setTime(event.target.value)}
+              onChange={(event) => {
+                setTime(event.target.value);
+                event.currentTarget.blur();
+              }}
               required
               className="h-10 w-full rounded-lg border border-[#dfe4df] px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
             />
@@ -417,23 +686,66 @@ function ScheduleInterviewDialog({
               ))}
             </select>
           </label>
-          <label className="space-y-1.5 text-xs font-semibold text-[#59665d] sm:col-span-2">
+          <div className="relative space-y-1.5 text-xs font-semibold text-[#59665d] sm:col-span-2">
             Interviewer
-            <select
-              value={interviewerEmployeeId}
-              onChange={(event) => setInterviewerEmployeeId(event.target.value)}
-              required
-              disabled={isLoadingInterviewers || interviewers.length === 0}
-              className="h-10 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
-            >
-              <option value="">Select an interviewer</option>
-              {interviewers.map((interviewer) => (
-                <option key={interviewer.id} value={interviewer.id}>
-                  {interviewer.name}
-                </option>
-              ))}
-            </select>
-          </label>
+            <div ref={interviewerDropdownRef}>
+              <button
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={isInterviewerDropdownOpen}
+                aria-controls="schedule-interviewer-options"
+                disabled={isLoadingInterviewers || interviewers.length === 0}
+                onClick={() =>
+                  setIsInterviewerDropdownOpen((open) => !open)
+                }
+                className="flex h-10 w-full items-center justify-between rounded-lg border border-[#dfe4df] bg-white px-3 text-left text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b] disabled:bg-[#f5f5f2]"
+              >
+                <span className="truncate">
+                  {interviewers.find(
+                    (interviewer) =>
+                      interviewer.id === interviewerEmployeeId,
+                  )?.name ?? "Select an interviewer"}
+                </span>
+                <ChevronDown
+                  className={`ml-2 h-4 w-4 shrink-0 transition-transform ${
+                    isInterviewerDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {isInterviewerDropdownOpen && (
+                <div
+                  id="schedule-interviewer-options"
+                  role="listbox"
+                  aria-label="Interviewers"
+                  className="absolute z-20 mt-1 max-h-[108px] w-full overflow-y-auto rounded-lg border border-[#dfe4df] bg-white py-1 shadow-lg"
+                >
+                  {interviewers.map((interviewer) => {
+                    const isSelected =
+                      interviewer.id === interviewerEmployeeId;
+                    return (
+                      <button
+                        key={interviewer.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => {
+                          setInterviewerEmployeeId(interviewer.id);
+                          setIsInterviewerDropdownOpen(false);
+                        }}
+                        className={`flex h-9 w-full items-center px-3 text-left text-sm font-normal ${
+                          isSelected
+                            ? "bg-[#f3e4c5] text-[#354239]"
+                            : "text-[#354239] hover:bg-[#fcf7ed]"
+                        }`}
+                      >
+                        {interviewer.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
           {isLoadingScheduleOptions && (
             <p role="status" className="text-xs text-[#78867e] sm:col-span-2">
               Loading interview types and modes...
@@ -444,6 +756,11 @@ function ScheduleInterviewDialog({
               {errorMessage(
                 scheduleOptionsError,
                 "Unable to load interview types and modes.",
+              )}
+              {unavailablePreferredType && (
+                <p role="alert" className="text-xs text-rose-700 sm:col-span-2">
+                  The {preferredInterviewType} interview type is not configured.
+                </p>
               )}
             </p>
           )}
@@ -476,7 +793,8 @@ function ScheduleInterviewDialog({
               interviewers.length === 0 ||
               !scheduleOptions?.interviewTypes.length ||
               !scheduleOptions.interviewModes.length ||
-              !interviewTypeId ||
+              !selectedInterviewTypeId ||
+              unavailablePreferredType ||
               !interviewerEmployeeId
             }
             className="h-9 rounded-lg bg-[#e5a538] px-4 text-xs font-semibold text-[#342712] hover:bg-[#d99a2b] disabled:cursor-not-allowed disabled:opacity-50"
@@ -610,10 +928,16 @@ export function InterviewProcessScreen() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] border-collapse whitespace-nowrap text-left">
+              <table className="w-full min-w-[1100px] border-collapse whitespace-nowrap text-left">
                 <thead>
                   <tr>
-                    {["When", "Candidate", "Interview Type", "Interviewer"].map(
+                    {[
+                      "When",
+                      "Candidate",
+                      "Round",
+                      "Interviewer",
+                      "Feedback",
+                    ].map(
                       (heading) => (
                         <th
                           key={heading}
@@ -635,8 +959,15 @@ export function InterviewProcessScreen() {
                         {formatDate(interview.scheduledAt)}
                       </td>
                       <td className="px-4 py-3.5">{interview.candidateName}</td>
-                      <td className="px-4 py-3.5">{interview.interviewType}</td>
+                      <td className="px-4 py-3.5">
+                        {interview.roundName} · {interview.interviewType}
+                      </td>
                       <td className="px-4 py-3.5">{interview.interviewerName}</td>
+                      <td className="px-4 py-3.5">
+                        {interview.feedbackSubmitted
+                          ? "Submitted"
+                          : "Awaiting"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -657,6 +988,195 @@ export function InterviewProcessScreen() {
         )}
       </InterviewCard>
     </section>
+  );
+}
+
+function InterviewReviewDialog({
+  interview,
+  onClose,
+}: {
+  interview: ScheduledCandidateInterview;
+  onClose: () => void;
+}) {
+  const [moveCandidate, { isLoading: isMoving }] =
+    useMoveCandidateToNextStageMutation();
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [hasMoved, setHasMoved] = useState(false);
+  const [hasScheduled, setHasScheduled] = useState(false);
+  const interviewType = normalizedName(interview.interviewType);
+  const nextInterviewType =
+    interviewType === "technical1" || interviewType === "technical"
+      ? "Technical 2"
+      : undefined;
+
+  const moveToNextStage = async () => {
+    setActionError("");
+    setActionMessage("");
+    try {
+      const result = await moveCandidate(interview.applicationId).unwrap();
+      setActionMessage(result.message);
+      setHasMoved(true);
+    } catch (requestError) {
+      setActionError(
+        errorMessage(
+          requestError,
+          "Unable to move the candidate to the next stage.",
+        ),
+      );
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-[#202a26]/45 p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !isMoving) onClose();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="interview-review-title"
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#eee9dc] bg-white shadow-2xl"
+      >
+        <div className="flex items-start justify-between border-b border-[#efeee9] px-5 py-4">
+          <div>
+            <h2
+              id="interview-review-title"
+              className="font-bold text-[#26332c]"
+            >
+              Interview Review
+            </h2>
+            <p className="mt-1 text-sm text-[#78867e]">
+              {interview.candidateName} · {interview.position}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close interview review"
+            className="rounded-lg p-1.5 text-[#7e8981] hover:bg-[#f5f4ef]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <dl className="grid gap-3 p-5 sm:grid-cols-2">
+          {[
+            ["Candidate", interview.candidateName],
+            [
+              "Interview round",
+              `${interview.roundName} · ${interview.interviewType}`,
+            ],
+            ["Interview status", interview.status],
+            ["Feedback submitted", interview.feedbackSubmitted ? "Yes" : "No"],
+            ["Interviewer", interview.interviewerName],
+            ["Scheduled", formatDate(interview.scheduledAt)],
+            [
+              "Overall rating",
+              interview.feedbackRating == null
+                ? "—"
+                : `${interview.feedbackRating}/10`,
+            ],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg bg-[#f8f9f7] p-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-[#849087]">
+                {label}
+              </dt>
+              <dd className="mt-1 text-sm font-medium capitalize text-[#354239]">
+                {value}
+              </dd>
+            </div>
+          ))}
+          <div className="rounded-lg bg-[#f8f9f7] p-3 sm:col-span-2">
+            <dt className="text-[11px] font-semibold uppercase tracking-wide text-[#849087]">
+              Interviewer feedback
+            </dt>
+            <dd className="mt-1 whitespace-pre-wrap text-sm text-[#354239]">
+              {interview.feedbackText || "No feedback has been submitted."}
+            </dd>
+          </div>
+        </dl>
+
+        {interview.feedbackSubmitted &&
+          interview.isLatestInterview &&
+          !interview.alreadyMovedToNextStage &&
+          !hasMoved &&
+          !hasScheduled && (
+            <div className="grid gap-3 border-t border-[#efeee9] p-5 sm:grid-cols-2">
+              {nextInterviewType && (
+                <button
+                  type="button"
+                  onClick={() => setIsScheduling(true)}
+                  disabled={isMoving}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#dfe4df] px-4 py-3 text-sm font-semibold text-[#344138] hover:bg-[#f8f9f7] disabled:opacity-50"
+                >
+                  <CalendarDays className="h-4 w-4" />
+                  Schedule {nextInterviewType}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void moveToNextStage()}
+                disabled={isMoving}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#e8f4ec] px-4 py-3 text-sm font-semibold text-[#39724f] hover:bg-[#d9ecdf] disabled:opacity-50"
+              >
+                <ArrowRight className="h-4 w-4" />
+                {isMoving ? "Moving..." : "Move to Next Stage"}
+              </button>
+            </div>
+          )}
+        {interview.feedbackSubmitted && !interview.isLatestInterview && (
+          <p className="border-t border-[#efeee9] px-5 py-4 text-sm text-[#78867e]">
+            A later interview is already scheduled. Review that round before
+            moving the candidate forward.
+          </p>
+        )}
+        {(interview.alreadyMovedToNextStage || hasMoved) && (
+          <p className="border-t border-[#efeee9] px-5 py-4 text-sm text-[#39724f]">
+            Candidate is already in Final Interview Approval.
+          </p>
+        )}
+
+        {(actionError || actionMessage) && (
+          <p
+            role={actionError ? "alert" : "status"}
+            className={`border-t px-5 py-3 text-sm ${
+              actionError
+                ? "border-rose-100 bg-rose-50 text-rose-700"
+                : "border-[#dcebdc] bg-[#f2faf3] text-[#39724f]"
+            }`}
+          >
+            {actionError || actionMessage}
+          </p>
+        )}
+        {!interview.feedbackSubmitted && (
+          <p className="border-t border-[#efeee9] px-5 py-4 text-sm text-[#78867e]">
+            Interviewer feedback must be submitted before moving the candidate
+            forward or scheduling another round.
+          </p>
+        )}
+      </section>
+      {isScheduling && (
+        <ScheduleInterviewDialog
+          candidate={{
+            applicationId: interview.applicationId,
+            candidateName: interview.candidateName,
+            position: interview.position,
+          }}
+          preferredInterviewType={nextInterviewType}
+          lockInterviewType
+          onClose={() => setIsScheduling(false)}
+          onScheduled={() => {
+            setActionError("");
+            setActionMessage("The next interview was scheduled successfully.");
+            setHasScheduled(true);
+          }}
+        />
+      )}
+    </div>
   );
 }
 

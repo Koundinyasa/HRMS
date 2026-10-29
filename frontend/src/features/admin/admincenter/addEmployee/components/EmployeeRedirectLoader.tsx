@@ -12,10 +12,6 @@ const STEPS = [
   "Opening Employee Details",
 ];
 
-/**
- * Full-screen transition loader shown between "Done" on the success popup
- * and the Employee Details page. Uses --theme-primary so it follows the app theme.
- */
 export default function EmployeeRedirectLoader({ duration = 2400 }: EmployeeRedirectLoaderProps) {
   const [step, setStep] = useState(0);
 

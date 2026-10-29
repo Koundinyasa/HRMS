@@ -1,4 +1,7 @@
-import { recruitmentFileUrl } from "../api/recruitment.api";
+import {
+  recruitmentFileName,
+  recruitmentFileUrl,
+} from "../api/recruitment.api";
 
 export type WorkflowRow = Record<string, string>;
 export type DropdownOption = { value: string; label: string };
@@ -92,6 +95,11 @@ export function mapCandidateApplication(record: unknown): WorkflowRow {
     "ResumeExtension",
     "ActualFileName",
   );
+  const resumeFileName = value(
+    "ActualFileName",
+    "ResumeFileName",
+    "OriginalFileName",
+  );
 
   return {
     application: value(
@@ -166,6 +174,13 @@ export function mapCandidateApplication(record: unknown): WorkflowRow {
         : recruitmentFileUrl(
             resumeUrl,
             resumeExtension === "—" ? undefined : resumeExtension,
+          ),
+    resumeFileName:
+      resumeUrl === "—"
+        ? ""
+        : recruitmentFileName(
+            resumeUrl,
+            resumeFileName === "—" ? undefined : resumeFileName,
           ),
   };
 }

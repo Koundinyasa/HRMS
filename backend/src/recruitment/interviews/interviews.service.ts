@@ -21,6 +21,30 @@ import {
 
 type InterviewScheduleFilter = 'Today' | 'Upcoming' | 'Past';
 
+type InterviewProcessQueryRow = {
+  id: number;
+  scheduleId: number;
+  applicationId: number;
+  applicationCode: string;
+  candidateCode: string;
+  candidateName: string;
+  candidateEmail: string | null;
+  position: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  scheduledAt: Date;
+  interviewerName: string;
+  interviewType: string;
+  roundName: string;
+  feedbackSubmitted: boolean;
+  feedbackRating: number | null;
+  feedbackText: string | null;
+  status: 'scheduled' | 'completed';
+  isLatestInterview: boolean;
+  alreadyMovedToNextStage: boolean;
+  totalCount: number;
+};
+
 export interface InterviewerFeedbackWorklistRow {
   id: number;
   code: string;
@@ -38,6 +62,8 @@ export interface InterviewerFeedbackWorklistRow {
   feedbackSubmitted: boolean;
   canSubmitFeedback: boolean;
   feedbackRating: number | null;
+  candidateAverageRating?: number | null;
+  candidateFeedbackCount?: number;
   feedbackText: string | null;
   feedbackDetails: Array<{
     categoryName: string;
@@ -151,10 +177,30 @@ export class InterviewsService {
     const candidate = eligibleCandidates.find(
       (record) => record.ApplicationID === applicationId,
     );
+    let pool: sql.ConnectionPool | undefined;
     if (!candidate) {
-      throw new BadRequestException(
-        'Select a candidate who is eligible for interview scheduling.',
-      );
+      pool = await this.database.connect();
+      const completedInterview = await pool
+        .request()
+        .input('ApplicationID', sql.Int, applicationId).query<{
+          hasCompletedInterview: boolean;
+        }>(`
+          SELECT CAST(CASE WHEN EXISTS (
+            SELECT 1
+            FROM dbo.InterviewSchedules S
+            INNER JOIN dbo.Interviews I
+              ON I.InterviewScheduleID = S.ID
+            WHERE S.ApplicationID = @ApplicationID
+              AND I.FeedbackSubmitted = 1
+          ) THEN 1 ELSE 0 END AS BIT) AS hasCompletedInterview;
+        `);
+      if (
+        Number(completedInterview.recordset[0]?.hasCompletedInterview) !== 1
+      ) {
+        throw new BadRequestException(
+          'Select a candidate who is eligible for interview scheduling or has completed interview feedback.',
+        );
+      }
     }
 
     const [year, month, day] = dto.date.split('-').map(Number);
@@ -171,7 +217,9 @@ export class InterviewsService {
       throw new BadRequestException('Pick a future interview date and time.');
     }
 
-    const pool = await this.database.connect();
+    if (!pool) {
+      pool = await this.database.connect();
+    }
     const result = await pool
       .request()
       .input('ApplicationID', sql.Int, applicationId)
@@ -412,65 +460,280 @@ export class InterviewsService {
     const period = query.period ?? 'upcoming';
     const filter: InterviewScheduleFilter =
       period === 'today' ? 'Today' : period === 'past' ? 'Past' : 'Upcoming';
-    const rows = await this.recruitment.getScheduledCandidateInterviews(
+    await this.recruitment.getScheduledCandidateInterviews(
       hrEmployeeId,
       filter,
     );
-    const normalizedSearch = query.search?.trim().toLowerCase();
-    const interviews = rows
-      .map((row) => {
-        const scheduledDate = readRowValue(row, 'ScheduledDate');
-        const scheduledTime = readRowValue(row, 'ScheduledTime');
-        const candidateName = readRowValue(row, 'CandidateName');
-        const interviewerName = readRowValue(row, 'InterviewerName');
-        const interviewType = readRowValue(row, 'InterviewType');
-        if (
-          scheduledDate == null ||
-          scheduledTime == null ||
-          candidateName == null ||
-          interviewerName == null ||
-          interviewType == null
-        ) {
-          throw new InternalServerErrorException(
-            'Scheduled interview data is missing a date, time, candidate, interviewer, or interview type.',
-          );
-        }
-        const scheduledDateText = String(scheduledDate);
-        const scheduledTimeText = String(scheduledTime);
-        const candidateNameText = String(candidateName);
-        const interviewerNameText = String(interviewerName);
-        const interviewTypeText = String(interviewType);
-        return {
-          id: [
-            scheduledDateText,
-            scheduledTimeText,
-            candidateNameText,
-            interviewerNameText,
-            interviewTypeText,
-          ].join('|'),
-          scheduledDate: scheduledDateText,
-          scheduledTime: scheduledTimeText,
-          scheduledAt: `${scheduledDateText}T${scheduledTimeText}`,
-          candidateName: candidateNameText,
-          interviewerName: interviewerNameText,
-          interviewType: interviewTypeText,
-        };
-      })
-      .filter(
-        (interview) =>
-          !normalizedSearch ||
-          [
-            interview.candidateName,
-            interview.interviewerName,
-            interview.interviewType,
-          ].some((value) => value.toLowerCase().includes(normalizedSearch)),
-      );
-    const total = interviews.length;
-    const data = interviews.slice(offset, offset + limit);
+    const pool = await this.database.connect();
+    const result = await pool
+      .request()
+      .input('Period', sql.VarChar(20), filter)
+      .input('Search', sql.NVarChar(200), query.search?.trim() || null)
+      .input('Offset', sql.Int, offset)
+      .input('Limit', sql.Int, limit).query<InterviewProcessQueryRow>(`
+        WITH InterviewRows AS (
+          SELECT
+            I.ID AS id,
+            S.ID AS scheduleId,
+            S.ApplicationID AS applicationId,
+            CONCAT('APP-', S.ApplicationID) AS applicationCode,
+            C.CandidateID AS candidateCode,
+            C.FullName AS candidateName,
+            C.Email AS candidateEmail,
+            JR.JobTitle AS position,
+            CONVERT(CHAR(10), S.ScheduledDate, 23) AS scheduledDate,
+            CONVERT(CHAR(8), S.ScheduledDate, 108) AS scheduledTime,
+            S.ScheduledDate AS scheduledAt,
+            E.FullName AS interviewerName,
+            IT.Name AS interviewType,
+            CASE
+              WHEN LOWER(REPLACE(LTRIM(RTRIM(IT.Name)), ' ', '')) IN ('technical1', 'technical')
+                THEN 'Round 1'
+              WHEN LOWER(REPLACE(LTRIM(RTRIM(IT.Name)), ' ', '')) = 'technical2'
+                THEN 'Round 2'
+              ELSE 'Interview'
+            END AS roundName,
+            I.FeedbackSubmitted AS feedbackSubmitted,
+            I.Rating AS feedbackRating,
+            I.Feedback AS feedbackText,
+            CASE
+              WHEN S.ID = (
+                SELECT MAX(LatestSchedule.ID)
+                FROM dbo.InterviewSchedules LatestSchedule
+                WHERE LatestSchedule.ApplicationID = S.ApplicationID
+                  AND LatestSchedule.ScheduleStatus IN (11, 21)
+              ) THEN CAST(1 AS BIT)
+              ELSE CAST(0 AS BIT)
+            END AS isLatestInterview,
+            CAST(CASE WHEN EXISTS (
+              SELECT 1
+              FROM dbo.FinalInterviewApprovals FinalApproval
+              WHERE FinalApproval.ApplicationID = S.ApplicationID
+            ) THEN 1 ELSE 0 END AS BIT) AS alreadyMovedToNextStage,
+            CASE
+              WHEN S.ScheduleStatus = 21 OR I.FeedbackSubmitted = 1
+                THEN 'completed'
+              ELSE 'scheduled'
+            END AS status,
+            COUNT(*) OVER() AS totalCount
+          FROM dbo.InterviewSchedules S
+          INNER JOIN dbo.CandidateApplications CA
+            ON CA.ID = S.ApplicationID
+          INNER JOIN dbo.Candidates C
+            ON C.ID = CA.CandidateID
+          INNER JOIN dbo.JobOpenings JO
+            ON JO.ID = CA.JobOpeningID
+          INNER JOIN dbo.JobRequisitions JR
+            ON JR.ID = JO.RequisitionID
+          INNER JOIN dbo.Interviews I
+            ON I.InterviewScheduleID = S.ID
+          INNER JOIN dbo.Employee E
+            ON E.EmployeeID = I.InterviewerID
+          LEFT JOIN dbo.Mst_InterviewType IT
+            ON IT.ID = I.InterviewType
+          WHERE S.ScheduleStatus IN (11, 21)
+            AND (
+              (@Period = 'Today'
+                AND S.ScheduledDate >= CAST(GETDATE() AS DATE)
+                AND S.ScheduledDate < DATEADD(DAY, 1, CAST(GETDATE() AS DATE)))
+              OR (@Period = 'Upcoming'
+                AND S.ScheduledDate >= DATEADD(DAY, 1, CAST(GETDATE() AS DATE)))
+              OR (@Period = 'Past'
+                AND S.ScheduledDate < CAST(GETDATE() AS DATE))
+            )
+            AND (
+              @Search IS NULL
+              OR C.FullName LIKE '%' + @Search + '%'
+              OR C.CandidateID LIKE '%' + @Search + '%'
+              OR JR.JobTitle LIKE '%' + @Search + '%'
+              OR IT.Name LIKE '%' + @Search + '%'
+            )
+        )
+        SELECT *
+        FROM InterviewRows
+        ORDER BY scheduledAt DESC, id DESC
+        OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+      `);
+    const total = Number(result.recordset[0]?.totalCount ?? 0);
+    const data = result.recordset.map((row) => {
+      const { totalCount, ...interview } = row;
+      void totalCount;
+      return {
+        ...interview,
+        feedbackRating:
+          interview.feedbackRating == null
+            ? null
+            : Number(interview.feedbackRating),
+      };
+    });
     return {
       data,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  async getCandidatesWaitingForFinalApproval() {
+    const pool = await this.database.connect();
+    const result = await pool
+      .request()
+      .execute<
+        Record<string, unknown>
+      >('USP_GetCandidatesWaitingForFinalApproval');
+
+    return result.recordset.map((row) => {
+      const interviewId = Number(readRowValue(row, 'InterviewID', 'id'));
+      const scheduleId = Number(
+        readRowValue(
+          row,
+          'InterviewScheduledID',
+          'InterviewScheduleID',
+          'scheduleId',
+        ),
+      ) || interviewId;
+      const applicationId = Number(
+        readRowValue(row, 'ApplicationID', 'applicationId'),
+      );
+      const candidateCode = readRowText(row, 'CandidateID', 'candidateCode');
+      const candidateName = readRowText(row, 'CandidateName', 'candidateName');
+      const scheduledDate = readRowValue(
+        row,
+        'ScheduledDate',
+        'ScheduledAt',
+        'scheduledAt',
+      );
+      const scheduledAt =
+        scheduledDate instanceof Date
+          ? scheduledDate.toISOString()
+          : (readRowText(
+              row,
+              'ScheduledDate',
+              'ScheduledAt',
+              'scheduledAt',
+            ) ?? '');
+
+      const missingFields = [
+        !Number.isInteger(interviewId) || interviewId <= 0
+          ? 'InterviewID'
+          : null,
+        !Number.isInteger(applicationId) || applicationId <= 0
+          ? 'ApplicationID'
+          : null,
+        !candidateCode ? 'CandidateID' : null,
+        !candidateName ? 'CandidateName' : null,
+        !scheduledAt ? 'ScheduledDate' : null,
+      ].filter((field): field is string => field !== null);
+      if (missingFields.length > 0) {
+        throw new InternalServerErrorException(
+          `The final-approval feedback procedure is missing required columns: ${missingFields.join(', ')}.`,
+        );
+      }
+
+      const interviewType =
+        readRowText(row, 'InterviewType', 'InterviewTypeName') ?? '';
+      const normalizedType = interviewType
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+      const rating = readRowValue(
+        row,
+        'Rating',
+        'OverallRating',
+        'FeedbackRating',
+        'InterviewRating',
+      );
+      const rawFeedbackSubmitted = readRowValue(
+        row,
+        'FeedbackSubmitted',
+        'IsFeedbackSubmitted',
+      );
+      const rawIsLatestInterview = readRowValue(
+        row,
+        'IsLatestInterview',
+        'LatestInterview',
+      );
+      const rawAlreadyMoved = readRowValue(
+        row,
+        'AlreadyMovedToNextStage',
+        'IsMovedToNextStage',
+      );
+      const roundName =
+        readRowText(row, 'RoundName', 'Round') ??
+        (normalizedType === 'technical2'
+          ? 'Round 2'
+          : normalizedType === 'technical' || normalizedType === 'technical1'
+            ? 'Round 1'
+            : 'Interview');
+
+      return {
+        id: interviewId,
+        scheduleId,
+        applicationId,
+        applicationCode:
+          readRowText(row, 'ApplicationCode', 'applicationCode') ??
+          `APP-${applicationId}`,
+        candidateCode,
+        candidateName,
+        candidateEmail: readRowText(row, 'Email', 'CandidateEmail') ?? null,
+        position: readRowText(row, 'JobTitle', 'Position') ?? '',
+        scheduledDate: scheduledAt.slice(0, 10),
+        scheduledTime:
+          readRowText(row, 'ScheduledTime') ?? scheduledAt.slice(11, 19),
+        scheduledAt,
+        interviewerName:
+          readRowText(row, 'InterviewerName', 'Interviewer') ?? '',
+        interviewType,
+        roundName,
+        feedbackSubmitted:
+          rawFeedbackSubmitted === undefined
+            ? true
+            : Boolean(Number(rawFeedbackSubmitted)),
+        feedbackRating:
+          rating === null || rating === undefined || rating === ''
+            ? null
+            : Number(rating),
+        feedbackText:
+          readRowText(row, 'Feedback', 'OverallFeedback', 'FeedbackText') ??
+          null,
+        status: 'completed' as const,
+        isLatestInterview:
+          rawIsLatestInterview === undefined
+            ? true
+            : Boolean(Number(rawIsLatestInterview)),
+        alreadyMovedToNextStage:
+          rawAlreadyMoved === undefined
+            ? false
+            : Boolean(Number(rawAlreadyMoved)),
+      };
+    });
+  }
+
+  async moveCandidateToNextStage(applicationId: number, employeeId: string) {
+    const pool = await this.database.connect();
+    const result = await pool
+      .request()
+      .input('ApplicationID', sql.Int, applicationId)
+      .input('ActionBy', sql.VarChar(25), employeeId)
+      .execute('USP_MoveCandidateToNextStage');
+    const response = result.recordset?.[0] as
+      | Record<string, unknown>
+      | undefined;
+    const statusCode = Number(readRowValue(response ?? {}, 'StatusCode'));
+    const message =
+      readRowText(response ?? {}, 'Message') ??
+      'Unable to move the candidate to the next stage.';
+    if (statusCode !== 200) {
+      if (statusCode === 400 || statusCode === 409) {
+        throw new BadRequestException(message);
+      }
+      if (statusCode === 401 || statusCode === 403) {
+        throw new ForbiddenException(message);
+      }
+      if (statusCode === 404) {
+        throw new NotFoundException(message);
+      }
+      throw new InternalServerErrorException(message);
+    }
+
+    return { success: true, message, applicationId };
   }
 
   async getInterview(interviewId: number) {
@@ -650,10 +913,7 @@ export class InterviewsService {
           ...(candidateEmail !== undefined ? { candidateEmail } : {}),
           position: readRowText(row, 'JobTitle') ?? '—',
           interviewType: interviewType ?? 'Interview',
-          roundName:
-            [round, interviewType]
-              .filter((value) => value !== undefined && value !== '')
-              .join(' · ') || 'Interview',
+          roundName: interviewType ?? round ?? 'Interview',
           scheduledAt,
           status,
           interviewerName: interviewerEmployeeId ?? '',
@@ -666,6 +926,10 @@ export class InterviewsService {
         interviewsById.set(interviewId, interview);
       }
 
+      interview.feedbackSubmitted =
+        interview.feedbackSubmitted ||
+        feedbackSubmitted ||
+        categoryRating !== null;
       if (
         feedbackCategory &&
         !interview.feedbackDetails.some(
@@ -680,10 +944,77 @@ export class InterviewsService {
       }
     }
 
-    const interviews = Array.from(interviewsById.values());
+    const interviews = Array.from(interviewsById.values()).map((interview) => ({
+      ...interview,
+      canSubmitFeedback:
+        interview.scheduledAt.getTime() <= Date.now() &&
+        !interview.feedbackSubmitted,
+    }));
+    const applicationIds = Array.from(
+      new Set(
+        interviews
+          .map((interview) => interview.applicationId)
+          .filter((id): id is number => id !== undefined),
+      ),
+    );
+    const feedbackAverages = new Map<
+      number,
+      { averageRating: number; feedbackCount: number }
+    >();
+    if (applicationIds.length > 0) {
+      const aggregateRequest = pool.request();
+      const applicationParameters = applicationIds.map((id, index) => {
+        const parameter = `ApplicationID${index}`;
+        aggregateRequest.input(parameter, sql.Int, id);
+        return `@${parameter}`;
+      });
+      const aggregateResult = await aggregateRequest.query<{
+        applicationId: number;
+        averageRating: number;
+        feedbackCount: number;
+      }>(`
+        SELECT
+          S.ApplicationID AS applicationId,
+          AVG(CAST(I.Rating AS DECIMAL(5, 2))) AS averageRating,
+          COUNT(*) AS feedbackCount
+        FROM dbo.Interviews I
+        INNER JOIN dbo.InterviewSchedules S
+          ON S.ID = I.InterviewScheduleID
+        WHERE S.ApplicationID IN (${applicationParameters.join(', ')})
+          AND I.FeedbackSubmitted = 1
+          AND I.Rating IS NOT NULL
+        GROUP BY S.ApplicationID;
+      `);
+      for (const row of aggregateResult.recordset) {
+        const applicationId = Number(row.applicationId);
+        const averageRating = Number(row.averageRating);
+        const feedbackCount = Number(row.feedbackCount);
+        if (
+          Number.isInteger(applicationId) &&
+          Number.isFinite(averageRating) &&
+          Number.isInteger(feedbackCount) &&
+          feedbackCount > 0
+        ) {
+          feedbackAverages.set(applicationId, {
+            averageRating,
+            feedbackCount,
+          });
+        }
+      }
+    }
 
     return {
-      interviews,
+      interviews: interviews.map((interview) => {
+        const aggregate =
+          interview.applicationId === undefined
+            ? undefined
+            : feedbackAverages.get(interview.applicationId);
+        return {
+          ...interview,
+          candidateAverageRating: aggregate?.averageRating ?? null,
+          candidateFeedbackCount: aggregate?.feedbackCount ?? 0,
+        };
+      }),
       categories: categoriesResult.recordset,
     };
   }
@@ -757,10 +1088,8 @@ export class InterviewsService {
     dto: TechnicalRoundTwoScheduleDto,
     employeeId: string,
   ) {
-    const { pool, applicationId } = await this.getTechnicalOneApplication(
-      interviewId,
-      employeeId,
-    );
+    const { pool, applicationId } =
+      await this.getTechnicalOneApplicationForScheduling(interviewId);
     const scheduledAt = this.parseFutureSchedule(dto.date, dto.time);
     const interviewTypeResult = await pool.request().query<{
       id: number;
@@ -900,6 +1229,54 @@ export class InterviewsService {
     return { pool, applicationId };
   }
 
+  private async getTechnicalOneApplicationForScheduling(interviewId: number) {
+    const pool = await this.database.connect();
+    const result = await pool
+      .request()
+      .input('InterviewID', sql.Int, interviewId)
+      .query<Record<string, unknown>>(`
+        SELECT TOP (1)
+          S.ApplicationID AS applicationId,
+          IT.Name AS interviewType,
+          CASE
+            WHEN LOWER(REPLACE(LTRIM(RTRIM(IT.Name)), ' ', '')) IN ('technical1', 'technical')
+              THEN 'Round 1'
+            WHEN LOWER(REPLACE(LTRIM(RTRIM(IT.Name)), ' ', '')) = 'technical2'
+              THEN 'Round 2'
+            ELSE 'Interview'
+          END AS roundName,
+          I.FeedbackSubmitted AS feedbackSubmitted
+        FROM dbo.Interviews I
+        INNER JOIN dbo.InterviewSchedules S
+          ON S.ID = I.InterviewScheduleID
+        LEFT JOIN dbo.Mst_InterviewType IT
+          ON IT.ID = I.InterviewType
+        WHERE I.ID = @InterviewID;
+      `);
+    const interview = result.recordset[0];
+    if (!interview) {
+      throw new NotFoundException('The Technical 1 interview was not found.');
+    }
+    if (!this.isTechnicalOne(interview)) {
+      throw new BadRequestException(
+        'The Technical 2 interview can only be scheduled after Technical 1.',
+      );
+    }
+    if (!Boolean(Number(readRowValue(interview, 'FeedbackSubmitted')))) {
+      throw new BadRequestException(
+        'Submit Technical 1 feedback before scheduling the next round.',
+      );
+    }
+
+    const applicationId = Number(readRowValue(interview, 'applicationId'));
+    if (!Number.isInteger(applicationId) || applicationId < 1) {
+      throw new BadRequestException(
+        'The completed Technical 1 interview is not linked to a candidate application.',
+      );
+    }
+    return { pool, applicationId };
+  }
+
   private isTechnicalOne(row: Record<string, unknown>) {
     const interviewType = readRowText(row, 'InterviewType', 'InterviewTypeName')
       ?.toLowerCase()
@@ -979,6 +1356,44 @@ export class InterviewsService {
     if (!Number.isInteger(interviewerId) || interviewerId < 1) {
       throw new BadRequestException(
         'The signed-in employee ID must be numeric to submit interviewer feedback.',
+      );
+    }
+
+    const assignedInterviews = await pool
+      .request()
+      .input('EmployeeID', sql.VarChar(25), employeeId)
+      .execute<Record<string, unknown>>('USP_GetMyInterviews');
+    const assignedInterviewRows = assignedInterviews.recordset.filter(
+      (row) => Number(readRowValue(row, 'InterviewID')) === interviewId,
+    );
+    if (assignedInterviewRows.length === 0) {
+      throw new ForbiddenException(
+        'Only the assigned interviewer can submit feedback.',
+      );
+    }
+
+    const hasExistingFeedback = assignedInterviewRows.some((row) => {
+      const existingRating = readRowValue(
+        row,
+        'OverallRating',
+        'Rating',
+        'CategoryRating',
+      );
+      const existingFeedback = readRowText(
+        row,
+        'OverallFeedback',
+        'Feedback',
+      );
+      return (
+        (existingRating !== null &&
+          existingRating !== undefined &&
+          existingRating !== '') ||
+        Boolean(existingFeedback?.trim())
+      );
+    });
+    if (hasExistingFeedback) {
+      throw new BadRequestException(
+        'Feedback has already been submitted for this interview.',
       );
     }
 

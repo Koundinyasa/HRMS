@@ -85,12 +85,12 @@ import { useSidebar } from "./SidebarContext";
 export default function Sidebar() {
   const { domain } = useParams();
 
-  const { isOpen, toggleSidebar } = useSidebar();
+  const { sidebarOpen, toggleSidebar } = useSidebar();
 
   return (
     <>
       {/* Mobile overlay */}
-      {isOpen && (
+      {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 lg:hidden"
           onClick={toggleSidebar}
@@ -104,7 +104,7 @@ export default function Sidebar() {
           fixed inset-y-0 left-0 overflow-y-auto
           lg:static lg:sticky lg:top-0 lg:z-auto lg:h-full lg:self-stretch
           ${
-            isOpen
+            sidebarOpen
               ? "w-[220px] translate-x-0"
               : "w-[220px] -translate-x-full lg:w-[72px] lg:translate-x-0"
           }
@@ -117,7 +117,7 @@ export default function Sidebar() {
           className={`
             flex flex-col gap-1 px-3 pt-4
             ${
-              isOpen
+              sidebarOpen
                 ? "w-[220px]"
                 : "w-[220px] lg:w-[72px]"
             }
@@ -143,7 +143,7 @@ export default function Sidebar() {
                     flex items-center rounded-lg text-sm font-medium
                     transition-colors
                     ${
-                      isOpen
+                      sidebarOpen
                         ? "gap-3 px-2.5 py-2"
                         : "gap-3 px-2.5 py-2 lg:justify-center lg:py-2"
                     }
@@ -179,7 +179,7 @@ export default function Sidebar() {
                       className={`
                         truncate
                         ${
-                          isOpen
+                          sidebarOpen
                             ? "block"
                             : "lg:hidden"
                         }

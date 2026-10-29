@@ -1,13 +1,7 @@
-﻿import {
-  Routes,
-  Route,
-  Navigate,
-  useParams,
-} from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 
 import Layout from "@/features/employee/components/Layout";
 import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage";
-import { InterviewerFeedbackScreen } from "@/features/admin/TalentHub/components/InterviewerFeedbackScreen";
  
 // Profile Module
 import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
@@ -53,11 +47,10 @@ import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendan
 import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
 import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
 import RequisitionPage from "@/features/employee/review/requisition/pages/RequisitionPage";
+import EmployeeRecruitmentPage from "@/features/employee/review/recruitment/pages/RecruitmentPage";
 
 // Attendance Module — NEW
 import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
-//import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
-//import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
 import AssetRequestsApprovalPage from "@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage";
 import HelpdeskRequestsPage from "@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage";
 import ResignationRequestPage from "@/features/employee/review/resignationRequest/pages/ResignationRequestPage";
@@ -68,222 +61,96 @@ function ApplyLeaveForEmployeeRedirect() {
   const { domain } = useParams();
 
   return (
-    <Navigate
-      to={`/${domain}/employee/leave/apply-for-employee`}
-      replace
-    />
+    <Navigate to={`/${domain}/employee/leave/apply-for-employee`} replace />
   );
+}
+
+function AttendanceAliasRedirect() {
+  const { domain } = useParams();
+  const employeePath = domain ? `/${domain}/employee` : "/employee";
+
+  return <Navigate to={`${employeePath}/Regularization/Attendance`} replace />;
 }
 
 export default function EmployeeRoutes() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<Layout />}
-      >
+      <Route path="/" element={<Layout />}>
         {/* Dashboard */}
         <Route path="dashboard" element={<EmployeeDashboard />} />
-        <Route
-          path="interviewer-feedback"
-          element={<InterviewerFeedbackScreen />}
-        />
- 
         {/* My Profile */}
-        <Route
-          path="profile"
-          element={<ProfileLayout />}
-        >
-          <Route
-            index
-            element={
-              <Navigate
-                to="personal"
-                replace
-              />
-            }
-          />
+        <Route path="profile" element={<ProfileLayout />}>
+          <Route index element={<Navigate to="personal" replace />} />
 
-          <Route
-            path="personal"
-            element={<PersonalInformationPage />}
-          />
+          <Route path="personal" element={<PersonalInformationPage />} />
 
-          <Route
-            path="family"
-            element={<FamilyDetailsPage />}
-          />
+          <Route path="family" element={<FamilyDetailsPage />} />
 
-          <Route
-            path="education"
-            element={<EducationDetailsPage />}
-          />
+          <Route path="education" element={<EducationDetailsPage />} />
 
-          <Route
-            path="experience"
-            element={<ExperienceDetailsPage />}
-          />
+          <Route path="experience" element={<ExperienceDetailsPage />} />
 
-          <Route
-            path="bank"
-            element={<BankInformationPage />}
-          />
+          <Route path="bank" element={<BankInformationPage />} />
 
-          <Route
-            path="documents"
-            element={<UploadedDocumentsPage />}
-          />
+          <Route path="documents" element={<UploadedDocumentsPage />} />
         </Route>
-
         {/* Leave Management */}
-        <Route
-          path="leave"
-          element={<LeaveLayout />}
-        >
-          <Route
-            index
-            element={
-              <Navigate
-                to="apply"
-                replace
-              />
-            }
-          />
+        <Route path="leave" element={<LeaveLayout />}>
+          <Route index element={<Navigate to="apply" replace />} />
 
-          <Route
-            path="apply"
-            element={<LeaveApply />}
-          />
+          <Route path="apply" element={<LeaveApply />} />
 
           <Route
             path="apply-for-employee"
-            element={
-              <ApplyLeaveForEmployee />
-            }
+            element={<ApplyLeaveForEmployee />}
           />
 
-          <Route
-            path="status"
-            element={<LeaveStatus />}
-          />
+          <Route path="status" element={<LeaveStatus />} />
 
-          <Route
-            path="balance"
-            element={<LeaveBalance />}
-          />
+          <Route path="balance" element={<LeaveBalance />} />
 
-          <Route
-            path="history"
-            element={<LeaveHistory />}
-          />
+          <Route path="history" element={<LeaveHistory />} />
 
-          <Route
-            path="cancel"
-            element={<LeaveCancellation />}
-          />
+          <Route path="cancel" element={<LeaveCancellation />} />
 
-          <Route
-            path="holidaylist"
-            element={<HolidayListPage />}
-          />
+          <Route path="holidaylist" element={<HolidayListPage />} />
 
           {/* Menu URL redirects to the existing Apply Leave page */}
           <Route
             path="Applyleaveemployee"
-            element={
-              <ApplyLeaveForEmployeeRedirect />
-            }
+            element={<ApplyLeaveForEmployeeRedirect />}
           />
         </Route>
-
         {/* Asset Management */}
-        <Route
-          path="assets/request"
-          element={<AssetRequest />}
-        />
-
-        <Route
-          path="assets/return"
-          element={<AssetTracking />}
-        />
-
-
-        <Route
-          path="assets/assigned"
-          element={<AssignedAssets />}
-        />
-
-        <Route
-          path="assets/approval"
-          element={<AssetApproval />}
-        />
-
+        <Route path="assets/request" element={<AssetRequest />} />
+        <Route path="assets/return" element={<AssetTracking />} />
+        <Route path="assets/assigned" element={<AssignedAssets />} />
+        <Route path="assets/approval" element={<AssetApproval />} />
         {/* Separation Management */}
-        <Route
-          path="separation/resignation"
-          element={<ResignationPage />}
-        />
-
-        <Route
-          path="separation/status"
-          element={<StatusPage />}
-        />
-
-        <Route
-          path="separation/withdraw"
-          element={<WithdrawPage />}
-        />
-
+        <Route path="separation/resignation" element={<ResignationPage />} />
+        <Route path="separation/status" element={<StatusPage />} />
+        <Route path="separation/withdraw" element={<WithdrawPage />} />
         {/* Help Desk */}
-        <Route
-          path="helpdesk/ticket"
-          element={<RaiseTicket />}
-        />
-
-        <Route
-          path="helpdesk/status"
-          element={<TicketStatus />}
-        />
-
-        <Route
-          path="helpdesk/kb"
-          element={<KnowledgeBase />}
-        />
-
+        <Route path="helpdesk/ticket" element={<RaiseTicket />} />
+        <Route path="helpdesk/status" element={<TicketStatus />} />
+        <Route path="helpdesk/kb" element={<KnowledgeBase />} />
         {/* Review / Requisition */}
         <Route
           path="review/requisition"
-          element={
-            <Navigate
-              to="appliedleave"
-              replace
-            />
-          }
+          element={<Navigate to="appliedleave" replace />}
         />
-
         <Route
           path="review/requisition/appliedleave"
           element={<RequisitionPage />}
         />
-
         <Route
-          path="Punch"
-          element={<PunchPage />}
+          path="review/recruitment"
+          element={<EmployeeRecruitmentPage />}
         />
-
         <Route
-          path="MissedPunch"
-          element={<MissedPunchPage />}
+          path="review/asset-requests"
+          element={<AssetRequestsApprovalPage />}
         />
-
-        <Route
-          path="Regularization/Punch"
-          element={<PunchPage />}
-        />
-
- 
-        <Route path="review/requisition/appliedleave" element={<RequisitionPage />} />
-        <Route path="review/asset-requests" element={<AssetRequestsApprovalPage />} />
         <Route
           path="Review/requisition/Assetrequests"
           element={<AssetRequestsApprovalPage />}
@@ -293,66 +160,36 @@ export default function EmployeeRoutes() {
           element={<ResignationRequestPage />}
         />
         <Route path="TA/HelpdeskRequests" element={<HelpdeskRequestsPage />} />
-
         <Route path="Punch" element={<PunchPage />} />
         <Route path="MissedPunch" element={<MissedPunchPage />} />
-        <Route path="TAInsights" element={<TAInsightsPage />} />
         <Route path="Regularization/Punch" element={<PunchPage />} />
         <Route
           path="Regularization/MissedPunch"
           element={<MissedPunchPage />}
         />
-
-        <Route
-          path="Regularization/TAInsights"
-          element={<TAInsightsPage />}
-        />
-
+        <Route path="Regularization/TAInsights" element={<TAInsightsPage />} />
         <Route
           path="Regularization/Attendance"
           element={<TimeOfficeLeaveCalendar />}
         />
-
-        <Route
-          path="TAInsights"
-          element={<TAInsightsPage />}
-        />
-
+        <Route path="TAInsights" element={<TAInsightsPage />} />
         <Route
           path="time-office/regularization/attendance"
-          element={<TimeOfficeLeaveCalendar />}
+          element={<AttendanceAliasRedirect />}
         />
-
         {/* Review Module */}
-
         {/* Apply Leave for Employee */}
         <Route
           path="Applyleaveemployee"
-          element={
-            <ApplyLeaveForEmployeeRedirect />
-          }
+          element={<ApplyLeaveForEmployeeRedirect />}
         />
-
-        <Route
-          path="Leavecalender"
-          element={<LeaveCalendar />}
-        />
-
+        <Route path="Leavecalender" element={<LeaveCalendar />} />
         <Route
           path="review/leave-calendar/history"
           element={<LeaveCalendarHistory />}
         />
-
-        <Route
-          path="TA/attendanceoverview"
-          element={<AttendanceOverview />}
-        />
-
-        <Route
-          path="attendanceoverview"
-          element={<AttendanceOverview />}
-        />
-
+        <Route path="TA/attendanceoverview" element={<AttendanceOverview />} />
+        <Route path="attendanceoverview" element={<AttendanceOverview />} />
         {/* Attendance Management — NEW */}
         <Route
           path="attendance/face-registration"
@@ -363,4 +200,3 @@ export default function EmployeeRoutes() {
     </Routes>
   );
 }
-

@@ -762,6 +762,20 @@ export class RecruitmentService {
           'InterviewFeedback',
           'Comments',
         ),
+        comments: recruitmentValue(
+          row,
+          'CategoryComments',
+          'Comments',
+          'FeedbackComments',
+        ),
+        overallFeedback: recruitmentValue(
+          row,
+          'OverallFeedback',
+          'FeedbackText',
+          'Feedback',
+          'InterviewFeedback',
+          'FeedbackDescription',
+        ),
         strengths: recruitmentValue(row, 'Strengths'),
         concerns: recruitmentValue(row, 'Concerns'),
         submittedAt: recruitmentValue(
@@ -1353,6 +1367,30 @@ export class RecruitmentService {
         error instanceof Error
           ? error.message
           : 'Failed to retrieve active job openings.',
+      );
+    }
+  }
+
+  async getJobOpeningRequisitions(companyId: number) {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('Flag', sql.Int, 10)
+        .execute('USP_GetRecruitmentPriority');
+
+      return {
+        success: true,
+        data: result.recordset || [],
+        message: 'Job opening requisitions retrieved successfully.',
+      };
+    } catch (error) {
+      console.error('Get job opening requisitions error:', error);
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve job opening requisitions.',
       );
     }
   }

@@ -1,6 +1,13 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { LoaderCircle, X } from "lucide-react";
+import { ChevronDown, LoaderCircle, X } from "lucide-react";
 import {
   useCreateRequisitionMutation,
   useGetRequisitionMasterQuery,
@@ -111,7 +118,33 @@ export function NewRequisitionScreen({
   const { domain } = useParams<{ domain: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [isDesignationOpen, setIsDesignationOpen] = useState(false);
+  const [selectedDesignationId, setSelectedDesignationId] = useState("");
+  const designationDropdownRef = useRef<HTMLDivElement>(null);
   const [createRequisition] = useCreateRequisitionMutation();
+
+  useEffect(() => {
+    if (!isDesignationOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !designationDropdownRef.current?.contains(event.target)
+      ) {
+        setIsDesignationOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDesignationOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isDesignationOpen]);
 
   const {
     data: masterResponse,
@@ -337,7 +370,7 @@ export function NewRequisitionScreen({
               required
               defaultValue=""
               disabled={isLoadingMasters || Boolean(masterError)}
-              className={fieldClass}
+              className={`${fieldClass} max-w-[280px]`}
             >
               <option value="" disabled>
                 {isLoadingMasters ? "Loading branches..." : "Select branch"}
@@ -358,24 +391,80 @@ export function NewRequisitionScreen({
             </select>
           </RequisitionField>
           <RequisitionField label="Designation">
-            <select
-              name="designationId"
-              required
-              defaultValue=""
-              disabled={isLoadingMasters || Boolean(masterError)}
-              className={fieldClass}
-            >
-              <option value="" disabled>
-                {isLoadingMasters
-                  ? "Loading designations..."
-                  : "Select designation"}
-              </option>
-              {designations.map((designation) => (
-                <option key={designation.id} value={designation.id}>
-                  {designation.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative" ref={designationDropdownRef}>
+              <input
+                type="hidden"
+                name="designationId"
+                value={selectedDesignationId}
+              />
+              <button
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={isDesignationOpen}
+                aria-controls="requisition-designation-options"
+                disabled={isLoadingMasters || Boolean(masterError)}
+                onClick={() => setIsDesignationOpen((open) => !open)}
+                className={`${fieldClass} flex items-center justify-between text-left font-normal`}
+              >
+                <span
+                  className={
+                    selectedDesignationId
+                      ? "truncate"
+                      : "truncate text-[#929c95]"
+                  }
+                >
+                  {designations.find(
+                    (designation) =>
+                      String(designation.id) === selectedDesignationId,
+                  )?.name ??
+                    (isLoadingMasters
+                      ? "Loading designations..."
+                      : "Select designation")}
+                </span>
+                <ChevronDown
+                  className={`ml-2 h-4 w-4 shrink-0 transition-transform ${
+                    isDesignationOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {isDesignationOpen && (
+                <div
+                  id="requisition-designation-options"
+                  role="listbox"
+                  aria-label="Designation options"
+                  className="absolute z-20 mt-1 max-h-[200px] w-full overflow-y-auto rounded-lg border border-[#dfe4df] bg-white py-1 shadow-lg"
+                >
+                  {designations.map((designation) => {
+                    const isSelected =
+                      String(designation.id) === selectedDesignationId;
+                    return (
+                      <button
+                        key={designation.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => {
+                          setSelectedDesignationId(String(designation.id));
+                          setIsDesignationOpen(false);
+                        }}
+                        className={`block min-h-10 w-full px-3 py-2 text-left text-sm font-normal ${
+                          isSelected
+                            ? "bg-[#fff4dc] text-[#80540d]"
+                            : "text-[#354239] hover:bg-[#f5f7f5]"
+                        }`}
+                      >
+                        {designation.name}
+                      </button>
+                    );
+                  })}
+                  {designations.length === 0 && (
+                    <p className="px-3 py-2 text-sm text-[#78867e]">
+                      No designations available.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </RequisitionField>
         </div>
 
@@ -415,22 +504,30 @@ export function NewRequisitionScreen({
           <RequisitionField label="Vacancies">
             <input
               name="vacancies"
-              type="number"
-              min="1"
-              step="1"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
               defaultValue="1"
+              onChange={(event) => {
+                event.currentTarget.value =
+                  event.currentTarget.value.replace(/\D/g, "");
+              }}
               className={fieldClass}
             />
           </RequisitionField>
           <RequisitionField label="Priority">
             <input
               name="priority"
-              type="number"
-              min="0"
-              step="1"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
               defaultValue="1"
+              onChange={(event) => {
+                event.currentTarget.value =
+                  event.currentTarget.value.replace(/\D/g, "");
+              }}
               className={fieldClass}
             />
           </RequisitionField>
@@ -449,20 +546,28 @@ export function NewRequisitionScreen({
           <RequisitionField label="Minimum salary (₹)">
             <input
               name="salaryRangeMin"
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder="e.g. 50000"
+              onChange={(event) => {
+                event.currentTarget.value =
+                  event.currentTarget.value.replace(/\D/g, "");
+              }}
               className={fieldClass}
             />
           </RequisitionField>
           <RequisitionField label="Maximum salary (₹)">
             <input
               name="salaryRangeMax"
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder="e.g. 80000"
+              onChange={(event) => {
+                event.currentTarget.value =
+                  event.currentTarget.value.replace(/\D/g, "");
+              }}
               className={fieldClass}
             />
           </RequisitionField>
