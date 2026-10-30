@@ -17,6 +17,13 @@ export const RequiresMenu = (...menus: MenuCodeValue[]) =>
   SetMetadata(REQUIRES_MENU_KEY, menus);
 
 /**
+ * Switches a single route OFF inside a controller that is otherwise on
+ * (answers 403 MODULE_DISABLED to everyone, Super Admin included). Use it for
+ * routes that belong to a screen that is not part of the release.
+ */
+export const GateClosed = () => SetMetadata(REQUIRES_MENU_KEY, []);
+
+/**
  * Lets a route through the module gate without a menu check. Use only for
  * routes that employees need inside a gated area (for example the interviewer
  * feedback routes under /recruitment). Roles are still enforced by @Roles().

@@ -13,7 +13,7 @@ import {
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { EmployeeScopeService } from '../common/scope/employee-scope.service';
-import { RequiresMenu } from '../common/decorators/module-gate.decorator';
+import { GateClosed, RequiresMenu } from '../common/decorators/module-gate.decorator';
 import { MenuCode } from '../common/constants/menu-codes';
 
 import { MonthlyLeaveCalendarDto } from './dto/monthly-leave-calendar.dto';
@@ -97,7 +97,8 @@ export class ReviewController {
     return this.reviewService.getEmployeeRawPunches(dto.employeeId, dto.date);
   }
 
-  // 6. Employee Dashboard Counts
+  // 6. Employee Dashboard Counts (TA Insights screen, not part of Phase 1)
+  @GateClosed()
   @UseGuards(JwtAuthGuard)
   @Post('employeedashboardcounts')
   async getEmployeeDashboardCounts(
@@ -141,7 +142,8 @@ export class ReviewController {
       dto.month,
     );
   }
-  // 9. Employee Dashboard Details
+  // 9. Employee Dashboard Details (TA Insights screen, not part of Phase 1)
+  @GateClosed()
   @UseGuards(JwtAuthGuard)
   @Post('employeedashboarddetails')
   async getEmployeeDashboardDetails(

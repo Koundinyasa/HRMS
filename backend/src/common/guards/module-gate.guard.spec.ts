@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Controller, Get } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ModuleGateGuard, MODULE_DISABLED } from './module-gate.guard';
-import { GateOpen, RequiresMenu } from '../decorators/module-gate.decorator';
+import { GateClosed, GateOpen, RequiresMenu } from '../decorators/module-gate.decorator';
 import { Public } from '../decorators/public.decorator';
 import { MenuCode } from '../constants/menu-codes';
 
@@ -19,6 +19,8 @@ class Review {
   @Get() a() {}
   @RequiresMenu(MenuCode.Review, MenuCode.ForceLeaveApproval)
   @Get('approval') approval() {}
+  @GateClosed()
+  @Get('off') off() {}
 }
 
 @Controller('recruitment')
@@ -85,6 +87,11 @@ describe('ModuleGateGuard', () => {
 
   it('also lets HR Admin with Force Leave Approval use review/approval', async () => {
     await expect(guard.canActivate(ctx(Review, 'approval', hr))).resolves.toBe(true);
+  });
+
+  it('switches off a single route with GateClosed, even for the menu holder and Super Admin', async () => {
+    await expect(guard.canActivate(ctx(Review, 'off', rm))).rejects.toMatchObject(disabled);
+    await expect(guard.canActivate(ctx(Review, 'off', superAdmin))).rejects.toMatchObject(disabled);
   });
 
   it('lets GateOpen routes through and keeps the rest of the controller closed', async () => {
