@@ -19,7 +19,7 @@ export interface IntentCtx {
     annualQuota: number | null;
   }[];
   departments: string[];
-  designations: string[];
+  designation: string[];
   companyInfo: {
     name: string;
     code: string;

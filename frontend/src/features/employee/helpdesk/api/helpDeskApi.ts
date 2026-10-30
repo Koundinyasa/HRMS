@@ -1,5 +1,5 @@
 import { baseApi } from "@/app/baseApi";
-
+ 
 import type {
   Department,
   Category,
@@ -12,14 +12,14 @@ import type {
   TicketActionResponse,
   KnowledgeBaseResponse,
 } from "../types/helpDesk.types";
-
+ 
 export const helpDeskApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-
+ 
     // ==================================================
     // GET DEPARTMENTS
     // ==================================================
-
+ 
     getDepartments: builder.query<
       Department[],
       void
@@ -28,15 +28,15 @@ export const helpDeskApi = baseApi.injectEndpoints({
         url: "/employee/helpdesk/departments",
         method: "GET",
       }),
-
+ 
       providesTags: ["HelpDesk"],
     }),
-
-
+ 
+ 
     // ==================================================
     // GET CATEGORIES
     // ==================================================
-
+ 
     getCategories: builder.query<
       Category[],
       number
@@ -45,15 +45,15 @@ export const helpDeskApi = baseApi.injectEndpoints({
         url: `/employee/helpdesk/categories/${departmentId}`,
         method: "GET",
       }),
-
+ 
       providesTags: ["HelpDesk"],
     }),
-
-
+ 
+ 
     // ==================================================
     // GET SUB CATEGORIES
     // ==================================================
-
+ 
     getSubCategories: builder.query<
       SubCategory[],
       number
@@ -62,15 +62,15 @@ export const helpDeskApi = baseApi.injectEndpoints({
         url: `/employee/helpdesk/subcategories/${categoryId}`,
         method: "GET",
       }),
-
+ 
       providesTags: ["HelpDesk"],
     }),
-
-
+ 
+ 
     // ==================================================
     // CREATE TICKET
     // ==================================================
-
+ 
     createTicket: builder.mutation<
       RaiseTicketResponse,
       RaiseTicketRequest
@@ -80,15 +80,15 @@ export const helpDeskApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["HelpDesk"],
+ 
+      invalidatesTags: ["HelpDesk", "ApprovalSummary"],
     }),
-
-
+ 
+ 
     // ==================================================
     // GET MY TICKETS
     // ==================================================
-
+ 
     getMyTickets: builder.query<
       MyTicketsResponse,
       void
@@ -97,15 +97,15 @@ export const helpDeskApi = baseApi.injectEndpoints({
         url: "/employee/helpdesk/mytickets",
         method: "GET",
       }),
-
+ 
       providesTags: ["HelpDesk"],
     }),
-
-
+ 
+ 
     // ==================================================
     // REPLY TO TICKET
     // ==================================================
-
+ 
     replyTicket: builder.mutation<
       TicketActionResponse,
       ReplyTicketRequest
@@ -115,41 +115,41 @@ export const helpDeskApi = baseApi.injectEndpoints({
         remarks,
         document,
       }) => {
-
+ 
         const formData = new FormData();
-
+ 
         formData.append(
           "ticketId",
           String(ticketId)
         );
-
+ 
         formData.append(
           "remarks",
           remarks
         );
-
+ 
         if (document) {
           formData.append(
             "document",
             document
           );
         }
-
+ 
         return {
           url: "/employee/helpdesk/reply",
           method: "POST",
           body: formData,
         };
       },
-
-      invalidatesTags: ["HelpDesk"],
+ 
+      invalidatesTags: ["HelpDesk", "ApprovalSummary"],
     }),
-
-
+ 
+ 
     // ==================================================
     // REOPEN TICKET
     // ==================================================
-
+ 
     reopenTicket: builder.mutation<
       TicketActionResponse,
       ReopenTicketRequest
@@ -159,40 +159,40 @@ export const helpDeskApi = baseApi.injectEndpoints({
         remarks,
         document,
       }) => {
-
+ 
         const formData = new FormData();
-
+ 
         formData.append(
           "ticketId",
           String(ticketId)
         );
-
+ 
         formData.append(
           "remarks",
           remarks
         );
-
+ 
         if (document) {
           formData.append(
             "document",
             document
           );
         }
-
+ 
         return {
           url: "/employee/helpdesk/reopen",
           method: "POST",
           body: formData,
         };
       },
-
-      invalidatesTags: ["HelpDesk"],
+ 
+      invalidatesTags: ["HelpDesk", "ApprovalSummary"],
     }),
-
+ 
     // ==================================================
     // GET KNOWLEDGE BASE
     // ==================================================
-
+ 
     getKnowledgeBase: builder.query<
       KnowledgeBaseResponse,
       void
@@ -201,14 +201,14 @@ export const helpDeskApi = baseApi.injectEndpoints({
         url: "/employee/helpdesk/knowledgebase",
         method: "GET",
       }),
-
+ 
       providesTags: ["HelpDesk"],
     }),
-
+ 
   }),
 });
-
-
+ 
+ 
 export const {
   useGetDepartmentsQuery,
   useGetCategoriesQuery,

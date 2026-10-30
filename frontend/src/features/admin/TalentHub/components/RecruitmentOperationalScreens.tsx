@@ -1,4 +1,8 @@
 import { Plus, X } from "lucide-react";
+import {
+  recruitmentFileName,
+  recruitmentFileUrl,
+} from "../api/recruitment.api";
 import { OperationalWorkflowTable } from "./OperationalWorkflowTable";
 import { useRecruitmentOperationalScreen } from "../hooks/useRecruitmentOperationalScreen";
 import { CandidateApplicationForm } from "./CandidateApplicationForm";
@@ -122,6 +126,12 @@ export function RecruitmentOperationalScreen({
           {view !== "final-interview-approval" && (
             <button
               type="button"
+              aria-label={
+                view === "candidate-applications" &&
+                showCandidateApplicationForm
+                  ? "Close application form"
+                  : config.createAction
+              }
               onClick={() => {
                 if (view === "candidate-applications") {
                   setShowCandidateApplicationForm((isOpen) => !isOpen);
@@ -173,7 +183,7 @@ export function RecruitmentOperationalScreen({
               )}
               {view === "candidate-applications" &&
               showCandidateApplicationForm
-                ? "Cancel"
+                ? null
                 : (view === "onboarding" || view === "induction") &&
                     showPostJoiningForm
                   ? "Cancel"
@@ -418,7 +428,21 @@ export function RecruitmentOperationalScreen({
                       {column.label}
                     </dt>
                     <dd className="mt-1 break-words text-sm font-medium text-[#354239] [overflow-wrap:anywhere]">
-                      {selectedRow[column.key]}
+                      {view === "candidate-applications" &&
+                      column.key === "resume" &&
+                      selectedRow.resume !== "—" ? (
+                        <a
+                          href={recruitmentFileUrl(selectedRow.resume)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#000000] hover:text-[#000000]"
+                        >
+                          {selectedRow.resumeFileName ||
+                            recruitmentFileName(selectedRow.resume)}
+                        </a>
+                      ) : (
+                        selectedRow[column.key]
+                      )}
                     </dd>
                   </div>
                 ))}

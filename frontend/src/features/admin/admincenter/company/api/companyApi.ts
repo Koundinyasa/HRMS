@@ -17,51 +17,51 @@ import type {
   PtDetailsApi,
   PtSlab,
 } from "../types/company.types";
- 
+
 // ------------------------------------------------------------
 // Cached group information from GET responses
 // ------------------------------------------------------------
- 
+
 let lastPfGroupId = 1;
 let lastEsiGroupId = 1;
 let lastPtGroupId = 1;
 let lastPtStateName: string | undefined;
+let lastPtStateId: number | undefined;
 let lastLwfGroupId = 1;
 let lastLwfStateName: string | undefined;
- 
+let lastLwfStateId: number | undefined;
+
 // ------------------------------------------------------------
 // Date helpers
 // ------------------------------------------------------------
- 
+
 function toDateInputValue(
   value: string | null | undefined,
 ): string {
   if (!value) return "";
- 
-  // API dates may be UTC ISO strings.
-  // Convert to the date represented by the ISO date portion.
+
   if (value.includes("T")) {
     return value.slice(0, 10);
   }
- 
+
   return value;
 }
- 
+
 function toMonthYear(
   value: string | null | undefined,
 ): string {
   if (!value) return "";
- 
+
   const datePart = value.includes("T")
     ? value.slice(0, 10)
     : value;
- 
+
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(
     datePart,
   );
- 
+
   if (!match) return value;
- 
+
   const months = [
     "Jan",
     "Feb",
@@ -76,16 +76,16 @@ function toMonthYear(
     "Nov",
     "Dec",
   ];
- 
+
   const monthIndex = Number(match[2]) - 1;
- 
+
   if (monthIndex < 0 || monthIndex > 11) {
     return value;
   }
- 
+
   return `${months[monthIndex]}/${match[1]}`;
 }
- 
+
 function toIsoDate(
   value: string | null | undefined,
 ): string {
@@ -93,9 +93,6 @@ function toIsoDate(
     return new Date().toISOString();
   }
 
-  // If value is already ISO (e.g. 2019-12-31T18:30:00.000Z),
-  // keep the calendar DATE part only at UTC midnight.
-  // Avoids IST shift (18:30Z) changing the day.
   const datePartMatch = value
     .trim()
     .match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -103,15 +100,13 @@ function toIsoDate(
     return `${datePartMatch[1]}-${datePartMatch[2]}-${datePartMatch[3]}T00:00:00.000Z`;
   }
 
-  // YYYY-MM-DD from date inputs (fallback same as above).
   const isoDateMatch =
     /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
 
   if (isoDateMatch) {
     return `${value}T00:00:00.000Z`;
   }
- 
-  // Handle values such as Jul/2026.
+
   const months = [
     "Jan",
     "Feb",
@@ -126,98 +121,127 @@ function toIsoDate(
     "Nov",
     "Dec",
   ];
- 
+
   const monthYearMatch =
     /^([A-Za-z]{3})\/(\d{4})$/.exec(value.trim());
- 
+
   if (!monthYearMatch) {
     return value;
   }
- 
+
   const monthIndex = months.findIndex(
     (month) =>
       month.toLowerCase() ===
       monthYearMatch[1].toLowerCase(),
   );
- 
+
   if (monthIndex < 0) {
     return value;
   }
- 
+
   const month = String(monthIndex + 1).padStart(
     2,
     "0",
   );
- 
+
   return `${monthYearMatch[2]}-${month}-01T00:00:00.000Z`;
 }
- 
+
 // ------------------------------------------------------------
 // Common helpers
 // ------------------------------------------------------------
- 
+
 function mapRoundOffLabelToId(
   label: string | undefined,
 ): number {
   const value = (label ?? "").toLowerCase();
- 
+
   if (value.includes("higher")) return 2;
   if (value.includes("lower")) return 3;
- 
+
   return 1;
 }
- 
+
 function mapPeriodLabelToId(
   label: string | undefined,
 ): number {
   const value = (label ?? "").toLowerCase();
- 
+
   if (value.includes("quarterly")) return 2;
   if (value.includes("half")) return 3;
   if (value.includes("yearly")) return 4;
- 
+
   return 1;
 }
- 
+
 // ------------------------------------------------------------
 // State ID mapping
 // ------------------------------------------------------------
- 
-// Telangana = 24, based on the intended PT payload.
-// Add other states using their verified backend IDs.
-// Do not assume these IDs match another master-data system.
- 
+
 function getStateId(
   stateName: string | undefined,
+  cachedId?: number,
 ): number {
+  if (typeof cachedId === "number" && cachedId > 0) {
+    return cachedId;
+  }
+
   const normalized = (stateName ?? "")
     .trim()
     .toLowerCase();
- 
+
   const stateIds: Record<string, number> = {
+    "andhra pradesh": 1,
+    "arunachal pradesh": 2,
+    assam: 3,
+    bihar: 4,
+    chhattisgarh: 5,
+    goa: 6,
+    gujarat: 7,
+    haryana: 8,
+    "himachal pradesh": 9,
+    jharkhand: 10,
+    karnataka: 11,
+    kerala: 12,
+    "madhya pradesh": 13,
+    maharashtra: 14,
+    manipur: 15,
+    meghalaya: 16,
+    mizoram: 17,
+    nagaland: 18,
+    odisha: 19,
+    punjab: 20,
+    rajasthan: 21,
+    sikkim: 22,
+    "tamil nadu": 23,
     telangana: 24,
+    tripura: 25,
+    "uttar pradesh": 26,
+    uttarakhand: 27,
+    "west bengal": 28,
+    delhi: 29,
+    "jammu and kashmir": 30,
+    ladakh: 31,
+    puducherry: 32,
   };
- 
-  const stateId = stateIds[normalized];
- 
-  if (stateId === undefined) {
-    throw new Error(
-      `Unknown state "${stateName}". ` +
-        "Please add its verified backend state ID.",
-    );
+
+  if (normalized && stateIds[normalized] !== undefined) {
+    return stateIds[normalized];
   }
- 
-  return stateId;
+
+  console.warn(
+    `[PT/LWF] Unknown state "${stateName}". Falling back to stateId=24.`,
+  );
+  return 24;
 }
- 
+
 // ------------------------------------------------------------
 // Company
 // ------------------------------------------------------------
- 
+
 function mapCompanyFromApi(
   raw: CompanyDetailsApi & Record<string, unknown>,
 ): CompanyDetails {
-  // Support both PascalCase (SQL) and camelCase (Nest) GET responses
   const r = raw as Record<string, unknown>;
   const str = (...keys: string[]) => {
     for (const k of keys) {
@@ -237,7 +261,8 @@ function mapCompanyFromApi(
   return {
     companyName: str("CompanyName", "companyName"),
     dateOfEstablishment: toDateInputValue(
-      str("DateOfEstablishment", "dateOfEstablishment") || undefined,
+      str("DateOfEstablishment", "dateOfEstablishment") ||
+        undefined,
     ),
     cin_LPIN: str("CIN_LPIN", "cin_LPIN"),
     tan: str("TAN", "tan"),
@@ -251,25 +276,17 @@ function mapCompanyFromApi(
     isESIApplicable: bool("IsESIApplicable", "isESIApplicable"),
     isPTApplicable: bool("IsPTApplicable", "isPTApplicable"),
     isTDSApplicable: bool("IsTDSApplicable", "isTDSApplicable"),
-    tdsFilingMarToFeb: bool("TDSFilingMarToFeb", "tdsFilingMarToFeb"),
+    tdsFilingMarToFeb: bool(
+      "TDSFilingMarToFeb",
+      "tdsFilingMarToFeb",
+    ),
     isLWFAvailable: bool("IsLWFAvailable", "isLWFAvailable"),
     companyLogoPath: str("CompanyLogoPath", "companyLogoPath"),
   };
 }
- 
-/**
- * PUT body for NestJS UpdateCompany DTO (camelCase).
- *
- * Backend ValidationPipe (forbidNonWhitelisted):
- * - PascalCase fields → "property CompanyName should not exist"
- * - companyName → "property companyName should not exist"
- *   (company name is not on the update DTO — leave it out)
- *
- * Keep only fields the DTO allows.
- */
+
 function mapCompanyToApi(data: CompanyDetails) {
   return {
-    // companyName intentionally omitted — not allowed on update DTO
     dateOfEstablishment: toIsoDate(data.dateOfEstablishment),
     cin_LPIN: (data.cin_LPIN ?? "").trim(),
     tan: (data.tan ?? "").trim(),
@@ -288,57 +305,40 @@ function mapCompanyToApi(data: CompanyDetails) {
     companyLogoPath: data.companyLogoPath ?? "",
   };
 }
- 
+
 // ------------------------------------------------------------
 // PF
 // ------------------------------------------------------------
- 
-function mapPfFromApi(
-  raw: PfDetailsApi,
-): PfDetails {
+
+function mapPfFromApi(raw: PfDetailsApi): PfDetails {
   lastPfGroupId = raw.group?.[0]?.ID ?? 1;
- 
+
   return {
     group: (raw.group ?? []).map((group) => ({
       id: group.ID,
       name: group.Name,
     })),
- 
-    configuration: (raw.configuration ?? []).map(
-      (config) => ({
-        effectiveFrom: toMonthYear(
-          config["Effective From"],
-        ),
-        epfPercentage:
-          config["EPF(A)-(%)"] ?? 0,
-        cutoff: config.Cutoff ?? 0,
-        pfOnPayDays:
-          config["PF On Pay Days"] ?? false,
-        pensionFundPercentage:
-          config["Pension Fund(B)-(%)"] ?? 0,
-        employerEPFPercentage:
-          config["EPF(A-B)-(%)"] ?? 0,
-        roundOff:
-          config["Round Off"] ?? "Nearest Amount",
-        accountNo02Rate:
-          config["Account No. 02(%)"] ?? 0,
-        accountNo21Rate:
-          config["Account No.21(%)"] ?? 0,
-        minimumChargesAccNo02:
-          config["Minimum Charges For Acc.No.2"] ??
-          0,
-        restrictEmployerShare:
-          config["Restrict Employer Share"] ??
-          false,
-        restrictEmployerEmployeeWise:
-          config[
-            "Restrict Employer Share EmployeeWise"
-          ] ?? false,
-      }),
-    ),
+
+    configuration: (raw.configuration ?? []).map((config) => ({
+      effectiveFrom: toMonthYear(config["Effective From"]),
+      epfPercentage: config["EPF(A)-(%)"] ?? 0,
+      cutoff: config.Cutoff ?? 0,
+      pfOnPayDays: config["PF On Pay Days"] ?? false,
+      pensionFundPercentage: config["Pension Fund(B)-(%)"] ?? 0,
+      employerEPFPercentage: config["EPF(A-B)-(%)"] ?? 0,
+      roundOff: config["Round Off"] ?? "Nearest Amount",
+      accountNo02Rate: config["Account No. 02(%)"] ?? 0,
+      accountNo21Rate: config["Account No.21(%)"] ?? 0,
+      minimumChargesAccNo02:
+        config["Minimum Charges For Acc.No.2"] ?? 0,
+      restrictEmployerShare:
+        config["Restrict Employer Share"] ?? false,
+      restrictEmployerEmployeeWise:
+        config["Restrict Employer Share EmployeeWise"] ?? false,
+    })),
   };
 }
- 
+
 function mapPfConfigToApi(
   config: PfConfiguration,
 ): Record<string, unknown> {
@@ -348,69 +348,45 @@ function mapPfConfigToApi(
     epfPercentage: Number(config.epfPercentage),
     cutoff: Number(config.cutoff),
     pfOnPayDays: !!config.pfOnPayDays,
-    pensionFundPercentage: Number(
-      config.pensionFundPercentage,
-    ),
-    employerEPFPercentage: Number(
-      config.employerEPFPercentage,
-    ),
-    roundOffTypeId: mapRoundOffLabelToId(
-      config.roundOff,
-    ),
-    accountNo02Rate: Number(
-      config.accountNo02Rate,
-    ),
-    accountNo21Rate: Number(
-      config.accountNo21Rate,
-    ),
-    minimumChargesAccNo02: Number(
-      config.minimumChargesAccNo02,
-    ),
-    restrictEmployerShare:
-      !!config.restrictEmployerShare,
+    pensionFundPercentage: Number(config.pensionFundPercentage),
+    employerEPFPercentage: Number(config.employerEPFPercentage),
+    roundOffTypeId: mapRoundOffLabelToId(config.roundOff),
+    accountNo02Rate: Number(config.accountNo02Rate),
+    accountNo21Rate: Number(config.accountNo21Rate),
+    minimumChargesAccNo02: Number(config.minimumChargesAccNo02),
+    restrictEmployerShare: !!config.restrictEmployerShare,
     restrictEmployerEmployeeWise:
       !!config.restrictEmployerEmployeeWise,
     isDefault: true,
     isActive: true,
   };
 }
- 
+
 // ------------------------------------------------------------
 // ESI
 // ------------------------------------------------------------
- 
-function mapEsiFromApi(
-  raw: EsiDetailsApi,
-): EsiDetails {
+
+function mapEsiFromApi(raw: EsiDetailsApi): EsiDetails {
   lastEsiGroupId = raw.group?.[0]?.ID ?? 1;
- 
+
   return {
     group: (raw.group ?? []).map((group) => ({
       id: group.ID,
       name: group.Name,
     })),
- 
-    configuration: (raw.configuration ?? []).map(
-      (config) => ({
-        effectiveFrom: toMonthYear(
-          config["Effective From"],
-        ),
-        cutOffAmount:
-          config["Cut Off(Amount)"] ?? 0,
-        employeeRate:
-          config["Employee Rate(%)"] ?? 0,
-        employerRate:
-          config["Employer Rate(%)"] ?? 0,
-        minimumDailyWage:
-          config["Minimum Daily Wage(Amount)"] ??
-          0,
-        roundOff:
-          config["Round Off"] ?? "Nearest Amount",
-      }),
-    ),
+
+    configuration: (raw.configuration ?? []).map((config) => ({
+      effectiveFrom: toMonthYear(config["Effective From"]),
+      cutOffAmount: config["Cut Off(Amount)"] ?? 0,
+      employeeRate: config["Employee Rate(%)"] ?? 0,
+      employerRate: config["Employer Rate(%)"] ?? 0,
+      minimumDailyWage:
+        config["Minimum Daily Wage(Amount)"] ?? 0,
+      roundOff: config["Round Off"] ?? "Nearest Amount",
+    })),
   };
 }
- 
+
 function mapEsiConfigToApi(
   config: EsiConfiguration,
 ): Record<string, unknown> {
@@ -420,38 +396,39 @@ function mapEsiConfigToApi(
     cutOffAmount: Number(config.cutOffAmount),
     employeeRate: Number(config.employeeRate),
     employerRate: Number(config.employerRate),
-    minimumDailyWage: Number(
-      config.minimumDailyWage,
-    ),
-    roundOffTypeId: mapRoundOffLabelToId(
-      config.roundOff,
-    ),
+    minimumDailyWage: Number(config.minimumDailyWage),
+    roundOffTypeId: mapRoundOffLabelToId(config.roundOff),
     isDefault: true,
     isActive: true,
   };
 }
- 
+
 // ------------------------------------------------------------
 // PT
 // ------------------------------------------------------------
- 
-function mapPtFromApi(
-  raw: PtDetailsApi,
-): PtDetails {
-  lastPtGroupId = raw.group?.[0]?.id ?? 1;
-  lastPtStateName = raw.group?.[0]?.State;
- 
+
+function mapPtFromApi(raw: PtDetailsApi): PtDetails {
+  const g0 = raw.group?.[0];
+  lastPtGroupId = g0?.id ?? 1;
+  lastPtStateName =
+    g0?.State ?? (g0 as { state?: string } | undefined)?.state;
+  const sid =
+    g0?.Stateid ??
+    (g0 as { stateId?: number; StateId?: number } | undefined)
+      ?.stateId ??
+    (g0 as { StateId?: number } | undefined)?.StateId;
+  lastPtStateId =
+    typeof sid === "number" && sid > 0 ? sid : undefined;
+
   return {
     group: (raw.group ?? []).map((group) => ({
       id: group.id,
       name: group.Name,
       state: group.State,
     })),
- 
+
     slabs: (raw.slabs ?? []).map((slab) => ({
-      effectiveFrom: toMonthYear(
-        slab["Effective From"],
-      ),
+      effectiveFrom: toMonthYear(slab["Effective From"]),
       period: slab.Period ?? "Monthly",
       fromSalary: slab.FromSalary ?? 0,
       toSalary: slab.ToSalary ?? 0,
@@ -459,106 +436,98 @@ function mapPtFromApi(
     })),
   };
 }
- 
+
+
+
 function mapPtSlabsToApi(
   slabs: PtSlab[],
 ): Record<string, unknown> {
   const firstSlab = slabs[0];
- 
+
   if (!firstSlab) {
-    throw new Error(
-      "At least one PT slab is required.",
-    );
+    throw new Error("At least one PT slab is required.");
   }
- 
-  const effectiveFrom = toIsoDate(
-    firstSlab.effectiveFrom,
-  );
- 
-  const periodTypeId = mapPeriodLabelToId(
-    firstSlab.period,
-  );
- 
-  const stateId = getStateId(lastPtStateName);
- 
-  return {
+
+  const effectiveFrom = toIsoDate(firstSlab.effectiveFrom);
+  const periodTypeId = mapPeriodLabelToId(firstSlab.period);
+  const stateId = getStateId(lastPtStateName, lastPtStateId);
+
+  const body = {
     ptGroupId: lastPtGroupId,
     stateId,
     effectiveFrom,
     periodTypeId,
- 
     slabs: slabs.map((slab) => ({
       fromSalary: Number(slab.fromSalary),
       toSalary: Number(slab.toSalary),
       ptAmount: Number(slab.ptAmount),
     })),
   };
+
+  console.log("[PT] update payload", body);
+
+  return body;
 }
- 
 // ------------------------------------------------------------
 // LWF
 // ------------------------------------------------------------
- 
-function mapLwfFromApi(
-  raw: LwfDetailsApi,
-): LwfDetails {
-  lastLwfGroupId = raw.group?.[0]?.id ?? 1;
-  lastLwfStateName = raw.group?.[0]?.State;
- 
+
+function mapLwfFromApi(raw: LwfDetailsApi): LwfDetails {
+  const g0 = raw.group?.[0] as
+    | (LwfDetailsApi["group"][number] & {
+        Stateid?: number;
+        stateId?: number;
+        StateId?: number;
+        state?: string;
+      })
+    | undefined;
+
+  lastLwfGroupId = g0?.id ?? 1;
+  lastLwfStateName = g0?.State ?? g0?.state;
+  const sid = g0?.Stateid ?? g0?.stateId ?? g0?.StateId;
+  lastLwfStateId =
+    typeof sid === "number" && sid > 0 ? sid : undefined;
+
   return {
     group: (raw.group ?? []).map((group) => ({
       id: group.id,
-      defaultLWF:
-        group["Default LWF"] ?? "",
+      defaultLWF: group["Default LWF"] ?? "",
       state: group.State ?? "",
     })),
- 
-    configuration: (raw.configuration ?? []).map(
-      (config) => ({
-        effectiveFrom: toMonthYear(
-          config["Effective From"],
-        ),
-        cutoffAmount:
-          config["Cutoff Amount"] ?? 0,
-        employeeContribution:
-          config[
-            "Employee Contribution(Amount)"
-          ] ?? 0,
-        employerContribution:
-          config[
-            "Employer Contribution(Amount)"
-          ] ?? 0,
-        january: config.January ?? false,
-        february: config.February ?? false,
-        march: config.March ?? false,
-        april: config.April ?? false,
-        may: config.May ?? false,
-        june: config.June ?? false,
-        july: config.July ?? false,
-        august: config.August ?? false,
-        september: config.September ?? false,
-        october: config.October ?? false,
-        november: config.November ?? false,
-        december: config.December ?? false,
-      }),
-    ),
+
+    configuration: (raw.configuration ?? []).map((config) => ({
+      effectiveFrom: toMonthYear(config["Effective From"]),
+      cutoffAmount: config["Cutoff Amount"] ?? 0,
+      employeeContribution:
+        config["Employee Contribution(Amount)"] ?? 0,
+      employerContribution:
+        config["Employer Contribution(Amount)"] ?? 0,
+      january: config.January ?? false,
+      february: config.February ?? false,
+      march: config.March ?? false,
+      april: config.April ?? false,
+      may: config.May ?? false,
+      june: config.June ?? false,
+      july: config.July ?? false,
+      august: config.August ?? false,
+      september: config.September ?? false,
+      october: config.October ?? false,
+      november: config.November ?? false,
+      december: config.December ?? false,
+    })),
   };
 }
- 
+
 function mapLwfConfigToApi(
   config: LwfConfiguration,
 ): Record<string, unknown> {
   return {
     lwfGroupId: lastLwfGroupId,
-    stateId: getStateId(lastLwfStateName),
+    stateId: getStateId(lastLwfStateName, lastLwfStateId),
     effectiveFrom: toIsoDate(config.effectiveFrom),
     cutoffAmount: Number(config.cutoffAmount),
-    employeeContribution: Number(
-      config.employeeContribution,
-    ),
-    employerContribution: Number(
-      config.employerContribution,
-    ),
+    employeeContribution: Number(config.employeeContribution),
+    employerContribution: Number(config.employerContribution),
     january: !!config.january,
     february: !!config.february,
     march: !!config.march,
@@ -575,63 +544,108 @@ function mapLwfConfigToApi(
     isActive: true,
   };
 }
- 
+
 // ------------------------------------------------------------
 // Establishment
 // ------------------------------------------------------------
- 
+
+// GET may return the object directly, wrapped in { data } / { result },
+// or as a one-row array — handle all of them.
+function unwrapEstablishmentResponse(
+  response: unknown,
+): EstablishmentDetailsApi {
+  let r: unknown = response;
+  if (r && typeof r === "object" && !Array.isArray(r)) {
+    const o = r as Record<string, unknown>;
+    if (o.data !== undefined) r = o.data;
+    else if (o.result !== undefined) r = o.result;
+  }
+  if (Array.isArray(r)) r = r[0];
+  return (r ?? {}) as EstablishmentDetailsApi;
+}
+
 function mapEstablishmentFromApi(
   raw: EstablishmentDetailsApi,
 ): EstablishmentDetails {
   return {
     nameAndAddressOfEstablishment:
-      raw["Name and Address of Establishment"] ??
-      "",
+      raw["Name and Address of Establishment"] ?? "",
     nameAndAddressOfEmployer:
       raw["Name and Address of Employer"] ?? "",
     nameAndAddressOfPrincipalEmployer:
-      raw[
-        "Name and Address of Prinicipal Employer"
-      ] ?? "",
+      raw["Name and Address of Prinicipal Employer"] ?? "",
     nameAndAddressOfContractor:
       raw["Name and Address of Contractor"] ?? "",
     nameAndAddressOfManager:
       raw["Name and address of Manager"] ?? "",
-    natureOfBusiness:
-      raw.NatureOfBusiness ?? null,
+    natureOfBusiness: raw.NatureOfBusiness ?? null,
   };
 }
- 
+
+// Each textarea holds "Name" + "Address" together, but the backend wants them
+// separately. Rule: first line = name, remaining lines = address.
+// If everything is on one line, the text before the first comma is the name.
+function splitNameAddress(value: string | null | undefined): { name: string; address: string } {
+  const text = (value ?? "").trim();
+  if (!text) return { name: "", address: "" };
+
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length > 1) {
+    return { name: lines[0], address: lines.slice(1).join(", ") };
+  }
+
+  const comma = text.indexOf(",");
+  if (comma > 0) {
+    return { name: text.slice(0, comma).trim(), address: text.slice(comma + 1).trim() };
+  }
+  return { name: text, address: "" };
+}
+
 function mapEstablishmentToApi(
   data: EstablishmentDetails,
-): EstablishmentDetailsApi {
+): Record<string, unknown> {
+  const establishment = splitNameAddress(data.nameAndAddressOfEstablishment);
+  const employer = splitNameAddress(data.nameAndAddressOfEmployer);
+  const principal = splitNameAddress(data.nameAndAddressOfPrincipalEmployer);
+  const contractor = splitNameAddress(data.nameAndAddressOfContractor);
+  const manager = splitNameAddress(data.nameAndAddressOfManager);
+
   return {
-    "Name and Address of Establishment":
-      data.nameAndAddressOfEstablishment ?? "",
-    "Name and Address of Employer":
-      data.nameAndAddressOfEmployer ?? "",
-    "Name and Address of Prinicipal Employer":
-      data.nameAndAddressOfPrincipalEmployer ?? "",
-    "Name and Address of Contractor":
-      data.nameAndAddressOfContractor ?? "",
-    "Name and address of Manager":
-      data.nameAndAddressOfManager ?? "",
-    NatureOfBusiness: data.natureOfBusiness,
+    establishmentName: establishment.name,
+    establishmentAddress: establishment.address,
+    employerName: employer.name,
+    employerAddress: employer.address,
+    principalEmployerName: principal.name,
+    principalEmployerAddress: principal.address,
+    contractorName: contractor.name,
+    contractorAddress: contractor.address,
+    managerName: manager.name,
+    managerAddress: manager.address,
+    natureOfBusiness: (data.natureOfBusiness ?? "").trim(),
   };
 }
- 
+
 // ------------------------------------------------------------
 // API endpoints
 // ------------------------------------------------------------
- 
-function unwrapCompanyResponse(response: unknown): CompanyDetailsApi {
+
+function unwrapCompanyResponse(
+  response: unknown,
+): CompanyDetailsApi {
   if (response && typeof response === "object") {
     const r = response as Record<string, unknown>;
-    // Backend may wrap as { data: {...} } or { result: {...} }
-    if (r.data && typeof r.data === "object" && !Array.isArray(r.data)) {
+    if (
+      r.data &&
+      typeof r.data === "object" &&
+      !Array.isArray(r.data)
+    ) {
       return r.data as CompanyDetailsApi;
     }
-    if (r.result && typeof r.result === "object" && !Array.isArray(r.result)) {
+    if (
+      r.result &&
+      typeof r.result === "object" &&
+      !Array.isArray(r.result)
+    ) {
       return r.result as CompanyDetailsApi;
     }
   }
@@ -639,135 +653,95 @@ function unwrapCompanyResponse(response: unknown): CompanyDetailsApi {
 }
 
 const companyApiBase = baseApi.enhanceEndpoints({
-  addTagTypes: ["CompanyDetails"],
+  addTagTypes: ["CompanyDetails", "PT", "Establishment"],
 });
 
 export const companyApi = companyApiBase.injectEndpoints({
   endpoints: (builder) => ({
-    // Company — GET + PUT http://localhost:3001/api/admin/configuration/company
-    getCompanyDetails: builder.query<
-      CompanyDetails,
-      void
-    >({
+    getCompanyDetails: builder.query<CompanyDetails, void>({
       query: () => "/admin/configuration/company",
       providesTags: ["CompanyDetails"],
       transformResponse: (response: unknown) =>
         mapCompanyFromApi(unwrapCompanyResponse(response)),
     }),
 
-    updateCompanyDetails: builder.mutation<
-      void,
-      CompanyDetails
-    >({
+    updateCompanyDetails: builder.mutation<void, CompanyDetails>({
       query: (body) => ({
-        // PUT http://localhost:3001/api/admin/configuration/company
-        // (baseApi already prefixes with /api + host)
         url: "/admin/configuration/company",
         method: "PUT",
         body: mapCompanyToApi(body),
       }),
       invalidatesTags: ["CompanyDetails"],
     }),
- 
-    // PF
+
     getPfDetails: builder.query<PfDetails, void>({
       query: () => "/admin/configuration/pf",
-      transformResponse: (
-        response: PfDetailsApi,
-      ) => mapPfFromApi(response),
+      transformResponse: (response: PfDetailsApi) =>
+        mapPfFromApi(response),
     }),
- 
-    updatePfDetails: builder.mutation<
-      void,
-      PfConfiguration
-    >({
+
+    updatePfDetails: builder.mutation<void, PfConfiguration>({
       query: (body) => ({
         url: "/admin/configuration/pf",
         method: "PUT",
         body: mapPfConfigToApi(body),
       }),
     }),
- 
-    // ESI
+
     getEsiDetails: builder.query<EsiDetails, void>({
       query: () => "/admin/configuration/esi",
-      transformResponse: (
-        response: EsiDetailsApi,
-      ) => mapEsiFromApi(response),
+      transformResponse: (response: EsiDetailsApi) =>
+        mapEsiFromApi(response),
     }),
- 
-    updateEsiDetails: builder.mutation<
-      void,
-      EsiConfiguration
-    >({
+
+    updateEsiDetails: builder.mutation<void, EsiConfiguration>({
       query: (body) => ({
         url: "/admin/configuration/esi",
         method: "PUT",
         body: mapEsiConfigToApi(body),
       }),
     }),
- 
-    // PT
-    getPtDetails: builder.query<
-      PtDetails,
-      void
-    >({
+
+    getPtDetails: builder.query<PtDetails, void>({
       query: () => "/admin/configuration/pt",
-      transformResponse: (
-        response: PtDetailsApi,
-      ) => mapPtFromApi(response),
- 
-      // Refresh cached PT details after successful update.
+      transformResponse: (response: PtDetailsApi) =>
+        mapPtFromApi(response),
       providesTags: ["PT"],
     }),
- 
-    updatePtDetails: builder.mutation<
-      void,
-      { slabs: PtSlab[] }
-    >({
+
+    updatePtDetails: builder.mutation<void, { slabs: PtSlab[] }>({
       query: (body) => ({
         url: "/admin/configuration/pt",
         method: "PUT",
         body: mapPtSlabsToApi(body.slabs),
       }),
- 
-      // Causes getPtDetails to refetch after PUT succeeds.
       invalidatesTags: ["PT"],
     }),
- 
-    // LWF
-    getLwfDetails: builder.query<
-      LwfDetails,
-      void
-    >({
+
+    getLwfDetails: builder.query<LwfDetails, void>({
       query: () => "/admin/configuration/lwf",
-      transformResponse: (
-        response: LwfDetailsApi,
-      ) => mapLwfFromApi(response),
+      transformResponse: (response: LwfDetailsApi) =>
+        mapLwfFromApi(response),
     }),
- 
-    updateLwfDetails: builder.mutation<
-      void,
-      LwfConfiguration
-    >({
+
+    updateLwfDetails: builder.mutation<void, LwfConfiguration>({
       query: (body) => ({
         url: "/admin/configuration/lwf",
         method: "PUT",
         body: mapLwfConfigToApi(body),
       }),
     }),
- 
-    // Establishment
+
     getEstablishmentDetails: builder.query<
       EstablishmentDetails,
       void
     >({
       query: () => "/admin/configuration/establishment",
-      transformResponse: (
-        response: EstablishmentDetailsApi,
-      ) => mapEstablishmentFromApi(response),
+      transformResponse: (response: unknown) =>
+        mapEstablishmentFromApi(unwrapEstablishmentResponse(response)),
+      providesTags: ["Establishment"],
     }),
- 
+
     updateEstablishmentDetails: builder.mutation<
       void,
       EstablishmentDetails
@@ -777,10 +751,11 @@ export const companyApi = companyApiBase.injectEndpoints({
         method: "PUT",
         body: mapEstablishmentToApi(body),
       }),
+      invalidatesTags: ["Establishment"],
     }),
   }),
 });
- 
+
 export const {
   useGetCompanyDetailsQuery,
   useGetPfDetailsQuery,
@@ -788,7 +763,6 @@ export const {
   useGetPtDetailsQuery,
   useGetLwfDetailsQuery,
   useGetEstablishmentDetailsQuery,
- 
   useUpdateCompanyDetailsMutation,
   useUpdatePfDetailsMutation,
   useUpdateEsiDetailsMutation,

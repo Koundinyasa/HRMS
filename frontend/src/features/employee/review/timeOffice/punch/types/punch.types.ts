@@ -2102,6 +2102,9 @@ export interface PunchDashboardParams {
 
   viewType?:
     ViewType;
+
+  showAll?:
+    boolean;
 }
 
 

@@ -621,11 +621,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import noDataImage from "@/assets/images/no-data.png";
-
 import PreOnboardPageShell from "../components/PreEnrollmentPageShell";
-import { useGetCompletedCandidatesQuery } from "../api/candidateApi";
-import type { CompletedCandidateRow as ApiCompletedCandidateRow } from "../types/preEnrollment.types";
 
 type CompletedCandidateRow = {
   id: number;
@@ -695,25 +691,11 @@ const completedCandidates: CompletedCandidateRow[] = [
 export default function CompletedCandidate() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { data: apiCandidates = [], isLoading } =
-    useGetCompletedCandidatesQuery();
 
   const searchTerm = (searchParams.get("q") ?? "").trim();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const completedCandidates = useMemo<CompletedCandidateRow[]>(
-    () =>
-      (apiCandidates as ApiCompletedCandidateRow[]).map((candidate) => ({
-        id: candidate.id,
-        candidateName: candidate.name,
-        email: candidate.email,
-        mobile: candidate.mobile,
-        joiningDate: candidate.joiningDate,
-      })),
-    [apiCandidates],
-  );
 
   const filteredCandidates = useMemo(() => {
     if (!searchTerm) {
@@ -1055,7 +1037,7 @@ export default function CompletedCandidate() {
                     <td
                       colSpan={5}
                       className="
-                        h-[280px]
+                        h-[180px]
                         text-center
                         font-urbanist
                         text-[13px]
@@ -1064,18 +1046,7 @@ export default function CompletedCandidate() {
                         text-slate-500
                       "
                     >
-                      <div className="flex flex-col items-center justify-center gap-3 py-8">
-                        <img
-                          src={noDataImage}
-                          alt="No completed candidates"
-                          className="h-auto w-[220px]"
-                        />
-                        <span>
-                          {isLoading
-                            ? "Loading completed candidates..."
-                            : "No completed candidates found."}
-                        </span>
-                      </div>
+                      No candidates found.
                     </td>
                   </tr>
                 )}

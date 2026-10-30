@@ -115,6 +115,10 @@ function startOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+function endOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
 function addMonths(date: Date, amount: number) {
   return new Date(date.getFullYear(), date.getMonth() + amount, 1);
 }
@@ -166,19 +170,15 @@ export function useDatePicker(initialValue: string, onValueChange: (value: strin
   });
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setText(initialValue);
-      const iso = normalizeIso(initialValue);
-      setSelectedIso(iso);
-      if (iso) {
-        const date = parseIso(iso);
-        if (date) {
-          setMonthStart(startOfMonth(date));
-        }
+    setText(initialValue);
+    const iso = normalizeIso(initialValue);
+    setSelectedIso(iso);
+    if (iso) {
+      const date = parseIso(iso);
+      if (date) {
+        setMonthStart(startOfMonth(date));
       }
-    });
-
-    return () => window.cancelAnimationFrame(frame);
+    }
   }, [initialValue]);
 
   const monthLabel = `${MONTH_LABELS[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
@@ -283,3 +283,4 @@ export function useDatePicker(initialValue: string, onValueChange: (value: strin
     onToday: handleToday,
   };
 }
+

@@ -1,9 +1,11 @@
 import StatusBadge from "./StatusBadge";
 import type { EmployeeRowProps } from "../types/leavecalendar.types";
+import { matchesAttendanceStatus } from "../constants/leaveCalendar.constants";
 
 const EmployeeRow = ({
   employee,
   days,
+  statusFilter,
   onAttendanceClick,
 }: EmployeeRowProps) => {
   return (
@@ -24,6 +26,9 @@ const EmployeeRow = ({
         const status = String(employee[day.key] ?? "")
           .trim()
           .toUpperCase();
+        const matchesFilter =
+          !statusFilter ||
+          matchesAttendanceStatus(status, statusFilter);
 
         return (
           <td
@@ -31,35 +36,39 @@ const EmployeeRow = ({
             className="w-[48px] min-w-[48px] border-b border-r border-[#dbe3ee] bg-white px-1 py-2 text-center align-middle transition-colors group-hover:bg-[#f4f9fd]"
           >
             {/* Badge Button */}
-            <button
-              type="button"
-              title={`Open Daily Log - ${status || "No Record"}`}
-              onClick={() => {
-                console.log("================================");
-                console.log("BADGE CLICKED");
-                console.log("Employee:", employee.FullName);
-                console.log("Employee ID:", employee.EmployeeID);
-                console.log("Date:", day.date);
-                console.log("Weekday:", day.weekday);
-                console.log("Status:", status);
-                console.log("================================");
+            {matchesFilter ? (
+              <button
+                type="button"
+                title={`Open Daily Log - ${status || "No Record"}`}
+                onClick={() => {
+                  console.log("================================");
+                  console.log("BADGE CLICKED");
+                  console.log("Employee:", employee.FullName);
+                  console.log("Employee ID:", employee.EmployeeID);
+                  console.log("Date:", day.date);
+                  console.log("Weekday:", day.weekday);
+                  console.log("Status:", status);
+                  console.log("================================");
 
-                onAttendanceClick(
-                  employee,
-                  day,
-                  status,
-                );
-              }}
-              className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#1d9bf0]/40 active:scale-95"
-              style={{
-                cursor: "pointer",
-                pointerEvents: "auto",
-              }}
-            >
-              <StatusBadge
-                status={employee[day.key]}
-              />
-            </button>
+                  onAttendanceClick(
+                    employee,
+                    day,
+                    status,
+                  );
+                }}
+                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#1d9bf0]/40 active:scale-95"
+                style={{
+                  cursor: "pointer",
+                  pointerEvents: "auto",
+                }}
+              >
+                <StatusBadge
+                  status={employee[day.key]}
+                />
+              </button>
+            ) : (
+              <span className="inline-flex h-8 w-8" aria-hidden="true" />
+            )}
           </td>
         );
       })}

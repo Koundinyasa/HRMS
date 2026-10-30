@@ -54,7 +54,6 @@ import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 // import { SendInterviewInvitationDto } from './dto/send-interview-invitation.dto';
 const uploadPath = join(process.cwd(), 'uploads', 'recruitment', 'resumes');
 mkdirSync(uploadPath, { recursive: true });
-const REQUISITION_APPROVER_EMPLOYEE_ID = '294690';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('recruitment')
@@ -85,12 +84,6 @@ export class RecruitmentController {
   @UseGuards(JwtAuthGuard)
   @Post('jobopening')
   async createJobOpening(@Body() dto: CreateJobOpeningDto, @Req() req) {
-    if (String(req.user.employeeId) !== REQUISITION_APPROVER_EMPLOYEE_ID) {
-      throw new ForbiddenException(
-        'Only Mounika, the designated requisition approver, can create job openings from requisitions.',
-      );
-    }
-
     return this.recruitmentService.createJobOpening(
       dto.requisitionId,
       req.user.employeeId,
@@ -109,6 +102,19 @@ export class RecruitmentController {
   @Get('jobopenings')
   async getJobOpenings() {
     return this.recruitmentService.getJobOpenings();
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('job-opening-requisitions')
+  async getJobOpeningRequisitions(
+    @Req() req: { user: { companyId: number } },
+  ) {
+    const companyId = Number(req.user.companyId);
+    if (!Number.isInteger(companyId) || companyId <= 0) {
+      throw new UnauthorizedException(
+        'Authenticated user is missing a valid company ID.',
+      );
+    }
+    return this.recruitmentService.getJobOpeningRequisitions(companyId);
   }
   @UseGuards(JwtAuthGuard)
   @Post('requisition')
@@ -773,6 +779,18 @@ export class RecruitmentController {
       dto.assessmentTypeId,
       dto.scheduledDate,
       req.user.employeeId,
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @Post('skipcandidateassessment')
+  async skipCandidateAssessment(
+    @Body() dto: SkipCandidateAssessmentDto,
+    @Req() req,
+  ) {
+    return this.recruitmentService.skipCandidateAssessment(
+      dto.applicationId,
+      req.user.employeeId,
+      dto.remarks,
     );
   }
 // Assessment Scheduling Dropdowns

@@ -82,6 +82,11 @@ export class InterviewsController {
     );
   }
 
+  @Get('interviews/final-approval-feedback')
+  candidatesWaitingForFinalApproval() {
+    return this.interviews.getCandidatesWaitingForFinalApproval();
+  }
+
   @Post('applications/:applicationId/interviews')
   schedule(
     @Param('applicationId', ParseIntPipe) applicationId: number,
@@ -91,6 +96,17 @@ export class InterviewsController {
     return this.interviews.schedule(
       applicationId,
       dto,
+      request.user.employeeId,
+    );
+  }
+
+  @Post('applications/:applicationId/move-next-stage')
+  moveCandidateToNextStage(
+    @Param('applicationId', ParseIntPipe) applicationId: number,
+    @Req() request: { user: { employeeId: string } },
+  ) {
+    return this.interviews.moveCandidateToNextStage(
+      applicationId,
       request.user.employeeId,
     );
   }

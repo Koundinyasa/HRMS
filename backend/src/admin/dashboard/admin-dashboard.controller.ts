@@ -3,6 +3,8 @@ import {
   Get,
   UseGuards,
   Param,
+  Query,
+  BadRequestException,
   ParseIntPipe,
 } from '@nestjs/common';
 import { AdminDashboardService } from './admin-dashboard.service';
@@ -22,7 +24,7 @@ const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class AdminDashboardController {
   constructor(private readonly adminDashboardService: AdminDashboardService) {}
-
+ 
   /**
    * GET /admin/dashboard/summary
    *
@@ -41,19 +43,68 @@ export class AdminDashboardController {
   ): Promise<DashboardSummaryDto> {
     return this.adminDashboardService.getDashboard(user.employeeId);
   }
-
-  @Get('classification/:classificationId')
+ 
+   @Get('classification/:classificationId')
   @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
   async getClassificationWiseCount(
+    @CurrentUser() user: { companyId: number },
     @Param('classificationId', ParseIntPipe) classificationId: number,
   ): Promise<ClassificationWiseCountDto> {
-    return (this.adminDashboardService as any).getClassificationWiseCount(
+    return this.adminDashboardService.getClassificationWiseCount(
       classificationId,
+      Number(user.companyId),
     );
   }
-
+ 
   @Get('ping')
   ping() {
     return { ok: true };
   }
+ 
+ 
+ 
+ 
+  @Get('team-employees')
+  @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
+  async getTeamEmployeeDetails(
+    @CurrentUser() user: { companyId: number },
+    @Query('flag', ParseIntPipe) flag: number,
+    @Query('leadEmployeeId') leadEmployeeId?: string,
+  ) {
+    if (![1, 2].includes(flag)) {
+      throw new BadRequestException(
+        'Invalid flag. Use 1 for Team Leads or 2 for Employees.',
+      );
+    }
+ 
+    if (flag === 2 && !leadEmployeeId) {
+      throw new BadRequestException(
+        'leadEmployeeId is required when flag is 2.',
+      );
+    }
+ 
+    return this.adminDashboardService.getTeamEmployeeDetails(
+      Number(user.companyId),
+      flag,
+      leadEmployeeId,
+    );
+  }
+ 
+ 
+ 
+   @Get('classifications')
+  async getClassificationDropdown() {
+    return this.adminDashboardService.getClassificationDropdown();
+  }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 }
+ 
+ 

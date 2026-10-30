@@ -53,7 +53,6 @@ import TeamPreviewModal from "./TeamPreviewModal";
 import ListPreviewModal from "./ListPreviewModal";
 
 import { useResetConversationMutation } from "../api/chatbotApi";
-import { downloadProtectedFile } from "@/app/fileAccess";
 
 interface ChatbotWidgetProps {
   isOpen: boolean;
@@ -1760,8 +1759,6 @@ function ChatWidgetRenderer({
   });
   const [copiedField, setCopiedField] = useState<number | null>(null);
   const [downloaded, setDownloaded] = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState("");
   const widgetRowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1808,8 +1805,12 @@ function ChatWidgetRenderer({
         holiday.name ?? "Holiday",
       ]),
     );
+    const visibleLeaveDates = (widget.leaveDates ?? []).filter((leave) => {
+      const status = getLeaveStatus(leave.status);
+      return status === "approved" || status === "withdrawn";
+    });
     const leaveDates = new Map<string, CalendarLeave[]>();
-    for (const leave of widget.leaveDates ?? []) {
+    for (const leave of visibleLeaveDates) {
       const date = leave.date.slice(0, 10);
       const dateLeaves = leaveDates.get(date) ?? [];
       dateLeaves.push(leave);
@@ -1817,7 +1818,7 @@ function ChatWidgetRenderer({
     }
     const leaveStatuses = Array.from(
       new Set(
-        (widget.leaveDates ?? []).map((leave) => getLeaveStatus(leave.status)),
+        visibleLeaveDates.map((leave) => getLeaveStatus(leave.status)),
       ),
     );
     const isWeekend = (iso: string) => {
@@ -1965,28 +1966,16 @@ function ChatWidgetRenderer({
                   const weekend = isWeekend(iso);
                   const holiday = isHoliday(iso);
                   const leaves = leaveDates.get(iso) ?? [];
-                  const activeLeaves = leaves.filter((item) => {
-                    const status = getLeaveStatus(item.status);
-                    return status === "pending" || status === "approved";
-                  });
-                  const rejectedLeaves = leaves.filter(
-                    (item) => getLeaveStatus(item.status) === "rejected",
-                  );
-                  const visualLeaves = activeLeaves.length
-                    ? activeLeaves
-                    : rejectedLeaves.length
-                    ? rejectedLeaves
-                    : leaves;
-                  const fullDayLeave = visualLeaves.find(
+                  const fullDayLeave = leaves.find(
                     (item) => getLeaveHalf(item) === null,
                   );
-                  const unknownSessionLeave = visualLeaves.find(
+                  const unknownSessionLeave = leaves.find(
                     (item) => getLeaveHalf(item) === "unknown",
                   );
-                  const firstHalfLeave = visualLeaves.find(
+                  const firstHalfLeave = leaves.find(
                     (item) => getLeaveHalf(item) === "first",
                   );
-                  const secondHalfLeave = visualLeaves.find(
+                  const secondHalfLeave = leaves.find(
                     (item) => getLeaveHalf(item) === "second",
                   );
                   const markerLeave =
@@ -2339,54 +2328,30 @@ function ChatWidgetRenderer({
     }${colorParam}`;
 
     return (
-      <div className="flex flex-col items-start gap-1.5 mt-2.5">
-        {/* The file is fetched with the login session (refreshed if the access
-            token has expired) and then saved, instead of a plain link. */}
-        <button
-          type="button"
-          disabled={downloaded || downloading}
-          onClick={async () => {
-            if (downloaded || downloading) return;
-
-            setDownloading(true);
-            setDownloadError("");
-
-            try {
-              await downloadProtectedFile(
-                fullUrl,
-                widget.filename ?? "download",
-              );
-              setDownloaded(true);
-            } catch (err) {
-              setDownloadError(
-                err instanceof Error
-                  ? err.message
-                  : "Download failed. Please try again.",
-              );
-            } finally {
-              setDownloading(false);
+      <div className="flex mt-2.5">
+        <a
+          href={fullUrl}
+          download={widget.filename}
+          aria-disabled={downloaded}
+          onClick={(e) => {
+            if (downloaded) {
+              e.preventDefault();
+              return;
             }
+
+            setDownloaded(true);
           }}
           style={GRADIENT_STYLE}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
             downloaded
               ? "opacity-45 cursor-not-allowed"
-              : downloading
-                ? "opacity-70 cursor-wait"
-                : "cursor-pointer hover:-translate-y-0.5"
+              : "cursor-pointer hover:-translate-y-0.5"
           }`}
         >
           {downloaded
             ? `Downloaded ${widget.filename}`
-            : downloading
-              ? "Downloading…"
-              : `Download ${widget.filename}`}
-        </button>
-        {downloadError && (
-          <span role="alert" className="text-[12px] text-red-600">
-            {downloadError}
-          </span>
-        )}
+            : `Download ${widget.filename}`}
+        </a>
       </div>
     );
   }

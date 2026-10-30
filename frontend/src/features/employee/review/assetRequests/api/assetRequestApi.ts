@@ -1,12 +1,12 @@
 import { baseApi } from "@/app/baseApi";
-
+ 
 import type {
   AssetRequestActionPayload,
   AssetRequestFormData,
   AssetRequestListResponse,
   AssetRequestResponse,
 } from "../types/assetRequest.types";
-
+ 
 export const assetRequestApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /**
@@ -20,10 +20,10 @@ export const assetRequestApi = baseApi.injectEndpoints({
         url: "/assetrequests",
         method: "GET",
       }),
-
+ 
       providesTags: ["AssetRequests"],
     }),
-
+ 
     /**
      * Get Asset Request by ID
      */
@@ -35,12 +35,12 @@ export const assetRequestApi = baseApi.injectEndpoints({
         url: `/assetrequests/${id}`,
         method: "GET",
       }),
-
+ 
       providesTags: (_result, _error, id) => [
         { type: "AssetRequests", id },
       ],
     }),
-
+ 
     /**
      * Create Asset Request
      */
@@ -53,10 +53,10 @@ export const assetRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["AssetRequests"],
+ 
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
-
+ 
     /**
      * Approve Asset Request
      */
@@ -71,10 +71,10 @@ export const assetRequestApi = baseApi.injectEndpoints({
           remarks,
         },
       }),
-
-      invalidatesTags: ["AssetRequests"],
+ 
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
-
+ 
     /**
      * Reject Asset Request
      */
@@ -89,10 +89,10 @@ export const assetRequestApi = baseApi.injectEndpoints({
           remarks,
         },
       }),
-
-      invalidatesTags: ["AssetRequests"],
+ 
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
-
+ 
     /**
      * Cancel Asset Request
      */
@@ -107,14 +107,14 @@ export const assetRequestApi = baseApi.injectEndpoints({
           remarks,
         },
       }),
-
-      invalidatesTags: ["AssetRequests"],
+ 
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
   }),
-
+ 
   overrideExisting: false,
 });
-
+ 
 export const {
   useGetAssetRequestsQuery,
   useGetAssetRequestByIdQuery,
@@ -123,3 +123,4 @@ export const {
   useRejectAssetRequestMutation,
   useCancelAssetRequestMutation,
 } = assetRequestApi;
+ 

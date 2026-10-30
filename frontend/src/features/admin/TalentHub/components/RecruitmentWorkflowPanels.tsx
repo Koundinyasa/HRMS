@@ -1,5 +1,5 @@
-import { useMemo, useState, type FormEvent } from "react";
-import { ArrowUpRight, CalendarDays, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { CalendarDays, ChevronDown, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { recruitmentFileUrl } from "../api/recruitment.api";
 import {
@@ -30,6 +30,13 @@ function resumeHref(candidate: Candidate) {
   const url = candidate.resumeUrl?.trim();
   if (!url) return "";
   return recruitmentFileUrl(url);
+}
+
+function localDateStart(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}T00:00`;
 }
 
 function PanelCard({
@@ -183,7 +190,7 @@ export function ResumeScreeningPanel({
                   <TableHeading>Candidate</TableHeading>
                   <TableHeading>Name</TableHeading>
                   <TableHeading>Job</TableHeading>
-                  <TableHeading>Resume URL</TableHeading>
+                  <TableHeading>Resume</TableHeading>
                   <TableHeading>Action</TableHeading>
                 </tr>
               </thead>
@@ -213,14 +220,10 @@ export function ResumeScreeningPanel({
                             href={resumeHref(candidate)}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 font-semibold text-[#a87519] hover:text-[#80540d]"
+                            className="font-semibold text-[#a87519] hover:text-[#80540d]"
                           >
-                            View Resume{" "}
-                            <ArrowUpRight className="h-3.5 w-3.5" />
+                            View Resume
                           </a>
-                          <span className="mt-1 block max-w-xs truncate text-[11px] text-[#939b95]">
-                            {candidate.resumeUrl}
-                          </span>
                         </>
                       ) : (
                         <span className="text-xs text-[#939b95]">
@@ -626,7 +629,11 @@ export function AssessmentManagementPanel({
   const [selectedCandidateId, setSelectedCandidateId] = useState("");
   const [scheduleCandidateId, setScheduleCandidateId] = useState("");
   const [assessmentTypeIdValue, setAssessmentTypeId] = useState("");
+  const [isAssessmentTypeDropdownOpen, setIsAssessmentTypeDropdownOpen] =
+    useState(false);
+  const assessmentTypeDropdownRef = useRef<HTMLDivElement>(null);
   const [scheduledDate, setScheduledDate] = useState("");
+  const minimumScheduledDate = localDateStart(new Date());
   const [remarks, setRemarks] = useState("");
   const [scheduleError, setScheduleError] = useState("");
   const [skipError, setSkipError] = useState("");
@@ -635,6 +642,29 @@ export function AssessmentManagementPanel({
     useScheduleAssessmentMutation();
   const [skipAssessment, { isLoading: isSkipping }] =
     useSkipAssessmentMutation();
+
+  useEffect(() => {
+    if (!isAssessmentTypeDropdownOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !assessmentTypeDropdownRef.current?.contains(event.target)
+      ) {
+        setIsAssessmentTypeDropdownOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsAssessmentTypeDropdownOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isAssessmentTypeDropdownOpen]);
 
   const mappedAssessments = useMemo(() => {
     if (assessmentsResponse === undefined) {
@@ -1185,7 +1215,7 @@ export function AssessmentManagementPanel({
                 value={assessmentScore}
                 onChange={(event) => setAssessmentScore(event.target.value)}
                 required
-                className="h-10 w-full rounded-lg border border-[#dddcd5] bg-white px-3 text-sm font-normal text-[#303d34] outline-none focus:border-[#e5a538] focus:ring-2 focus:ring-[#e5a538]/20"
+                className="h-10 w-full [appearance:textfield] rounded-lg border border-[#dddcd5] bg-white px-3 text-sm font-normal text-[#303d34] outline-none focus:border-[#e5a538] focus:ring-2 focus:ring-[#e5a538]/20 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </label>
             <label className="block space-y-1.5 text-xs font-semibold text-[#59665d]">
@@ -1242,7 +1272,7 @@ export function AssessmentManagementPanel({
             aria-modal="true"
             aria-labelledby="schedule-assessment-title"
             onSubmit={handleSchedule}
-            className="w-full max-w-md rounded-2xl border border-[#eee9dc] bg-white p-5 shadow-2xl sm:p-6"
+            className="w-full max-w-md -translate-y-10 rounded-2xl border border-[#eee9dc] bg-white p-5 shadow-2xl sm:p-6"
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 id="schedule-assessment-title" className="text-lg font-bold text-[#26332c]">
@@ -1273,31 +1303,91 @@ export function AssessmentManagementPanel({
                 ))}
               </select>
             </label>
-            <label className="mb-3 block space-y-1.5 text-xs font-semibold text-[#59665d]">
+            <div className="relative mb-3 space-y-1.5 text-xs font-semibold text-[#59665d]">
               <span>Assessment Type</span>
-              <select
-                value={
-                  assessmentTypeIdValue ||
-                  String(scheduleAssessmentTypes[0]?.id ?? "")
-                }
-                onChange={(event) => setAssessmentTypeId(event.target.value)}
-                required
-                disabled={scheduleDropdownsLoading}
-                className="h-10 w-full rounded-lg border border-[#dddcd5] bg-white px-3 text-sm font-normal text-[#303d34] outline-none focus:border-[#e5a538] focus:ring-2 focus:ring-[#e5a538]/20 disabled:bg-[#f5f5f2]"
-              >
-                {scheduleAssessmentTypes.map((assessmentType) => (
-                  <option key={assessmentType.id} value={assessmentType.id}>
-                    {assessmentType.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <div ref={assessmentTypeDropdownRef}>
+                <input
+                  type="hidden"
+                  name="assessmentTypeId"
+                  value={
+                    assessmentTypeIdValue ||
+                    String(scheduleAssessmentTypes[0]?.id ?? "")
+                  }
+                />
+                <button
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={isAssessmentTypeDropdownOpen}
+                  aria-controls="schedule-assessment-type-options"
+                  disabled={
+                    scheduleDropdownsLoading ||
+                    scheduleAssessmentTypes.length === 0
+                  }
+                  onClick={() =>
+                    setIsAssessmentTypeDropdownOpen((open) => !open)
+                  }
+                  className="flex h-10 w-full items-center justify-between rounded-lg border border-[#dddcd5] bg-white px-3 text-left text-sm font-normal text-[#303d34] outline-none focus:border-[#e5a538] focus:ring-2 focus:ring-[#e5a538]/20 disabled:bg-[#f5f5f2]"
+                >
+                  <span className="truncate">
+                    {scheduleAssessmentTypes.find(
+                      (assessmentType) =>
+                        String(assessmentType.id) ===
+                        (assessmentTypeIdValue ||
+                          String(scheduleAssessmentTypes[0]?.id ?? "")),
+                    )?.name ?? "Select an assessment type"}
+                  </span>
+                  <ChevronDown
+                    className={`ml-2 h-4 w-4 shrink-0 transition-transform ${
+                      isAssessmentTypeDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {isAssessmentTypeDropdownOpen && (
+                  <div
+                    id="schedule-assessment-type-options"
+                    role="listbox"
+                    aria-label="Assessment types"
+                    className="absolute z-20 mt-1 max-h-[104px] w-full overflow-y-auto rounded-lg border border-[#dddcd5] bg-white py-1 shadow-lg"
+                  >
+                    {scheduleAssessmentTypes.map((assessmentType) => {
+                      const isSelected =
+                        String(assessmentType.id) ===
+                        (assessmentTypeIdValue ||
+                          String(scheduleAssessmentTypes[0]?.id ?? ""));
+                      return (
+                        <button
+                          key={assessmentType.id}
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => {
+                            setAssessmentTypeId(String(assessmentType.id));
+                            setIsAssessmentTypeDropdownOpen(false);
+                          }}
+                          className={`flex h-8 w-full items-center px-3 text-left text-sm font-normal ${
+                            isSelected
+                              ? "bg-[#f3e4c5] text-[#354239]"
+                              : "text-[#354239] hover:bg-[#fcf7ed]"
+                          }`}
+                        >
+                          {assessmentType.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
             <label className="block space-y-1.5 text-xs font-semibold text-[#59665d]">
               <span>Scheduled Date and Time</span>
               <input
                 type="datetime-local"
+                min={minimumScheduledDate}
                 value={scheduledDate}
-                onChange={(event) => setScheduledDate(event.target.value)}
+                onChange={(event) => {
+                  setScheduledDate(event.target.value);
+                  event.currentTarget.blur();
+                }}
                 required
                 className="h-10 w-full rounded-lg border border-[#dddcd5] bg-white px-3 text-sm font-normal text-[#303d34] outline-none focus:border-[#e5a538] focus:ring-2 focus:ring-[#e5a538]/20"
               />

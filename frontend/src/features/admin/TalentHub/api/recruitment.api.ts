@@ -35,6 +35,7 @@ import type {
   FinalApprovalDecisionRequest,
   OffersQuery,
   OffersListResponse,
+  CompletedInterviewCandidate,
   OfferRecord,
   UpdateOfferRequest,
   OfferResponseRequest,
@@ -51,6 +52,7 @@ import type {
   ConfirmJoiningRequest,
   ConfirmJoiningResponse,
   PendingInterviewCandidate,
+  ScheduledCandidateInterview,
   RecruitmentInterviewer,
   InterviewScheduleOptions,
   RecruitmentInterviewListQuery,
@@ -167,27 +169,41 @@ export function recruitmentFileUrl(filePath: string, fileExtension?: string) {
 
   if (resumePathMatch) {
     const fileName = resumePathMatch[1];
-
-    const extension =
-      fileName.match(/\.(pdf|doc|docx)$/i)?.[1] ??
-      fileExtension?.match(/\.(pdf|doc|docx)$/i)?.[1] ??
-      fileExtension?.replace(/^\./, "").toLowerCase();
-
-    const previewUrl = new URL(
-      `recruitment/resume-preview/${encodeURIComponent(fileName)}`,
-      `${apiBaseUrl.toString().replace(/\/$/, "")}/`
-    );
-
-    if (extension && ["pdf", "doc", "docx"].includes(extension)) {
-      previewUrl.searchParams.set("extension", extension);
+    const isSafeFileName =
+      fileName !== "." && fileName !== ".." && !/[\\/?#]/.test(fileName);
+    if (isSafeFileName) {
+      const resumeUrl = new URL(
+        `/uploads/recruitment/resumes/${encodeURIComponent(fileName)}`,
+        apiBaseUrl.origin,
+      );
+      const extension = fileExtension?.match(/\.(pdf|doc|docx)$/i)?.[1] ??
+        fileExtension?.match(/^(pdf|doc|docx)$/i)?.[1];
+      if (extension && !/\.(pdf|doc|docx)$/i.test(fileName)) {
+        resumeUrl.searchParams.set("extension", extension);
+      }
+      return resumeUrl.toString();
     }
-
-    return previewUrl.toString();
   }
 
   const publicPath = normalizedPath.replace(/^\/api(?=\/uploads\/)/i, "");
 
   return new URL(publicPath, apiBaseUrl.origin).toString();
+}
+
+export function recruitmentFileName(filePath: string, originalName?: string) {
+  const displayName = originalName?.trim();
+  if (displayName) return displayName;
+
+  const path = filePath.trim().split(/[?#]/, 1)[0];
+  const fileName = path.split(/[\\/]/).pop();
+  if (!fileName) return filePath;
+
+  try {
+    return decodeURIComponent(fileName);
+  } catch (error) {
+    if (error instanceof URIError) return fileName;
+    throw error;
+  }
 }
 
 export const recruitmentApi = baseApi.injectEndpoints({
@@ -224,6 +240,14 @@ export const recruitmentApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
+      providesTags: ["Recruitment"],
+    }),
+
+    getJobOpeningRequisitions: builder.query<RecruitmentLookupResponse, void>({
+      query: () => ({
+        url: "/recruitment/job-opening-requisitions",
+        method: "GET",
+      }),
       providesTags: ["Recruitment"],
     }),
 
@@ -452,6 +476,16 @@ export const recruitmentApi = baseApi.injectEndpoints({
       providesTags: ["Recruitment"],
     }),
 
+    getCandidatesWaitingForFinalApproval: builder.query<
+      ScheduledCandidateInterview[],
+      void
+    >({
+      query: () => ({
+        url: "/recruitment/interviews/final-approval-feedback",
+      }),
+      providesTags: ["Recruitment"],
+    }),
+
     getInterviewerFeedbackWorklist: builder.query<
       InterviewerFeedbackWorklistResponse,
       void
@@ -494,6 +528,18 @@ export const recruitmentApi = baseApi.injectEndpoints({
         body,
       }),
       ...submissionToasts("Interview scheduled successfully."),
+      invalidatesTags: ["Recruitment"],
+    }),
+
+    moveCandidateToNextStage: builder.mutation<
+      { success: boolean; message: string; applicationId: number },
+      number
+    >({
+      query: (applicationId) => ({
+        url: `/recruitment/applications/${applicationId}/move-next-stage`,
+        method: "POST",
+      }),
+      ...submissionToasts("Candidate moved to Final Interview Approval."),
       invalidatesTags: ["Recruitment"],
     }),
 
@@ -715,6 +761,17 @@ export const recruitmentApi = baseApi.injectEndpoints({
     // ==================================================
     // OFFERS
     // ==================================================
+
+    getCompletedInterviewCandidates: builder.query<
+      CompletedInterviewCandidate[],
+      void
+    >({
+      query: () => ({
+        url: "/offers/completed-interviews",
+        method: "GET",
+      }),
+      providesTags: ["Recruitment"],
+    }),
 
     createCandidateOffer: builder.mutation<unknown, CandidateOfferRequest>({
       ...submissionToasts("Candidate offer submitted successfully."),
@@ -1079,11 +1136,13 @@ export const {
   useGetRecruitmentDashboardQuery,
   useGetPendingRequisitionsQuery,
   useGetAllRequisitionsForHRQuery,
+  useGetJobOpeningRequisitionsQuery,
   useGetJobRequisitionDetailsQuery,
   useGetRequisitionMasterQuery,
   useCreateRequisitionMutation,
   useUpdateRequisitionMutation,
   useGetJobOpeningsQuery,
+  useLazyGetJobOpeningsQuery,
   useGetJobOpeningMasterQuery,
   useGetRecruitmentSourcesQuery,
   useCreateJobOpeningMutation,
@@ -1097,11 +1156,13 @@ export const {
   useGetRecruitmentInterviewersQuery,
   useGetInterviewScheduleOptionsQuery,
   useGetRecruitmentInterviewsQuery,
+  useGetCandidatesWaitingForFinalApprovalQuery,
   useGetInterviewerFeedbackWorklistQuery,
   useGetTodayRecruitmentInterviewsQuery,
   useGetRecruitmentInterviewQuery,
   useGetRecruitmentInterviewFeedbackQuery,
   useScheduleRecruitmentInterviewMutation,
+  useMoveCandidateToNextStageMutation,
   useUpdateRecruitmentInterviewMutation,
   useCancelRecruitmentInterviewMutation,
   useSubmitRecruitmentInterviewFeedbackMutation,
@@ -1120,6 +1181,7 @@ export const {
   useGetFinalApprovalQuery,
   useDecideFinalApprovalMutation,
   useCreateCandidateOfferMutation,
+  useGetCompletedInterviewCandidatesQuery,
   useGetOffersQuery,
   useGetOfferQuery,
   useCreateOfferMutation,

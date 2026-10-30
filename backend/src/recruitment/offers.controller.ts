@@ -27,6 +27,11 @@ import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
+  @Get('completed-interviews')
+  getCompletedInterviewCandidates() {
+    return this.offersService.getCompletedInterviewCandidates();
+  }
+
   @Get()
   list(
     @Query('search') search?: string,

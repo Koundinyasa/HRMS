@@ -1,12 +1,12 @@
 import { baseApi } from "@/app/baseApi";
-
+ 
 import type {
   ApiResponse,
   ResignationRequest,
   SeparationStatusResponse,
   WithdrawRequest,
 } from "../types/separation.types";
-
+ 
 export const separationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /**
@@ -20,10 +20,10 @@ export const separationApi = baseApi.injectEndpoints({
         url: "/employee/separation/status",
         method: "GET",
       }),
-
+ 
       providesTags: ["Separation"],
     }),
-
+ 
     /**
      * Submit Resignation
      */
@@ -36,10 +36,10 @@ export const separationApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["Separation"],
+ 
+      invalidatesTags: ["Separation", "ApprovalSummary"],
     }),
-
+ 
     /**
      * Withdraw Resignation
      */
@@ -52,15 +52,16 @@ export const separationApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["Separation"],
+ 
+      invalidatesTags: ["Separation", "ApprovalSummary"],
     }),
   }),
 });
-
+ 
 export const {
   useGetSeparationStatusQuery,
   useLazyGetSeparationStatusQuery,
   useSubmitResignationMutation,
   useWithdrawResignationMutation,
 } = separationApi;
+ 

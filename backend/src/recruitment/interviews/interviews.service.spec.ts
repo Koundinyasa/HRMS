@@ -47,23 +47,112 @@ describe('InterviewsService', () => {
     expect(recruitment.getInterviewEligibleCandidates).toHaveBeenCalledTimes(1);
   });
 
-  it('uses the selected filter and paginates scheduled interviews', async () => {
-    recruitment.getScheduledCandidateInterviews.mockResolvedValue([
+  it('loads all submitted feedback waiting for final approval from its stored procedure', async () => {
+    const execute = jest.fn().mockResolvedValue({
+      recordset: [
+        {
+          ApplicationID: 101,
+          CandidateID: 'CAND-101',
+          CandidateName: 'Test candidate',
+          Email: 'candidate@example.com',
+          JobTitle: 'Engineer',
+          InterviewScheduledID: 7,
+          InterviewID: 8,
+          ScheduledDate: new Date('2026-10-27T16:07:00'),
+          InterviewType: 'Technical 1',
+          InterviewerName: 'Test interviewer',
+          Rating: 8.2,
+          Feedback: 'Strong fundamentals.',
+        },
+      ],
+    });
+    const request = { execute };
+    database.connect.mockResolvedValue({
+      request: jest.fn(() => request),
+    });
+
+    await expect(
+      service.getCandidatesWaitingForFinalApproval(),
+    ).resolves.toMatchObject([
       {
-        ScheduledDate: '2026-10-15',
-        ScheduledTime: '10:30:00',
-        CandidateName: 'Test candidate',
-        InterviewerName: 'Test interviewer',
-        InterviewType: 'Technical',
-      },
-      {
-        ScheduledDate: '2026-10-15',
-        ScheduledTime: '11:30:00',
-        CandidateName: 'Other candidate',
-        InterviewerName: 'Other interviewer',
-        InterviewType: 'HR',
+        id: 8,
+        scheduleId: 7,
+        applicationId: 101,
+        candidateCode: 'CAND-101',
+        candidateName: 'Test candidate',
+        candidateEmail: 'candidate@example.com',
+        position: 'Engineer',
+        interviewerName: 'Test interviewer',
+        interviewType: 'Technical 1',
+        roundName: 'Round 1',
+        feedbackSubmitted: true,
+        feedbackRating: 8.2,
+        feedbackText: 'Strong fundamentals.',
+        isLatestInterview: true,
+        alreadyMovedToNextStage: false,
       },
     ]);
+    expect(execute).toHaveBeenCalledWith(
+      'USP_GetCandidatesWaitingForFinalApproval',
+    );
+  });
+
+  it('does not require a separate schedule ID when the procedure omits it', async () => {
+    const request = {
+      execute: jest.fn().mockResolvedValue({
+        recordset: [
+          {
+            ApplicationID: 101,
+            CandidateID: 'CAND-101',
+            CandidateName: 'Test candidate',
+            ScheduledDate: new Date('2026-10-27T16:07:00'),
+            InterviewID: 8,
+          },
+        ],
+      }),
+    };
+    database.connect.mockResolvedValue({
+      request: jest.fn(() => request),
+    });
+
+    await expect(
+      service.getCandidatesWaitingForFinalApproval(),
+    ).resolves.toMatchObject([{ id: 8, scheduleId: 8, applicationId: 101 }]);
+  });
+
+  it('uses the selected filter and paginates scheduled interviews', async () => {
+    recruitment.getScheduledCandidateInterviews.mockResolvedValue([]);
+    const query = jest.fn().mockResolvedValue({
+      recordset: [
+        {
+          id: 8,
+          scheduleId: 7,
+          applicationId: 101,
+          applicationCode: 'APP-101',
+          candidateCode: 'CAND-101',
+          candidateName: 'Test candidate',
+          candidateEmail: 'candidate@example.com',
+          position: 'Engineer',
+          scheduledDate: '2026-10-15',
+          scheduledTime: '10:30:00',
+          scheduledAt: new Date('2026-10-15T10:30:00'),
+          interviewerName: 'Test interviewer',
+          interviewType: 'Technical 1',
+          roundName: 'Round 1',
+          feedbackSubmitted: true,
+          feedbackRating: 8,
+          feedbackText: 'Strong fundamentals.',
+          status: 'completed',
+          totalCount: 1,
+        },
+      ],
+    });
+    database.connect.mockResolvedValue({
+      request: jest.fn(() => ({
+        input: jest.fn().mockReturnThis(),
+        query,
+      })),
+    });
 
     const result = await service.list('294676', {
       period: 'today',
@@ -79,14 +168,125 @@ describe('InterviewsService', () => {
     expect(result).toMatchObject({
       data: [
         {
-          scheduledAt: '2026-10-15T10:30:00',
+          id: 8,
+          applicationId: 101,
+          scheduledAt: new Date('2026-10-15T10:30:00'),
           candidateName: 'Test candidate',
           interviewerName: 'Test interviewer',
-          interviewType: 'Technical',
+          interviewType: 'Technical 1',
+          roundName: 'Round 1',
+          feedbackSubmitted: true,
+          feedbackRating: 8,
+          feedbackText: 'Strong fundamentals.',
         },
       ],
       meta: { total: 1, page: 1, limit: 1, totalPages: 1 },
     });
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining('COUNT(*) OVER() AS totalCount'),
+    );
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining('LatestSchedule.ScheduleStatus IN (11, 21)'),
+    );
+  });
+
+  it('returns the candidate running average across submitted interview feedback', async () => {
+    const interviewExecute = jest.fn().mockResolvedValue({
+      recordset: [
+        {
+          InterviewID: 55,
+          ApplicationID: 101,
+          CandidateID: 'CAND-101',
+          CandidateName: 'Test candidate',
+          JobTitle: 'Engineer',
+          ScheduledDate: new Date('2026-10-27T00:00:00'),
+          ScheduledTime: '10:30 AM',
+          Rating: null,
+          Feedback: null,
+        },
+      ],
+    });
+    const interviewRequest = {
+      input: jest.fn().mockReturnThis(),
+      execute: interviewExecute,
+    };
+    const categoryRequest = {
+      query: jest.fn().mockResolvedValue({ recordset: [] }),
+    };
+    const aggregateRequest = {
+      input: jest.fn().mockReturnThis(),
+      query: jest.fn().mockResolvedValue({
+        recordset: [
+          { applicationId: 101, averageRating: 8, feedbackCount: 2 },
+        ],
+      }),
+    };
+    const requestMock = jest
+      .fn()
+      .mockReturnValueOnce(interviewRequest)
+      .mockReturnValueOnce(categoryRequest)
+      .mockReturnValueOnce(aggregateRequest);
+    database.connect.mockResolvedValue({ request: requestMock });
+
+    await expect(
+      service.getInterviewerFeedbackWorklist('294676'),
+    ).resolves.toMatchObject({
+      interviews: [
+        {
+          id: 55,
+          applicationId: 101,
+          candidateAverageRating: 8,
+          candidateFeedbackCount: 2,
+        },
+      ],
+    });
+    expect(aggregateRequest.query).toHaveBeenCalledWith(
+      expect.stringContaining('AVG(CAST(I.Rating AS DECIMAL(5, 2)))'),
+    );
+    expect(aggregateRequest.input).toHaveBeenCalledWith(
+      'ApplicationID0',
+      expect.anything(),
+      101,
+    );
+  });
+
+  it('moves an application to the next stage using the HR stored procedure', async () => {
+    const execute = jest.fn().mockResolvedValue({
+      recordset: [
+        {
+          StatusCode: 200,
+          Message: 'Candidate moved to Final Interview Approval successfully.',
+        },
+      ],
+    });
+    const request = {
+      input: jest.fn().mockReturnThis(),
+      execute,
+    };
+    database.connect.mockResolvedValue({
+      request: jest.fn(() => request),
+    });
+
+    await expect(
+      service.moveCandidateToNextStage(101, '294676'),
+    ).resolves.toEqual({
+      success: true,
+      message: 'Candidate moved to Final Interview Approval successfully.',
+      applicationId: 101,
+    });
+    expect(request.input).toHaveBeenNthCalledWith(
+      1,
+      'ApplicationID',
+      sql.Int,
+      101,
+    );
+    expect(request.input).toHaveBeenNthCalledWith(
+      2,
+      'ActionBy',
+      sql.VarChar(25),
+      '294676',
+    );
+    expect(execute).toHaveBeenCalledWith('USP_MoveCandidateToNextStage');
   });
 
   it('gets the interviewer feedback worklist from USP_GetMyInterviews', async () => {
@@ -101,7 +301,6 @@ describe('InterviewsService', () => {
           InterviewID: 55,
           CandidateID: 'CAND-101',
           CandidateName: 'Test candidate',
-          Email: 'candidate@example.com',
           JobTitle: 'Engineer',
           Round: 1,
           InterviewType: 'Technical',
@@ -111,27 +310,6 @@ describe('InterviewsService', () => {
           InterviewStatus: 'Scheduled',
           Rating: null,
           Feedback: null,
-          FeedbackCategory: 'Technical Knowledge',
-          CategoryRating: 9,
-          CategoryComments: 'Strong technical fundamentals.',
-        },
-        {
-          InterviewID: 55,
-          CandidateID: 'CAND-101',
-          CandidateName: 'Test candidate',
-          Email: 'candidate@example.com',
-          JobTitle: 'Engineer',
-          Round: 1,
-          InterviewType: 'Technical',
-          ScheduledDate: pastDate,
-          ScheduledTime: '10:30 AM',
-          InterviewerEmployeeID: '294676',
-          InterviewStatus: 'Scheduled',
-          Rating: null,
-          Feedback: null,
-          FeedbackCategory: 'Problem Solving',
-          CategoryRating: 8,
-          CategoryComments: 'Good approach.',
         },
         {
           InterviewID: 56,
@@ -163,6 +341,18 @@ describe('InterviewsService', () => {
           Rating: null,
           Feedback: 'Already submitted',
         },
+        {
+          InterviewID: 59,
+          CandidateID: 'CAND-105',
+          CandidateName: 'Structured feedback candidate',
+          JobTitle: 'Engineer',
+          ScheduledDate: pastDate,
+          ScheduledTime: '10:30 AM',
+          Rating: 8,
+          Feedback: 'Complete feedback',
+          FeedbackCategory: 'Technical Knowledge',
+          CategoryRating: 8,
+        },
       ],
     });
     const categoryQuery = jest.fn().mockResolvedValue({
@@ -191,25 +381,12 @@ describe('InterviewsService', () => {
           candidateName: 'Test candidate',
           position: 'Engineer',
           roundName: '1 · Technical',
-          status: 'scheduled',
+          status: 'completed',
           interviewerName: '294676',
-          feedbackSubmitted: false,
-          canSubmitFeedback: true,
+          feedbackSubmitted: true,
+          canSubmitFeedback: false,
           feedbackRating: null,
           feedbackText: null,
-          candidateEmail: 'candidate@example.com',
-          feedbackDetails: [
-            {
-              categoryName: 'Technical Knowledge',
-              rating: 9,
-              comments: 'Strong technical fundamentals.',
-            },
-            {
-              categoryName: 'Problem Solving',
-              rating: 8,
-              comments: 'Good approach.',
-            },
-          ],
         },
         {
           id: 56,
@@ -239,6 +416,19 @@ describe('InterviewsService', () => {
           feedbackRating: null,
           feedbackText: 'Already submitted',
         },
+        {
+          id: 59,
+          candidateCode: 'CAND-105',
+          feedbackSubmitted: true,
+          canSubmitFeedback: false,
+          feedbackDetails: [
+            {
+              categoryName: 'Technical Knowledge',
+              rating: 8,
+              comments: null,
+            },
+          ],
+        },
       ],
       categories: [{ categoryId: 1, categoryName: 'Technical Knowledge' }],
     });
@@ -253,25 +443,18 @@ describe('InterviewsService', () => {
     );
   });
 
-  it('schedules Technical 2 after assigned Technical 1 feedback', async () => {
-    const assignedRequest = {
-      input: jest.fn().mockReturnThis(),
-      execute: jest.fn().mockResolvedValue({
-        recordset: [
-          {
-            InterviewID: 55,
-            InterviewType: 'Technical',
-            Round: 1,
-            Rating: 8,
-            Feedback: 'Strong fundamentals.',
-          },
-        ],
-      }),
-    };
-    const applicationRequest = {
+  it('allows recruitment users to schedule Technical 2 after Technical 1 feedback', async () => {
+    const technicalOneRequest = {
       input: jest.fn().mockReturnThis(),
       query: jest.fn().mockResolvedValue({
-        recordset: [{ applicationId: 101 }],
+        recordset: [
+          {
+            applicationId: 101,
+            interviewType: 'Technical 1',
+            roundName: 'Round 1',
+            feedbackSubmitted: true,
+          },
+        ],
       }),
     };
     const typeRequest = {
@@ -305,8 +488,7 @@ describe('InterviewsService', () => {
     };
     const request = jest
       .fn()
-      .mockReturnValueOnce(assignedRequest)
-      .mockReturnValueOnce(applicationRequest)
+      .mockReturnValueOnce(technicalOneRequest)
       .mockReturnValueOnce(typeRequest)
       .mockReturnValueOnce(existingRoundRequest)
       .mockReturnValueOnce(progressTableRequest)
@@ -323,13 +505,16 @@ describe('InterviewsService', () => {
           interviewModeId: 20,
           interviewerEmployeeId: '294676',
         },
-        '294676',
+        '294690',
       ),
     ).resolves.toEqual({
       success: true,
       message: 'Technical 2 interview scheduled successfully.',
       interviewScheduleId: 88,
     });
+    expect(technicalOneRequest.query).toHaveBeenCalledWith(
+      expect.stringContaining('I.FeedbackSubmitted AS feedbackSubmitted'),
+    );
     expect(scheduleExecute).toHaveBeenCalledWith(
       'USP_ScheduleCandidateInterview',
     );
@@ -343,25 +528,52 @@ describe('InterviewsService', () => {
     );
   });
 
-  it('schedules Technical 2 when the optional round progress table is missing', async () => {
-    const assignedRequest = {
+  it('requires submitted Technical 1 feedback before scheduling Technical 2', async () => {
+    const technicalOneRequest = {
       input: jest.fn().mockReturnThis(),
-      execute: jest.fn().mockResolvedValue({
+      query: jest.fn().mockResolvedValue({
         recordset: [
           {
-            InterviewID: 55,
-            InterviewType: 'Technical',
-            Round: 1,
-            Rating: 8,
-            Feedback: 'Strong fundamentals.',
+            applicationId: 101,
+            interviewType: 'Technical 1',
+            roundName: 'Round 1',
+            feedbackSubmitted: false,
           },
         ],
       }),
     };
-    const applicationRequest = {
+    const request = jest.fn().mockReturnValue(technicalOneRequest);
+    database.connect.mockResolvedValue({ request });
+
+    await expect(
+      service.scheduleTechnicalRoundTwo(
+        55,
+        {
+          date: '2099-10-15',
+          time: '10:30',
+          interviewModeId: 20,
+          interviewerEmployeeId: '294676',
+        },
+        '294690',
+      ),
+    ).rejects.toThrow(
+      'Submit Technical 1 feedback before scheduling the next round.',
+    );
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it('schedules Technical 2 when the optional round progress table is missing', async () => {
+    const technicalOneRequest = {
       input: jest.fn().mockReturnThis(),
       query: jest.fn().mockResolvedValue({
-        recordset: [{ applicationId: 101 }],
+        recordset: [
+          {
+            applicationId: 101,
+            interviewType: 'Technical 1',
+            roundName: 'Round 1',
+            feedbackSubmitted: true,
+          },
+        ],
       }),
     };
     const typeRequest = {
@@ -391,8 +603,7 @@ describe('InterviewsService', () => {
     };
     const request = jest
       .fn()
-      .mockReturnValueOnce(assignedRequest)
-      .mockReturnValueOnce(applicationRequest)
+      .mockReturnValueOnce(technicalOneRequest)
       .mockReturnValueOnce(typeRequest)
       .mockReturnValueOnce(existingRoundRequest)
       .mockReturnValueOnce(progressTableRequest)
@@ -417,12 +628,18 @@ describe('InterviewsService', () => {
     expect(scheduleExecute).toHaveBeenCalledWith(
       'USP_ScheduleCandidateInterview',
     );
-    expect(request).toHaveBeenCalledTimes(6);
+    expect(request).toHaveBeenCalledTimes(5);
   });
 
   it('submits category feedback using the stored procedure table-valued parameter', async () => {
-    const assignedQuery = jest.fn().mockResolvedValue({
-      recordset: [{ ID: 55 }],
+    const assignedExecute = jest.fn().mockResolvedValue({
+      recordset: [
+        {
+          InterviewID: 55,
+          Rating: null,
+          Feedback: null,
+        },
+      ],
     });
     const execute = jest.fn().mockResolvedValue({
       recordset: [
@@ -435,9 +652,15 @@ describe('InterviewsService', () => {
     const submitRequest = {
       input: jest.fn().mockReturnThis(),
       execute,
-      query: assignedQuery,
     };
-    const request = jest.fn(() => submitRequest);
+    const assignedRequest = {
+      input: jest.fn().mockReturnThis(),
+      execute: assignedExecute,
+    };
+    const request = jest
+      .fn()
+      .mockReturnValueOnce(assignedRequest)
+      .mockReturnValueOnce(submitRequest);
     database.connect.mockResolvedValue({ request });
 
     await expect(
@@ -482,6 +705,43 @@ describe('InterviewsService', () => {
       }),
     );
     expect(execute).toHaveBeenCalledWith('USP_SubmitFeedbackByInterviewer');
+    expect(assignedExecute).toHaveBeenCalledWith('USP_GetMyInterviews');
+  });
+
+  it('rejects feedback submission when feedback already exists', async () => {
+    const assignedRequest = {
+      input: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({
+        recordset: [
+          {
+            InterviewID: 55,
+            Rating: 4,
+            Feedback: 'Candidate performed well.',
+          },
+        ],
+      }),
+    };
+    const submitRequest = {
+      input: jest.fn().mockReturnThis(),
+      execute: jest.fn(),
+    };
+    const request = jest
+      .fn()
+      .mockReturnValueOnce(assignedRequest)
+      .mockReturnValueOnce(submitRequest);
+    database.connect.mockResolvedValue({ request });
+
+    await expect(
+      service.submitCompetencyFeedback(
+        55,
+        {
+          feedbackDetails: [{ categoryId: 2, rating: 8 }],
+          overallFeedback: 'Already submitted.',
+        },
+        '294676',
+      ),
+    ).rejects.toThrow('Feedback has already been submitted for this interview.');
+    expect(submitRequest.execute).not.toHaveBeenCalled();
   });
 
   it('schedules an eligible candidate with the existing procedure', async () => {
@@ -528,6 +788,50 @@ describe('InterviewsService', () => {
       message: 'Candidate interview scheduled successfully.',
       interviewScheduleId: 55,
     });
+    expect(execute).toHaveBeenCalledWith('USP_ScheduleCandidateInterview');
+  });
+
+  it('uses the same scheduling procedure for a completed interview round', async () => {
+    recruitment.getInterviewEligibleCandidates.mockResolvedValue([]);
+    const execute = jest.fn().mockResolvedValue({
+      recordset: [
+        {
+          StatusCode: 1,
+          Message: 'Candidate interview scheduled successfully.',
+          InterviewScheduleID: 56,
+        },
+      ],
+    });
+    const request = {
+      input: jest.fn().mockReturnThis(),
+      execute,
+      query: jest.fn().mockResolvedValue({
+        recordset: [{ hasCompletedInterview: true }],
+      }),
+    };
+    database.connect.mockResolvedValue({
+      request: jest.fn(() => request),
+    });
+
+    await expect(
+      service.schedule(
+        101,
+        {
+          interviewTypeId: 3,
+          interviewModeId: 20,
+          date: '2099-10-15',
+          time: '10:30',
+          interviewerEmployeeId: '294676',
+        },
+        '294676',
+      ),
+    ).resolves.toMatchObject({
+      success: true,
+      interviewScheduleId: 56,
+    });
+    expect(request.query).toHaveBeenCalledWith(
+      expect.stringContaining('I.FeedbackSubmitted = 1'),
+    );
     expect(execute).toHaveBeenCalledWith('USP_ScheduleCandidateInterview');
   });
 });

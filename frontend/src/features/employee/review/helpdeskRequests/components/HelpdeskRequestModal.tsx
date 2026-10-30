@@ -57,6 +57,9 @@ const HelpdeskRequestModal = ({
               className="mb-2 block text-sm font-medium text-slate-600"
             >
               Remarks
+              {action === "reject" && (
+                <span className="text-red-500"> *</span>
+              )}
             </label>
 
             <textarea

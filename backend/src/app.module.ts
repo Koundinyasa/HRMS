@@ -33,6 +33,12 @@ import { InterviewsModule } from './recruitment/interviews/interviews.module';
       load: [configuration],
       validationSchema,
     }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
+ 
  
     JwtConfigModule,
  

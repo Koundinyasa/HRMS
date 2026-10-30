@@ -3,13 +3,14 @@
 
 
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 import {
+  getApiErrorMessage,
   useGetReminderByTypeQuery,
   useUpdateReminderMutation,
   useUpdateReminderStatusMutation,
-  getApiErrorMessage,
 } from "../api/settingsapi";
 import type { ReminderSettings } from "../types/settingstypes";
 
@@ -21,42 +22,59 @@ const EMPTY = (type: string): ReminderSettings => ({
   applicability: { ess: false, hrms: false, sendMail: false, active: false },
 });
 
+type ApiObject = Record<string, unknown>;
+type SaveMessage = { type: "success" | "error"; text: string } | null;
+
 /** Case-insensitive pick of first defined key on API objects */
-export function pick(raw: any, keys: string[]): any {
-  if (!raw || typeof raw !== "object") return undefined;
+export function pick(raw: unknown, keys: string[]): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
   for (const k of keys) {
-    const hit = Object.keys(raw).find((rk) => rk.toLowerCase() === k.toLowerCase());
-    if (hit !== undefined && raw[hit] !== null && raw[hit] !== undefined) return raw[hit];
+    const hit = Object.keys(raw).find(
+      (rk) => rk.toLowerCase() === k.toLowerCase(),
+    );
+    if (hit !== undefined && raw[hit] !== null && raw[hit] !== undefined) {
+      return raw[hit];
+    }
   }
   return undefined;
 }
 
-export const toBool = (v: any, fallback = false) =>
+export const toBool = (v: unknown, fallback = false) =>
   v === undefined || v === null
     ? fallback
     : v === true || v === 1 || v === "1" || v === "true" || v === "Y";
 
-function toReminder(res: any): any | null {
+function toReminder(res: unknown): ApiObject | null {
   if (res === null || res === undefined) return null;
-  if (Array.isArray(res)) return res[0] ?? null;
+  if (Array.isArray(res)) return toReminder(res[0]);
   if (typeof res === "object") {
     for (const key of ["data", "reminders", "recordset", "result"]) {
-      if (res[key] !== undefined && res[key] !== null) {
-        return Array.isArray(res[key]) ? res[key][0] ?? null : res[key];
+      const value = (res as ApiObject)[key];
+      if (value !== undefined && value !== null) {
+        return toReminder(value);
       }
     }
-    // Bare number/string from inactive SP → not usable form data
-    if (typeof res === "object" && Object.keys(res).length === 0) return null;
+    const record = res as ApiObject;
+    if (Object.keys(record).length === 0) return null;
     // Prefer objects that look like a reminder row
-    if (pick(res, ["ReminderTypeID", "reminderTypeId", "Subject", "subject", "IsActive", "isActive"]) !== undefined) {
-      return res;
+    if (
+      pick(record, [
+        "ReminderTypeID",
+        "reminderTypeId",
+        "Subject",
+        "subject",
+        "IsActive",
+        "isActive",
+      ]) !== undefined
+    ) {
+      return record;
     }
-    return Object.keys(res).length ? res : null;
+    return record;
   }
   return null;
 }
 
-function mapFromApi(raw: any, type: string): ReminderSettings {
+function mapFromApi(raw: ApiObject | null, type: string): ReminderSettings {
   if (!raw) return EMPTY(type);
   return {
     type,
@@ -70,6 +88,16 @@ function mapFromApi(raw: any, type: string): ReminderSettings {
       active: toBool(pick(raw, ["isActive", "IsActive", "active"]), true),
     },
   };
+}
+
+function getErrorStatus(error: unknown): number | string | undefined {
+  if (typeof error !== "object" || error === null || !("status" in error)) {
+    return undefined;
+  }
+  const { status } = error;
+  return typeof status === "number" || typeof status === "string"
+    ? status
+    : undefined;
 }
 
 /**
@@ -91,7 +119,7 @@ export function useReminderSettings(reminderTypeId: number | null) {
   const reminder = useMemo(() => toReminder(currentData), [currentData]);
   const exists = !!reminder;
 
-  const status = (error as any)?.status;
+  const status = getErrorStatus(error);
   const notFound = isError && status === 404;
   const realLoadError = isError && !notFound;
   const loadErrorMessage = realLoadError
@@ -103,31 +131,55 @@ export function useReminderSettings(reminderTypeId: number | null) {
   const isLoading = reminderTypeId != null && isFetching && !currentData && !reminder;
   const noData = !isFetching && !loadError && !exists;
 
-  const [formData, setFormData] = useState<ReminderSettings>(EMPTY(selectedType));
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [formState, setFormState] = useState(() => ({
+    reminderTypeId,
+    source: currentData,
+    value: mapFromApi(reminder, selectedType),
+  }));
+  const formStateIsCurrent =
+    formState.reminderTypeId === reminderTypeId &&
+    formState.source === currentData;
+  if (!formStateIsCurrent) {
+    setFormState({
+      reminderTypeId,
+      source: currentData,
+      value: mapFromApi(reminder, selectedType),
+    });
+  }
+  const formData = formStateIsCurrent
+    ? formState.value
+    : mapFromApi(reminder, selectedType);
+  const setFormData: Dispatch<SetStateAction<ReminderSettings>> = (update) => {
+    setFormState((previous) => {
+      const current =
+        previous.reminderTypeId === reminderTypeId &&
+        previous.source === currentData
+          ? previous.value
+          : mapFromApi(reminder, selectedType);
+      return {
+        reminderTypeId,
+        source: currentData,
+        value: typeof update === "function" ? update(current) : update,
+      };
+    });
+  };
 
-  // Clear toast when switching sidebar item
-  useEffect(() => {
-    setMessage(null);
-  }, [reminderTypeId]);
+  const [messageState, setMessageState] = useState<{
+    reminderTypeId: number | null;
+    value: SaveMessage;
+  }>({ reminderTypeId, value: null });
+  const message =
+    messageState.reminderTypeId === reminderTypeId ? messageState.value : null;
+  const setMessage = useCallback(
+    (value: SaveMessage) => setMessageState({ reminderTypeId, value }),
+    [reminderTypeId],
+  );
 
   useEffect(() => {
     if (!message) return;
     const t = window.setTimeout(() => setMessage(null), 4000);
     return () => window.clearTimeout(t);
-  }, [message]);
-
-  // Load form when THIS type's data arrives. While refetching, keep previous
-  // fields on screen so sidebar switch does not blank / shiver.
-  useEffect(() => {
-    if (reminder) {
-      setFormData(mapFromApi(reminder, selectedType));
-      return;
-    }
-    if (!isFetching) {
-      setFormData(EMPTY(selectedType));
-    }
-  }, [reminder, selectedType, reminderTypeId, isFetching]);
+  }, [message, setMessage]);
 
   const toggleOption = (key: keyof ReminderSettings["applicability"]) =>
     setFormData((prev) => ({
@@ -145,8 +197,10 @@ export function useReminderSettings(reminderTypeId: number | null) {
       ReminderBefore: Number(formData.daysBefore) || 0,
       FromEmail: String(pick(reminder, ["FromEmail", "fromEmail"]) ?? "noreply@company.com"),
       ToRecipient: String(pick(reminder, ["ToRecipient", "toRecipient"]) ?? "Employee"),
-      CCRecipient:
-        (pick(reminder, ["CCRecipient", "ccRecipient"]) as string | null) || undefined,
+      CCRecipient: (() => {
+        const value = pick(reminder, ["CCRecipient", "ccRecipient"]);
+        return typeof value === "string" && value.trim() ? value : undefined;
+      })(),
       IsESS: Boolean(formData.applicability.ess),
       IsHRMS: Boolean(formData.applicability.hrms),
       IsSendMail: Boolean(formData.applicability.sendMail),
@@ -163,9 +217,10 @@ export function useReminderSettings(reminderTypeId: number | null) {
       setMessage({ type: "success", text: "Saved successfully" });
       // Refresh only this type
       void refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Optional fallback: status-only if full update route missing
-      if (err?.status === 404 || err?.status === 405) {
+      const saveErrorStatus = getErrorStatus(err);
+      if (saveErrorStatus === 404 || saveErrorStatus === 405) {
         try {
           await saveStatus({
             reminderTypeId,

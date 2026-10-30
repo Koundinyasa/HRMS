@@ -15,7 +15,7 @@ export default function MissedPunchRow({
   onAction,
 }: MissedPunchRowProps) {
   return (
-    <div className="grid w-full grid-cols-[90px_minmax(0,1fr)_110px_50px] items-center gap-3 rounded-lg bg-white px-3 py-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+    <div className="grid w-full grid-cols-[90px_300px_110px_minmax(50px,1fr)] items-center gap-3 rounded-lg bg-white px-3 py-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
 
       {/* EMPLOYEE ID */}
 

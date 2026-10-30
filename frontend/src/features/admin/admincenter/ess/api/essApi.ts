@@ -2,89 +2,39 @@ import { baseApi } from "@/app/baseApi";
 import { fetchWithSession } from "@/app/apiFetch";
 
 /* =========================================================
- * ESS modules — CONFIRMED against the real backend
- * (admin/ess/module GET, admin/ess/create POST, admin/ess/update PUT,
- * admin/ess/delete DELETE, plus ack-types / poll-types / policy-read-status)
- *
- * essInsightId: 1 = Circular, 2 = Notification, 3 = Flash News,
- *               4 = Poll, 5 = Policy
- * statusId:     63 = New (current), 62 = Old (previous) — omit for the SP
- *               default (63); ignored by the SP for Policy
+ * Types
  * ========================================================= */
 
-export const ESS_INSIGHT = {
-  CIRCULAR: 1 as const,
-  NOTIFICATION: 2 as const,
-  FLASH_NEWS: 3 as const,
-  POLL: 4 as const,
-  POLICY: 5 as const,
-};
-
-export const ESS_STATUS = {
-  CURRENT: 63 as const,
-  PREVIOUS: 62 as const,
-};
-
-export type EssInsightId = 1 | 2 | 3 | 4 | 5;
-export type EssStatusId = 63 | 62;
-
-// Columns differ per module; this is the union of everything the GET
-// endpoint can return, so every page just reads the fields it needs.
-export interface EssModuleRow {
-  ID?: number;
-  Id?: number;
-  id?: number;
-  Name?: string; // Circular
-  CategoryID?: number; // Circular
-  AckTypeID?: number; // Circular / Policy
-  AckTypeName?: string; // Circular / Policy
-  Description?: string; // Circular / Policy
-  EventName?: string; // Notification
-  FlashNews?: string; // Flash News
-  Question?: string; // Poll
-  QuestionTypeID?: number; // Poll
-  QuestionTypeName?: string; // Poll
-  PolicyName?: string; // Policy
-  IsDownloadRestricted?: boolean; // Policy
-  FilePath?: string | null;
-  FromDate?: string;
-  ToDate?: string;
-  StartDate?: string; // Poll / some modules
-  EndDate?: string;
-  PolicyDate?: string; // Policy list effective date from SP
-  PolicyToDate?: string;
-  FilterID?: number;
-  SubFilterID?: number;
-  // Confirmed real field names from GET /module — FilterID/SubFilterID
-  // above were a guess before this was verified; these are what the
-  // backend actually sends.
-  Filter?: number | null;
-  SubFilter?: number | null;
-  [key: string]: unknown;
+export interface Policy {
+  id: string | number;
+  policyName?: string;
+  name?: string;
+  description?: string;
+  filter?: string;
+  date?: string;
+  acknowledgementType?: string;
+  file?: string;
+  status?: string;
 }
 
-
-/** Format API date for list UI (DD/MM/YYYY). Tries common field variants. */
-export function formatEssDate(
-  value?: string | null
-): string {
-  if (!value) return "—";
-  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-GB");
+export interface Circular {
+  id: string | number;
+  title?: string;
+  description?: string;
+  date?: string;
+  filter?: string;
+  acknowledgementType?: string;
+  file?: string;
+  status?: string;
 }
 
-/** Resolve start/from date from a module row (field names vary by SP). */
-export function getRowFromDate(row: EssModuleRow): string | null {
-  const v =
-    row.FromDate ??
-    (row as Record<string, unknown>).StartDate ??
-    (row as Record<string, unknown>).EffectiveDate ??
-    (row as Record<string, unknown>).fromDate ??
-    null;
-  return v != null ? String(v) : null;
+export interface Notification {
+  id: string | number;
+  title?: string;
+  description?: string;
+  date?: string;
+  filter?: string;
+  status?: string;
 }
 
 /** Resolve end/to date from a module row. */
@@ -356,96 +306,142 @@ export interface HelpDesk {
   status?: string;
 }
 
+export interface Poll {
+  id: string | number;
+  startDate?: string;
+  endDate?: string;
+  targetAudienceFilter?: string;
+  questionType?: string;
+  question?: string;
+  status?: string;
+}
+
 /* =========================================================
  * ESS API
  * ========================================================= */
 
-export const essApi = baseApi
-  .enhanceEndpoints({ addTagTypes: ["EssModule", "PolicyReadStatus"] })
-  .injectEndpoints({
+export const essApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getEssModule: builder.query<
-      EssModuleResponse,
-      { essInsightId: EssInsightId; statusId?: EssStatusId; id?: number | string }
-    >({
-      query: ({ essInsightId, statusId, id }) => {
-        const params: Record<string, string | number> = { essInsightId };
-        if (statusId !== undefined) params.statusId = statusId;
-        if (id !== undefined && id !== null && id !== "") params.id = id;
-        return {
-          url: "admin/ess/module",
-          method: "GET",
-          params,
-          credentials: "include" as RequestCredentials,
-        };
-      },
-      providesTags: (_r, _e, arg) => [
-        { type: "EssModule" as const, id: `${arg.essInsightId}-${arg.statusId ?? "default"}` },
-      ],
+
+    /* =====================================================
+     * Policy
+     * ===================================================== */
+
+    getPolicies: builder.query<Policy[], void>({
+      query: () => "policies",
     }),
 
-    createEssModule: builder.mutation<EssSaveResponse, CreateEssModulePayload>({
-      query: (payload) => ({
-        url: "admin/ess/create",
+    getPolicyById: builder.query<Policy, string | number>({
+      query: (id) => `policies/${id}`,
+    }),
+
+    createPolicy: builder.mutation<Policy, Partial<Policy>>({
+      query: (body) => ({
+        url: "policies",
         method: "POST",
-        body: buildMutationFormData(payload),
-        formData: true,
-        credentials: "include" as RequestCredentials,
+        body,
       }),
-      invalidatesTags: (_r, _e, arg) => [
-        { type: "EssModule" as const, id: `${arg.essInsightId}-${ESS_STATUS.CURRENT}` },
-        { type: "EssModule" as const, id: `${arg.essInsightId}-default` },
-      ],
     }),
 
-    updateEssModule: builder.mutation<EssSaveResponse, UpdateEssModulePayload>({
-      query: (payload) => ({
-        url: "admin/ess/update",
-        method: "PUT",
-        body: buildMutationFormData(payload),
-        formData: true,
-        credentials: "include" as RequestCredentials,
-      }),
-      invalidatesTags: (_r, _e, arg) => [
-        { type: "EssModule" as const, id: `${arg.essInsightId}-${ESS_STATUS.CURRENT}` },
-        { type: "EssModule" as const, id: `${arg.essInsightId}-${ESS_STATUS.PREVIOUS}` },
-        { type: "EssModule" as const, id: `${arg.essInsightId}-default` },
-      ],
-    }),
-
-    deleteEssModule: builder.mutation<
-      EssSaveResponse,
-      { essInsightId: EssInsightId; id: number | string }
+    updatePolicy: builder.mutation<
+      Policy,
+      { id: string | number; body: Partial<Policy> }
     >({
-      query: ({ essInsightId, id }) => ({
-        url: "admin/ess/delete",
+      query: ({ id, body }) => ({
+        url: `policies/${id}`,
+        method: "PUT",
+        body,
+      }),
+    }),
+
+    deletePolicy: builder.mutation<void, string | number>({
+      query: (id) => ({
+        url: `policies/${id}`,
         method: "DELETE",
-        params: { essInsightId, id },
-        credentials: "include" as RequestCredentials,
       }),
-      invalidatesTags: (_r, _e, arg) => [
-        { type: "EssModule" as const, id: `${arg.essInsightId}-${ESS_STATUS.CURRENT}` },
-        { type: "EssModule" as const, id: `${arg.essInsightId}-default` },
-      ],
-    }),
-
-    getEssDropdowns: builder.query<EssDropdowns, void>({
-      query: () => ({ url: "admin/ess/dropdowns", credentials: "include" as RequestCredentials }),
-      transformResponse: (res: { data: EssDropdowns }) => res.data,
-    }),
-
-    getPolicyReadStatus: builder.query<PolicyReadStatusResponse["data"], number | string>({
-      query: (policyId) => ({
-        url: "admin/ess/policy-read-status",
-        params: { policyId },
-        credentials: "include" as RequestCredentials,
-      }),
-      transformResponse: (res: PolicyReadStatusResponse) => res.data,
-      providesTags: (_r, _e, policyId) => [{ type: "PolicyReadStatus" as const, id: policyId }],
     }),
 
     /* =====================================================
-     * HelpDesk — unconfirmed REST shape, see note above
+     * Circular
+     * ===================================================== */
+
+    getCirculars: builder.query<Circular[], void>({
+      query: () => "circulars",
+    }),
+
+    getCircularById: builder.query<Circular, string | number>({
+      query: (id) => `circulars/${id}`,
+    }),
+
+    createCircular: builder.mutation<Circular, Partial<Circular>>({
+      query: (body) => ({
+        url: "circulars",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    updateCircular: builder.mutation<
+      Circular,
+      { id: string | number; body: Partial<Circular> }
+    >({
+      query: ({ id, body }) => ({
+        url: `circulars/${id}`,
+        method: "PUT",
+        body,
+      }),
+    }),
+
+    deleteCircular: builder.mutation<void, string | number>({
+      query: (id) => ({
+        url: `circulars/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    /* =====================================================
+     * Notification
+     * ===================================================== */
+
+    getNotifications: builder.query<Notification[], void>({
+      query: () => "notifications",
+    }),
+
+    getNotificationById: builder.query<Notification, string | number>({
+      query: (id) => `notifications/${id}`,
+    }),
+
+    createNotification: builder.mutation<
+      Notification,
+      Partial<Notification>
+    >({
+      query: (body) => ({
+        url: "notifications",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    updateNotification: builder.mutation<
+      Notification,
+      { id: string | number; body: Partial<Notification> }
+    >({
+      query: ({ id, body }) => ({
+        url: `notifications/${id}`,
+        method: "PUT",
+        body,
+      }),
+    }),
+
+    deleteNotification: builder.mutation<void, string | number>({
+      query: (id) => ({
+        url: `notifications/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    /* =====================================================
+     * HelpDesk
      * ===================================================== */
 
     getHelpDeskItems: builder.query<HelpDesk[], void>({
@@ -456,32 +452,112 @@ export const essApi = baseApi
       query: (id) => `helpdesk/${id}`,
     }),
 
-    createHelpDesk: builder.mutation<HelpDesk, Partial<HelpDesk>>({
-      query: (body) => ({ url: "helpdesk", method: "POST", body }),
+    createHelpDesk: builder.mutation<
+      HelpDesk,
+      Partial<HelpDesk>
+    >({
+      query: (body) => ({
+        url: "helpdesk",
+        method: "POST",
+        body,
+      }),
     }),
 
-    updateHelpDesk: builder.mutation<HelpDesk, { id: string | number; body: Partial<HelpDesk> }>({
-      query: ({ id, body }) => ({ url: `helpdesk/${id}`, method: "PUT", body }),
+    updateHelpDesk: builder.mutation<
+      HelpDesk,
+      { id: string | number; body: Partial<HelpDesk> }
+    >({
+      query: ({ id, body }) => ({
+        url: `helpdesk/${id}`,
+        method: "PUT",
+        body,
+      }),
     }),
 
     deleteHelpDesk: builder.mutation<void, string | number>({
-      query: (id) => ({ url: `helpdesk/${id}`, method: "DELETE" }),
+      query: (id) => ({
+        url: `helpdesk/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    /* =====================================================
+     * Poll
+     * ===================================================== */
+
+    getPolls: builder.query<Poll[], void>({
+      query: () => "polls",
+    }),
+
+    getPollById: builder.query<Poll, string | number>({
+      query: (id) => `polls/${id}`,
+    }),
+
+    createPoll: builder.mutation<Poll, Partial<Poll>>({
+      query: (body) => ({
+        url: "polls",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    updatePoll: builder.mutation<
+      Poll,
+      { id: string | number; body: Partial<Poll> }
+    >({
+      query: ({ id, body }) => ({
+        url: `polls/${id}`,
+        method: "PUT",
+        body,
+      }),
+    }),
+
+    deletePoll: builder.mutation<void, string | number>({
+      query: (id) => ({
+        url: `polls/${id}`,
+        method: "DELETE",
+      }),
     }),
   }),
 });
 
-export const {
-  useGetEssModuleQuery,
-  useLazyGetEssModuleQuery,
-  useCreateEssModuleMutation,
-  useUpdateEssModuleMutation,
-  useDeleteEssModuleMutation,
-  useGetEssDropdownsQuery,
-  useGetPolicyReadStatusQuery,
+/* =========================================================
+ * Hooks
+ * ========================================================= */
 
+export const {
+  // Policy
+  useGetPoliciesQuery,
+  useGetPolicyByIdQuery,
+  useCreatePolicyMutation,
+  useUpdatePolicyMutation,
+  useDeletePolicyMutation,
+
+  // Circular
+  useGetCircularsQuery,
+  useGetCircularByIdQuery,
+  useCreateCircularMutation,
+  useUpdateCircularMutation,
+  useDeleteCircularMutation,
+
+  // Notification
+  useGetNotificationsQuery,
+  useGetNotificationByIdQuery,
+  useCreateNotificationMutation,
+  useUpdateNotificationMutation,
+  useDeleteNotificationMutation,
+
+  // HelpDesk
   useGetHelpDeskItemsQuery,
   useGetHelpDeskByIdQuery,
   useCreateHelpDeskMutation,
   useUpdateHelpDeskMutation,
   useDeleteHelpDeskMutation,
+
+  // Poll
+  useGetPollsQuery,
+  useGetPollByIdQuery,
+  useCreatePollMutation,
+  useUpdatePollMutation,
+  useDeletePollMutation,
 } = essApi;

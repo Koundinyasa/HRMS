@@ -34,12 +34,53 @@ export interface OfferRecord {
   salaryRangeMax?: number;
 }
 
+export interface CompletedInterviewCandidate {
+  applicationId: number;
+  candidateId: string;
+  candidateName: string;
+  email: string;
+  jobTitle: string;
+  applicationDate: Date | string | null;
+  applicationStatus: string;
+}
+
+type CompletedInterviewCandidateRow = {
+  ApplicationID: number;
+  CandidateID: string;
+  CandidateName: string;
+  Email: string;
+  JobTitle: string;
+  ApplicationDate: Date | string | null;
+  ApplicationStatus: string;
+};
+
 @Injectable()
 export class OffersService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly mailService: MailService,
   ) {}
+
+  async getCompletedInterviewCandidates(): Promise<
+    CompletedInterviewCandidate[]
+  > {
+    const pool = await this.databaseService.connect();
+    const result = await pool
+      .request()
+      .execute<CompletedInterviewCandidateRow>(
+        'USP_GetCompletedInterviews',
+      );
+
+    return result.recordset.map((row) => ({
+      applicationId: row.ApplicationID,
+      candidateId: row.CandidateID,
+      candidateName: row.CandidateName,
+      email: row.Email,
+      jobTitle: row.JobTitle,
+      applicationDate: row.ApplicationDate,
+      applicationStatus: row.ApplicationStatus,
+    }));
+  }
 
   async getOffers(query: {
     search?: string;

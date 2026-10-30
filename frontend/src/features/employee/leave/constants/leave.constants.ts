@@ -2,6 +2,7 @@
 
  
  
+ 
 export const MAX_REASON_LENGTH = 500;
  
  
@@ -46,6 +47,16 @@ export const PATERNITY_LEAVE_ID = "5";
  
 export const MATERNITY_MAX_DAYS = 180;
 export const PATERNITY_MAX_DAYS = 15;
+ 
+export const getPaternityLeaveToDateIso = (fromIso: string) => {
+  if (!fromIso) return "";
+ 
+  const date = new Date(`${fromIso}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "";
+ 
+  date.setDate(date.getDate() + PATERNITY_MAX_DAYS - 1);
+  return toIsoDate(date);
+};
  
  
 export const currentYearStartIso = () => {
@@ -108,5 +119,4 @@ export const ALLOWED_FILE_TYPES = [
   "image/png",
   "image/jpeg",
 ];
- 
  

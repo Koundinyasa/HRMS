@@ -194,13 +194,13 @@ export class CompanyService {
           ctx.msg.includes('roles in company') ||
           ctx.msg.includes('positions'),
         handle: async (ctx) => {
-          if (!ctx.designations.length) {
+          if (!ctx.designation.length) {
             this.notify(ctx.employeeId, 'info');
             return 'Designation information is available in the portal. Contact HR for details.';
           }
           this.draftService.pendingListPreview.set(ctx.employeeId, {
             title: 'Company designations',
-            rows: ctx.designations.map((d) => ({ primary: d })),
+            rows: ctx.designation.map((d) => ({ primary: d })),
           });
           return `Here are all company designations:`;
         },

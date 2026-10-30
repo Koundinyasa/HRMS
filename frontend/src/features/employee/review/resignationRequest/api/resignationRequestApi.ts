@@ -1,12 +1,12 @@
 import { baseApi } from "@/app/baseApi";
-
+ 
 import type {
   CreateResignationRequestPayload,
   ResignationRequest,
   SeparationApprovalPayload,
   UpdateResignationRequestPayload,
 } from "../types/resignationRequest.types";
-
+ 
 const getValue = (
   row: Record<string, unknown>,
   ...keys: string[]
@@ -16,16 +16,16 @@ const getValue = (
   }
   return undefined;
 };
-
+ 
 const normalizeRequests = (response: unknown): ResignationRequest[] => {
   const container = Array.isArray(response)
     ? response
     : response && typeof response === "object"
       ? Object.values(response as Record<string, unknown>).find(Array.isArray)
       : undefined;
-
+ 
   if (!Array.isArray(container)) return [];
-
+ 
   return container
     .filter(
       (item): item is Record<string, unknown> =>
@@ -66,7 +66,7 @@ const normalizeRequests = (response: unknown): ResignationRequest[] => {
       remarks: String(getValue(row, "Remarks", "remarks") ?? ""),
     }));
 };
-
+ 
 const resignationRequestApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getResignationRequests: builder.query<
@@ -78,10 +78,10 @@ const resignationRequestApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       transformResponse: normalizeRequests,
-
+ 
       providesTags: ["Separation"],
     }),
-
+ 
     getResignationRequestById: builder.query<
       ResignationRequest,
       string | number
@@ -90,7 +90,7 @@ const resignationRequestApi = baseApi.injectEndpoints({
         url: `/employee/resignation-requests/${id}`,
         method: "GET",
       }),
-
+ 
       providesTags: (_result, _error, id) => [
         {
           type: "Separation",
@@ -98,7 +98,7 @@ const resignationRequestApi = baseApi.injectEndpoints({
         },
       ],
     }),
-
+ 
     createResignationRequest: builder.mutation<
       ResignationRequest,
       CreateResignationRequestPayload
@@ -108,10 +108,10 @@ const resignationRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["Separation"],
+ 
+      invalidatesTags: ["Separation", "ApprovalSummary"],
     }),
-
+ 
     updateResignationRequest: builder.mutation<
       ResignationRequest,
       UpdateResignationRequestPayload
@@ -121,10 +121,10 @@ const resignationRequestApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
-
-      invalidatesTags: ["Separation"],
+ 
+      invalidatesTags: ["Separation", "ApprovalSummary"],
     }),
-
+ 
     approveResignationRequest: builder.mutation<
       unknown,
       SeparationApprovalPayload
@@ -134,10 +134,10 @@ const resignationRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["Separation"],
+ 
+      invalidatesTags: ["Separation", "ApprovalSummary"],
     }),
-
+ 
     rejectResignationRequest: builder.mutation<
       unknown,
       SeparationApprovalPayload
@@ -147,14 +147,14 @@ const resignationRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-
-      invalidatesTags: ["Separation"],
+ 
+      invalidatesTags: ["Separation", "ApprovalSummary"],
     }),
   }),
-
+ 
   overrideExisting: false,
 });
-
+ 
 export const {
   useGetResignationRequestsQuery,
   useGetResignationRequestByIdQuery,
@@ -163,5 +163,6 @@ export const {
   useApproveResignationRequestMutation,
   useRejectResignationRequestMutation,
 } = resignationRequestApi;
-
+ 
 export default resignationRequestApi;
+ 
