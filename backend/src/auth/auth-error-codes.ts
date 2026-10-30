@@ -14,10 +14,10 @@ export const AuthErrorCode = {
   SESSION_REPLACED: 'SESSION_REPLACED',
   /** This login was ended on purpose (logout, password change, admin action). HTTP 401. */
   SESSION_ENDED: 'SESSION_ENDED',
-  /** This login timed out. HTTP 401. */
+  /** The absolute session limit (30 minutes by default) was reached. HTTP 401. */
   SESSION_EXPIRED: 'SESSION_EXPIRED',
-  /** Sign-in refused: the account is in use on another device (SINGLE_SESSION_MODE=block). HTTP 409. */
-  SESSION_ACTIVE_ELSEWHERE: 'SESSION_ACTIVE_ELSEWHERE',
+  /** The user was inactive for longer than the idle window. HTTP 401. */
+  SESSION_IDLE: 'SESSION_IDLE',
 } as const;
 
 export type AuthErrorCode = (typeof AuthErrorCode)[keyof typeof AuthErrorCode];

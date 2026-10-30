@@ -1,42 +1,27 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
+import { getLastActivity, markActivity, startActivityTracking } from "@/app/activity";
 
 interface UseIdleTimerOptions {
+  /** Milliseconds without any user action before onIdle runs. */
   timeout: number;
+  /** If set, onWarning runs once when this many milliseconds are left. */
   warningTime?: number;
   onIdle: () => void;
   onWarning?: () => void;
   enabled: boolean;
 }
 
-const ACTIVITY_EVENTS = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-
-// The last time the user did anything in ANY tab of this browser. Several tabs
-// share one login, so a tab must not sign everyone out while the user is busy
-// in another tab. This is only a timestamp, not a secret.
-const LAST_ACTIVITY_KEY = "hrms_last_activity";
-const WRITE_EVERY_MS = 5000;
-
-const readLastActivity = (): number => {
-  try {
-    return Number(localStorage.getItem(LAST_ACTIVITY_KEY)) || 0;
-  } catch {
-    return 0;
-  }
-};
-
-const writeLastActivity = (now: number) => {
-  try {
-    localStorage.setItem(LAST_ACTIVITY_KEY, String(now));
-  } catch {
-    /* storage can be blocked; this tab's own timer still works */
-  }
-};
-
+/**
+ * Signs the user out after `timeout` of inactivity.
+ *
+ * It checks the clock once a second instead of trusting one long timer, so a
+ * sleeping laptop or a throttled background tab cannot make it late: the check
+ * simply compares "now" with the user's last action (shared by every tab of the
+ * browser, see app/activity.ts). Any mouse, click, key, scroll or touch resets
+ * it. It does not depend on, and is not extended by, the 30-minute session
+ * limit.
+ */
 export function useIdleTimer({ timeout, warningTime, onIdle, onWarning, enabled }: UseIdleTimerOptions) {
-  const idleTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const warningTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const lastWriteRef = useRef(0);
-
   // Keep the latest callbacks without restarting the timer on every render.
   const onIdleRef = useRef(onIdle);
   const onWarningRef = useRef(onWarning);
@@ -45,48 +30,45 @@ export function useIdleTimer({ timeout, warningTime, onIdle, onWarning, enabled 
     onWarningRef.current = onWarning;
   });
 
-  const clearTimers = useCallback(() => {
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
-  }, []);
-
-  const schedule = useCallback(
-    (delay: number) => {
-      clearTimers();
-      if (warningTime && delay > warningTime) {
-        warningTimerRef.current = setTimeout(() => onWarningRef.current?.(), delay - warningTime);
-      }
-      idleTimerRef.current = setTimeout(() => {
-        // Another tab may have seen activity since this timer started.
-        const remaining = timeout - (Date.now() - readLastActivity());
-        if (remaining > 1000) {
-          schedule(remaining);
-          return;
-        }
-        onIdleRef.current();
-      }, delay);
-    },
-    [clearTimers, timeout, warningTime],
-  );
-
-  const onActivity = useCallback(() => {
-    const now = Date.now();
-    if (now - lastWriteRef.current > WRITE_EVERY_MS) {
-      lastWriteRef.current = now;
-      writeLastActivity(now);
-    }
-    schedule(timeout);
-  }, [schedule, timeout]);
-
   useEffect(() => {
     if (!enabled) return;
-    writeLastActivity(Date.now());
-    lastWriteRef.current = Date.now();
-    schedule(timeout);
-    ACTIVITY_EVENTS.forEach((evt) => window.addEventListener(evt, onActivity));
-    return () => {
-      ACTIVITY_EVENTS.forEach((evt) => window.removeEventListener(evt, onActivity));
-      clearTimers();
+
+    markActivity();
+    const stopTracking = startActivityTracking();
+    let fired = false;
+    let warned = false;
+
+    const check = () => {
+      if (fired) return;
+      const idleFor = Date.now() - getLastActivity();
+
+      if (idleFor >= timeout) {
+        fired = true;
+        onIdleRef.current();
+        return;
+      }
+
+      if (warningTime) {
+        const inWarning = idleFor >= timeout - warningTime;
+        if (inWarning && !warned) {
+          warned = true;
+          onWarningRef.current?.();
+        } else if (!inWarning) {
+          warned = false;
+        }
+      }
     };
-  }, [enabled, onActivity, schedule, clearTimers, timeout]);
+
+    const timer = window.setInterval(check, 1000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      stopTracking();
+    };
+  }, [enabled, timeout, warningTime]);
 }

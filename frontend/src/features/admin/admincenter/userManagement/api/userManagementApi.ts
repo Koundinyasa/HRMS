@@ -40,7 +40,7 @@ export const fetchEmployeeSummary = (): Promise<{ totalRecords: number; totalPag
   simulateRequest({ totalRecords: EMPLOYEE_TOTAL_RECORDS, totalPages: EMPLOYEE_TOTAL_PAGES });
 
 export const resendEmployeeInvitation = (employeeId: number): Promise<{ success: true }> => {
-  console.log("Resending invitation to employee", employeeId);
+  
   return simulateRequest({ success: true }, 200);
 };
 

@@ -3,6 +3,7 @@ import { baseApi } from "./baseApi";
 import { rootReducer } from "./rootReducer";
 import { setSessionExpiredHandler } from "./sessionRefresh";
 import { broadcastSignedOut, onSignedOutElsewhere } from "./crossTab";
+import { clearSessionTiming } from "./sessionClock";
 import { sessionExpired } from "../features/auth/authSlice";
 import { showSessionEndedMessage } from "../features/auth/sessionMessages";
  
@@ -20,6 +21,7 @@ export const store = configureStore({
 setSessionExpiredHandler((code) => {
   const wasSignedIn = store.getState().auth.isAuthenticated;
   store.dispatch(sessionExpired());
+  clearSessionTiming();
   store.dispatch(baseApi.util.resetApiState());
   showSessionEndedMessage(code);
   if (wasSignedIn) broadcastSignedOut(code);
@@ -29,6 +31,7 @@ setSessionExpiredHandler((code) => {
 onSignedOutElsewhere((code) => {
   if (!store.getState().auth.isAuthenticated) return;
   store.dispatch(sessionExpired());
+  clearSessionTiming();
   store.dispatch(baseApi.util.resetApiState());
   showSessionEndedMessage(code);
 });

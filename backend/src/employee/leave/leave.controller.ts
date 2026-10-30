@@ -11,9 +11,10 @@ import {
   Query,
   Param,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { diskStorage, memoryStorage } from 'multer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
@@ -21,6 +22,7 @@ import { extname } from 'path';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
+import { EmployeeScopeService } from '../../common/scope/employee-scope.service';
 
 import { LeaveService } from './leave.service';
 import { LeaveRequestDto } from './dto/leave-request.dto';
@@ -29,7 +31,10 @@ import { WithdrawCancelDto } from './dto/withdraw-cancel.dto'; // NEW IMPORT
 import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
 @Controller('employee/leave')
 export class LeaveController {
-  constructor(private readonly leaveService: LeaveService) {}
+  constructor(
+    private readonly leaveService: LeaveService,
+    private readonly scope: EmployeeScopeService,
+  ) {}
 
   // Leave Types
   @UseGuards(JwtAuthGuard)
@@ -38,8 +43,14 @@ export class LeaveController {
     @Req() req: any,
     @Query('employeeId') employeeId?: string,
   ) {
-    const targetEmployeeId =
-      employeeId?.trim() || String(req.user?.employeeId ?? '').trim();
+    const ownEmployeeId = String(req.user?.employeeId ?? '').trim();
+    const requestedEmployeeId = employeeId?.trim();
+    const targetEmployeeId = requestedEmployeeId || ownEmployeeId;
+
+    // Looking up someone else's leave types needs access to that employee.
+    if (requestedEmployeeId && requestedEmployeeId !== ownEmployeeId) {
+      await this.scope.assertCanAccess(req.user, requestedEmployeeId);
+    }
 
     const companyId = Number(req.user?.companyId);
 
@@ -186,34 +197,18 @@ export class LeaveController {
   //   );
   // }
 
+  // Apply leave for another employee. Allowed for the employee's manager and
+  // for HR Admin / Super Admin of the same company (checked below); only
+  // HR Admin / Super Admin may force-apply.
+  //
+  // The document is kept in memory until that check has passed, so nothing is
+  // written to disk for a caller who is not allowed.
   @Post('applyhr')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('document', {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          // Multer runs before request validation, and this value becomes a
-          // folder name, so only plain ids are accepted here.
-          const employeeId = String((req as any).body?.employeeId ?? '').trim();
-
-          if (!/^(?!.*\.\.)[A-Za-z0-9._-]{1,50}$/.test(employeeId)) {
-            return cb(new BadRequestException('Invalid employeeId'), '');
-          }
-
-          const uploadPath = path.join(process.cwd(), 'uploads', employeeId);
-
-          if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-          }
-
-          cb(null, uploadPath);
-        },
-
-        filename: (req, file, cb) => {
-          const filename = `${Date.now()}-${file.originalname}`;
-          cb(null, filename);
-        },
-      }),
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   async hrApplyLeave(
@@ -221,28 +216,43 @@ export class LeaveController {
     @Body() body: HrLeaveRequestDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
+    const employeeId = String(body.employeeId ?? '').trim();
+
+    // The id becomes a folder name, so only plain ids are accepted.
+    if (!/^(?!.*\.\.)[A-Za-z0-9._-]{1,50}$/.test(employeeId)) {
+      throw new BadRequestException('Invalid employeeId');
+    }
+
+    await this.scope.assertCanAccess(req.user, employeeId);
+
+    if (body.isHRForceApply === true && !this.scope.isAdminPortalUser(req.user)) {
+      throw new ForbiddenException('Only HR Admin can force-apply leave.');
+    }
+
     const createdBy = Number(req.user.createdBy);
 
-    console.log('========== HR APPLY LEAVE ==========');
-    console.log({
-      employeeId: body.employeeId,
-      createdBy,
-      leaveTypeId: body.leaveTypeId,
-      fromDate: body.fromDate,
-      toDate: body.toDate,
-      sessionFrom: body.sessionFrom,
-      sessionTo: body.sessionTo,
-      isHalfDay: body.isHalfDay,
-      reason: body.reason,
-      isHRForceApply: body.isHRForceApply,
-    });
-    console.log('====================================');
+    let storedFile: string | undefined;
+    let documentPath: string | undefined;
+    if (file) {
+      const folder = path.join(process.cwd(), 'uploads', employeeId);
+      await fs.promises.mkdir(folder, { recursive: true });
+      const fileName = `${uuid()}${extname(file.originalname)}`;
+      storedFile = path.join(folder, fileName);
+      await fs.promises.writeFile(storedFile, file.buffer);
+      documentPath = `${employeeId}/${fileName}`;
+    }
 
-    const documentPath = file
-      ? `${body.employeeId}/${file.filename}`
-      : undefined;
-
-    return this.leaveService.hrApplyLeave(body, createdBy, documentPath);
+    try {
+      return await this.leaveService.hrApplyLeave(
+        { ...body, employeeId },
+        createdBy,
+        documentPath,
+      );
+    } catch (error) {
+      // The leave was not created, so the document is not kept.
+      if (storedFile) await fs.promises.unlink(storedFile).catch(() => undefined);
+      throw error;
+    }
   }
   // Approval / Rejection
   @UseGuards(JwtAuthGuard)
@@ -312,7 +322,11 @@ export class LeaveController {
   }
   @Get('employee-details')
   @UseGuards(JwtAuthGuard)
-  async getEmployeeLeaveDetails(@Query('employeeId') employeeId: string) {
-    return this.leaveService.getEmployeeLeaveDetails(employeeId);
+  async getEmployeeLeaveDetails(
+    @Req() req: any,
+    @Query('employeeId') employeeId: string,
+  ) {
+    await this.scope.assertCanAccess(req.user, employeeId);
+    return this.leaveService.getEmployeeLeaveDetails(String(employeeId).trim());
   }
 }

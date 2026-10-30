@@ -37,11 +37,11 @@ export class AuthService {
   private static readonly REFRESH_PURPOSE = 'refresh';
 
   private get idleMinutes(): number {
-    return this.config.get<number>('auth.sessionIdleMinutes') ?? 60;
+    return this.config.get<number>('auth.sessionIdleMinutes') ?? 5;
   }
 
   private get absoluteMinutes(): number {
-    return this.config.get<number>('auth.sessionAbsoluteMinutes') ?? 1440;
+    return this.config.get<number>('auth.sessionAbsoluteMinutes') ?? 30;
   }
 
   // True when this login must change its password before doing anything else:
@@ -321,7 +321,7 @@ export class AuthService {
       const familyId = randomUUID();
       const refreshToken = this.signRefreshToken(user, familyId);
 
-      const { replaced } = await this.sessions.createSession({
+      const { replaced, timing } = await this.sessions.createSession({
         sessionId: randomUUID(),
         familyId,
         employeeId: String(user.EmployeeID),
@@ -377,6 +377,8 @@ export class AuthService {
         refreshToken,
         // True for a first login and for a temporary password sent by HR.
         mustChangePassword: mustChange,
+        // Seconds left on this login (30-minute limit and idle window).
+        session: timing,
         data: {
           employeeId: user.EmployeeID,
           userId: user.UserID,
@@ -862,6 +864,7 @@ export class AuthService {
           roleId: user.RoleID,
           mustChangePassword: mustChange,
         },
+        session: rotated.timing,
       };
     }
 
@@ -952,9 +955,12 @@ export class AuthService {
   }
 
   // ── Current user (for GET /auth/me) ─────────────────────────────────────
-  getSessionUser(user: any) {
+  async getSessionUser(user: any) {
+    // Seconds left on the login, so a reloaded page can show its countdown.
+    const session = user?.sid ? await this.sessions.getTiming(String(user.sid)) : null;
     return {
       success: true,
+      session: session ?? undefined,
       data: {
         employeeId: user.employeeId,
         userId: user.userId,
@@ -968,14 +974,14 @@ export class AuthService {
   }
 
   // ── Heartbeat (POST /auth/heartbeat) ────────────────────────────────────
-  // The browser calls this while a tab is open. It records "still here" and
-  // nothing else: it does not extend the login. If the login has ended the
-  // global guard has already answered 401 with the reason.
+  // The browser calls this every few seconds while a tab is open. It writes
+  // nothing and does not extend the login: its job is to make the guard answer
+  // 401 (with the reason) soon after the login ended, and to report the seconds
+  // left so the countdown stays correct. If the login has ended the global
+  // guard has already answered 401 with the reason.
   async heartbeat(user: any) {
-    if (user?.sid) {
-      await this.sessions.touch(String(user.sid));
-    }
-    return { success: true };
+    const session = user?.sid ? await this.sessions.getTiming(String(user.sid)) : null;
+    return { success: true, session: session ?? undefined };
   }
 
   // ================= CHANGE PASSWORD =================

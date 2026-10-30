@@ -6,6 +6,9 @@ import { useGetSessionQuery } from "@/features/auth/api/authApi";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import { useTabLock } from "@/features/auth/hooks/useTabLock";
 import { useSessionHeartbeat } from "@/features/auth/hooks/useSessionHeartbeat";
+import { useSilentRefresh } from "@/features/auth/hooks/useSilentRefresh";
+import { useSessionExpiry } from "@/features/auth/hooks/useSessionExpiry";
+import SessionExpiryWarning from "@/features/auth/components/SessionExpiryWarning";
 import TabBlockedScreen from "@/features/auth/components/TabBlockedScreen";
 import { IDLE_TIMEOUT_MS } from "@/shared/constants/session";
 
@@ -36,6 +39,11 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   // informed that the login is still open.
   const { status: tabStatus, takeOver } = useTabLock(sessionChecked && isAuthenticated);
   useSessionHeartbeat(isAuthenticated && tabStatus === "active");
+  // Renews the login quietly, but only while the user is active (never past
+  // the session's 30-minute limit, which the server enforces).
+  useSilentRefresh(isAuthenticated && tabStatus === "active");
+  // Signs out when the 30-minute limit is reached, even if the user is busy.
+  useSessionExpiry(isAuthenticated);
 
   useIdleTimer({
     timeout: IDLE_TIMEOUT_MS,
@@ -96,5 +104,10 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     );
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <SessionExpiryWarning />
+    </>
+  );
 }

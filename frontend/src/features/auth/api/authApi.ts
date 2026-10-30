@@ -10,6 +10,7 @@ import { baseApi } from "@/app/baseApi";
   SessionResponse,
 } from "../types/auth.types";
 import { sessionExpired, sessionLoaded } from "../authSlice";
+import { setSessionTiming } from "@/app/sessionClock";
  
 import type { DomainRequest } from "@/features/domain-verification/types/domain.types";
  
@@ -44,6 +45,7 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
+          setSessionTiming(data.session);
           dispatch(sessionLoaded(data.data));
         } catch (error) {
           const status = (error as { error?: { status?: unknown } })?.error?.status;

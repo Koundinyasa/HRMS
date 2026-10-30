@@ -12,19 +12,22 @@ export const AuthErrorCode = {
   SESSION_REPLACED: 'SESSION_REPLACED',
   /** This login was ended on purpose (logout, password change, admin action). HTTP 401. */
   SESSION_ENDED: 'SESSION_ENDED',
-  /** This login timed out. HTTP 401. */
+  /** The session's 30-minute limit was reached. HTTP 401. */
   SESSION_EXPIRED: 'SESSION_EXPIRED',
-  /** Sign-in refused: the account is in use on another device. HTTP 409. */
+  /** The user was inactive for longer than the idle window. HTTP 401. */
+  SESSION_IDLE: 'SESSION_IDLE',
+  /** No longer sent (sign-in is never refused now). Kept so old references still compile. */
   SESSION_ACTIVE_ELSEWHERE: 'SESSION_ACTIVE_ELSEWHERE',
 } as const;
 
 export type AuthErrorCode = (typeof AuthErrorCode)[keyof typeof AuthErrorCode];
 
-/** The three codes that mean "this login is over for good" (renewing cannot help). */
+/** The codes that mean "this login is over for good" (renewing cannot help). */
 export function isSessionEndCode(code: string | undefined): boolean {
   return (
     code === AuthErrorCode.SESSION_REPLACED ||
     code === AuthErrorCode.SESSION_ENDED ||
-    code === AuthErrorCode.SESSION_EXPIRED
+    code === AuthErrorCode.SESSION_EXPIRED ||
+    code === AuthErrorCode.SESSION_IDLE
   );
 }

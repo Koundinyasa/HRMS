@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { baseApi } from "@/app/baseApi";
 import { broadcastSignedOut } from "@/app/crossTab";
+import { clearSessionTiming } from "@/app/sessionClock";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useLogoutMutation } from "../api/authApi";
@@ -28,6 +29,7 @@ export function useSignOut() {
       console.error("Logout request failed:", err);
     } finally {
       dispatch(logout());
+      clearSessionTiming();
       dispatch(baseApi.util.resetApiState());
       broadcastSignedOut();
       navigate(domain ? `/${domain}/login` : "/", { replace: true });

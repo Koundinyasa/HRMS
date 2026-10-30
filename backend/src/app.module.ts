@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
+import { EmployeeScopeModule } from './common/scope/employee-scope.module';
 
 import { AuthModule } from './auth/auth.module';
 import { AuthSessionModule } from './auth/session/auth-session.module';
@@ -43,6 +44,7 @@ import { InterviewsModule } from './recruitment/interviews/interviews.module';
     JwtConfigModule,
  
     DatabaseModule,
+    EmployeeScopeModule,
     MailModule,
 
     AuthSessionModule,

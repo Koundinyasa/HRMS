@@ -34,10 +34,22 @@ export const leaveApi = baseApi.injectEndpoints({
     // ===============================
     // Holiday List
     // ===============================
-    getHolidayList: builder.query<Holiday[], void>({
+    getLeaveHolidayList: builder.query<
+      Holiday[],
+      void
+    >({
       query: () => ({
         url: "/employee/leave/holidaylist",
       }),
+
+      // The server may answer with the list itself or wrapped in { data }.
+      transformResponse: (
+        response: Holiday[] | { data?: Holiday[] },
+      ): Holiday[] => {
+        if (Array.isArray(response)) return response;
+        if (Array.isArray(response.data)) return response.data;
+        throw new Error("Invalid employee leave holiday list response.");
+      },
  
       providesTags: ["Leave"],
     }),
@@ -195,7 +207,7 @@ export const leaveApi = baseApi.injectEndpoints({
  
 export const {
   useGetLeaveTypesQuery,
-  useGetHolidayListQuery,
+  useGetLeaveHolidayListQuery,
   useGetLeaveStatusQuery,
   useGetLeaveHistoryQuery,
   useGetLeaveBalanceQuery,

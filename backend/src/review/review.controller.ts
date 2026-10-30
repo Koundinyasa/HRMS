@@ -12,6 +12,7 @@ import {
 
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { EmployeeScopeService } from '../common/scope/employee-scope.service';
 
 import { MonthlyLeaveCalendarDto } from './dto/monthly-leave-calendar.dto';
 import { MissedPunchEmployeesDto } from './dto/missed-punch-employees.dto';
@@ -24,7 +25,10 @@ import { EmployeeDashboardDetailsDto } from './dto/employee-dashboard-details.dt
 import { HierarchicalLeaveActionDto } from '../employee/leave/dto/hierarchical-leave-action.dto';
 @Controller('review')
 export class ReviewController {
-  constructor(private readonly reviewService: ReviewService) {}
+  constructor(
+    private readonly reviewService: ReviewService,
+    private readonly scope: EmployeeScopeService,
+  ) {}
 
   // 1. Monthly Leave Calendar
   @UseGuards(JwtAuthGuard)
@@ -56,7 +60,11 @@ export class ReviewController {
   // 4. Employee Punch Dashboard
   @UseGuards(JwtAuthGuard)
   @Post('employeepunchdashboard')
-  async getEmployeePunchDashboard(@Body() dto: EmployeePunchDashboardDto) {
+  async getEmployeePunchDashboard(
+    @Req() req: any,
+    @Body() dto: EmployeePunchDashboardDto,
+  ) {
+    await this.scope.assertCanAccess(req.user, dto.employeeId);
     return this.reviewService.getEmployeePunchDashboard(
       dto.employeeId,
       dto.selectedDate,
@@ -68,7 +76,11 @@ export class ReviewController {
   // 5. Employee Raw Punches
   @UseGuards(JwtAuthGuard)
   @Post('employeerawpunches')
-  async getEmployeeRawPunches(@Body() dto: EmployeeRawPunchesDto) {
+  async getEmployeeRawPunches(
+    @Req() req: any,
+    @Body() dto: EmployeeRawPunchesDto,
+  ) {
+    await this.scope.assertCanAccess(req.user, dto.employeeId);
     return this.reviewService.getEmployeeRawPunches(dto.employeeId, dto.date);
   }
 
@@ -92,6 +104,7 @@ export class ReviewController {
     @Req() req: any,
     @Body() dto: EmployeeMonthlyAttendanceDetailsDto,
   ) {
+    await this.scope.assertCanAccess(req.user, dto.employeeId);
     return this.reviewService.getEmployeeMonthlyAttendanceDetails(
       dto.employeeId,
       req.user.companyId,
@@ -107,6 +120,7 @@ export class ReviewController {
     @Req() req: any,
     @Body() dto: EmployeeAttendanceOverviewDto,
   ) {
+    await this.scope.assertCanAccess(req.user, dto.employeeId);
     return this.reviewService.getEmployeeAttendanceOverview(
       dto.employeeId,
       req.user.companyId,

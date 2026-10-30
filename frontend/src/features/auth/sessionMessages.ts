@@ -4,7 +4,8 @@ import { AuthErrorCode } from './constants/authErrorCodes';
 const MESSAGES: Record<string, string> = {
   [AuthErrorCode.SESSION_REPLACED]:
     'You were signed out because this account signed in on another device.',
-  [AuthErrorCode.SESSION_EXPIRED]: 'Your session expired. Please sign in again.',
+  [AuthErrorCode.SESSION_EXPIRED]: 'Your session time limit was reached. Please sign in again.',
+  [AuthErrorCode.SESSION_IDLE]: 'You were signed out because of inactivity.',
   [AuthErrorCode.SESSION_ENDED]: 'Your session has ended. Please sign in again.',
 };
 

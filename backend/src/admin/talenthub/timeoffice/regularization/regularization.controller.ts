@@ -6,6 +6,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -20,12 +21,16 @@ import { CorrectStatusDto } from './dto/correct-status.dto';
 import { ApplyLeaveDto } from './dto/apply-leave.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES, Role } from '../../../../common/constants/roles';
+import { EmployeeScopeService } from '../../../../common/scope/employee-scope.service';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/regularization')
 @UseGuards(JwtAuthGuard)
 export class RegularizationController {
-  constructor(private readonly regularizationService: RegularizationService) {}
+  constructor(
+    private readonly regularizationService: RegularizationService,
+    private readonly scope: EmployeeScopeService,
+  ) {}
 
   // =========================================================
   // PUNCH TAB
@@ -138,14 +143,20 @@ export class RegularizationController {
 
   // 11. Add Punch from Attendance Daily Log
   // EMPLOYEE PORTAL: also used by reporting managers (Review > Time Office > Punch).
-  // TODO(2C): verify the target employeeId is the caller's reportee (or HR/Admin).
+  // The target must be the caller, a direct report, or (HR Admin) anyone in
+  // the caller's company.
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('attendance/dailylog/punch')
   async addAttendancePunch(
+    @Req() req: any,
     @Query('employeeId') employeeId: string,
     @Body() dto: AddPunchDto,
   ) {
-    return this.regularizationService.addAttendancePunch(employeeId, dto);
+    await this.scope.assertCanAccess(req.user, employeeId);
+    return this.regularizationService.addAttendancePunch(
+      String(employeeId).trim(),
+      dto,
+    );
   }
 
   // 12. Edit Punch from Attendance Daily Log

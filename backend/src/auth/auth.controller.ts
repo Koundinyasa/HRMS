@@ -96,7 +96,7 @@ export class AuthController {
       this.cookies.setAccess(res, result.accessToken);
       this.cookies.setRefresh(res, result.refreshToken);
 
-      return { success: true, data: result.user };
+      return { success: true, data: result.user, session: result.session };
     } catch (error) {
       // The session is over: drop both cookies so the browser stops sending them.
       // (409 retry and 503 outage keep the cookies.)
@@ -115,9 +115,10 @@ export class AuthController {
     return this.authService.getSessionUser(req.user);
   }
 
-  // The browser calls this about once a minute while a tab is open, so the
-  // server knows the login is in use and the tab learns quickly if it was
-  // ended. Not rate limited per IP: many staff share one office address.
+  // The browser calls this every few seconds while a tab is open, so the tab
+  // learns quickly if its login was ended (for example by a sign-in elsewhere)
+  // and keeps its countdown right. It does not extend the login. Not rate
+  // limited per IP: many staff share one office address.
   @AllowWhilePasswordChangeRequired()
   @Post('heartbeat')
   heartbeat(@Req() req: any) {

@@ -18,9 +18,16 @@ export interface LoginRequest {
   captchaAnswer: string;
 }
 
+/** Seconds left on the login, as the server reports them (see app/sessionClock.ts). */
+export interface SessionTiming {
+  expiresInSeconds: number;
+  idleExpiresInSeconds: number;
+}
+
 export interface LoginResponse {
   success: boolean;
   message: string;
+  session?: SessionTiming;
   /** The server must change the password before anything else. */
   mustChangePassword?: boolean;
 
@@ -44,6 +51,7 @@ export interface SessionUser {
 
 export interface SessionResponse {
   success: boolean;
+  session?: SessionTiming;
   data: SessionUser;
 }
 

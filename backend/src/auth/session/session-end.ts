@@ -4,12 +4,14 @@ import { AuthErrorCode } from '../auth-error-codes';
 /**
  * Why a login ended, as stored in AuthSessions.RevokedReason:
  *   replaced        the same account signed in somewhere else
- *   expired         idle or absolute timeout (or the row is gone)
+ *   expired         the absolute limit (30 minutes) was reached, or the row is gone
+ *   idle            no activity for longer than the idle window
  *   anything else   ended on purpose: logout, password_changed, admin_reset,
  *                   user_blocked, reuse_detected, mismatch
  */
 export function codeForEndReason(reason?: string | null): AuthErrorCode {
   if (reason === 'replaced') return AuthErrorCode.SESSION_REPLACED;
+  if (reason === 'idle') return AuthErrorCode.SESSION_IDLE;
   if (!reason || reason === 'expired') return AuthErrorCode.SESSION_EXPIRED;
   return AuthErrorCode.SESSION_ENDED;
 }
@@ -18,6 +20,7 @@ const MESSAGES: Record<string, string> = {
   [AuthErrorCode.SESSION_REPLACED]:
     'You were signed out because this account signed in on another device.',
   [AuthErrorCode.SESSION_EXPIRED]: 'Your session has expired. Please sign in again.',
+  [AuthErrorCode.SESSION_IDLE]: 'You were signed out because of inactivity.',
   [AuthErrorCode.SESSION_ENDED]: 'Session has ended',
 };
 

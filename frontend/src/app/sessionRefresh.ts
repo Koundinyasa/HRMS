@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './apiConfig';
+import { setSessionTiming } from './sessionClock';
 
 /**
  * Asks the server for a fresh access cookie using the refresh cookie.
@@ -55,6 +56,14 @@ async function callRefresh(): Promise<RefreshOutcome> {
 
     if (res.ok) {
       lastRefreshOkAt = Date.now();
+      // The answer says how long the renewed login lasts; the countdown and
+      // the idle window follow it.
+      try {
+        const body = await res.clone().json();
+        setSessionTiming(body?.session);
+      } catch {
+        /* no body: the next heartbeat reports the time */
+      }
       return 'ok';
     }
     if (res.status === 401) {

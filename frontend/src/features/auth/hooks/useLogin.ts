@@ -9,6 +9,7 @@ import { showPageLoader } from "../../employee/employeeSlice";
 import type { LoginFormData } from "../validation/loginSchema";
 import { baseApi } from "../../../app/baseApi";
 import { getHomePath } from "@/shared/constants/roles";
+import { setSessionTiming } from "@/app/sessionClock";
  
 export const useLogin = () => {
   const dispatch = useAppDispatch();
@@ -42,6 +43,7 @@ export const useLogin = () => {
  
       dispatch(baseApi.util.resetApiState());
       dispatch(loginSuccess(response));
+      setSessionTiming(response.session);
       localStorage.removeItem(`hrmsChatbotWidgetMessages-${response.data.employeeId}`);
       applyTheme("blue");
       dispatch(showPageLoader());

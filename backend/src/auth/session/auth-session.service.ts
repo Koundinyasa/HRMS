@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   Injectable,
   Logger,
   OnModuleDestroy,
@@ -10,7 +9,6 @@ import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import * as sql from 'mssql';
 import { DatabaseService } from '../../database/database.service';
-import { AuthErrorCode } from '../auth-error-codes';
 import { describeDevice } from './device-name';
 
 export type RotateCode =
@@ -31,17 +29,32 @@ export interface RotateResult {
   code: RotateCode;
   employeeId?: string;
   familyId?: string;
-  /** Why the login is over (replaced, logout, expired, ...); set when code is not OK. */
+  /** Why the login is over (replaced, logout, expired, idle, ...); set when code is not OK. */
   reason?: string;
+  /** Seconds left on the login; set when code is OK. */
+  timing?: SessionTiming;
 }
 
 /** Whether a login is still usable and, if not, why it ended. */
 export interface SessionState {
   active: boolean;
   reason?: string;
+  /** When the 30-minute limit is reached (ms since epoch, this server's clock). */
+  absoluteExpiresAtMs?: number;
+  /** When the idle window runs out unless the browser refreshes (ms since epoch). */
+  idleExpiresAtMs?: number;
 }
 
-export type SingleSessionMode = 'replace' | 'block' | 'off';
+/**
+ * Seconds left on a login. Sent to the browser as a duration, never as a
+ * clock time, so the browser's clock does not matter.
+ */
+export interface SessionTiming {
+  /** Until the absolute limit: the login always ends then. */
+  expiresInSeconds: number;
+  /** Until the idle window ends unless the user is active and refreshes. */
+  idleExpiresInSeconds: number;
+}
 
 /**
  * Login sessions, stored by the USP_Auth_* procedures.
@@ -53,7 +66,11 @@ export type SingleSessionMode = 'replace' | 'block' | 'off';
  * isActive() is called on every authenticated request, so its answer is cached
  * in memory for a short time (auth.sessionCacheSeconds, default 30). Logging
  * out or revoking on this server takes effect immediately; on another server
- * instance it takes effect within that window.
+ * instance it takes effect within that window. A cached "active" answer is
+ * never used past the login's own absolute or idle expiry.
+ *
+ * Rules: one login per employee (a new sign-in ends the old one), 30 minutes
+ * at most, and the idle window only slides when the browser refreshes.
  */
 @Injectable()
 export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
@@ -62,13 +79,7 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
   private readonly cacheMs: number;
   private static readonly CACHE_MAX_ENTRIES = 20000;
 
-  // The browser heartbeat can arrive every few seconds; the database is
-  // written at most once per TOUCH_MIN_INTERVAL_MS per login.
-  private readonly lastTouch = new Map<string, number>();
-  private static readonly TOUCH_MIN_INTERVAL_MS = 20 * 1000;
-
-  private readonly singleSessionMode: SingleSessionMode;
-  private readonly activeWindowSeconds: number;
+  private readonly rulesNote: string;
 
   private readonly purgeEnabled: boolean;
   private readonly purgeIntervalMs: number;
@@ -83,10 +94,12 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
     config: ConfigService,
   ) {
     this.cacheMs = (config.get<number>('auth.sessionCacheSeconds') ?? 30) * 1000;
-    const mode = config.get<string>('auth.singleSessionMode');
-    this.singleSessionMode = mode === 'block' || mode === 'off' ? mode : 'replace';
-    this.activeWindowSeconds =
-      config.get<number>('auth.singleSessionActiveWindowSeconds') ?? 120;
+    // Shown once at start-up, so it is obvious which limits this backend runs
+    // with (a changed .env only takes effect after a restart).
+    this.rulesNote =
+      `Session rules: ${config.get<number>('auth.sessionAbsoluteMinutes')} min absolute limit, ` +
+      `${config.get<number>('auth.sessionIdleMinutes')} min idle window, ` +
+      `access token ${config.get<string>('auth.accessTtl')}, one login per account.`;
     this.purgeEnabled = config.get<boolean>('auth.sessionPurge.enabled') ?? true;
     this.purgeIntervalMs =
       (config.get<number>('auth.sessionPurge.intervalHours') ?? 24) * 60 * 60 * 1000;
@@ -94,6 +107,7 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleInit(): void {
+    this.logger.log(this.rulesNote);
     if (!this.purgeEnabled) {
       this.logger.log('Session purge is turned off (SESSION_PURGE_ENABLED=false).');
       return;
@@ -145,10 +159,9 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Starts a login. In 'replace' mode (default) the employee's other active
-   * logins are ended in the same database transaction; in 'block' mode the
-   * sign-in is refused (409 SESSION_ACTIVE_ELSEWHERE) while another device was
-   * seen recently. Returns how many other logins were ended.
+   * Starts a login. The employee's other live logins are ended in the same
+   * database transaction (one login at a time). Returns how many were ended
+   * and how long the new login lasts.
    */
   async createSession(params: {
     sessionId: string;
@@ -158,7 +171,7 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
     idleMinutes: number;
     absoluteMinutes: number;
     meta?: SessionMeta;
-  }): Promise<{ replaced: number }> {
+  }): Promise<{ replaced: number; timing: SessionTiming }> {
     const pool = await this.db.connect();
     const result = await pool
       .request()
@@ -171,21 +184,11 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
       .input('IPAddress', sql.VarChar(45), this.clip(params.meta?.ip, 45))
       .input('UserAgent', sql.VarChar(300), this.clip(params.meta?.userAgent, 300))
       .input('DeviceName', sql.VarChar(100), describeDevice(params.meta?.userAgent))
-      .input('Mode', sql.VarChar(10), this.singleSessionMode)
-      .input('ActiveWindowSeconds', sql.Int, this.activeWindowSeconds)
       .execute('USP_Auth_CreateSession');
 
     const row = result.recordset?.[0];
     const status = Number(row?.StatusCode);
 
-    if (status === 409) {
-      const device = row?.OtherDeviceName ? ` (${String(row.OtherDeviceName)})` : '';
-      throw new ConflictException({
-        statusCode: 409,
-        message: `This account is already signed in on another device${device}. Sign out there first, or try again in a few minutes.`,
-        code: AuthErrorCode.SESSION_ACTIVE_ELSEWHERE,
-      });
-    }
     if (status !== 200) {
       this.logger.error(`USP_Auth_CreateSession failed: ${JSON.stringify(row)}`);
       throw new ServiceUnavailableException('Could not start a session. Please try again.');
@@ -195,9 +198,13 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
     // Logins just ended in the database are still "active" in this server's
     // cache; forget every cached answer so they stop working at once.
     if (replaced > 0) this.cache.clear();
-    this.remember(params.familyId, { active: true });
 
-    return { replaced };
+    // Fall back to the configured lengths if the procedure is an old version
+    // that does not report the seconds left.
+    const timing = this.timingFromRow(row, params.idleMinutes * 60, params.absoluteMinutes * 60);
+    this.remember(params.familyId, { active: true, ...this.expiryFields(timing) });
+
+    return { replaced, timing };
   }
 
   async rotate(params: {
@@ -228,8 +235,10 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
     const familyId = row.FamilyID ? String(row.FamilyID).toLowerCase() : undefined;
     const reason = row.RevokedReason != null ? String(row.RevokedReason) : undefined;
 
+    let timing: SessionTiming | undefined;
     if (code === 'OK' && familyId) {
-      this.remember(familyId, { active: true });
+      timing = this.timingFromRow(row, params.idleMinutes * 60, undefined);
+      this.remember(familyId, { active: true, ...this.expiryFields(timing) });
     } else if (code === 'REUSED' || code === 'REVOKED' || code === 'EXPIRED') {
       if (familyId) this.remember(familyId, { active: false, reason });
     }
@@ -239,6 +248,7 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
       employeeId: row.EmployeeID != null ? String(row.EmployeeID) : undefined,
       familyId,
       reason: code === 'OK' ? undefined : reason,
+      timing,
     };
   }
 
@@ -299,7 +309,18 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
   async getState(familyId: string): Promise<SessionState> {
     const key = String(familyId).toLowerCase();
     const hit = this.cache.get(key);
-    if (hit && hit.until > Date.now()) return hit.state;
+    const now = Date.now();
+    if (hit && hit.until > now) {
+      const s = hit.state;
+      // An "active" answer stops being believed the moment the login's own
+      // expiry passes, however much of the cache time is left.
+      if (
+        !s.active ||
+        ((s.absoluteExpiresAtMs ?? Infinity) > now && (s.idleExpiresAtMs ?? Infinity) > now)
+      ) {
+        return s;
+      }
+    }
 
     let state: SessionState;
     try {
@@ -309,11 +330,16 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
         .input('FamilyID', sql.UniqueIdentifier, key)
         .execute('USP_Auth_IsSessionActive');
       const row = result.recordset?.[0];
+      const active = Boolean(row?.IsActive);
       state = {
-        active: Boolean(row?.IsActive),
+        active,
         // No row = unknown login (for example purged): treat as timed out.
-        reason: row?.IsActive ? undefined : row?.Reason ? String(row.Reason) : 'expired',
+        reason: active ? undefined : row?.Reason ? String(row.Reason) : 'expired',
       };
+      // Procedures older than 20261102 do not report the seconds left.
+      if (active && row?.AbsoluteRemainingSeconds != null && row?.IdleRemainingSeconds != null) {
+        Object.assign(state, this.expiryFields(this.timingFromRow(row, undefined, undefined)));
+      }
     } catch (error) {
       this.logger.error(
         `Session check failed (are the USP_Auth_* procedures installed?): ${(error as Error).message}`,
@@ -325,21 +351,19 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
     return state;
   }
 
-  /** Records that a browser tab of this login is still open. */
-  async touch(familyId: string): Promise<void> {
-    const key = String(familyId).toLowerCase();
+  /**
+   * Seconds left on a login, for the browser's countdown. Null when the login
+   * is over. Uses the cached answer, which always carries its expiry.
+   */
+  async getTiming(familyId: string): Promise<SessionTiming | null> {
+    const state = await this.getState(familyId);
+    if (!state.active) return null;
+    if (state.absoluteExpiresAtMs === undefined || state.idleExpiresAtMs === undefined) return null;
     const now = Date.now();
-    const last = this.lastTouch.get(key);
-    if (last !== undefined && now - last < AuthSessionService.TOUCH_MIN_INTERVAL_MS) return;
-
-    if (this.lastTouch.size >= AuthSessionService.CACHE_MAX_ENTRIES) this.lastTouch.clear();
-    this.lastTouch.set(key, now);
-
-    const pool = await this.db.connect();
-    await pool
-      .request()
-      .input('FamilyID', sql.UniqueIdentifier, key)
-      .execute('USP_Auth_TouchSession');
+    return {
+      expiresInSeconds: Math.max(0, Math.ceil((state.absoluteExpiresAtMs - now) / 1000)),
+      idleExpiresInSeconds: Math.max(0, Math.ceil((state.idleExpiresAtMs - now) / 1000)),
+    };
   }
 
   /** Ends a login. Returns how many logins were still active (0 = already over). */
@@ -393,6 +417,32 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
       state,
       until: Date.now() + this.cacheMs,
     });
+  }
+
+  /** Seconds left, read from a procedure row (with fallbacks for older procedures). */
+  private timingFromRow(
+    row: any,
+    fallbackIdleSeconds: number | undefined,
+    fallbackAbsoluteSeconds: number | undefined,
+  ): SessionTiming {
+    const num = (v: unknown, fb: number | undefined): number => {
+      const n = Number(v);
+      return v !== null && v !== undefined && Number.isFinite(n) ? n : (fb ?? 0);
+    };
+    return {
+      expiresInSeconds: Math.max(0, num(row?.AbsoluteRemainingSeconds, fallbackAbsoluteSeconds)),
+      idleExpiresInSeconds: Math.max(0, num(row?.IdleRemainingSeconds, fallbackIdleSeconds)),
+    };
+  }
+
+  private expiryFields(
+    timing: SessionTiming,
+  ): Pick<SessionState, 'absoluteExpiresAtMs' | 'idleExpiresAtMs'> {
+    const now = Date.now();
+    return {
+      absoluteExpiresAtMs: now + timing.expiresInSeconds * 1000,
+      idleExpiresAtMs: now + timing.idleExpiresInSeconds * 1000,
+    };
   }
 
   private clip(value: string | null | undefined, max: number): string | null {

@@ -2692,7 +2692,7 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
   );
   const employeeNameById = useMemo(() => {
     const names: Record<string, string> = {};
-    for (const row of calendarRows) {
+    for (const row of calendarRows as Record<string, unknown>[]) {
       const id = String(row.EmployeeID ?? row.employeeId ?? "").trim();
       if (id) names[id] = String(row.FullName ?? row.fullName ?? "").trim();
     }
@@ -2810,7 +2810,7 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
         attendanceCode={attendanceCode}
         attendanceOptions={applyOptions}
         onAttendanceCodeChange={setAttendanceCode}
-        employees={calendarRows}
+        employees={calendarRows as Record<string, unknown>[]}
         search={search}
         loading={calendarLoading}
         selectedEmpIds={selectedEmpIds}

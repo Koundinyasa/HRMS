@@ -44,15 +44,16 @@ export default () => ({
   auth: {
     // Lifetime of the access token. Bare number = seconds, or 30s / 15m / 24h / 7d.
     // Short on purpose: the browser renews it quietly through /auth/refresh.
-    accessTtl: readEnv(process.env.ACCESS_TOKEN_TTL) || '15m',
-    // A login ends after this long without a refresh...
+    accessTtl: readEnv(process.env.ACCESS_TOKEN_TTL) || '5m',
+    // A login ends after this long without a refresh (the browser refreshes
+    // only while the user is active)...
     sessionIdleMinutes: readEnv(process.env.SESSION_IDLE_MINUTES)
       ? parseInt(readEnv(process.env.SESSION_IDLE_MINUTES), 10)
-      : 60,
+      : 5,
     // ...and never lasts longer than this, however active the user is.
     sessionAbsoluteMinutes: readEnv(process.env.SESSION_ABSOLUTE_MINUTES)
       ? parseInt(readEnv(process.env.SESSION_ABSOLUTE_MINUTES), 10)
-      : 1440,
+      : 30,
     // Cookie "Secure" flag: needs HTTPS. Defaults to on in production.
     cookieSecure: readEnv(process.env.COOKIE_SECURE)
       ? readEnv(process.env.COOKIE_SECURE) === 'true'
@@ -66,20 +67,8 @@ export default () => ({
     sessionCacheSeconds: readEnv(process.env.SESSION_CACHE_SECONDS)
       ? parseInt(readEnv(process.env.SESSION_CACHE_SECONDS), 10)
       : 30,
-    // One login at a time per employee.
-    //   replace  a new sign-in ends the older ones (default)
-    //   block    a new sign-in is refused while another device was active
-    //            within singleSessionActiveWindowSeconds (needs the browser
-    //            heartbeat to be accurate)
-    //   off      any number of logins
-    singleSessionMode: ['replace', 'block', 'off'].includes(
-      readEnv(process.env.SINGLE_SESSION_MODE),
-    )
-      ? readEnv(process.env.SINGLE_SESSION_MODE)
-      : 'replace',
-    singleSessionActiveWindowSeconds: readEnv(process.env.SESSION_ACTIVE_WINDOW_SECONDS)
-      ? parseInt(readEnv(process.env.SESSION_ACTIVE_WINDOW_SECONDS), 10)
-      : 120,
+    // One login at a time per employee is always on: a new sign-in ends the
+    // older one. (SINGLE_SESSION_MODE and SESSION_ACTIVE_WINDOW_SECONDS are gone.)
     // Old session rows are deleted by the backend itself (SQL Server Express
     // has no SQL Agent). Rows ended or expired longer ago than the retention
     // period are removed, in small batches.
