@@ -321,7 +321,7 @@ export class AuthService {
       const familyId = randomUUID();
       const refreshToken = this.signRefreshToken(user, familyId);
 
-      await this.sessions.createSession({
+      const { replaced } = await this.sessions.createSession({
         sessionId: randomUUID(),
         familyId,
         employeeId: String(user.EmployeeID),
@@ -330,6 +330,17 @@ export class AuthService {
         absoluteMinutes: this.absoluteMinutes,
         meta,
       });
+
+      // One line per sign-in, so "who signed in, from where" can be read from
+      // the log. A sign-in that ended another login is logged as a warning.
+      const signInNote =
+        `Sign-in: employee ${user.EmployeeID}, ip ${meta.ip ?? 'unknown'}, ` +
+        `${meta.userAgent ? String(meta.userAgent).slice(0, 160) : 'no user agent'}`;
+      if (replaced > 0) {
+        this.logger.warn(`${signInNote} - ended ${replaced} other login(s)`);
+      } else {
+        this.logger.log(signInNote);
+      }
 
       // Record the login only now that it succeeded (a refused or failed
       // sign-in must not count). Only after the first login is completed.
