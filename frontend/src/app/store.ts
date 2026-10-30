@@ -11,8 +11,13 @@ export const store = configureStore({
     getDefaultMiddleware().concat(baseApi.middleware),
 });
  
-// Plain fetch/axios callers report an ended session through this.
-setSessionExpiredHandler(() => store.dispatch(sessionExpired()));
+// Every caller (RTK Query, plain fetch, axios) reports an ended session
+// through this: mark the user as logged out and drop all cached API data so
+// the next person to sign in on this browser never sees it.
+setSessionExpiredHandler(() => {
+  store.dispatch(sessionExpired());
+  store.dispatch(baseApi.util.resetApiState());
+});
  
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

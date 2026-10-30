@@ -8,6 +8,7 @@ import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { showPageLoader } from "../../employee/employeeSlice"; 
 import type { LoginFormData } from "../validation/loginSchema";
 import { baseApi } from "../../../app/baseApi";
+import { getHomePath } from "@/shared/constants/roles";
  
 export const useLogin = () => {
   const dispatch = useAppDispatch();
@@ -49,16 +50,12 @@ export const useLogin = () => {
         navigate(`/${domain}/first-login-reset-password`);
         return;
       }
-      const roleId = Number(response.data.roleId);
- 
-      if (roleId === 1 || roleId === 2) {
-        navigate(`/${domain}/admin/dashboard`); // ✅ Admin + HR Admin → admin dashboard
-      } else if (roleId === 3) {
-        navigate(`/${domain}/employee/dashboard`); // ✅ regular employee
-      } else {
+      const homePath = getHomePath(domain, response.data.roleId);
+      if (!homePath) {
         toast.error("Unauthorized role");
         return;
       }
+      navigate(homePath);
     } catch (error: unknown) {
       const errorRecord =
         error && typeof error === "object"

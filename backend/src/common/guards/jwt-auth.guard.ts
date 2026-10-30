@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { ALLOW_WHILE_PASSWORD_CHANGE_REQUIRED } from '../decorators/allow-password-change.decorator';
 import { AuthSessionService } from '../../auth/session/auth-session.service';
+import { AuthErrorCode } from '../../auth/auth-error-codes';
 
 /**
  * Single source of truth for JWT auth.
@@ -94,9 +95,11 @@ export class JwtAuthGuard implements CanActivate {
         [context.getHandler(), context.getClass()],
       );
       if (!allowed) {
-        throw new ForbiddenException(
-          'You must change your password before you can continue.',
-        );
+        throw new ForbiddenException({
+          statusCode: 403,
+          message: 'You must change your password before you can continue.',
+          code: AuthErrorCode.PASSWORD_CHANGE_REQUIRED,
+        });
       }
     }
 

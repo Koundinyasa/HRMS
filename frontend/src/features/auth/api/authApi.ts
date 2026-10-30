@@ -123,23 +123,6 @@ export const authApi = baseApi.injectEndpoints({
     }),
  
     // =========================
-    // Reset Password
-    // =========================
-    resetPassword: builder.mutation<
-      void,
-      {
-        password: string;
-        token: string;
-      }
-    >({
-      query: (body) => ({
-        url: "/auth/reset-password",
-        method: "POST",
-        body,
-      }),
-    }),
- 
-    // =========================
     // First Login Reset Password
     // =========================
     firstLoginResetPassword: builder.mutation<
@@ -176,7 +159,6 @@ export const {
   useGetSessionQuery,
   useForgotPasswordMutation,
   useVerifyOtpMutation,
-  useResetPasswordMutation,
   useResetForgotPasswordMutation,
   useLogoutMutation,
   useFirstLoginResetPasswordMutation,

@@ -10,6 +10,10 @@ import AdminLayout from "@/features/admin/components/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import EmployeeRoutes from "./EmployeeRoutes";
 import FirstLoginResetPassword from "@/features/auth/pages/FirstLoginResetPassword";
+import {
+  ADMIN_PORTAL_ROLES,
+  EMPLOYEE_PORTAL_ROLES,
+} from "@/shared/constants/roles";
 
 function AppRoutes() {
   return (
@@ -25,7 +29,7 @@ function AppRoutes() {
             />
  
         {/* ✅ Admin routes, role-protected */}
-        <Route element={<ProtectedRoute allowedRoles={[1, 2]} />}>
+        <Route element={<ProtectedRoute allowedRoles={ADMIN_PORTAL_ROLES} />}>
           <Route path="/admin" element={<AdminLayout />}>
             {AdminChildRoutes}
           </Route>
@@ -34,7 +38,7 @@ function AppRoutes() {
           </Route>
         </Route>
  
-        <Route element={<ProtectedRoute allowedRoles={[3]} />}>
+        <Route element={<ProtectedRoute allowedRoles={EMPLOYEE_PORTAL_ROLES} />}>
           <Route path="/employee/*" element={<EmployeeRoutes />} />
           <Route path="/:domain/employee/*" element={<EmployeeRoutes />} />
         </Route>

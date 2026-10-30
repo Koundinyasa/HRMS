@@ -4,12 +4,11 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { useGetSessionQuery } from "@/features/auth/api/authApi";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
+import { IDLE_TIMEOUT_MS } from "@/shared/constants/session";
 
 interface ProtectedRouteProps {
-  allowedRoles: number[];
+  allowedRoles: readonly number[];
 }
-
-const IDLE_TIMEOUT = 5 * 60 * 1000;
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const { domain: domainParam } = useParams();
@@ -31,7 +30,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   });
 
   useIdleTimer({
-    timeout: IDLE_TIMEOUT,
+    timeout: IDLE_TIMEOUT_MS,
     enabled: isAuthenticated,
     onIdle: () => {
       toast.info("You were signed out because of inactivity.");
