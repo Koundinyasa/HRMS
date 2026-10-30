@@ -15,7 +15,7 @@ import UploadedDocumentsPage from "@/features/employee/profile/pages/UploadedDoc
 // Leave Module
 import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
 import LeaveApply from "@/features/employee/leave/pages/LeaveApply";
-import ApplyLeaveForEmployee from "@/features/employee/leave/components/Applyforemployee";
+import ApplyLeaveForEmployee from "@/features/employee/leave/components/ApplyleaveForEmployee";
 import LeaveBalance from "@/features/employee/leave/pages/LeaveBalance";
 import LeaveHistory from "@/features/employee/leave/pages/LeaveHistory";
 import LeaveCancellation from "@/features/employee/leave/pages/LeaveCancellation";
