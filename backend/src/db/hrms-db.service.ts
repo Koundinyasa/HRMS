@@ -1,25 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
+import { PoolHolder, buildSqlConfig } from '../database/sql-pool';
 
 @Injectable()
-export class HrmsDbService {
-  private pool?: sql.ConnectionPool;
+export class HrmsDbService implements OnModuleDestroy {
+  // This pool keeps the driver's default useUTC (true) on purpose: the methods
+  // below turn DATE columns into 'YYYY-MM-DD' with toISOString(), which is
+  // only right when dates are read as UTC midnight. The main pool
+  // (DatabaseService) reads them the other way, so the two are not merged.
+  private readonly holder = new PoolHolder('chatbot', () =>
+    buildSqlConfig(this.config, true),
+  );
 
   constructor(private readonly config: ConfigService) {}
 
-  private async getPool() {
-    if (this.pool?.connected) return this.pool;
+  private getPool() {
+    return this.holder.get();
+  }
 
-    this.pool = await new sql.ConnectionPool({
-      user: this.config.get<string>('DB_USER') || '',
-      password: this.config.get<string>('DB_PASSWORD') || '',
-      server: this.config.get<string>('DB_HOST') || 'localhost',
-      database: this.config.get<string>('DB_NAME') || '',
-      options: { encrypt: false, trustServerCertificate: true },
-    }).connect();
-
-    return this.pool;
+  async onModuleDestroy(): Promise<void> {
+    await this.holder.close();
   }
 
   // ─── HRMSDEV: real basic-info via USP_GetUserInfo ────────────────────────────

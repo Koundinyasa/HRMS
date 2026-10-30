@@ -34,6 +34,11 @@ export const validationSchema = Joi.object({
   DB_NAME: Joi.string().required(),
   DB_ENCRYPT: Joi.boolean().default(false),
   DB_TRUST_SERVER_CERT: Joi.boolean().default(true),
+  // Connection pool and timeouts (defaults are the driver's own).
+  DB_POOL_MAX: Joi.number().integer().min(1).max(200).default(10),
+  DB_POOL_MIN: Joi.number().integer().min(0).max(200).default(0),
+  DB_CONNECTION_TIMEOUT_MS: Joi.number().integer().min(1000).default(15000),
+  DB_REQUEST_TIMEOUT_MS: Joi.number().integer().min(1000).default(15000),
 
   // JWT - required, no silent fallback allowed
   JWT_SECRET: Joi.string().min(16).required(),

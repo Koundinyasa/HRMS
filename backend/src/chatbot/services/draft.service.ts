@@ -82,6 +82,11 @@ export class DraftService {
     { title: string; items: string[]; note?: string }
   >();
 
+  // Employees whose leave data the chatbot has just changed (a leave applied
+  // or cancelled). Read once when the reply is built, so the page can refresh
+  // its own copy of the leave data instead of waiting for a reload.
+  readonly leaveChanged = new Set<string>();
+
   getDraft<T>(map: Map<string, Stamped<T>>, key: string): T | undefined {
     const entry = map.get(key);
     if (!entry) return undefined;
@@ -128,5 +133,6 @@ export class DraftService {
     this.pendingNotice.delete(employeeId);
     this.pendingSteps.delete(employeeId);
     this.pendingEmployeeExport.delete(employeeId);
+    this.leaveChanged.delete(employeeId);
   }
 }

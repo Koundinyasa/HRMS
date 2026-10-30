@@ -10,8 +10,8 @@ import { EmployeeService } from './services/employee.service';
 import { AiService } from './services/ai.service';
 import { LeaveService } from './services/leave.service';
 import { LeaveApiService } from './services/leave-api.service';
-import { HttpService } from '@nestjs/axios';
-import { JwtService } from '@nestjs/jwt';
+import { LeaveService as EmployeeLeaveService } from '../employee/leave/leave.service';
+import { DatabaseService } from '../database/database.service';
 import { ResponseService } from './services/response.service';
 import { TeamService } from './services/team.service';
 
@@ -49,15 +49,10 @@ export class ChatbotService {
       draftService,
     ),
     private readonly aiService: AiService = new AiService(configService),
-    // JwtService here has no real secret configured — fine, since this
-    // default path is only ever used by the spec files' direct
-    // `new ChatbotService(dbStub, configStub)` construction, none of which
-    // actually exercise a leave-balance/history call that would need to
-    // mint a real token. NestJS's own DI always supplies the properly
-    // configured, globally-shared JwtService in the running app.
+    // Default only for direct `new ChatbotService(...)` construction in
+    // tests; NestJS always supplies the real, shared instance.
     private readonly leaveApiService: LeaveApiService = new LeaveApiService(
-      new HttpService(),
-      new JwtService(),
+      new EmployeeLeaveService(new DatabaseService(configService)),
     ),
     private readonly leaveService: LeaveService = new LeaveService(
       hrmsDbService,
@@ -271,6 +266,11 @@ export class ChatbotService {
           })),
         };
       }
+      const refresh: 'leave'[] | undefined = this.draftService.leaveChanged.delete(
+        user.employeeId as string,
+      )
+        ? ['leave']
+        : undefined;
       return {
         success: true,
         userMessage: message,
@@ -280,6 +280,7 @@ export class ChatbotService {
         confidence,
         timestamp: new Date(),
         user: { name: user.name as string, role: user.role as string },
+        ...(refresh ? { refresh } : {}),
       };
     };
 

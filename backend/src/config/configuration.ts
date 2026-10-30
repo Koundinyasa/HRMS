@@ -23,6 +23,15 @@ export default () => ({
     name: readEnv(process.env.DB_NAME),
     encrypt: readEnv(process.env.DB_ENCRYPT) === 'true',
     trustServerCertificate: readEnv(process.env.DB_TRUST_SERVER_CERT) !== 'false',
+    // Connection pool and timeouts. The defaults are the driver's own.
+    poolMax: readEnv(process.env.DB_POOL_MAX) ? parseInt(readEnv(process.env.DB_POOL_MAX), 10) : 10,
+    poolMin: readEnv(process.env.DB_POOL_MIN) ? parseInt(readEnv(process.env.DB_POOL_MIN), 10) : 0,
+    connectionTimeoutMs: readEnv(process.env.DB_CONNECTION_TIMEOUT_MS)
+      ? parseInt(readEnv(process.env.DB_CONNECTION_TIMEOUT_MS), 10)
+      : 15000,
+    requestTimeoutMs: readEnv(process.env.DB_REQUEST_TIMEOUT_MS)
+      ? parseInt(readEnv(process.env.DB_REQUEST_TIMEOUT_MS), 10)
+      : 15000,
   },
 
   jwt: {

@@ -16,6 +16,8 @@ import express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Lets modules close their database pools when the process is told to stop.
+  app.enableShutdownHooks();
   const server = app.getHttpAdapter().getInstance();
 
   const configService = app.get(ConfigService);

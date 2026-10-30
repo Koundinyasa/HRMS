@@ -18,6 +18,19 @@ export const chatbotApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+
+      // A leave applied or cancelled in the chat must show up on the Leave
+      // pages straight away, so their cached data is marked out of date.
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (data.refresh?.includes("leave")) {
+            dispatch(baseApi.util.invalidateTags(["Leave"]));
+          }
+        } catch {
+          // the chat error is shown by the caller
+        }
+      },
     }),
 
     resetConversation: builder.mutation<

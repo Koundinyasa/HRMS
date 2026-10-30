@@ -82,4 +82,6 @@ export interface ChatResponse {
   confidence: string;
   timestamp: string;
   user: Record<string, unknown>;
+  /** Data the page should reload because this reply changed it. */
+  refresh?: "leave"[];
 }

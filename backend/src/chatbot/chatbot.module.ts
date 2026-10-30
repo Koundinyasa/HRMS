@@ -16,13 +16,14 @@ import { ResponseService } from './services/response.service';
 import { TeamService } from './services/team.service';
 import { ReportService } from './services/report.service';
 import { LeaveApiService } from './services/leave-api.service';
-import { HttpModule } from '@nestjs/axios';
+import { LeaveModule } from '../employee/leave/leave.module';
 
 @Module({
   // One direction only: the chatbot uses AuthModule. AuthModule does not know
   // about the chatbot; it announces login/logout (SessionBoundaryEvents) and
   // ChatbotSessionCleaner listens.
-  imports: [DbModule, AuthModule, HttpModule],
+  // LeaveModule: the chatbot calls the employee leave service directly.
+  imports: [DbModule, AuthModule, LeaveModule],
   controllers: [ChatbotController],
   providers: [
     ChatbotService,

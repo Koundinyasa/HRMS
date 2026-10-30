@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { HrmsDbService } from '../../db/hrms-db.service';
 import { DraftService } from './draft.service';
 import { ParserService } from './parser.service';
@@ -147,27 +147,23 @@ export class LeaveService {
       : `The selected date range contains no eligible working days. Weekends and company holidays are excluded.`;
   }
 
+  // What to tell the employee when a leave submission fails. Only messages
+  // the server meant for the user (a 4xx such as "Invalid leave dates.") are
+  // shown; a database or code fault never leaks its text into the chat.
   private submissionErrorMessage(error: unknown): string {
-    const responseData = (error as { response?: { data?: unknown } } | null)
-      ?.response?.data;
-    const data = responseData as
-      | { message?: unknown; Message?: unknown }
-      | string
-      | undefined;
-    const rawMessage =
-      typeof data === 'string' ? data : (data?.message ?? data?.Message);
-    const message = Array.isArray(rawMessage)
-      ? rawMessage.filter((item) => typeof item === 'string').join(' ')
-      : rawMessage;
-
-    if (typeof message === 'string' && message.trim()) return message.trim();
-    if (
-      error instanceof Error &&
-      !/request failed with status code/i.test(error.message)
-    ) {
-      return error.message;
+    const fallback = `I couldn't submit your leave right now. Please try again.`;
+    if (!(error instanceof HttpException) || error.getStatus() >= 500) {
+      return fallback;
     }
-    return `I couldn't submit your leave right now. Please try again.`;
+    const body = error.getResponse();
+    const raw =
+      typeof body === 'string' ? body : (body as { message?: unknown })?.message;
+    const message = Array.isArray(raw)
+      ? raw.filter((item) => typeof item === 'string').join(' ')
+      : raw;
+    return typeof message === 'string' && message.trim()
+      ? message.trim()
+      : fallback;
   }
 
   private calendarField(record: unknown, ...names: string[]): unknown {
@@ -1159,6 +1155,7 @@ export class LeaveService {
             ctx.employeeId,
           );
           if (result.ok) {
+            this.draftService.leaveChanged.add(ctx.employeeId);
             const rangeText = formatLeaveRange(draft.startDate, draft.endDate);
             const dayText = draft.isHalfDay
               ? `Half day (${this.parserService.sessionLabel(draft.session)})`
@@ -1229,6 +1226,7 @@ export class LeaveService {
             target.leaveId,
             target.actionId,
           );
+          if (result.ok) this.draftService.leaveChanged.add(ctx.employeeId);
           return result.message;
         },
       },
