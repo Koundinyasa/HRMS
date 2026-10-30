@@ -16,7 +16,10 @@ import { StartBgvDto } from './dto/start-bgv.dto';
 import { UpdateBgvDocumentDto } from './dto/update-bgv-document.dto';
 import { UpdateBgvDto } from './dto/update-bgv.dto';
 import { BgvService } from './bgv.service';
+import { Roles } from '../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('bgv')
 @UseGuards(JwtAuthGuard)
 export class BgvController {

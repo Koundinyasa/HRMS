@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as sql from 'mssql';
 
 import { DatabaseService } from '../database/database.service';
@@ -61,6 +61,7 @@ export class ReviewService {
     employeeId: string,
     selectedDate?: string,
     viewType?: string,
+    showAll?: boolean,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -75,6 +76,8 @@ export class ReviewService {
     );
 
     request.input('ViewType', sql.VarChar(20), viewType || 'CustomMonth');
+
+    request.input('ShowAll', sql.Bit, showAll ?? false);
 
     const result = await request.execute('USP_GetEmployeePunchDashboard');
 
@@ -227,6 +230,36 @@ export class ReviewService {
     } catch (error) {
       console.error('Error in hierarchicalLeaveAction:', error);
       throw error;
+    }
+  }
+  async getAttendanceStatuses(companyId: number) {
+    try {
+      const pool = await this.databaseService.connect();
+ 
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .execute('USP_GetCompanyDropdownData');
+ 
+      const sets = result.recordsets as Record<string, any>[][];
+ 
+      if (sets.length !== 10) {
+        throw new Error(
+          `USP_GetCompanyDropdownData returned ${sets.length} result sets, expected 10.`,
+        );
+      }
+ 
+      return {
+        success: true,
+        message: 'Attendance statuses retrieved successfully.',
+        data: sets[5],
+      };
+    } catch (error) {
+      console.error('Attendance statuses error:', error);
+ 
+      throw new InternalServerErrorException(
+        'Failed to retrieve attendance statuses.',
+      );
     }
   }
 }

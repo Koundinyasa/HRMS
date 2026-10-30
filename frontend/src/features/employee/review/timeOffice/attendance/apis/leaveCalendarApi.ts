@@ -64,8 +64,32 @@ import type {
 
 type ApiRecord = Record<string, unknown>;
 
+export interface AttendanceStatusOption {
+  ID: number;
+  Name: string;
+}
+
 function isApiRecord(value: unknown): value is ApiRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeAttendanceStatuses(response: unknown): AttendanceStatusOption[] {
+  if (!isApiRecord(response) || !Array.isArray(response.data)) {
+    throw new Error("Unexpected attendance statuses response.");
+  }
+
+  return response.data.map((item, index) => {
+    if (!isApiRecord(item)) {
+      throw new Error(`Invalid attendance status at index ${index}.`);
+    }
+
+    const id = Number(item.ID);
+    if (!Number.isInteger(id) || typeof item.Name !== "string") {
+      throw new Error(`Invalid attendance status at index ${index}.`);
+    }
+
+    return { ID: id, Name: item.Name };
+  });
 }
 
 function normalizeMonthlyLeaveCalendar(response: unknown): LeaveCalendarEmployee[] {
@@ -113,6 +137,14 @@ export const leaveCalendarApi =
     overrideExisting: false,
 
     endpoints: (builder) => ({
+      getReviewAttendanceStatuses: builder.query<AttendanceStatusOption[], void>({
+        query: () => ({
+          url: "/review/attendance-statuses",
+          method: "GET",
+        }),
+        transformResponse: normalizeAttendanceStatuses,
+      }),
+
       // =========================
       // Monthly Leave Calendar
       // =========================
@@ -166,6 +198,7 @@ export const leaveCalendarApi =
   });
 
 export const {
+  useGetReviewAttendanceStatusesQuery,
   useGetReviewMonthlyLeaveCalendarQuery,
   useGetEmployeeAttendanceCountQuery,
 } = leaveCalendarApi;

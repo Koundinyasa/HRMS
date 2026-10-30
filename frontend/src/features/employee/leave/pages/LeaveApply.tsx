@@ -3,30 +3,32 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Tags, CalendarDays, PenLine } from "lucide-react";
-
+ 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+ 
 import { Button } from "@/components/ui/button";
-
+ 
 import { Label } from "@/components/ui/label";
-
+ 
 import DateField from "../components/DateField";
-
+ 
 import LeaveBalanceCard from "../components/LeaveBalanceCard";
-
+ 
 import { useLeave } from "../hooks/useLeave";
 import { useApplyLeave } from "../hooks/useApplyLeave";
-
+ 
 import { leaveApplySchema } from "../validation/leaveValidation";
 import {
   MATERNITY_LEAVE_ID,
+  PATERNITY_LEAVE_ID,
+  getPaternityLeaveToDateIso,
   minFromDateIso,
   maxApplyDateIso,
 } from "../constants/leave.constants";
 import { getMaternityLeaveLimitError } from "../validation/maternityLeaveLimit";
-
+ 
 import type { LeaveApplyForm } from "../types/leave.types";
-
+ 
 const DEFAULT_VALUES: LeaveApplyForm = {
   leaveType: "",
   fromDate: "",
@@ -35,14 +37,14 @@ const DEFAULT_VALUES: LeaveApplyForm = {
   isHalfDay: false,
   sessionFrom: "",
   sessionTo: "",
-
+ 
   attachment: null,
 };
-
+ 
 export default function LeaveApply() {
   const location = useLocation();
   const navigate = useNavigate();
-
+ 
   const {
     leaveTypes,
     leaveTypesLoading,
@@ -54,15 +56,15 @@ export default function LeaveApply() {
     refetchLeaveHistory,
     refetchLeaveStatus,
   } = useLeave();
-
+ 
   const { applyLeave, isSubmitting } = useApplyLeave();
-
+ 
   const [leaveTypeOpen, setLeaveTypeOpen] = useState(false);
   const leaveTypeRef = useRef<HTMLDivElement>(null);
-
+ 
   useEffect(() => {
     if (!leaveTypeOpen) return;
-
+ 
     const handleClickOutside = (event: MouseEvent) => {
       if (
         leaveTypeRef.current &&
@@ -71,11 +73,11 @@ export default function LeaveApply() {
         setLeaveTypeOpen(false);
       }
     };
-
+ 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [leaveTypeOpen]);
-
+ 
   const {
     control,
     handleSubmit,
@@ -89,13 +91,13 @@ export default function LeaveApply() {
     // Surfaces the weekend error as soon as a date is chosen.
     mode: "onTouched",
   });
-
+ 
   const fromDate = useWatch({ control, name: "fromDate" });
   const leaveType = useWatch({ control, name: "leaveType" });
   const toDate = useWatch({ control, name: "toDate" });
-
+ 
   const isSingleDay = fromDate && toDate && fromDate === toDate;
-
+ 
   useEffect(() => {
     if (!isSingleDay) {
       setValue("isHalfDay", false);
@@ -103,7 +105,7 @@ export default function LeaveApply() {
       setValue("sessionTo", "");
     }
   }, [isSingleDay, setValue]);
-
+ 
   const totalDays =
     fromDate && toDate
       ? Math.floor(
@@ -111,11 +113,11 @@ export default function LeaveApply() {
             (1000 * 60 * 60 * 24),
         ) + 1
       : 0;
-
+ 
   // From Date opens a week back; To Date can never precede From Date.
   const minFromDate = minFromDateIso();
   const minToDate = fromDate || minFromDate;
-
+ 
   const onSubmit = async (data: LeaveApplyForm) => {
     if (data.leaveType === MATERNITY_LEAVE_ID) {
       if (historyLoading) {
@@ -125,7 +127,7 @@ export default function LeaveApply() {
         });
         return;
       }
-
+ 
       const maternityLimitError = getMaternityLeaveLimitError(
         data.fromDate,
         data.toDate,
@@ -136,10 +138,10 @@ export default function LeaveApply() {
         return;
       }
     }
-
+ 
     const isHalfDay =
       data.sessionFrom === "First Half" || data.sessionFrom === "Second Half";
-
+ 
     const payload = {
       leaveTypeId: Number(data.leaveType),
       fromDate: data.fromDate,
@@ -150,26 +152,26 @@ export default function LeaveApply() {
       sessionTo: data.sessionTo,
       attachment: data.attachment,
     };
-
+ 
     const response = await applyLeave(payload);
-
+ 
     if (response) {
       await refetchLeaveBalance();
       await refetchLeaveHistory();
       await refetchLeaveStatus();
-
+ 
       reset(DEFAULT_VALUES);
       navigate(`/${location.pathname.split("/")[1]}/employee/leave/status`);
     }
   };
-
+ 
   return (
     <div className="w-full px-4 sm:px-6">
       <div className="grid w-full gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="space-y-6">
           <LeaveBalanceCard balances={leaveBalance} />
         </div>
-
+ 
         <Card className="w-full overflow-visible rounded-2xl border border-indigo-100 shadow-sm">
           <div>
             <CardHeader className="border-b border-slate-100 pb-3">
@@ -180,7 +182,7 @@ export default function LeaveApply() {
               </div>
             </CardHeader>
           </div>
-
+ 
           <CardContent className="relative space-y-4 overflow-visible p-4">
             <form
               onSubmit={handleSubmit(onSubmit, (errors) => {
@@ -199,7 +201,7 @@ export default function LeaveApply() {
                     <Tags className="h-3.5 w-3.5" />
                     Leave Type
                   </Label>
-
+ 
                   <Controller
                     control={control}
                     name="leaveType"
@@ -207,7 +209,7 @@ export default function LeaveApply() {
                       const selectedName = leaveTypes.find(
                         (leave) => String(leave.ID) === field.value,
                       )?.Name;
-
+ 
                       return (
                         <div className="relative" ref={leaveTypeRef}>
                           <button
@@ -221,10 +223,10 @@ export default function LeaveApply() {
                             >
                               {selectedName ?? "Select Leave Type"}
                             </span>
-
+ 
                             <ChevronDown className="h-4 w-4 text-slate-400" />
                           </button>
-
+ 
                           {leaveTypeOpen && (
                             <div className="absolute z-50 mt-2 max-h-[112px] w-full overflow-y-auto rounded-xl border border-slate-300 bg-white p-1 shadow-lg">
                               {leaveTypes.length > 0 ? (
@@ -233,7 +235,18 @@ export default function LeaveApply() {
                                     type="button"
                                     key={leave.ID}
                                     onClick={() => {
-                                      field.onChange(String(leave.ID));
+                                      const selectedLeaveType = String(leave.ID);
+                                      field.onChange(selectedLeaveType);
+                                      if (
+                                        selectedLeaveType === PATERNITY_LEAVE_ID &&
+                                        fromDate
+                                      ) {
+                                        setValue(
+                                          "toDate",
+                                          getPaternityLeaveToDateIso(fromDate),
+                                          { shouldValidate: true },
+                                        );
+                                      }
                                       setLeaveTypeOpen(false);
                                     }}
                                     className={`block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-900 ${
@@ -256,21 +269,21 @@ export default function LeaveApply() {
                       );
                     }}
                   />
-
+ 
                   {errors.leaveType && (
                     <p className="text-sm text-red-500">
                       {errors.leaveType.message}
                     </p>
                   )}
                 </div>
-
+ 
                 {/* From Date */}
                 <div className="relative space-y-2">
                   <Label htmlFor="fromDate" className="flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5" />
                     From Date
                   </Label>
-
+ 
                   <Controller
                     control={control}
                     name="fromDate"
@@ -278,7 +291,16 @@ export default function LeaveApply() {
                       <DateField
                         id="fromDate"
                         value={field.value}
-                        onChange={field.onChange}
+                        onChange={(value) => {
+                          field.onChange(value);
+                          if (leaveType === PATERNITY_LEAVE_ID) {
+                            setValue(
+                              "toDate",
+                              getPaternityLeaveToDateIso(value),
+                              { shouldValidate: true },
+                            );
+                          }
+                        }}
                         readOnly
                         min={minFromDateIso()}
                         max={maxApplyDateIso()}
@@ -287,21 +309,21 @@ export default function LeaveApply() {
                       />
                     )}
                   />
-
+ 
                   {errors.fromDate && (
                     <p className="mt-1 text-xs font-medium text-red-500">
                       {errors.fromDate.message}
                     </p>
                   )}
                 </div>
-
+ 
                 {/* To Date */}
                 <div className="relative space-y-2">
                   <Label htmlFor="toDate" className="flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5" />
                     To Date
                   </Label>
-
+ 
                   <Controller
                     control={control}
                     name="toDate"
@@ -320,7 +342,7 @@ export default function LeaveApply() {
                       />
                     )}
                   />
-
+ 
                   {errors.toDate && (
                     <p className="mt-1 text-xs font-medium text-red-500">
                       {errors.toDate.message}
@@ -328,12 +350,12 @@ export default function LeaveApply() {
                   )}
                 </div>
               </div>
-
+ 
               {/* Half Day */}
               {isSingleDay && (
                 <div className="space-y-3 rounded-xl bg-blue-50 p-4">
                   <Label className="font-medium">Half Day</Label>
-
+ 
                   <Controller
                     control={control}
                     name="sessionFrom"
@@ -355,7 +377,7 @@ export default function LeaveApply() {
                           />
                           First Half
                         </label>
-
+ 
                         <label className="flex cursor-pointer items-center gap-2">
                           <input
                             type="checkbox"
@@ -377,17 +399,17 @@ export default function LeaveApply() {
                   />
                 </div>
               )}
-
+ 
               {/* Reason */}
               <div className="space-y-2">
                 <Label htmlFor="reason" className="flex items-center gap-1">
                   <PenLine className="h-3.5 w-3.5" />
-
+ 
                   <span>Reason</span>
-
+ 
                   <span className="font-normal text-slate-500">(Optional)</span>
                 </Label>
-
+ 
                 <Controller
                   control={control}
                   name="reason"
@@ -403,18 +425,18 @@ export default function LeaveApply() {
                     />
                   )}
                 />
-
+ 
                 {errors.reason && (
                   <p className="text-sm text-red-500">
                     {errors.reason.message}
                   </p>
                 )}
               </div>
-
+ 
               {leaveType === "2" && totalDays > 1 && (
                 <div className="space-y-2">
                   <Label htmlFor="attachment">Medical Certificate</Label>
-
+ 
                   <Controller
                     control={control}
                     name="attachment"
@@ -430,11 +452,11 @@ export default function LeaveApply() {
                       />
                     )}
                   />
-
+ 
                   <p className="text-xs text-slate-500">
                     Upload JPG, PNG, PDF or DOCX (Max 5 MB)
                   </p>
-
+ 
                   {errors.attachment && (
                     <p className="text-sm text-red-500">
                       {errors.attachment.message}
@@ -442,7 +464,7 @@ export default function LeaveApply() {
                   )}
                 </div>
               )}
-
+ 
               {/* Buttons */}
               <div className="flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-4">
                 <Button
@@ -454,7 +476,7 @@ export default function LeaveApply() {
                 >
                   Reset
                 </Button>
-
+ 
                 <Button
                   type="submit"
                   disabled={isSubmitting || leaveTypesLoading}
@@ -474,3 +496,5 @@ export default function LeaveApply() {
     </div>
   );
 }
+ 
+ 

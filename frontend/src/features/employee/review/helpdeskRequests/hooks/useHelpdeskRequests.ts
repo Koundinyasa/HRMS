@@ -102,7 +102,11 @@ export const useHelpdeskRequests = () => {
             : ACTION_STATUS.REJECTED,
         remarks: remarks?.trim() || undefined,
       }).unwrap();
-      toast.success(action === "approve" ? "Ticket approved." : "Ticket rejected.");
+      if (action === "approve") {
+        toast.success("Ticket approved.");
+      } else {
+        toast.error("Ticket rejected.");
+      }
       setSelectedIds([]);
       return true;
     } catch (error) {

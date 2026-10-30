@@ -49,6 +49,7 @@ export const dashboardApi = baseApi.injectEndpoints({
         url: "/employee/dashboard/approval-summary",
         method: "GET",
       }),
+      providesTags: ["ApprovalSummary"],
     }),
  
     getTeamAttendance: builder.query<TeamAttendanceResponse, string | void>({

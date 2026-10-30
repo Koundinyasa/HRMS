@@ -27,7 +27,10 @@ import { GetLateInEarlyOutGraphDto } from './dto/get-late-in-early-out-graph.dto
 import { GetMissedPunchEmployeesDto } from './dto/get-missed-punch-employees.dto';
 import { ProcessHistoryDto } from './dto/process-history.dto';
 import { AttendanceProcessingDashboardDto } from './dto/attendance-processing-dashboard.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/punchprocess')
 @UseGuards(JwtAuthGuard)
 export class PunchProcessController {

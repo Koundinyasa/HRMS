@@ -7,6 +7,7 @@ import type { LeaveCalendarTableProps } from "../types/leavecalendar.types";
 const LeaveCalendarTable = ({
   employees,
   days,
+  statusFilter,
   onAttendanceClick,
 }: LeaveCalendarTableProps) => {
   return (
@@ -43,6 +44,7 @@ const LeaveCalendarTable = ({
                   key={employee.EmployeeID}
                   employee={employee}
                   days={days}
+                  statusFilter={statusFilter}
                   onAttendanceClick={onAttendanceClick}
                 />
               ))

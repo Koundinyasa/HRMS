@@ -1805,8 +1805,12 @@ function ChatWidgetRenderer({
         holiday.name ?? "Holiday",
       ]),
     );
+    const visibleLeaveDates = (widget.leaveDates ?? []).filter((leave) => {
+      const status = getLeaveStatus(leave.status);
+      return status === "approved" || status === "withdrawn";
+    });
     const leaveDates = new Map<string, CalendarLeave[]>();
-    for (const leave of widget.leaveDates ?? []) {
+    for (const leave of visibleLeaveDates) {
       const date = leave.date.slice(0, 10);
       const dateLeaves = leaveDates.get(date) ?? [];
       dateLeaves.push(leave);
@@ -1814,7 +1818,7 @@ function ChatWidgetRenderer({
     }
     const leaveStatuses = Array.from(
       new Set(
-        (widget.leaveDates ?? []).map((leave) => getLeaveStatus(leave.status)),
+        visibleLeaveDates.map((leave) => getLeaveStatus(leave.status)),
       ),
     );
     const isWeekend = (iso: string) => {
@@ -1962,28 +1966,16 @@ function ChatWidgetRenderer({
                   const weekend = isWeekend(iso);
                   const holiday = isHoliday(iso);
                   const leaves = leaveDates.get(iso) ?? [];
-                  const activeLeaves = leaves.filter((item) => {
-                    const status = getLeaveStatus(item.status);
-                    return status === "pending" || status === "approved";
-                  });
-                  const rejectedLeaves = leaves.filter(
-                    (item) => getLeaveStatus(item.status) === "rejected",
-                  );
-                  const visualLeaves = activeLeaves.length
-                    ? activeLeaves
-                    : rejectedLeaves.length
-                    ? rejectedLeaves
-                    : leaves;
-                  const fullDayLeave = visualLeaves.find(
+                  const fullDayLeave = leaves.find(
                     (item) => getLeaveHalf(item) === null,
                   );
-                  const unknownSessionLeave = visualLeaves.find(
+                  const unknownSessionLeave = leaves.find(
                     (item) => getLeaveHalf(item) === "unknown",
                   );
-                  const firstHalfLeave = visualLeaves.find(
+                  const firstHalfLeave = leaves.find(
                     (item) => getLeaveHalf(item) === "first",
                   );
-                  const secondHalfLeave = visualLeaves.find(
+                  const secondHalfLeave = leaves.find(
                     (item) => getLeaveHalf(item) === "second",
                   );
                   const markerLeave =

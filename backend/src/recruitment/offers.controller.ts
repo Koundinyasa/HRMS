@@ -18,7 +18,10 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferResponseDto } from './dto/offer-response.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 import { OffersService } from './offers.service';
+import { Roles } from '../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('offers')
 @UseGuards(JwtAuthGuard)
 export class OffersController {

@@ -21,13 +21,30 @@ export interface LoginRequest {
 export interface LoginResponse {
   success: boolean;
   message: string;
-  accessToken: string;
-  isFirstLogin: boolean;
+  /** The server must change the password before anything else. */
+  mustChangePassword?: boolean;
 
   data: {
     employeeId: string;
     userId: string;
+    roleId?: number | string | null;
   };
+}
+
+// What GET /auth/me returns inside `data`.
+export interface SessionUser {
+  employeeId: string;
+  userId: string;
+  roleId: number | string | null;
+  companyId?: number | string | null;
+  name?: string | null;
+  role?: string | null;
+  mustChangePassword: boolean;
+}
+
+export interface SessionResponse {
+  success: boolean;
+  data: SessionUser;
 }
 
 // =========================
@@ -44,10 +61,9 @@ export interface LogoutResponse {
 // =========================
 
 export interface AuthState {
-  accessToken: string | null;
   employeeId: string | null;
   userId: string | null;
-  isFirstLogin: boolean;
+  mustChangePassword: boolean;
   isAuthenticated: boolean;
 }
 
@@ -66,13 +82,14 @@ export interface User {
 // =========================
 
 export interface ForgotPasswordRequest {
-  email: string;
-  mobile: string;
+  userId: string;
 }
 
 export interface ForgotPasswordResponse {
   success: boolean;
   message: string;
+  remainingSeconds: number;
+  remainingMinutes: number;
 }
 
 // =========================
@@ -98,4 +115,4 @@ export interface ChangePasswordRequest {
 export interface ChangePasswordResponse {
   success: boolean;
   message: string;
-}
+}

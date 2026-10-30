@@ -56,7 +56,7 @@
 //         setLoading(true);
 //         setError(null);
 
-//         const response = await fetch(
+//         const response = await apiFetch(
 //           FACTORY_ACT_FORMS_API,
 //           {
 //             method: "GET",
@@ -195,6 +195,7 @@
 
 
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/apiFetch";
 
 type FactoryActForm = {
   id: string | number;
@@ -247,7 +248,7 @@ export default function FactoryActFormsPage() {
     const loadForms = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
+        const response = await apiFetch(
           FACTORY_ACT_FORMS_API,
           {
             method: "GET",

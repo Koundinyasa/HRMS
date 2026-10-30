@@ -161,13 +161,14 @@ export const punchApi = baseApi.injectEndpoints({
       EmployeePunchDashboardResponse,
       PunchDashboardParams
     >({
-      query: ({ employeeId, selectedDate, viewType }) => ({
+      query: ({ employeeId, selectedDate, viewType, showAll }) => ({
         url: "/review/employeepunchdashboard",
         method: "POST",
         body: {
           employeeId: String(employeeId).trim(),
-          selectedDate,
+          ...(selectedDate ? { selectedDate } : {}),
           viewType: viewType || PUNCH_VIEW_TYPE,
+          showAll: showAll ?? false,
         },
       }),
       transformResponse: normalizeDashboard,

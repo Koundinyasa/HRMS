@@ -29,7 +29,10 @@ import { AdvancedPolicyDto } from './dto/advanced-policy.dto';
 import { ShiftPatternDto } from './dto/shift-pattern.dto';
 import { ShiftMasterDto } from './dto/shift-master.dto';
 import { GeoLocationDto } from './dto/geo-location.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/masters')
 @UseGuards(JwtAuthGuard)
 export class MastersController {

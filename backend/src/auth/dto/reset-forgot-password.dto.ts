@@ -1,11 +1,7 @@
-import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
+import { IsNotEmpty, MinLength, Matches } from 'class-validator';
  
 export class ResetForgotPasswordDto {
-  @IsString()
-  @IsNotEmpty()
-  employeeId!: string;
-  @IsString()
-  userId?: string;
+  // Who is resetting is decided by the reset cookie, not by anything sent here.
   @IsNotEmpty()
   @MinLength(8)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, {

@@ -724,12 +724,10 @@ export const recruitmentApi = baseApi.injectEndpoints({
       FinalApprovalsQuery
     >({
       query: ({ decision, search, page, limit }) => {
-        const token = localStorage.getItem("hrms_auth_accessToken");
         return {
           url: finalApprovalsUrl(),
           method: "GET",
           params: { decision, search: search || undefined, page, limit },
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         };
       },
       providesTags: ["Recruitment"],
@@ -737,11 +735,9 @@ export const recruitmentApi = baseApi.injectEndpoints({
 
     getFinalApproval: builder.query<Record<string, unknown>, string>({
       query: (id) => {
-        const token = localStorage.getItem("hrms_auth_accessToken");
         return {
           url: finalApprovalsUrl(`/${encodeURIComponent(id)}`),
           method: "GET",
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         };
       },
       providesTags: ["Recruitment"],
@@ -753,12 +749,10 @@ export const recruitmentApi = baseApi.injectEndpoints({
     >({
       ...submissionToasts("Final approval decision submitted successfully."),
       query: ({ id, body }) => {
-        const token = localStorage.getItem("hrms_auth_accessToken");
         return {
           url: finalApprovalsUrl(`/${encodeURIComponent(id)}/decision`),
           method: "POST",
           body,
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         };
       },
       invalidatesTags: ["Recruitment"],

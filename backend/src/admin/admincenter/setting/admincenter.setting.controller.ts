@@ -14,7 +14,10 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UpdatePayrollConfigurationDto } from './dto/update-payroll-configuration.dto';
 import { AddReminderDto } from './dto/add-reminder.dto';
 import { UpdateReminderStatusDto } from './dto/update-reminder-status.dto';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/setting')
 @UseGuards(JwtAuthGuard)
 export class AdmincenterSettingController {

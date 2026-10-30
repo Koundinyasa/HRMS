@@ -357,7 +357,7 @@ export class ChatbotService {
       employeeId,
     );
     const departments = master.departments;
-    const designations = master.designations;
+    const designation = master.designation;
     const companyInfo = master.companyInfo;
     const branches = master.branches;
     const ownOffice = master.ownOffice;
@@ -377,7 +377,7 @@ export class ChatbotService {
       selfEmployee,
       leaveTypes,
       departments,
-      designations,
+      designation,
       companyInfo,
       branches,
       ownOffice,

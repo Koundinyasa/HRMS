@@ -246,7 +246,7 @@ export class HrmsDbService {
     const sets = await this.execCompanyMasterData(companyId, employeeId);
     return {
       departments: (sets[1] ?? []).map((r: any) => r.Name as string),
-      designations: (sets[2] ?? []).map((r: any) => r.Name as string),
+      designation: (sets[2] ?? []).map((r: any) => r.Name as string),
       companyInfo: sets[3]?.[0]
         ? {
             name: sets[3][0].CompanyName as string,

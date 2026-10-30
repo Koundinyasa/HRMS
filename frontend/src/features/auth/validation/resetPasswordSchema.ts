@@ -8,6 +8,11 @@ export const resetPasswordSchema =
         .min(
           8,
           "Password must be at least 8 characters"
+        )
+        // Same rule the server enforces.
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+          "Password must contain uppercase, lowercase, number and special character (@ $ ! % * ? &)"
         ),
 
       confirmPassword:

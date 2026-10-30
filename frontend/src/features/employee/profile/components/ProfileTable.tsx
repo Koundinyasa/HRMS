@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { fetchWithSession } from "@/app/apiFetch";
+import { fetchFileObjectUrl } from "@/app/fileAccess";
  
 import { Card, CardContent } from "@/components/ui/card";
  
@@ -69,7 +71,9 @@ export default function ProfileTable({
   // VIEW
   // =====================================================
  
-  const handleView = (
+  // The file is fetched with the login session (refreshing it if needed) and
+  // shown from a blob address, so an expired access token cannot break it.
+  const handleView = async (
     action: DocumentAction,
   ) => {
     const url = getDocumentUrl(action);
@@ -86,7 +90,14 @@ export default function ProfileTable({
  
     setPreviewFileName(fileName);
     setPreviewError(false);
-    setPreviewUrl(url);
+
+    try {
+      setPreviewUrl(await fetchFileObjectUrl(url));
+    } catch (error) {
+      console.error("Document preview error:", error);
+      setPreviewUrl(null);
+      setPreviewError(true);
+    }
   };
  
   // =====================================================
@@ -106,7 +117,7 @@ const handleDownload = async (
   }
  
   try {
-    const response = await fetch(url);
+    const response = await fetchWithSession(url);
  
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
@@ -363,7 +374,7 @@ const handleDownload = async (
           USED FOR BOTH VIEW AND DOWNLOAD
       ===================================================== */}
  
-      {previewUrl && (
+      {(previewUrl || previewError) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
  
           <div className="flex h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white shadow-xl">
@@ -409,7 +420,7 @@ const handleDownload = async (
                 </div>
               ) : (
                 <iframe
-                  src={previewUrl}
+                  src={previewUrl ?? undefined}
                   title="Document Preview"
                   className="h-full w-full border-0"
                   onError={() =>

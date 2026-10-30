@@ -1,4 +1,6 @@
-const API_BASE_URL = "http://localhost:3001";
+import { apiFetch } from "@/app/apiFetch";
+
+// Paths below start with /api; apiFetch maps them onto VITE_API_URL.
 
 type RequestParams = Record<string, unknown>;
 
@@ -35,8 +37,8 @@ const getRequest = async <T>(
   endpoint: string,
   params?: RequestParams,
 ): Promise<T> => {
-  const response = await fetch(
-    `${API_BASE_URL}${endpoint}${buildQueryString(params)}`,
+  const response = await apiFetch(
+    `${endpoint}${buildQueryString(params)}`,
     {
       method: "GET",
       headers: {

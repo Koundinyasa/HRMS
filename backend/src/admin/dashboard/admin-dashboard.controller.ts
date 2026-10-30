@@ -14,9 +14,12 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../common/guards/permission.guard';
 import { Permission } from '../../common/decorators/permission.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
- 
+import { Roles } from '../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
+
 const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
- 
+
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/dashboard')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class AdminDashboardController {

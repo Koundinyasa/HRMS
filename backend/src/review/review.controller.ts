@@ -61,6 +61,7 @@ export class ReviewController {
       dto.employeeId,
       dto.selectedDate,
       dto.viewType,
+      dto.showAll,
     );
   }
 
@@ -151,5 +152,11 @@ export class ReviewController {
       body.actionStatusId,
       body.remarks,
     );
+  }
+  //Dropdown for Attendance Statuses
+  @Get('attendance-statuses')
+  @UseGuards(JwtAuthGuard)
+  async getAttendanceStatuses(@Req() req: any) {
+    return this.reviewService.getAttendanceStatuses(req.user.companyId);
   }
 }

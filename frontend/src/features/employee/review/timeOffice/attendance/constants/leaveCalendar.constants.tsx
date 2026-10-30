@@ -569,6 +569,31 @@ export const getCalendarDayKeys = (
     );
 };
 
+const ATTENDANCE_STATUS_CODES: Record<string, string[]> = {
+  Absent: ["A", "AB"],
+  HalfDay: ["HD", "P/AB", "AB/P"],
+  Holiday: ["H"],
+  OnLeave: ["L", "CL", "SL", "PL", "EL", "ML", "P/CL", "P/SL", "P/PL"],
+  Pending: ["PENDING", "PEN", "PD"],
+  Present: ["P"],
+  WeeklyOff: ["W", "WO"],
+};
+
+export const matchesAttendanceStatus = (
+  rawStatus: string | undefined,
+  statusName: string,
+): boolean => {
+  const status = rawStatus?.trim().toUpperCase();
+  if (!status || status === "-") {
+    return false;
+  }
+
+  return (
+    ATTENDANCE_STATUS_CODES[statusName]?.includes(status) ??
+    status === statusName.toUpperCase()
+  );
+};
+
 /* =========================================================
    BUILD CALENDAR DAYS
 ========================================================= */

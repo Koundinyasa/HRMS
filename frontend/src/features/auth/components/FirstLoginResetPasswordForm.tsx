@@ -169,7 +169,8 @@ export default function FirstLoginResetPasswordForm() {
             color: "#9CA3AF",
           }}
         >
-          Must be at least 8 characters
+          At least 8 characters, with an uppercase letter, a lowercase
+          letter, a number and a special character (@ $ ! % * ? &)
         </p>
       </div>
  

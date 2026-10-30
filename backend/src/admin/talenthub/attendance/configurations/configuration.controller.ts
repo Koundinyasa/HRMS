@@ -3,7 +3,10 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { CreateAttendanceConfigurationDto } from './dto/create-attendance-configuration.dto';
 import { ConfigurationService } from './configuration.service';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/attendance/configurations')
 @UseGuards(JwtAuthGuard)
 export class ConfigurationController {

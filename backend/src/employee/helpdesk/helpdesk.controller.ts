@@ -18,6 +18,8 @@ import * as path from 'path';
 import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketActionDto } from './dto/ticket-action.dto';
 import { AssignTicketDto } from './dto/assign-ticket.dto';
@@ -118,6 +120,7 @@ export class HelpdeskController {
       filePath,
     );
   }
+  @Roles(...ADMIN_PORTAL_ROLES)
   @Post('assign')
   @UseGuards(JwtAuthGuard)
   async assignTicket(@Req() req, @Body() body: AssignTicketDto) {

@@ -25,7 +25,7 @@
 //     ...(params.filters.search ? { search: params.filters.search } : {}),
 //   });
 
-//   const res = await fetch(`${BASE_URL}/${params.reportType}?${query.toString()}`);
+//   const res = await apiFetch(`${BASE_URL}/${params.reportType}?${query.toString()}`);
 
 //   if (!res.ok) {
 //     throw new Error(`Failed to fetch ${params.reportType}: ${res.status}`);
@@ -45,7 +45,7 @@
 //     format,
 //   });
 
-//   const res = await fetch(`${BASE_URL}/${reportType}/export?${query.toString()}`);
+//   const res = await apiFetch(`${BASE_URL}/${reportType}/export?${query.toString()}`);
 
 //   if (!res.ok) {
 //     throw new Error(`Failed to export ${reportType} as ${format}`);
@@ -66,6 +66,7 @@
 
 
 
+import { apiFetch } from "@/app/apiFetch";
 import type { LeaveReportApiResponse } from "../types/leaveReport";
 import type { ReportFilterState, GroupByLeavePolicyState } from "../types/filters";
 
@@ -146,11 +147,6 @@ function buildQuery(params: {
   return q.toString();
 }
 
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export async function fetchLeaveReportData(
   params: FetchLeaveReportParams
 ): Promise<LeaveReportApiResponse> {
@@ -164,9 +160,8 @@ export async function fetchLeaveReportData(
     groupBy: params.groupBy,
   });
 
-  const res = await fetch(`${BASE_URL}/${endpoint}?${query}`, {
+  const res = await apiFetch(`${BASE_URL}/${endpoint}?${query}`, {
     credentials: "include",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -190,9 +185,8 @@ export async function exportLeaveReport(
     format,
   });
 
-  const res = await fetch(`${BASE_URL}/${endpoint}?${query}`, {
+  const res = await apiFetch(`${BASE_URL}/${endpoint}?${query}`, {
     credentials: "include",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {

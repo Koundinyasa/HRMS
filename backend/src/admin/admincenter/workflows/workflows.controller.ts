@@ -3,7 +3,10 @@ import { Controller, Get, Param, Put, Body, UseGuards } from '@nestjs/common';
 import { WorkflowsService } from './workflows.service';
 
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/admincenter/workflows')
 @UseGuards(JwtAuthGuard)
 export class WorkflowsController {

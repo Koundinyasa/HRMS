@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 import ResignationRequestDetails from "../components/ResignationRequestDetails";
 import ResignationRequestFilters from "../components/ResignationRequestFilters";
 import ResignationRequestModal from "../components/ResignationRequestModal";
 import ResignationRequestTable from "../components/ResignationRequestTable";
+import { RESIGNATION_REQUEST_MESSAGES } from "../constants/resignationRequestConstants";
 
 import { useResignationRequest } from "../hooks/useResignationRequest";
 
@@ -48,6 +50,12 @@ const ResignationRequestPage = () => {
         await approveSelected();
       } else {
         await rejectSelected(remarks);
+      }
+
+      if (actionType === "approve") {
+        toast.success(RESIGNATION_REQUEST_MESSAGES.APPROVE_SUCCESS);
+      } else {
+        toast.error(RESIGNATION_REQUEST_MESSAGES.REJECT_SUCCESS);
       }
 
       setActionRequest(null);

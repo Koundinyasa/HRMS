@@ -1,6 +1,9 @@
 import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
 import { SeparationService } from './separation.service';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('separation')
 export class SeparationController {
   constructor(private readonly separationService: SeparationService) {}

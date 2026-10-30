@@ -74,8 +74,8 @@ export default function ResetPasswordForm() {
 </div>
 
           <p className="text-sm text-gray-500 mt-2">
-            Must be at least
-            8 characters
+            At least 8 characters, with an uppercase letter, a lowercase
+            letter, a number and a special character (@ $ ! % * ? &)
           </p>
         </div>
 

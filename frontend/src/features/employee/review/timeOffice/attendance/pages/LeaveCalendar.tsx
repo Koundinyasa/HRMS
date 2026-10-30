@@ -17,7 +17,9 @@ import {
   buildLeaveCalendarDays,
   getCalendarDayKeys,
   LEAVE_CALENDAR_CONSTANTS,
+  matchesAttendanceStatus,
 } from "../constants/leaveCalendar.constants";
+import { useGetReviewAttendanceStatusesQuery } from "../apis/leaveCalendarApi";
 import { useLazyGetEmployeeDailyRawPunchesQuery } from "@/features/employee/review/attendanceOverview/api/regularizationApi";
 import {
   Bookmark,
@@ -39,13 +41,19 @@ import {
 // =========================================================
 // RAW PUNCH API
 // =========================================================
-const LEAVE_TYPE_OPTIONS = [
-  { value: "none", label: "Select Leave Type" },
-  { value: "P", label: "Present" },
-  { value: "A", label: "Absent" },
-  { value: "W", label: "Week Off" },
-  { value: "H", label: "Holiday" },
-];
+function formatAttendanceStatusName(name: string): string {
+  switch (name) {
+    case "HalfDay":
+      return "Half Day";
+    case "OnLeave":
+      return "On Leave";
+    case "WeeklyOff":
+      return "Week Off";
+    default:
+      return name;
+  }
+}
+
 const LeaveCalendar = () => {
   // =========================================================
   // BASIC STATE
@@ -58,6 +66,7 @@ const LeaveCalendar = () => {
 
   const [pageState, setPageState] = useState({
     searchValue: "",
+    statusValue: "",
     page: 1,
   });
 
@@ -143,6 +152,19 @@ const LeaveCalendar = () => {
     month: apiMonth,
   });
 
+  const {
+    data: attendanceStatuses = [],
+    isFetching: attendanceStatusesLoading,
+    isError: attendanceStatusesError,
+  } = useGetReviewAttendanceStatusesQuery();
+  const leaveTypeOptions = [
+    { value: "none", label: "Select Leave Type" },
+    ...attendanceStatuses.map((status) => ({
+      value: String(status.ID),
+      label: formatAttendanceStatusName(status.Name),
+    })),
+  ];
+
   // =========================================================
   // RAW PUNCH API
   // =========================================================
@@ -191,13 +213,19 @@ const LeaveCalendar = () => {
   // =========================================================
 
   const searchValue = searchTerm.toLowerCase().trim();
+  const selectedStatusName =
+    attendanceStatuses.find((status) => String(status.ID) === leaveType)?.Name ?? "";
   const currentPage =
-    pageState.searchValue === searchValue ? pageState.page : 1;
+    pageState.searchValue === searchValue &&
+    pageState.statusValue === leaveType
+      ? pageState.page
+      : 1;
   const setCurrentPage = (
     update: number | ((page: number) => number),
   ) => {
     setPageState({
       searchValue,
+      statusValue: leaveType,
       page: typeof update === "function" ? update(currentPage) : update,
     });
   };
@@ -209,9 +237,20 @@ const LeaveCalendar = () => {
 
         const id = String(employee.EmployeeID ?? "").toLowerCase();
 
-        return name.includes(searchValue) || id.includes(searchValue);
+        const matchesSearch =
+          name.includes(searchValue) || id.includes(searchValue);
+        const matchesStatus =
+          !selectedStatusName ||
+          getCalendarDayKeys(employee).some((key) =>
+            matchesAttendanceStatus(
+              employee[key],
+              selectedStatusName,
+            ),
+          );
+
+        return matchesSearch && matchesStatus;
       }),
-    [monthlyLeaveCalendar, searchValue],
+    [monthlyLeaveCalendar, searchValue, selectedStatusName],
   );
 
   // =========================================================
@@ -489,14 +528,20 @@ const LeaveCalendar = () => {
                     setLeaveType(value === "none" ? "" : value);
                   }
                 }}
+                disabled={attendanceStatusesLoading}
               >
                 <SelectTrigger
                   aria-label="Select Leave Type"
+                  title={
+                    attendanceStatusesError
+                      ? "Unable to load attendance statuses"
+                      : undefined
+                  }
                   className="h-10 w-[160px] shrink-0 rounded-md border-slate-300 bg-white text-sm text-slate-600 shadow-none focus:ring-0"
                 >
                   <span className="min-w-0 truncate">
                     {
-                      LEAVE_TYPE_OPTIONS.find(
+                      leaveTypeOptions.find(
                         (option) => option.value === (leaveType || "none"),
                       )?.label
                     }
@@ -510,7 +555,11 @@ const LeaveCalendar = () => {
                   alignItemWithTrigger={false}
                   className="w-(--anchor-width) min-w-[160px] max-w-[calc(100vw-2rem)]"
                 >
-                  {LEAVE_TYPE_OPTIONS.map((option) => (
+                  {attendanceStatusesError ? (
+                    <SelectItem value="load-error" disabled>
+                      Unable to load statuses
+                    </SelectItem>
+                  ) : leaveTypeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -645,6 +694,7 @@ const LeaveCalendar = () => {
             <LeaveCalendarTable
               employees={paginatedEmployees}
               days={days}
+              statusFilter={selectedStatusName}
               onAttendanceClick={handleAttendanceClick}
             />
           </div>

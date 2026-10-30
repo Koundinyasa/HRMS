@@ -114,6 +114,7 @@ export interface LeaveCalendarSearchProps {
 export interface LeaveCalendarTableProps {
   employees: LeaveCalendarEmployee[];
   days: LeaveCalendarDay[];
+  statusFilter?: string;
   onAttendanceClick: AttendanceClickHandler;
 }
 
@@ -124,6 +125,7 @@ export interface LeaveCalendarTableProps {
 export interface EmployeeRowProps {
   employee: LeaveCalendarEmployee;
   days: LeaveCalendarDay[];
+  statusFilter?: string;
   onAttendanceClick: AttendanceClickHandler;
 }
 

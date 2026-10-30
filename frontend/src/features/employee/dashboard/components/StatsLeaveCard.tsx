@@ -1,7 +1,3 @@
-
-
-
- 
 import {
   Clock3,
   ArrowUpRight,
@@ -52,6 +48,10 @@ export default function StatsLeaveCard() {
  
   const handleApplyLeave = () => {
     navigate(`/${domain}/employee/leave/apply`);
+  };
+ 
+  const handleHolidayList = () => {
+    navigate(`/${domain}/employee/leave/holidaylist`);
   };
  
   return (
@@ -189,8 +189,11 @@ export default function StatsLeaveCard() {
         />
  
         {/* Restricted Holiday */}
-        <div
+        <button
+          type="button"
+          onClick={handleHolidayList}
           className="
+            w-full
             mt-5 sm:mt-8
             rounded-xl
             px-3 sm:px-5
@@ -199,6 +202,9 @@ export default function StatsLeaveCard() {
             items-center
             justify-between
             gap-3
+            text-left
+            cursor-pointer
+            hover:opacity-80
           "
           style={{
             background:
@@ -214,11 +220,14 @@ export default function StatsLeaveCard() {
           <span className="dashboard-heading text-xl sm:text-2xl">
             {restrictedCount}
           </span>
-        </div>
+        </button>
  
         {/* Upcoming Holiday */}
-        <div
+        <button
+          type="button"
+          onClick={handleHolidayList}
           className="
+            w-full
             mt-5 sm:mt-8
             rounded-xl
             px-3 sm:px-5
@@ -227,6 +236,9 @@ export default function StatsLeaveCard() {
             items-center
             justify-between
             gap-3
+            text-left
+            cursor-pointer
+            hover:opacity-80
           "
           style={{
             background:
@@ -242,9 +254,10 @@ export default function StatsLeaveCard() {
           <span className="text-xl sm:text-2xl font-medium text-slate-800">
             {upcomingCount}
           </span>
-        </div>
+        </button>
       </div>
     </div>
   );
 }
+ 
  

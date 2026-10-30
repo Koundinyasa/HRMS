@@ -26,17 +26,8 @@ import {
   DEFAULT_PERIOD_VALUE,
   DEFAULT_PUNCH_PERIOD,
   PUNCH_STORAGE_KEYS,
-  PUNCH_VIEW_TYPE,
 } from "../constants/punch.constants";
 import type { PunchPeriodType } from "../constants/punch.constants";
-
-/* =========================================================
-   TODAY
-========================================================= */
-
-function getToday(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 /* =========================================================
    DISPLAY DATE
@@ -127,12 +118,10 @@ export default function PunchPage({
      DATE
   ======================================================= */
 
-  const today = getToday();
-
   const [selectedDate, setSelectedDate] = useState<string>(
-    navigationState?.selectedDate ||
-      new URLSearchParams(location.search).get("date") ||
-      today,
+    navigationState?.selectedDate ??
+      new URLSearchParams(location.search).get("date") ??
+      "",
   );
 
   /* =======================================================
@@ -147,12 +136,6 @@ export default function PunchPage({
   );
 
   /* =======================================================
-     VIEW TYPE
-  ======================================================= */
-
-  const viewType: ViewType = PUNCH_VIEW_TYPE;
-
-  /* =======================================================
      MONTH / WEEK
   ======================================================= */
 
@@ -162,6 +145,14 @@ export default function PunchPage({
   const [periodValue, setPeriodValue] = useState(DEFAULT_PERIOD_VALUE);
 
   const [leaveFilter, setLeaveFilter] = useState(DEFAULT_LEAVE_FILTER);
+  const [showAllPunches, setShowAllPunches] = useState(false);
+
+  /* =======================================================
+     VIEW TYPE
+  ======================================================= */
+
+  const viewType: ViewType =
+    periodType === "Custom Week" ? "CustomWeek" : "CustomMonth";
 
   /* =======================================================
      REPORTING EMPLOYEES
@@ -198,6 +189,8 @@ export default function PunchPage({
     selectedDate,
 
     viewType,
+
+    showAll: showAllPunches,
   });
 
   /* =======================================================
@@ -842,10 +835,10 @@ export default function PunchPage({
               bg-white
              font-[Urbanist]"
               >
-                <div className="w-full min-w-0 max-w-full overflow-x-auto font-[Urbanist]">
+                <div className="max-h-[360px] w-full min-w-0 max-w-full overflow-auto font-[Urbanist]">
                   <table className="w-full min-w-[440px] whitespace-nowrap sm:min-w-[520px] [&_th]:px-2 [&_th]:py-3 [&_td]:px-2 [&_td]:py-3 sm:[&_th]:px-3 sm:[&_th]:py-4 sm:[&_td]:px-3 sm:[&_td]:py-4 font-[Urbanist]">
 
-                    <thead>
+                    <thead className="sticky top-0 z-10">
                       <tr className="bg-[#d4e9f7] font-[Urbanist]">
                         <th
                           className="
@@ -1124,6 +1117,8 @@ export default function PunchPage({
 
                   <button
                     type="button"
+                    aria-pressed={showAllPunches}
+                    onClick={() => setShowAllPunches((showAll) => !showAll)}
                     className="
                     rounded-full
                     bg-[#b9dcec]
@@ -1134,7 +1129,7 @@ export default function PunchPage({
                     text-[#1597e5]
                    font-[Urbanist]"
                   >
-                    Show All
+                    {showAllPunches ? "Show Less" : "Show All"}
                   </button>
 
                   {/* PERMISSION */}

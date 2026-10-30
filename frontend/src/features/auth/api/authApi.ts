@@ -7,7 +7,9 @@ import { baseApi } from "@/app/baseApi";
   FirstLoginResetPasswordRequest,
   ChangePasswordRequest,
   ChangePasswordResponse,
+  SessionResponse,
 } from "../types/auth.types";
+import { sessionExpired, sessionLoaded } from "../authSlice";
  
 import type { DomainRequest } from "@/features/domain-verification/types/domain.types";
  
@@ -32,6 +34,30 @@ export const authApi = baseApi.injectEndpoints({
     }),
  
     // =========================
+    // Current session (who am I?)
+    // Used when the page loads, to learn whether the browser still has a
+    // valid login. The answer comes from the server; nothing is read from
+    // browser storage.
+    // =========================
+    getSession: builder.query<SessionResponse, void>({
+      query: () => "/auth/me",
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(sessionLoaded(data.data));
+        } catch (error) {
+          const status = (error as { error?: { status?: unknown } })?.error?.status;
+          // Only a definite "not logged in" ends the session. If the server
+          // could not be reached we do not know, so we leave the state alone
+          // and the screen offers a retry.
+          if (status === 401 || status === 403) {
+            dispatch(sessionExpired());
+          }
+        }
+      },
+    }),
+
+    // =========================
     // Logout
     // =========================
     logout: builder.mutation<LogoutResponse, void>({
@@ -47,7 +73,7 @@ export const authApi = baseApi.injectEndpoints({
     forgotPassword: builder.mutation<
       {
         success: boolean;
-        employeeId: string;
+        message: string;
         remainingSeconds: number;
         remainingMinutes: number;
       },
@@ -68,7 +94,7 @@ export const authApi = baseApi.injectEndpoints({
     verifyOtp: builder.mutation<
       void,
       {
-        employeeId: string;
+        userId: string;
         otp: string;
       }
     >({
@@ -85,8 +111,6 @@ export const authApi = baseApi.injectEndpoints({
     resetForgotPassword: builder.mutation<
       void,
       {
-        employeeId: string;
-        userId?: string | null;
         newPassword: string;
         confirmPassword: string;
       }
@@ -149,6 +173,7 @@ export const {
   useGetCaptchaQuery,
   useLazyGetCaptchaQuery,
   useLoginMutation,
+  useGetSessionQuery,
   useForgotPasswordMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,

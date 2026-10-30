@@ -5,7 +5,10 @@ import { AssignService } from './assign.service';
 
 import { UpdateGeoLocationDto } from './dto/update-geo-location.dto';
 import { UpdatePolicyDto } from './dto/update-policy.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/assign')
 @UseGuards(JwtAuthGuard)
 export class AssignController {

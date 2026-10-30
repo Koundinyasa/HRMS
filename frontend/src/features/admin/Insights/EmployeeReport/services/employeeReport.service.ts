@@ -1,4 +1,5 @@
 // employeeReport.service.ts
+import { apiFetch } from "@/app/apiFetch";
 import type { EmployeeReportApiResponse } from "../types/employeeReport";
 import type { ReportFilterState } from "../types/filters";
 
@@ -61,11 +62,6 @@ function buildQuery(params: {
   return q.toString();
 }
 
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 export async function fetchEmployeeReportData(
   params: FetchEmployeeReportParams
 ): Promise<EmployeeReportApiResponse> {
@@ -76,9 +72,8 @@ export async function fetchEmployeeReportData(
     filters: params.filters,
   });
 
-  const res = await fetch(`${BASE_URL}/${endpoint}?${query}`, {
+  const res = await apiFetch(`${BASE_URL}/${endpoint}?${query}`, {
     credentials: "include",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -99,9 +94,8 @@ export async function exportEmployeeReport(
     format,
   });
 
-  const res = await fetch(`${BASE_URL}/${endpoint}?${query}`, {
+  const res = await apiFetch(`${BASE_URL}/${endpoint}?${query}`, {
     credentials: "include",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {

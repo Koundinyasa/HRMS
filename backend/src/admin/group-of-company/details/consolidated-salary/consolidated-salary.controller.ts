@@ -4,7 +4,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ConsolidatedSalaryService } from './consolidated-salary.service';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller(
   'admin/group-of-company/details/consolidated-salary',
 )
