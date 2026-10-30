@@ -46,6 +46,8 @@ import { BgvCandidateDto } from './dto/bgv-candidate.dto';
 import { ApproveCandidateJoiningDto } from './dto/approve-candidate-joining.dto';
 import { SkipCandidateAssessmentDto } from "./dto/skip-candidate-assessment.dto";
 import { MailService } from '../mail/mail.service';
+import { Roles } from '../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 // import { SendWelcomeEmailDto } from './dto/send-welcome-email.dto';
 // import { SendJoiningEmailDto } from './dto/send-joining-email.dto';
 // import { SendTeamAssignmentEmailDto } from './dto/send-team-assignment-email.dto';
@@ -54,6 +56,7 @@ const uploadPath = join(process.cwd(), 'uploads', 'recruitment', 'resumes');
 mkdirSync(uploadPath, { recursive: true });
 const REQUISITION_APPROVER_EMPLOYEE_ID = '294690';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('recruitment')
 export class RecruitmentController {
   constructor(

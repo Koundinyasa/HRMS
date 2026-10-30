@@ -41,7 +41,7 @@
 //   format: "pdf" | "excel"
 // ): Promise<Blob> {
 //   const query = new URLSearchParams({ format });
-//   const res = await fetch(`${BASE_URL}/${reportType}/audit-log/export?${query.toString()}`);
+//   const res = await apiFetch(`${BASE_URL}/${reportType}/audit-log/export?${query.toString()}`);
 
 //   if (!res.ok) {
 //     throw new Error(`Failed to export audit log for ${reportType} as ${format}`);
@@ -63,6 +63,7 @@
 
 
 
+import { apiFetch } from "@/app/apiFetch";
 import type { AuditLogApiResponse, AuditLogFilterState } from "../types/auditLog";
 
 interface FetchAuditLogParams {
@@ -78,11 +79,6 @@ const AUDIT_ENDPOINT: Record<string, string> = {
 };
 
 const BASE_URL = "/api/reports/leavereport";
-
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 export async function fetchAuditLog(
   params: FetchAuditLogParams
@@ -103,9 +99,8 @@ export async function fetchAuditLog(
     q.set("action", params.filters.action.join(","));
   }
 
-  const res = await fetch(`${BASE_URL}/${path}?${q.toString()}`, {
+  const res = await apiFetch(`${BASE_URL}/${path}?${q.toString()}`, {
     credentials: "include",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {
@@ -126,9 +121,8 @@ export async function exportAuditLog(
 
   const q = new URLSearchParams({ format });
 
-  const res = await fetch(`${BASE_URL}/${path}?${q.toString()}`, {
+  const res = await apiFetch(`${BASE_URL}/${path}?${q.toString()}`, {
     credentials: "include",
-    headers: authHeaders(),
   });
 
   if (!res.ok) {

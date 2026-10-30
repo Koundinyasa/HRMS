@@ -35,10 +35,4 @@ export class MyprofileController {
       file,
     );
   }
-  @Get('test')
-  test() {
-    return {
-      message: 'Myprofile controller working',
-    };
-  }
 }

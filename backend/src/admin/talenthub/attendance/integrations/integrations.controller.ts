@@ -3,7 +3,10 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { IntegrationsService } from './integrations.service';
 import { AttendanceIntegrationDto } from './dto/attendance-integration.dto';
 import { ReconcileLeaveUpdateDto } from './dto/reconcile-leave-update.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/attendance/integrations')
 @UseGuards(JwtAuthGuard)
 export class IntegrationsController {

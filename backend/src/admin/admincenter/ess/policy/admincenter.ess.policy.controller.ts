@@ -14,7 +14,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AdmincenterEssPolicyService } from './admincenter.ess.policy.service';
 import { CreatePolicyDto } from './dto/create-policy.dto';
 import { UpdatePolicyDto } from './dto/update-policy.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ess/policy')
 export class AdmincenterEssPolicyController {
   constructor(private readonly policyService: AdmincenterEssPolicyService) {}

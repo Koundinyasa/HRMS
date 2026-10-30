@@ -13,7 +13,10 @@ import { UpdateMailSchedulerDto } from './dto/update-mail-scheduler.dto';
 import { UpdatePunchIntegrationDto } from './dto/update-punch-integration.dto';
 
 import { ReadPunchDataDto } from './dto/read-punch-data.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/settings')
 @UseGuards(JwtAuthGuard)
 export class TimeOfficeSettingsController {

@@ -24,9 +24,12 @@ import { EstablishmentConfigurationDto } from './dto/establishment-configuration
 import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors/file.interceptor';
 import { diskStorage } from 'multer';
 import { Permission } from '../../../common/decorators/permission.decorator';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
 const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/configuration')
 @UseGuards(JwtAuthGuard, PermissionGuard)
 export class AdmincentercompanyController {

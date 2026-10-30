@@ -294,23 +294,9 @@ import type {
  
 /**
  * Shared axios instance: frontend/src/api/api.ts
- *   baseURL: http://localhost:3001/api  (or VITE if you update that file)
- *
- * Functionality unchanged — only transport uses the shared client
- * instead of raw fetch + hardcoded API_BASE.
+ *   baseURL comes from VITE_API_URL, sends the login cookies, and renews the
+ *   session on a 401. No token is attached by hand.
  */
- 
-function authHeaders(): Record<string, string> {
-  const token =
-    localStorage.getItem("token") ||
-    localStorage.getItem("accessToken") ||
-    sessionStorage.getItem("token") ||
-    "";
-  return {
-    Accept: "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
  
 /** Map backend USP_GetCompanyMasterData_N shape → form MasterData */
 function mapMasterData(data: Record<string, unknown>): MasterData {
@@ -404,10 +390,7 @@ function axiosErrorMessage(err: unknown, fallback: string): string {
 /** GET /api/admin/employee-details */
 export async function fetchMasterData(): Promise<MasterData> {
   try {
-    const res = await api.get<Record<string, unknown>>("/admin/employee-details", {
-      headers: authHeaders(),
-      withCredentials: true,
-    });
+    const res = await api.get<Record<string, unknown>>("/admin/employee-details");
     return mapMasterData(res.data ?? {});
   } catch (err) {
     throw new Error(axiosErrorMessage(err, "Failed to load dropdown data"));
@@ -481,9 +464,7 @@ export async function saveEmployee(
       {
         headers: {
           "Content-Type": "application/json",
-          ...authHeaders(),
         },
-        withCredentials: true,
       },
     );
     void photo;
@@ -512,10 +493,7 @@ export async function validateEmployeeId(
       StatusCode?: number | string;
       message?: string;
       Message?: string;
-    }>(`/admin/employee-details/validate-employee-id/${encodeURIComponent(id)}`, {
-      headers: authHeaders(),
-      withCredentials: true,
-    });
+    }>(`/admin/employee-details/validate-employee-id/${encodeURIComponent(id)}`);
  
     const data = res.data ?? {};
     const status = Number(data.statusCode ?? data.StatusCode);

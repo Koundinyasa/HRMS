@@ -17,8 +17,11 @@ import { EmployeesService } from './employees.service';
 import { GetEmployeesDto } from './dto/get-employees.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { UpdateEmployeeStatusDto } from './dto/update-employee-status.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @UseGuards(JwtAuthGuard)
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/user-management/employees')
 export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}

@@ -5,11 +5,10 @@
 // };
 
 import { TIME_OFFICE_ENDPOINTS } from "./timeOffice.endpoints";
-
-const API_BASE_URL = "http://localhost:3001/api";
+import { apiFetch } from "@/app/apiFetch";
 
 const get = async <T>(endpoint: string): Promise<T> => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+  const response = await apiFetch(endpoint);
 
   if (!response.ok) {
     throw new Error(

@@ -21,8 +21,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ImportDailyDto } from './dto/import-daily.dto';
 import { GetMonthlyLeaveCalendarDto } from './dto/get-monthly-leave-calendar.dto';
 import { BulkLeaveRequestDto } from './dto/bulk-leave-request.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/daily')
 @UseGuards(JwtAuthGuard)
 export class DailyController {

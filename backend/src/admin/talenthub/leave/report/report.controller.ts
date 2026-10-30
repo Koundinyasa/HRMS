@@ -16,7 +16,10 @@ import { ReportExportService } from './report-export.service';
 import { LeaveSummaryDetailedDto } from './dto/leave-summary-detailed.dto';
 import { LeaveHistoryDateWiseReportDto } from './dto/leave-history-date-wise-report.dto';
 import { LeaveHistoryMonthWiseReportDto } from './dto/leave-history-month-wise-report.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/report')
 @UseGuards(JwtAuthGuard)
 export class ReportController {

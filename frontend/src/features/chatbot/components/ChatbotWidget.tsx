@@ -53,6 +53,7 @@ import TeamPreviewModal from "./TeamPreviewModal";
 import ListPreviewModal from "./ListPreviewModal";
 
 import { useResetConversationMutation } from "../api/chatbotApi";
+import { downloadProtectedFile } from "@/app/fileAccess";
 
 interface ChatbotWidgetProps {
   isOpen: boolean;
@@ -1759,6 +1760,8 @@ function ChatWidgetRenderer({
   });
   const [copiedField, setCopiedField] = useState<number | null>(null);
   const [downloaded, setDownloaded] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
   const widgetRowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2336,30 +2339,54 @@ function ChatWidgetRenderer({
     }${colorParam}`;
 
     return (
-      <div className="flex mt-2.5">
-        <a
-          href={fullUrl}
-          download={widget.filename}
-          aria-disabled={downloaded}
-          onClick={(e) => {
-            if (downloaded) {
-              e.preventDefault();
-              return;
-            }
+      <div className="flex flex-col items-start gap-1.5 mt-2.5">
+        {/* The file is fetched with the login session (refreshed if the access
+            token has expired) and then saved, instead of a plain link. */}
+        <button
+          type="button"
+          disabled={downloaded || downloading}
+          onClick={async () => {
+            if (downloaded || downloading) return;
 
-            setDownloaded(true);
+            setDownloading(true);
+            setDownloadError("");
+
+            try {
+              await downloadProtectedFile(
+                fullUrl,
+                widget.filename ?? "download",
+              );
+              setDownloaded(true);
+            } catch (err) {
+              setDownloadError(
+                err instanceof Error
+                  ? err.message
+                  : "Download failed. Please try again.",
+              );
+            } finally {
+              setDownloading(false);
+            }
           }}
           style={GRADIENT_STYLE}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
             downloaded
               ? "opacity-45 cursor-not-allowed"
-              : "cursor-pointer hover:-translate-y-0.5"
+              : downloading
+                ? "opacity-70 cursor-wait"
+                : "cursor-pointer hover:-translate-y-0.5"
           }`}
         >
           {downloaded
             ? `Downloaded ${widget.filename}`
-            : `Download ${widget.filename}`}
-        </a>
+            : downloading
+              ? "Downloading…"
+              : `Download ${widget.filename}`}
+        </button>
+        {downloadError && (
+          <span role="alert" className="text-[12px] text-red-600">
+            {downloadError}
+          </span>
+        )}
       </div>
     );
   }

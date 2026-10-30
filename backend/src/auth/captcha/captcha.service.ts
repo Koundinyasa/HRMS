@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 interface CaptchaEntry {
   answer: string;
   expiresAt: number;
 }
 @Injectable()
 export class CaptchaService {
+  // Upper limit on unanswered captchas kept in memory (the oldest are dropped).
+  private static readonly MAX_STORED = 5000;
   private readonly store = new Map<string, CaptchaEntry>();
   private readonly ttlMs: number;
-  private readonly isProd: boolean;
+  private readonly debugAnswer: boolean;
  
   constructor(private readonly configService: ConfigService) {
     const ttlMinutes =
@@ -17,8 +19,10 @@ export class CaptchaService {
  
     this.ttlMs = ttlMinutes * 60 * 1000;
  
-    this.isProd =
-      this.configService.get<string>('environment') === 'production';
+    // Only when explicitly enabled (CAPTCHA_DEBUG_ANSWER=true) and never in production.
+    this.debugAnswer =
+      this.configService.get<boolean>('captcha.debugAnswer') === true &&
+      this.configService.get<string>('environment') !== 'production';
   }
  
   generate(): {
@@ -27,6 +31,7 @@ export class CaptchaService {
     debugAnswer?: string;
   } {
     this.purgeExpired();
+    this.enforceCapacity();
  
     const text = this.generateText();
  
@@ -43,7 +48,7 @@ export class CaptchaService {
     return {
       captchaId,
       image,
-      ...(this.isProd ? {} : { debugAnswer: text }),
+      ...(this.debugAnswer ? { debugAnswer: text } : {}),
     };
   }
  
@@ -86,22 +91,22 @@ export class CaptchaService {
     const result: string[] = [];
 
     // Guarantee at least one uppercase
-    result.push(uppercase[Math.floor(Math.random() * uppercase.length)]);
+    result.push(uppercase[randomInt(uppercase.length)]);
 
     // Guarantee at least one lowercase
-    result.push(lowercase[Math.floor(Math.random() * lowercase.length)]);
+    result.push(lowercase[randomInt(lowercase.length)]);
 
     // Guarantee at least one number
-    result.push(numbers[Math.floor(Math.random() * numbers.length)]);
+    result.push(numbers[randomInt(numbers.length)]);
 
     // Generate remaining characters
     for (let i = result.length; i < length; i++) {
-      result.push(allChars[Math.floor(Math.random() * allChars.length)]);
+      result.push(allChars[randomInt(allChars.length)]);
     }
 
     // Shuffle characters
     for (let i = result.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = randomInt(i + 1);
 
       [result[i], result[j]] = [result[j], result[i]];
     }
@@ -137,6 +142,16 @@ export class CaptchaService {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#fff"/><g font-family="Arial,sans-serif" font-size="46" font-weight="bold">${characters}</g><g>${noise}</g><path d="M0 40 Q110 70 220 18" fill="none" stroke="#666" stroke-width="2"/><path d="M0 55 Q110 5 220 55" fill="none" stroke="#777" stroke-width="1.5"/></svg>`;
 
     return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  }
+
+  // Caps memory use if someone requests captchas in a loop. A Map keeps
+  // insertion order, so the first keys are the oldest.
+  private enforceCapacity(): void {
+    while (this.store.size >= CaptchaService.MAX_STORED) {
+      const oldest = this.store.keys().next().value;
+      if (oldest === undefined) break;
+      this.store.delete(oldest);
+    }
   }
 
   private purgeExpired(): void {

@@ -12,7 +12,10 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { HolidayService } from './holiday.service';
 import { CreateHolidayDto } from './dto/create-holiday.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/holidaysettings')
 @UseGuards(JwtAuthGuard)
 export class HolidayController {

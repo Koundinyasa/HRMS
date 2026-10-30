@@ -1,3 +1,6 @@
+import { apiFetch } from "@/app/apiFetch";
+
+// Paths below start with /api; apiFetch maps them onto VITE_API_URL.
 const API_BASE_URL = "/api";
 
 /* =========================================================
@@ -19,7 +22,7 @@ export interface FactoryActFormsResponse {
 
 export const getFactoryActForms =
   async (): Promise<FactoryActForm[]> => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/factory-act-forms`,
       {
         method: "GET",
@@ -55,7 +58,7 @@ export const getFactoryActFormById =
   async (
     id: string | number,
   ): Promise<FactoryActForm> => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/factory-act-forms/${id}`,
       {
         method: "GET",
@@ -82,7 +85,7 @@ export const createFactoryActForm =
   async (
     form: Omit<FactoryActForm, "id">,
   ): Promise<FactoryActForm> => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/factory-act-forms`,
       {
         method: "POST",
@@ -111,7 +114,7 @@ export const updateFactoryActForm =
     id: string | number,
     form: Omit<FactoryActForm, "id">,
   ): Promise<FactoryActForm> => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/factory-act-forms/${id}`,
       {
         method: "PUT",
@@ -139,7 +142,7 @@ export const deleteFactoryActForm =
   async (
     id: string | number,
   ): Promise<void> => {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/factory-act-forms/${id}`,
       {
         method: "DELETE",

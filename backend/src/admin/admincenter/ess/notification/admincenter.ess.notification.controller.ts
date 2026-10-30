@@ -14,7 +14,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AdmincenterEssNotificationService } from './admincenter.ess.notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ess/notification')
 export class AdmincenterEssNotificationController {
   constructor(

@@ -31,7 +31,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import type { Response } from 'express';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/classification')
 @UseGuards(JwtAuthGuard)
 export class AdmincenterClassificationController {

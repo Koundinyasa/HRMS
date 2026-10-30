@@ -14,7 +14,10 @@ import { ConfirmJoiningDto } from './dto/confirm-joining.dto';
 import { PrepareJoiningDto } from './dto/prepare-joining.dto';
 import { UpdateJoiningDto } from './dto/update-joining.dto';
 import { JoiningsService } from './joinings.service';
+import { Roles } from '../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('joinings')
 @UseGuards(JwtAuthGuard)
 export class JoiningsController {

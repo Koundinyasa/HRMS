@@ -1,4 +1,5 @@
 import { baseApi } from "@/app/baseApi";
+import { fetchWithSession } from "@/app/apiFetch";
 
 /* =========================================================
  * ESS modules — CONFIRMED against the real backend
@@ -237,10 +238,7 @@ export async function downloadEssFile(params: {
   const path = filePath.replace(/^\//, "");
   const url = `/documents/${path}`;
 
-  const response = await fetch(url, {
-    method: "GET",
-    credentials: "include",
-  });
+  const response = await fetchWithSession(url, { method: "GET" });
 
   if (!response.ok) {
     if (response.status === 404) throw new Error("File not found on the server.");

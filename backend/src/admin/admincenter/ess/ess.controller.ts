@@ -31,6 +31,8 @@ import { EssService, getEssTempDir } from './ess.service';
 import { CreateEssModuleDto } from './dto/create-ess-module.dto';
 import { UpdateEssModuleDto } from './dto/update-ess-module.dto';
 import { DeleteEssModuleDto } from './dto/delete-ess-module.dto';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
  
 const ALLOWED_MIME_TYPES = [
   'application/pdf',
@@ -124,6 +126,7 @@ class EssUploadErrorInterceptor implements NestInterceptor {
   }
 }
  
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ess')
 @UseGuards(JwtAuthGuard)
 export class EssController {

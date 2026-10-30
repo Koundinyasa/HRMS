@@ -1,12 +1,8 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, useParams } from "react-router-dom";
 import { KeyRound, HelpCircle, LogOut, ChevronDown } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { logout } from "@/features/auth/authSlice";
-import { useLogoutMutation } from "@/features/auth/api/authApi";
-import { baseApi } from "@/app/baseApi";
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import ChangePasswordModal from "../../employee/components/ChangePasswordModal";
 
 interface UserMenuProps {
@@ -30,10 +26,7 @@ export default function UserMenu({
   const ref = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { domain } = useParams();
-  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const { signOut, isSigningOut: isLoggingOut } = useSignOut();
 
   const employeeId = useAppSelector((state) => state.auth.employeeId);
   const displayName = fullName ?? "Admin User";
@@ -77,15 +70,7 @@ export default function UserMenu({
 
   const handleSignOut = async () => {
     setOpen(false);
-    try {
-      await logoutUser().unwrap();
-    } catch (err) {
-      console.error("Logout request failed:", err);
-    } finally {
-      dispatch(logout());
-      dispatch(baseApi.util.resetApiState());
-      navigate(`/${domain}/login`, { replace: true });
-    }
+    await signOut();
   };
 
   return (

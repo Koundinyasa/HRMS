@@ -16,15 +16,24 @@ export class LeaveApiService {
   // has, so these server-to-server calls satisfy the leave module's
   // JwtAuthGuard exactly as if the real user's browser made the request.
   // This works because both modules share the same JWT_SECRET.
+  //
+  // The token carries the user's own session id (`sid`): the guard only
+  // accepts a token whose login session is still active, so this call ends
+  // the moment the user signs out. It lives for one minute, just long enough
+  // for the request.
   private mintCookieHeader(user: Record<string, any>): { Cookie: string } {
-    const token = this.jwtService.sign({
-      employeeId: user.employeeId,
-      userId: user.userId,
-      createdBy: user.createdBy,
-      roleId: user.roleId,
-      companyId: user.companyId,
-      name: user.name,
-    });
+    const token = this.jwtService.sign(
+      {
+        employeeId: user.employeeId,
+        userId: user.userId,
+        createdBy: user.createdBy,
+        roleId: user.roleId,
+        companyId: user.companyId,
+        name: user.name,
+        ...(user.sid ? { sid: user.sid } : {}),
+      },
+      { expiresIn: 60 },
+    );
     return { Cookie: `access_token=${token}` };
   }
 

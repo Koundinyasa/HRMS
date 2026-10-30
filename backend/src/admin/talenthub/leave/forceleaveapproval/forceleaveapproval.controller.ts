@@ -11,7 +11,10 @@ import {
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { ForceLeaveApprovalService } from './forceleaveapproval.service';
 import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/forceleaveapproval')
 @UseGuards(JwtAuthGuard)
 export class ForceLeaveApprovalController {

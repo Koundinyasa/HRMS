@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { User, Briefcase, ShieldCheck, MapPin, FileText, LogOut, Workflow } from "lucide-react";
 import { useGetEmployeeDetailQuery } from "../api/employeedetailsApi";
+import { openProtectedFileInTab, resolveFileUrl } from "@/app/fileAccess";
  
 const TABS = [
   { key: "general", label: "General", icon: User },
@@ -38,6 +39,17 @@ function Boolean_({ label, value }: { label: string; value: 0 | 1 | undefined })
   );
 }
  
+// Opens an employee document with the login session (refreshing it if the
+// access token has expired) instead of a plain link.
+async function viewDocument(filePath: string) {
+  try {
+    const opened = await openProtectedFileInTab(resolveFileUrl(filePath));
+    if (!opened) window.alert("Allow pop-ups to view the document.");
+  } catch (err) {
+    window.alert(err instanceof Error ? err.message : "Could not open the document.");
+  }
+}
+
 export default function EmployeeDetailsPage() {
   const { empId } = useParams<{ empId: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>("general");
@@ -186,9 +198,9 @@ export default function EmployeeDetailsPage() {
                     </div>
                   </div>
                   {doc.FilePath && (
-                    <a href={doc.FilePath} target="_blank" rel="noreferrer" className="shrink-0 text-[11px] font-medium text-[#FF6200] hover:underline">
+                    <button type="button" onClick={() => void viewDocument(doc.FilePath!)} className="shrink-0 text-[11px] font-medium text-[#FF6200] hover:underline">
                       View
-                    </a>
+                    </button>
                   )}
                 </div>
               ))}

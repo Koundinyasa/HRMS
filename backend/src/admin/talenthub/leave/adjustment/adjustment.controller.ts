@@ -21,7 +21,10 @@ import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { GetManualLeaveAllotmentListDto } from './dto/get-manual-leave-allotment-list.dto';
 import { GetLeaveAdjustmentDto } from './dto/get-leave-adjustment.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/adjustment')
 @UseGuards(JwtAuthGuard)
 export class AdjustmentController {

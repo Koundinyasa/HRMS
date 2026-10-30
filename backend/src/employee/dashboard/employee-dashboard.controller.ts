@@ -29,11 +29,6 @@ export class DashboardController {
     return this.dashboardService.getHolidayList(req.user.employeeId);
   }
 
-  @Get('test')
-  test() {
-    return 'Dashboard works';
-  }
-
   @Get('approval-summary')
   @UseGuards(JwtAuthGuard)
   async getApprovalSummary(@Req() req: any) {

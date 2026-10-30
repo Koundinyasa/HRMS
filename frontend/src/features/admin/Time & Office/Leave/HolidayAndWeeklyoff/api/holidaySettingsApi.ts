@@ -37,7 +37,7 @@ export const holidaySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getHolidayMasters: builder.query<HolidayMaster[], void>({
       query: () => ({
-        url: "/api/admin/ta/leave/holidaysettings/weeklyoff",
+        url: "/admin/ta/leave/holidaysettings/weeklyoff",
         method: "GET",
       }),
       providesTags: ["HolidayMaster"],
@@ -45,7 +45,7 @@ export const holidaySettingsApi = baseApi.injectEndpoints({
 
     listHolidays: builder.query<Holiday[], HolidayListQuery>({
       query: (body) => ({
-        url: "/api/admin/ta/leave/holidaysettings/list",
+        url: "/admin/ta/leave/holidaysettings/list",
         method: "POST",
         body,
       }),
@@ -54,7 +54,7 @@ export const holidaySettingsApi = baseApi.injectEndpoints({
 
     updateHoliday: builder.mutation<Holiday, HolidayUpdatePayload>({
       query: (body) => ({
-        url: "/api/admin/ta/leave/holidaysettings/update",
+        url: "/admin/ta/leave/holidaysettings/update",
         method: "POST",
         body,
       }),
@@ -63,7 +63,7 @@ export const holidaySettingsApi = baseApi.injectEndpoints({
 
     createHoliday: builder.mutation<Holiday, HolidayCreatePayload>({
       query: (body) => ({
-        url: "/api/admin/ta/leave/holidaysettings/create",
+        url: "/admin/ta/leave/holidaysettings/create",
         method: "POST",
         body,
       }),
@@ -76,7 +76,7 @@ export const holidaySettingsApi = baseApi.injectEndpoints({
         formData.append("masterId", String(masterId));
         formData.append("file", file);
         return {
-          url: "/api/admin/ta/leave/holidaysettings/import",
+          url: "/admin/ta/leave/holidaysettings/import",
           method: "POST",
           body: formData,
         };
@@ -87,7 +87,7 @@ export const holidaySettingsApi = baseApi.injectEndpoints({
     // ⚠️ ASSUMED — no delete endpoint was given. Confirm/replace the URL.
     deleteHoliday: builder.mutation<void, { id: number }>({
       query: (body) => ({
-        url: "/api/admin/ta/leave/holidaysettings/delete",
+        url: "/admin/ta/leave/holidaysettings/delete",
         method: "POST",
         body,
       }),

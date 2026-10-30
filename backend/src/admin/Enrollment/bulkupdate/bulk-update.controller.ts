@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 import { BulkUpdateService } from './bulk-update.service';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('onboard/bulk-update')
 export class BulkUpdateController {
   constructor(private readonly bulkUpdateService: BulkUpdateService) {}

@@ -1,27 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { HelpCircle, KeyRound, LogOut } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 
-import { useLogoutMutation } from "@/features/auth/api/authApi";
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 
-import { baseApi } from "@/app/baseApi";
-
-import { useAppDispatch } from "@/hooks/useAppDispatch";
 import ChangePasswordModal from "./ChangePasswordModal";
-import { logout } from "@/features/auth/authSlice";
 
 
 
 export default function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const navigate = useNavigate();
-  const { domain } = useParams();
-  const [logoutUser, { isLoading: isLoggingOut }] = useLogoutMutation();
-  const dispatch = useAppDispatch();
+  const { signOut, isSigningOut: isLoggingOut } = useSignOut();
   const { profileData } = useDashboard();
   const profile = profileData?.data.profile;
   const lastLogin = profile?.LastLoginDateTime ?? "--";
@@ -103,19 +95,7 @@ export default function ProfileMenu() {
 
   const handleSignOut = async () => {
     setOpen(false);
-
-    try {
-      await logoutUser().unwrap();
-    } catch (err) {
-      console.error(
-        "Logout request failed:",
-        err
-      );
-    } finally {
-      dispatch(logout());
-      dispatch(baseApi.util.resetApiState());
-      navigate(`/${domain}/login`, { replace: true });
-    }
+    await signOut();
   };
 
   return (

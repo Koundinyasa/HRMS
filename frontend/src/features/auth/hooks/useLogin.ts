@@ -45,14 +45,11 @@ export const useLogin = () => {
       applyTheme("blue");
       dispatch(showPageLoader());
       toast.success("Login successful.");
-      if (response.isFirstLogin) {
+      if (response.mustChangePassword) {
         navigate(`/${domain}/first-login-reset-password`);
         return;
       }
-      const roleId =
-        (response.data as typeof response.data & { roleId?: number })
-          .roleId ??
-        (response as typeof response & { roleId?: number }).roleId;
+      const roleId = Number(response.data.roleId);
  
       if (roleId === 1 || roleId === 2) {
         navigate(`/${domain}/admin/dashboard`); // ✅ Admin + HR Admin → admin dashboard

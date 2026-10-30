@@ -29,8 +29,11 @@ export function getApiErrorMessage(err: unknown, fallback: string): string {
   if (e.status === "FETCH_ERROR") {
     return "Cannot reach the server. Check that the backend is running and VITE_API_URL is correct.";
   }
-  if (e.status === 401 || e.status === 403) {
-    return "You are not authorised. Please log in again.";
+  if (e.status === 401) {
+    return "Your session has ended. Please log in again.";
+  }
+  if (e.status === 403) {
+    return "You do not have permission to do this.";
   }
   if (e.status === 404) {
     return `${fallback} (endpoint not found - 404).`;

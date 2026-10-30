@@ -2,7 +2,10 @@ import { Controller, Get, Param, UseGuards, Body, Put } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { SettingsService } from './settings.service';
 import { UpdateLeavePolicySettingsDto } from './dto/update-leave-policy-settings.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/settings')
 @UseGuards(JwtAuthGuard)
 export class SettingsController {

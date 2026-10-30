@@ -1,6 +1,9 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { EmployeeForceApprovalService } from './employee-force-approval.service';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('employee-force-approval')
 export class EmployeeForceApprovalController {
   constructor(

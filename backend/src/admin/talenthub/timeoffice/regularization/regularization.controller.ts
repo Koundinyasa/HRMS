@@ -18,7 +18,10 @@ import { UpdatePunchDto } from './dto/update-punch.dto';
 import { RegularizePunchDto } from './dto/regularize-punch.dto';
 import { CorrectStatusDto } from './dto/correct-status.dto';
 import { ApplyLeaveDto } from './dto/apply-leave.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES, Role } from '../../../../common/constants/roles';
 
+@Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/regularization')
 @UseGuards(JwtAuthGuard)
 export class RegularizationController {
@@ -134,6 +137,9 @@ export class RegularizationController {
   }
 
   // 11. Add Punch from Attendance Daily Log
+  // EMPLOYEE PORTAL: also used by reporting managers (Review > Time Office > Punch).
+  // TODO(2C): verify the target employeeId is the caller's reportee (or HR/Admin).
+  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('attendance/dailylog/punch')
   async addAttendancePunch(
     @Query('employeeId') employeeId: string,

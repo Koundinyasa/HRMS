@@ -8,7 +8,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchFileObjectUrl } from "@/app/fileAccess";
 import {
   buildDocumentUrl,
   downloadEssFile,
@@ -95,7 +96,9 @@ export default function PolicyList({
     isImage: boolean;
   } | null>(null);
 
-  const openPolicy = (row: EssModuleRow) => {
+  // The attachment is fetched with the login session (refreshing it if the
+  // access token has expired) and shown from a blob address.
+  const openPolicy = async (row: EssModuleRow) => {
     const fileUrl = buildDocumentUrl(row.FilePath);
     if (!fileUrl) {
       window.alert("No attachment available for this policy.");
@@ -103,12 +106,27 @@ export default function PolicyList({
     }
     const path = String(row.FilePath || "").toLowerCase();
     const isImage = /\.(png|jpe?g|gif|webp|bmp)$/i.test(path);
-    setPreview({
-      url: fileUrl,
-      title: row.PolicyName || "Policy attachment",
-      isImage,
-    });
+    try {
+      const blobUrl = await fetchFileObjectUrl(fileUrl);
+      setPreview({
+        url: blobUrl,
+        title: row.PolicyName || "Policy attachment",
+        isImage,
+      });
+    } catch (err: unknown) {
+      window.alert(
+        err instanceof Error ? err.message : "Failed to open the attachment."
+      );
+    }
   };
+
+  // Release the blob address when the viewer closes or is replaced.
+  useEffect(() => {
+    const url = preview?.url;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [preview?.url]);
 
 
   /** Download icon — save file to disk via /documents FilePath. */
@@ -314,7 +332,7 @@ export default function PolicyList({
                                 : "No attachment available"
                             }
                             disabled={!fileUrl}
-                            onClick={() => openPolicy(policy)}
+                            onClick={() => void openPolicy(policy)}
                             className={`${iconChip} ${
                               fileUrl
                                 ? "bg-[#EFF6FF] text-[#2563EB] hover:bg-[#DBEAFE]"

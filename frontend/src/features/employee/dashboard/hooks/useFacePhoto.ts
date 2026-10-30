@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/apiFetch";
 
 // Loads the logged-in employee's enrollment photo from the guarded backend
 // endpoint and hands back a temporary browser URL for an <img>. The photo
@@ -21,10 +22,9 @@ export function useFacePhoto(enabled: boolean, version?: string | null) {
 
     let cancelled = false;
     let objectUrl: string | null = null;
-    const baseUrl = String(import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
 
     setIsLoading(true);
-    fetch(`${baseUrl}/employee/attendance/face-photo`, { credentials: "include" })
+    apiFetch("/employee/attendance/face-photo")
       .then((response) => (response.ok ? response.blob() : Promise.reject(new Error(String(response.status)))))
       .then((blob) => {
         if (cancelled) return;

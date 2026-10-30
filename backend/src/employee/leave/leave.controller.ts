@@ -19,6 +19,8 @@ import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 
 import { LeaveService } from './leave.service';
 import { LeaveRequestDto } from './dto/leave-request.dto';
@@ -190,7 +192,13 @@ export class LeaveController {
     FileInterceptor('document', {
       storage: diskStorage({
         destination: (req, file, cb) => {
-          const employeeId = (req as any).body.employeeId;
+          // Multer runs before request validation, and this value becomes a
+          // folder name, so only plain ids are accepted here.
+          const employeeId = String((req as any).body?.employeeId ?? '').trim();
+
+          if (!/^(?!.*\.\.)[A-Za-z0-9._-]{1,50}$/.test(employeeId)) {
+            return cb(new BadRequestException('Invalid employeeId'), '');
+          }
 
           const uploadPath = path.join(process.cwd(), 'uploads', employeeId);
 
@@ -273,8 +281,25 @@ export class LeaveController {
 
   // Upload Holiday Excel
   @Post('holidaysupload')
-  @UseInterceptors(FileInterceptor('file'))
+  @Roles(...ADMIN_PORTAL_ROLES)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        if (!/\.(xlsx|xls)$/i.test(file.originalname)) {
+          return cb(
+            new BadRequestException('Only .xlsx or .xls files are allowed'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
   async uploadHolidayFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('A file is required');
+    }
     return this.leaveService.uploadHolidayFile(file);
   }
 

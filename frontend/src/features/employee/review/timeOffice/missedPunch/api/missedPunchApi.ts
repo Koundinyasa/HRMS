@@ -5,6 +5,7 @@ import type {
 } from "../types/missedPunch.types";
 
 import { baseApi } from "@/app/baseApi";
+import { apiFetch } from "@/app/apiFetch";
 
 import {
   formatDateForApi,
@@ -331,10 +332,8 @@ export async function getMissedPunchEmployees(
   );
 
   const response =
-    await fetch(url, {
+    await apiFetch(url, {
       method: "POST",
-
-      credentials: "include",
 
       headers: {
         "Content-Type":

@@ -1,9 +1,12 @@
+import { apiFetch } from "@/app/apiFetch";
+
+// Paths below start with /api; apiFetch maps them onto VITE_API_URL.
 const API_BASE_URL = "/api";
 
 
 // GET GENERAL REPORT FIELDS
 export const getGeneralReportFields = async () => {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/general-report/fields`,
     {
       method: "GET",
@@ -25,7 +28,7 @@ export const getGeneralReportFields = async () => {
 
 // GET ALL GENERAL REPORTS
 export const getGeneralReports = async () => {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/general-report`,
     {
       method: "GET",
@@ -47,7 +50,7 @@ export const getGeneralReports = async () => {
 
 // GET PINNED REPORTS
 export const getPinnedReports = async () => {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/general-report/pinned`,
     {
       method: "GET",
@@ -71,7 +74,7 @@ export const getPinnedReports = async () => {
 export const saveGeneralReport = async (
   reportData: Record<string, unknown>
 ) => {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/general-report`,
     {
       method: "POST",
@@ -97,7 +100,7 @@ export const updateGeneralReport = async (
   reportId: string,
   reportData: Record<string, unknown>
 ) => {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/general-report/${reportId}`,
     {
       method: "PUT",
@@ -122,7 +125,7 @@ export const updateGeneralReport = async (
 export const deleteGeneralReport = async (
   reportId: string
 ) => {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/general-report/${reportId}`,
     {
       method: "DELETE",
