@@ -90,15 +90,6 @@ export default function RequisitionPage() {
           </div>
         )}
 
-        {approved && (
-          <div
-            role="status"
-            className="rounded-md border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700 font-[Urbanist]"
-          >
-            Leave requests approved successfully.
-          </div>
-        )}
-
         {/* Loading */}
         {loading && (
           <div className="rounded-md bg-white p-5 text-center text-sm text-slate-500 font-[Urbanist]">
@@ -136,7 +127,11 @@ export default function RequisitionPage() {
             onBack={() => setRejectedRequests([])}
             onSubmit={async (remarks) => {
               const rejected = await updateSelected("rejected", remarks);
-              if (rejected.length > 0) setRejectedRequests([]);
+              if (rejected.length > 0) {
+                setRejectedRequests([]);
+              } else {
+                throw new Error("Leave rejection was not completed.");
+              }
             }}
           />
         )}
