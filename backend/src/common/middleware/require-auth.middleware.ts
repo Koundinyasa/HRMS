@@ -1,10 +1,11 @@
 import { HttpException } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import type { JwtService } from '@nestjs/jwt';
+import { codeForEndReason, messageForEndReason } from '../../auth/session/session-end';
 
 /** What the middleware needs from the session store (AuthSessionService). */
 export interface SessionLookup {
-  isActive(familyId: string): Promise<boolean>;
+  getState(familyId: string): Promise<{ active: boolean; reason?: string }>;
 }
 
 export interface RequireAuthOptions {
@@ -33,8 +34,10 @@ export function createRequireAuth(
   { jwtService, sessions, allowLegacyTokens }: RequireAuthOptions,
   allowedRoles?: readonly number[],
 ) {
-  const deny = (res: Response, status: number, message: string) =>
-    res.status(status).json({ success: false, statusCode: status, message });
+  const deny = (res: Response, status: number, message: string, code?: string) =>
+    res
+      .status(status)
+      .json({ success: false, statusCode: status, message, ...(code ? { code } : {}) });
 
   return async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.access_token;
@@ -57,16 +60,16 @@ export function createRequireAuth(
     }
 
     if (payload?.sid) {
-      let active: boolean;
+      let state: { active: boolean; reason?: string };
       try {
-        active = await sessions.isActive(String(payload.sid));
+        state = await sessions.getState(String(payload.sid));
       } catch (error) {
         // Session store unreachable: fail closed, like the global guard.
         const status = error instanceof HttpException ? error.getStatus() : 503;
         return deny(res, status, 'Session check is unavailable. Please try again.');
       }
-      if (!active) {
-        return deny(res, 401, 'Session has ended');
+      if (!state.active) {
+        return deny(res, 401, messageForEndReason(state.reason), codeForEndReason(state.reason));
       }
     } else if (!allowLegacyTokens) {
       return deny(res, 401, 'Session is no longer valid. Please sign in again.');

@@ -57,6 +57,20 @@ export default () => ({
     sessionCacheSeconds: readEnv(process.env.SESSION_CACHE_SECONDS)
       ? parseInt(readEnv(process.env.SESSION_CACHE_SECONDS), 10)
       : 30,
+    // One login at a time per employee.
+    //   replace  a new sign-in ends the older ones (default)
+    //   block    a new sign-in is refused while another device was active
+    //            within singleSessionActiveWindowSeconds (needs the browser
+    //            heartbeat to be accurate)
+    //   off      any number of logins
+    singleSessionMode: ['replace', 'block', 'off'].includes(
+      readEnv(process.env.SINGLE_SESSION_MODE),
+    )
+      ? readEnv(process.env.SINGLE_SESSION_MODE)
+      : 'replace',
+    singleSessionActiveWindowSeconds: readEnv(process.env.SESSION_ACTIVE_WINDOW_SECONDS)
+      ? parseInt(readEnv(process.env.SESSION_ACTIVE_WINDOW_SECONDS), 10)
+      : 120,
     // Old session rows are deleted by the backend itself (SQL Server Express
     // has no SQL Agent). Rows ended or expired longer ago than the retention
     // period are removed, in small batches.

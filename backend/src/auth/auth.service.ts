@@ -15,6 +15,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { SendWishDto } from './dto/SendWish.dto';
 import { AuthSessionService, SessionMeta } from './session/auth-session.service';
 import { AuthErrorCode } from './auth-error-codes';
+import { sessionEndedException } from './session/session-end';
 @Injectable()
 export class AuthService {
   constructor(
@@ -311,15 +312,11 @@ export class AuthService {
  
       const isFirstLogin = user.LastLoginDateTime === null;
  
-      // update login ONLY after first login is completed
-      if (!isFirstLogin) {
-        await pool
-          .request()
-          .input('EmployeeID', user.EmployeeID)
-          .input('flag', 2)
-          .execute('USP_UpdateLoginInfo');
-      }
  
+      // Anything that can fail is checked before the session starts: starting
+      // it ends the employee's other logins.
+      const mustChange = await this.mustChangePassword(user);
+
       // Start the session, then sign the tokens that belong to it.
       const familyId = randomUUID();
       const refreshToken = this.signRefreshToken(user, familyId);
@@ -334,7 +331,15 @@ export class AuthService {
         meta,
       });
 
-      const mustChange = await this.mustChangePassword(user);
+      // Record the login only now that it succeeded (a refused or failed
+      // sign-in must not count). Only after the first login is completed.
+      if (!isFirstLogin) {
+        await pool
+          .request()
+          .input('EmployeeID', user.EmployeeID)
+          .input('flag', 2)
+          .execute('USP_UpdateLoginInfo');
+      }
 
       const accessToken = this.jwtService.sign(
         this.buildAccessClaims(user, familyId, mustChange),
@@ -782,7 +787,11 @@ export class AuthService {
     try {
       payload = this.jwtService.verify(refreshToken);
     } catch {
-      throw new UnauthorizedException('Session expired. Please sign in again.');
+      throw new UnauthorizedException({
+        statusCode: 401,
+        message: 'Session expired. Please sign in again.',
+        code: AuthErrorCode.SESSION_EXPIRED,
+      });
     }
 
     if (
@@ -854,7 +863,7 @@ export class AuthService {
     }
 
     // The stored session is over; make this instance stop trusting it now.
-    this.sessions.markInactive(familyId);
+    this.sessions.markInactive(familyId, rotated.reason);
 
     if (rotated.code === 'REUSED') {
       this.logger.warn(
@@ -862,7 +871,8 @@ export class AuthService {
       );
     }
 
-    throw new UnauthorizedException('Session ended. Please sign in again.');
+    // The code says why: replaced by another sign-in, logged out, or timed out.
+    throw sessionEndedException(rotated.reason);
   }
 
   // ── Who is logging out ──────────────────────────────────────────────────
@@ -903,11 +913,15 @@ export class AuthService {
   async logout(who: { employeeId?: string; familyId?: string }) {
     // End the session first. If this fails the error is returned and the
     // cookies are kept, so the user can simply try logging out again.
+    let ended = true;
     if (who.familyId) {
-      await this.sessions.revoke(who.familyId, 'logout');
+      ended = (await this.sessions.revoke(who.familyId, 'logout')) > 0;
     }
 
-    if (who.employeeId) {
+    // A login that was already over (for example replaced by a sign-in on
+    // another device) must not touch the account's current login: no logout
+    // record and no chatbot reset.
+    if (who.employeeId && ended) {
       const pool = await this.dbService.connect();
 
       await pool
@@ -940,6 +954,17 @@ export class AuthService {
         mustChangePassword: user.mcp === true,
       },
     };
+  }
+
+  // ── Heartbeat (POST /auth/heartbeat) ────────────────────────────────────
+  // The browser calls this while a tab is open. It records "still here" and
+  // nothing else: it does not extend the login. If the login has ended the
+  // global guard has already answered 401 with the reason.
+  async heartbeat(user: any) {
+    if (user?.sid) {
+      await this.sessions.touch(String(user.sid));
+    }
+    return { success: true };
   }
 
   // ================= CHANGE PASSWORD =================

@@ -12,6 +12,7 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { ALLOW_WHILE_PASSWORD_CHANGE_REQUIRED } from '../decorators/allow-password-change.decorator';
 import { AuthSessionService } from '../../auth/session/auth-session.service';
 import { AuthErrorCode } from '../../auth/auth-error-codes';
+import { sessionEndedException } from '../../auth/session/session-end';
 
 /**
  * Single source of truth for JWT auth.
@@ -81,9 +82,10 @@ export class JwtAuthGuard implements CanActivate {
 
     if (payload?.sid) {
       // May throw 503 when the session store cannot be reached: fail closed.
-      const active = await this.sessions.isActive(String(payload.sid));
-      if (!active) {
-        throw new UnauthorizedException('Session has ended');
+      const state = await this.sessions.getState(String(payload.sid));
+      if (!state.active) {
+        // The code tells the browser why: replaced, logged out, or timed out.
+        throw sessionEndedException(state.reason);
       }
     } else if (!this.allowLegacyTokens) {
       throw new UnauthorizedException('Session is no longer valid. Please sign in again.');

@@ -49,6 +49,10 @@ export const validationSchema = Joi.object({
   ALLOW_LEGACY_TOKENS: Joi.boolean().default(false),
   // How long a "session is active" answer is cached, in seconds (0 = no cache).
   SESSION_CACHE_SECONDS: Joi.number().integer().min(0).max(300).default(30),
+  // One login at a time per employee: replace | block | off.
+  SINGLE_SESSION_MODE: Joi.string().valid('replace', 'block', 'off').default('replace'),
+  // In block mode: a login counts as in use if it was seen this recently.
+  SESSION_ACTIVE_WINDOW_SECONDS: Joi.number().integer().min(30).max(3600).default(120),
   // Removal of old session rows (done by the backend, daily by default).
   SESSION_PURGE_ENABLED: Joi.boolean().default(true),
   SESSION_PURGE_INTERVAL_HOURS: Joi.number().integer().min(1).max(168).default(24),

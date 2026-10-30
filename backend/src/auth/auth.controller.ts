@@ -115,6 +115,15 @@ export class AuthController {
     return this.authService.getSessionUser(req.user);
   }
 
+  // The browser calls this about once a minute while a tab is open, so the
+  // server knows the login is in use and the tab learns quickly if it was
+  // ended. Not rate limited per IP: many staff share one office address.
+  @AllowWhilePasswordChangeRequired()
+  @Post('heartbeat')
+  heartbeat(@Req() req: any) {
+    return this.authService.heartbeat(req.user);
+  }
+
   @Public()
   @Post('verify-company')
   verifyCompany(@Body('tenantCode') tenantCode: string) {
