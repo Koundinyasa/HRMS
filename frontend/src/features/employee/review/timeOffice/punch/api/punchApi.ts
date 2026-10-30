@@ -95,11 +95,18 @@ function normalizeAttendance(record: ApiRecord): AttendanceSummary {
 }
 
 function normalizePunchRecord(record: ApiRecord): PunchRecord {
-  const directionValue = getValue(record, ["direction", "Direction"]);
+  const directionValue = getValue(record, [
+    "direction",
+    "Direction",
+    "PunchTypeName",
+  ]);
+  const normalizedDirection =
+    typeof directionValue === "string" ? directionValue.trim().toUpperCase() : "";
+  const punchType = Number(getValue(record, ["PunchType", "punchType"]));
   const direction =
-    typeof directionValue === "string" && directionValue.toUpperCase() === "OUT"
-      ? "OUT"
-      : Number(record.PunchType) === 2
+    normalizedDirection === "IN" || normalizedDirection === "OUT"
+      ? normalizedDirection
+      : punchType === 61 || punchType === 2
         ? "OUT"
         : "IN";
 

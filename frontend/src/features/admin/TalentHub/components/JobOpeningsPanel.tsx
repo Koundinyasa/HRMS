@@ -4,6 +4,27 @@ import { EmptyState } from "./RecruitmentShared";
 import { OPENING_DEPARTMENTS } from "../constants/recruitment.constants";
 import type { JobOpening } from "../types/recruitment.types";
 
+function formatOpeningDate(value: string) {
+  if (!value || value === "—") return "—";
+
+  const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const date = dateOnly
+    ? new Date(
+        Number(dateOnly[1]),
+        Number(dateOnly[2]) - 1,
+        Number(dateOnly[3]),
+      )
+    : new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+}
+
 interface JobOpeningsPanelProps {
   filteredOpenings: JobOpening[];
   search: string;
@@ -73,8 +94,10 @@ export function JobOpeningsPanel({
             <thead className="bg-[#f8faf8]">
               <tr className="border-b border-[#e8ede9] text-xs font-semibold uppercase tracking-wide text-[#849088]">
                 <th className="px-5 py-3.5">Role</th>
+                <th className="px-4 py-3.5">Positions</th>
                 <th className="px-4 py-3.5">Department</th>
                 <th className="px-4 py-3.5">Location</th>
+                <th className="px-4 py-3.5">Published date</th>
                 <th className="px-4 py-3.5">Applicants</th>
                 <th className="px-4 py-3.5">Positions filled</th>
                 <th className="px-4 py-3.5">Status</th>
@@ -103,17 +126,17 @@ export function JobOpeningsPanel({
                         {opening.title}
                       </span>
                       {opening.requisitionNo && (
-                        <span className="ml-2 text-xs text-[#718078]">
+                        <span className="mt-1 block text-xs text-[#718078]">
                           {opening.requisitionNo}
                         </span>
                       )}
-                      <span className="ml-2 text-xs text-[#8a968f]">
-                        {opening.positions}{" "}
-                        {opening.positions === 1 ? "position" : "positions"}
-                      </span>
                     </td>
+                    <td className="px-4 py-4">{opening.positions}</td>
                     <td className="px-4 py-4">{opening.department}</td>
                     <td className="px-4 py-4">{opening.location}</td>
+                    <td className="px-4 py-4">
+                      {formatOpeningDate(opening.posted)}
+                    </td>
                     <td className="px-4 py-4">{opening.applicants ?? "—"}</td>
                     <td className="px-4 py-4">
                       <div className="flex min-w-32 items-center gap-3">
@@ -247,6 +270,7 @@ export function JobOpeningsPanel({
                 ["Role", selectedOpening.title],
                 ["Department", selectedOpening.department],
                 ["Location", selectedOpening.location],
+                ["Published Date", formatOpeningDate(selectedOpening.posted)],
                 ["Designation", selectedOpening.type],
                 ["Positions", String(selectedOpening.positions)],
                 ["Applicants", selectedOpening.applicants ?? "—"],
@@ -261,15 +285,21 @@ export function JobOpeningsPanel({
                 ],
                 ["Status", selectedOpening.status],
                 ["Closing Date", selectedOpening.closingDate || "—"],
+                [
+                  "Job Description",
+                  selectedOpening.jobDescription || "No job description available.",
+                ],
               ].map(([label, value]) => (
                 <div
                   key={label}
-                  className="border-b border-[#f0f0eb] py-3"
+                  className={`border-b border-[#f0f0eb] py-3 ${
+                    label === "Job Description" ? "sm:col-span-2" : ""
+                  }`}
                 >
                   <dt className="text-[11px] font-semibold uppercase tracking-wide text-[#849087]">
                     {label}
                   </dt>
-                  <dd className="mt-1 break-words text-sm font-medium text-[#354239]">
+                  <dd className="mt-1 whitespace-pre-wrap break-words text-sm font-medium text-[#354239]">
                     {value}
                   </dd>
                 </div>

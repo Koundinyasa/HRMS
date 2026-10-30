@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { RotateCcw, Search, X } from "lucide-react";
+import { ChevronDown, RotateCcw, Search, X } from "lucide-react";
 import {
   useDecideFinalApprovalMutation,
   useGetFinalApprovalQuery,
@@ -37,7 +37,9 @@ function firstValue(rows: DataRow[], ...aliases: string[]): unknown {
   return undefined;
 }
 
-function categoryRatings(rows: DataRow[]): { category: string; rating: string }[] {
+function categoryRatings(
+  rows: DataRow[],
+): { category: string; rating: string; comments: string }[] {
   return rows
     .flatMap((row) => {
       const rating = field(row, "rating", "feedbackRating", "interviewRating");
@@ -59,6 +61,10 @@ function categoryRatings(rows: DataRow[]): { category: string; rating: string }[
           "Rating",
         ),
         rating: String(rating),
+        comments: text(
+          field(row, "comments", "categoryComments", "feedbackComments"),
+          "—",
+        ),
       }];
     });
 }
@@ -146,6 +152,7 @@ export function FinalInterviewApprovalPanel() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showCandidateDetails, setShowCandidateDetails] = useState(false);
   const [remarks, setRemarks] = useState("");
   const [decisionError, setDecisionError] = useState("");
   const [decide, { isLoading: isDeciding }] = useDecideFinalApprovalMutation();
@@ -236,6 +243,7 @@ export function FinalInterviewApprovalPanel() {
     }
     setDecisionError("");
     setRemarks("");
+    setShowCandidateDetails(false);
     setSelectedId(String(id));
   };
 
@@ -433,18 +441,41 @@ export function FinalInterviewApprovalPanel() {
             aria-labelledby="final-approval-title"
             className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#eee9dc] bg-white shadow-2xl"
           >
-            <div className="sticky top-0 flex items-center justify-between border-b border-[#efeee9] bg-white px-5 py-4">
-              <h3 id="final-approval-title" className="font-bold text-[#26332c]">
-                Final interview review
-              </h3>
-              <button
-                type="button"
-                onClick={() => setSelectedId(null)}
-                aria-label="Close final interview details"
-                className="rounded-lg p-1.5 text-[#7e8981] hover:bg-[#f5f4ef]"
-              >
-                <X className="h-4 w-4" />
-              </button>
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[#efeee9] bg-white px-5 py-4">
+              <div className="min-w-0">
+                <h3 id="final-approval-title" className="font-bold text-[#26332c]">
+                  {detail
+                    ? text(field(detail, "candidateName", "fullName"), "Final interview review")
+                    : "Final interview review"}
+                </h3>
+                {detail && (
+                  <p className="mt-1 text-xs text-[#78867e]">
+                    {text(field(detail, "position", "jobTitle"))}
+                    {interviews[0] &&
+                      ` · ${text(field(interviews[0], "roundName", "interviewTypeName", "status"))}`}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setShowCandidateDetails((value) => !value)}
+                  aria-expanded={showCandidateDetails}
+                  aria-controls="final-approval-candidate-details"
+                  aria-label={showCandidateDetails ? "Hide candidate details" : "Show all candidate details"}
+                  className="rounded-lg p-2 text-[#7e8981] hover:bg-[#f5f4ef]"
+                >
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showCandidateDetails ? "rotate-180" : ""}`} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(null)}
+                  aria-label="Close final interview details"
+                  className="rounded-lg p-1.5 text-[#7e8981] hover:bg-[#f5f4ef]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             {isLoadingDetail ? (
               <p className="p-5 text-sm text-[#78867e]">
@@ -462,20 +493,17 @@ export function FinalInterviewApprovalPanel() {
               <div className="space-y-5 p-5">
                 <dl className="grid gap-4 sm:grid-cols-2">
                   {[
-                    ["Application", field(detail, "applicationId", "applicationID", "id", "applicationCode")],
-                    ["Candidate", field(detail, "candidateName", "fullName")],
                     ["Candidate ID", field(detail, "candidateCode", "candidateId")],
-                    ["Email", field(detail, "candidateEmail", "email")],
                     ["Position", field(detail, "position", "jobTitle")],
-                    ["Decision", statusLabel(field(detail, "decision"))],
-                    ["Average rating", field(detail, "avgRating", "averageRating")],
                     [
-                      "Interviews conducted",
-                      field(detail, "totalInterviewsConducted", "totalInterviews"),
+                      "Interview Round",
+                      interviews[0] &&
+                        field(interviews[0], "roundName", "interviewTypeName", "status"),
                     ],
                     [
-                      "Interviews with feedback",
-                      field(detail, "interviewsWithFeedback", "feedbackCount"),
+                      "Scheduled",
+                      interviews[0] &&
+                        field(interviews[0], "scheduledAt", "scheduledDate", "interviewDate"),
                     ],
                   ].map(([label, value]) => (
                     <div key={String(label)} className="border-b border-[#f0f0eb] pb-2">
@@ -488,6 +516,33 @@ export function FinalInterviewApprovalPanel() {
                     </div>
                   ))}
                 </dl>
+                {showCandidateDetails && (
+                  <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+                    {[
+                      ["Application", field(detail, "applicationCode", "applicationId", "applicationID", "id")],
+                      ["Email", field(detail, "candidateEmail", "email")],
+                      ["Decision", statusLabel(field(detail, "decision"))],
+                      ["Average rating", field(detail, "avgRating", "averageRating")],
+                      [
+                        "Interviews conducted",
+                        field(detail, "totalInterviewsConducted", "totalInterviews"),
+                      ],
+                      [
+                        "Interviews with feedback",
+                        field(detail, "interviewsWithFeedback", "feedbackCount"),
+                      ],
+                    ].map(([label, value]) => (
+                      <div key={String(label)} className="border-b border-[#f0f0eb] pb-2">
+                        <dt className="text-[11px] font-semibold uppercase tracking-wide text-[#849087]">
+                          {String(label)}
+                        </dt>
+                        <dd className="mt-1 text-sm font-medium text-[#354239]">
+                          {text(value)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
 
                 <div className="space-y-3">
                   <h4 className="text-sm font-bold text-[#26332c]">
@@ -502,17 +557,40 @@ export function FinalInterviewApprovalPanel() {
                       (() => {
                         const feedback = feedbackRows(interview);
                         const ratings = categoryRatings(feedback);
+                        const interviewerName = firstValue(
+                          feedback,
+                          "interviewerName",
+                          "interviewerFullName",
+                          "employeeName",
+                        );
+                        const interviewerId = firstValue(
+                          feedback,
+                          "interviewerId",
+                          "employeeId",
+                        );
+                        const overallFeedback = firstValue(
+                          feedback,
+                          "overallFeedback",
+                          "feedbackText",
+                          "feedback",
+                          "feedbackDescription",
+                        );
                         return (
                           <article
                             key={text(field(interview, "id"), String(interviewIndex))}
                             className="space-y-3 rounded-xl border border-[#eceee9] p-4"
                           >
-                            <div className="flex flex-wrap justify-between gap-2 text-sm">
-                              <strong className="text-[#354239]">
-                                {text(field(interview, "code", "interviewCode"))}
-                              </strong>
-                              <span className="text-[#68756d]">
-                                {text(field(interview, "roundName", "interviewTypeName", "status"))}
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#f0f0eb] pb-3">
+                              <div>
+                                <strong className="text-sm text-[#354239]">
+                                  {text(field(interview, "code", "interviewCode"))}
+                                </strong>
+                                <p className="mt-1 text-xs text-[#78867e]">
+                                  {text(field(interview, "roundName", "interviewTypeName", "status"))}
+                                </p>
+                              </div>
+                              <span className="text-xs text-[#78867e]">
+                                {text(field(interview, "scheduledAt", "scheduledDate", "interviewDate"), "")}
                               </span>
                             </div>
                             {feedback.length === 0 ? (
@@ -520,56 +598,88 @@ export function FinalInterviewApprovalPanel() {
                                 No feedback submitted for this interview.
                               </p>
                             ) : (
-                              <div className="space-y-2 border-t border-[#f0f0eb] pt-3 text-sm">
-                                <div className="flex flex-wrap justify-between gap-2">
-                                  <div className="font-semibold text-[#354239]">
-                                    {text(
-                                      firstValue(
-                                        feedback,
-                                        "interviewerName",
-                                        "interviewerFullName",
-                                        "employeeName",
-                                      ),
-                                      "Interviewer",
-                                    )}
-                                    {firstValue(
-                                      feedback,
-                                      "interviewerId",
-                                      "employeeId",
-                                    ) !== undefined &&
-                                      ` · ${text(
-                                        firstValue(
-                                          feedback,
-                                          "interviewerId",
-                                          "employeeId",
-                                        ),
-                                      )}`}
+                              <div className="space-y-3">
+                                <p className="text-sm font-semibold text-[#344138]">
+                                  {text(interviewerName, "Interviewer")}
+                                  {interviewerId !== undefined &&
+                                    ` · ${text(interviewerId)}`}
+                                </p>
+                                <details className="border-y border-[#eceee9] py-2 group">
+                                  <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-wide text-[#78867e]">
+                                    <span>Category feedback ({ratings.length})</span>
+                                    <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                                  </summary>
+                                  {ratings.length > 0 ? (
+                                    <div className="mt-2 overflow-x-auto">
+                                      <table className="w-full min-w-[460px] border-collapse text-left text-xs">
+                                        <thead>
+                                          <tr className="bg-[#f8f9f7] text-[#78867e]">
+                                            <th className="px-3 py-2 font-semibold uppercase tracking-wide">
+                                              Category
+                                            </th>
+                                            <th className="px-3 py-2 font-semibold uppercase tracking-wide">
+                                              Rating
+                                            </th>
+                                            <th className="px-3 py-2 font-semibold uppercase tracking-wide">
+                                              Comments
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {ratings.map((item, ratingIndex) => (
+                                            <tr
+                                              key={`${item.category}-${ratingIndex}`}
+                                              className="border-t border-[#eceee9]"
+                                            >
+                                              <td className="px-3 py-2.5 text-[#344138]">
+                                                {item.category}
+                                              </td>
+                                              <td className="px-3 py-2.5 font-semibold text-[#344138]">
+                                                {item.rating}
+                                              </td>
+                                              <td className="whitespace-pre-wrap px-3 py-2.5 text-[#68756d]">
+                                                {item.comments}
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  ) : (
+                                    <p className="pt-2 text-xs text-[#78867e]">
+                                      No category ratings were provided.
+                                    </p>
+                                  )}
+                                </details>
+                                <div className="grid gap-3 rounded-lg bg-[#f8f9f7] p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                                  <div>
+                                    <p className="text-xs font-semibold text-[#344138]">
+                                      Overall feedback
+                                    </p>
+                                    <p className="mt-1 whitespace-pre-wrap text-xs text-[#68756d]">
+                                      {text(
+                                        overallFeedback,
+                                        "No written feedback was included in the response.",
+                                      )}
+                                    </p>
+                                  </div>
+                                  <div className="text-xs text-[#78867e]">
+                                    <span className="font-semibold">
+                                      Overall rating
+                                    </span>
+                                    <p className="mt-1 font-bold text-[#344138]">
+                                      {ratings.length
+                                        ? `${(
+                                            ratings.reduce(
+                                              (sum, item) =>
+                                                sum + Number(item.rating),
+                                              0,
+                                            ) / ratings.length
+                                          ).toFixed(1)} / 10`
+                                        : "—"}
+                                    </p>
                                   </div>
                                 </div>
-                                {ratings.length > 0 && (
-                                  <ul className="grid gap-x-4 gap-y-1 text-[#986713] sm:grid-cols-2">
-                                    {ratings.map((item, ratingIndex) => (
-                                      <li
-                                        key={`${item.category}-${ratingIndex}`}
-                                        className="flex justify-between gap-3"
-                                      >
-                                        <span>{item.category}</span>
-                                        <strong>{item.rating}</strong>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                                <p className="whitespace-pre-wrap text-[#58655c]">
-                                  {text(
-                                    firstValue(
-                                      feedback,
-                                      "feedback",
-                                      "feedbackComments",
-                                      "feedbackText",
-                                    ),
-                                    "No written feedback was included in the response.",
-                                  )}
-                                </p>
                               </div>
                             )}
                           </article>

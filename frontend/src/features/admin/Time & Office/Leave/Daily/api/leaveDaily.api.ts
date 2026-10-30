@@ -986,7 +986,8 @@ export const getLeaveDaily = async (
   _pageNumber = 1,
   _pageSize = 10,
 ): Promise<LeaveDailyResponse> => {
-  throw new Error(
-    "Use useGetMonthlyLeaveCalendarQuery instead of getLeaveDaily.",
-  );
+  void _filters;
+  void _pageNumber;
+  void _pageSize;
+  throw new Error("Leave Daily API endpoint is not configured yet.");
 };

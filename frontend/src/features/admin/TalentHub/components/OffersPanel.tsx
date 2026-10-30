@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { FileText, Plus, RotateCcw, Search, X } from "lucide-react";
 import {
+  useGetCompletedInterviewCandidatesQuery,
   useCreateOfferMutation,
   useExtendOfferMutation,
   useGetOfferQuery,
@@ -51,6 +52,7 @@ export function OffersPanel() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<OfferStatus>("all");
   const [page, setPage] = useState(1);
+  const [tableView, setTableView] = useState<"eligible" | "offers">("eligible");
   const [showCreate, setShowCreate] = useState(false);
   const [applicationId, setApplicationId] = useState("");
   const [offeredSalary, setOfferedSalary] = useState("");
@@ -67,11 +69,21 @@ export function OffersPanel() {
     data: list,
     error: listError,
     isFetching,
-  } = useGetOffersQuery({
-    search: search.trim() || undefined,
-    status,
-    page,
-    limit: PAGE_SIZE,
+  } = useGetOffersQuery(
+    {
+      search: search.trim() || undefined,
+      status,
+      page,
+      limit: PAGE_SIZE,
+    },
+    { skip: tableView !== "offers" },
+  );
+  const {
+    data: completedCandidates = [],
+    error: completedCandidatesError,
+    isFetching: isFetchingCandidates,
+  } = useGetCompletedInterviewCandidatesQuery(undefined, {
+    skip: tableView !== "eligible",
   });
   const {
     data: detail,
@@ -88,7 +100,40 @@ export function OffersPanel() {
     useLazyGetOfferLetterUrlQuery();
 
   const rows = list?.data ?? [];
-  const totalPages = Math.max(1, list?.meta.totalPages ?? 1);
+  const filteredCandidates = completedCandidates.filter((candidate) => {
+    const query = search.trim().toLowerCase();
+    return (
+      !query ||
+      [
+        candidate.applicationId,
+        candidate.candidateId,
+        candidate.candidateName,
+        candidate.email,
+        candidate.jobTitle,
+        candidate.applicationStatus,
+      ].some((value) => String(value ?? "").toLowerCase().includes(query))
+    );
+  });
+  const candidateTotalPages = Math.max(
+    1,
+    Math.ceil(filteredCandidates.length / PAGE_SIZE),
+  );
+  const visibleCandidates = filteredCandidates.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
+  const totalPages =
+    tableView === "eligible"
+      ? candidateTotalPages
+      : Math.max(1, list?.meta.totalPages ?? 1);
+
+  const formatApplicationDate = (value: string | null) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? value
+      : date.toLocaleDateString();
+  };
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -211,8 +256,13 @@ export function OffersPanel() {
         </p>
       )}
       {listError && (
-        <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        tableView === "offers" && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {errorMessage(listError, "Unable to load offers.")}
+        </p>
+      )}
+      {tableView === "eligible" && completedCandidatesError && (
+        <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {errorMessage(completedCandidatesError, "Unable to load completed interview candidates.")}
         </p>
       )}
 
@@ -270,6 +320,31 @@ export function OffersPanel() {
         </form>
       )}
 
+      <div className="flex gap-2 border-b border-[#e6e8e3]">
+        {([
+          ["eligible", "Selected Candidates"],
+          ["offers", "Existing Offers"],
+        ] as const).map(([view, label]) => (
+          <button
+            key={view}
+            type="button"
+            onClick={() => {
+              setTableView(view);
+              setSearch("");
+              setPage(1);
+            }}
+            aria-pressed={tableView === view}
+            className={`border-b-2 px-4 py-2.5 text-sm font-semibold ${
+              tableView === view
+                ? "border-[#e5a538] text-[#815b16]"
+                : "border-transparent text-[#78867e] hover:text-[#354239]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <section className="overflow-hidden rounded-2xl border border-[#e6e8e3] bg-white shadow-[0_8px_24px_rgba(39,48,41,0.04)]">
         <div className="punch-horizontal-scroll w-full min-w-0 overflow-x-auto border-b border-[#eceee9]">
           <div className="flex w-max min-w-full flex-nowrap items-center gap-2.5 px-4 py-3.5 sm:px-5">
@@ -281,26 +356,28 @@ export function OffersPanel() {
                   setSearch(event.target.value);
                   setPage(1);
                 }}
-                placeholder="Search offers..."
-                aria-label="Search offers"
+                placeholder={tableView === "eligible" ? "Search selected candidates..." : "Search offers..."}
+                aria-label={tableView === "eligible" ? "Search selected candidates" : "Search offers"}
                 className="h-10 w-full rounded-lg border border-[#dfe4df] bg-white pl-9 pr-3 text-sm outline-none focus:border-[#d8a43b]"
               />
             </label>
-            <select
-              value={status}
-              onChange={(event) => {
-                setStatus(event.target.value as OfferStatus);
-                setPage(1);
-              }}
-              aria-label="Filter offers by status"
-              className="h-10 w-[170px] shrink-0 rounded-lg border border-[#dfe4df] bg-white px-3 text-sm text-[#354239]"
-            >
-              <option value="all">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="extended">Offer Extended</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-            </select>
+            {tableView === "offers" && (
+              <select
+                value={status}
+                onChange={(event) => {
+                  setStatus(event.target.value as OfferStatus);
+                  setPage(1);
+                }}
+                aria-label="Filter offers by status"
+                className="h-10 w-[170px] shrink-0 rounded-lg border border-[#dfe4df] bg-white px-3 text-sm text-[#354239]"
+              >
+                <option value="all">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="extended">Offer Extended</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -316,6 +393,63 @@ export function OffersPanel() {
           </div>
         </div>
         <div className="punch-horizontal-scroll w-full min-w-0 touch-pan-x overflow-x-scroll overscroll-x-contain">
+          {tableView === "eligible" ? (
+            <table className="w-full min-w-[900px] border-collapse whitespace-nowrap text-left">
+              <thead>
+                <tr>
+                  {["Application", "Candidate", "Position", "Application Date", "Status", "Action"].map((label) => (
+                    <th key={label} className="whitespace-nowrap bg-[#f8f9f7] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#758078] first:pl-5 last:pr-5">
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {visibleCandidates.map((candidate) => (
+                  <tr
+                    key={candidate.applicationId}
+                    className="odd:bg-white even:bg-[#fffaf0] transition-colors hover:bg-[#f3e4c5]"
+                  >
+                    <td className="border-t border-[#eef0eb] px-4 py-3.5 pl-5 text-xs font-semibold text-[#344138]">
+                      APP-{candidate.applicationId}
+                    </td>
+                    <td className="border-t border-[#eef0eb] px-4 py-3.5 text-xs text-[#344138]">
+                      <span className="font-medium">{candidate.candidateName}</span>
+                      <span className="ml-2 text-[#7b8981]">{candidate.candidateId}</span>
+                      <span className="ml-2 text-[#7b8981]">{candidate.email}</span>
+                    </td>
+                    <td className="border-t border-[#eef0eb] px-4 py-3.5 text-xs text-[#344138]">{candidate.jobTitle}</td>
+                    <td className="border-t border-[#eef0eb] px-4 py-3.5 text-xs text-[#344138]">
+                      {formatApplicationDate(candidate.applicationDate)}
+                    </td>
+                    <td className="border-t border-[#eef0eb] px-4 py-3.5 text-xs text-[#344138]">{candidate.applicationStatus}</td>
+                    <td className="border-t border-[#eef0eb] px-4 py-3.5 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setApplicationId(String(candidate.applicationId));
+                          setCreateError("");
+                          setShowCreate(true);
+                        }}
+                        className="whitespace-nowrap rounded-lg border border-[#ead9b7] px-3 py-2 font-semibold text-[#986713] hover:bg-[#fffaf0]"
+                      >
+                        Create Offer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {!visibleCandidates.length && (
+                  <tr>
+                    <td colSpan={6} className="border-t border-[#eef0eb] px-5 py-12 text-center text-sm text-[#7b8981]">
+                      {isFetchingCandidates
+                        ? "Loading completed interview candidates..."
+                        : "No selected candidates match your search."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
           <table className="w-full min-w-[900px] border-collapse whitespace-nowrap text-left">
             <thead>
               <tr>
@@ -414,9 +548,14 @@ export function OffersPanel() {
               )}
             </tbody>
           </table>
+          )}
         </div>
         <div className="flex flex-col items-center justify-between gap-3 border-t border-[#eceee9] px-4 py-3 text-xs text-[#758078] sm:flex-row sm:px-5">
-          <span>{list?.meta.total ?? 0} offers</span>
+          <span>
+            {tableView === "eligible"
+              ? `${filteredCandidates.length} selected candidates`
+              : `${list?.meta.total ?? 0} offers`}
+          </span>
           <div className="flex items-center gap-2">
             <button type="button" disabled={page <= 1} onClick={() => setPage((value) => value - 1)} className="rounded-lg border border-[#dfe4df] px-3 py-1.5 disabled:opacity-40">Previous</button>
             <span>Page {page} of {totalPages}</span>

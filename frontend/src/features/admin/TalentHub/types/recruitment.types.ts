@@ -21,6 +21,7 @@ export type Candidate = {
   rating: number;
   daysInStage: number;
   resumeUrl?: string;
+  resumeFileName?: string;
 };
 
 export type JobOpening = {
@@ -35,6 +36,7 @@ export type JobOpening = {
   positionsFilled: number;
   salaryRange?: string;
   experienceRequired?: string;
+  jobDescription?: string;
   closingDate?: string;
   status: "Open" | "Pending approval" | "Sent back" | "Draft" | "On hold";
   posted: string;
@@ -224,13 +226,26 @@ export type InterviewScheduleOptions = {
 export type RecruitmentInterviewPeriod = "today" | "upcoming" | "past";
 
 export type ScheduledCandidateInterview = {
-  id: string;
+  id: number;
+  scheduleId: number;
+  applicationId: number;
+  applicationCode: string;
+  candidateCode: string;
   scheduledDate: string;
   scheduledTime: string;
   scheduledAt: string;
+  candidateEmail: string | null;
+  position: string;
   candidateName: string;
   interviewerName: string;
   interviewType: string;
+  roundName: string;
+  feedbackSubmitted: boolean;
+  feedbackRating: number | null;
+  feedbackText: string | null;
+  status: "scheduled" | "completed";
+  isLatestInterview: boolean;
+  alreadyMovedToNextStage: boolean;
 };
 
 export type RecruitmentInterview = {
@@ -271,6 +286,8 @@ export type InterviewerFeedbackWorklistItem = {
   feedbackSubmitted: boolean;
   canSubmitFeedback: boolean;
   feedbackRating: number | null;
+  candidateAverageRating?: number | null;
+  candidateFeedbackCount?: number;
   feedbackText: string | null;
   feedbackDetails: Array<{
     categoryName: string;
@@ -496,6 +513,16 @@ export type OffersListResponse = {
     limit: number;
     totalPages: number;
   };
+};
+
+export type CompletedInterviewCandidate = {
+  applicationId: number;
+  candidateId: string;
+  candidateName: string;
+  email: string;
+  jobTitle: string;
+  applicationDate: string | null;
+  applicationStatus: string;
 };
 
 export type UpdateOfferRequest = {

@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ApprovalsPanel } from "../components/ApprovalsPanel";
 import { CandidateDocumentUploadScreen } from "../components/CandidateDocumentUploadScreen";
 import { JobOpeningsPanel } from "../components/JobOpeningsPanel";
+import { NewJobOpeningModal } from "../components/NewJobOpeningModal";
 import { NewRequisitionScreen } from "../components/NewRequisitionScreen";
 import { RecruitmentDashboard } from "../components/RecruitmentDashboard";
 import { RecruitmentHeader } from "../components/RecruitmentHeader";
@@ -15,7 +16,7 @@ import {
   InterviewProcessScreen,
   InterviewScheduleScreen,
 } from "../components/InterviewScreens";
-import { InterviewerFeedbackScreen } from "../components/InterviewerFeedbackScreen";
+import { InterviewerFeedbackWorkspace } from "@/features/employee/review/recruitment/components/InterviewerFeedbackWorkspace";
 import { RecruitmentOperationalScreen } from "../components/RecruitmentOperationalScreens";
 import { FinalInterviewApprovalPanel } from "../components/FinalInterviewApprovalPanel";
 import { OffersPanel } from "../components/OffersPanel";
@@ -52,41 +53,12 @@ const WORKFLOW_TITLES: Record<string, string> = {
 };
 
 export default function RecruitmentPage() {
-  const recruitment = useRecruitment();
   const navigate = useNavigate();
   const { domain, view, action } = useParams<{
     domain: string;
     view?: string;
     action?: string;
   }>();
-  const {
-    activeTab,
-    setActiveTab,
-    search,
-    setSearch,
-    selectedRole,
-    setSelectedRole,
-    selectedDepartment,
-    setSelectedDepartment,
-    candidates,
-    filteredCandidates,
-    openings,
-    filteredOpenings,
-    approvals,
-    canManageRequisitionApprovals,
-    recruitmentError,
-    isRecruitmentLoading,
-    selectedApprovalStatus,
-    setSelectedApprovalStatus,
-    approvalComments,
-    setApprovalComments,
-    approveOpening,
-    sendBackOpening,
-    refreshRecruitment,
-    updateCandidateStage,
-    screenCandidate,
-  } = recruitment;
-  const routeTab = view ? VIEW_TABS[view] : "pipeline";
   const isOperationalWorkflowView =
     view === "upload-resume" ||
     view === "job-requisition" ||
@@ -103,6 +75,36 @@ export default function RecruitmentPage() {
     view === "induction" ||
     view === "team-assignment" ||
     view === "asset-assignment";
+  const recruitment = useRecruitment(isOperationalWorkflowView);
+  const [isNewOpeningOpen, setIsNewOpeningOpen] = useState(false);
+  const {
+    activeTab,
+    setActiveTab,
+    search,
+    setSearch,
+    selectedRole,
+    setSelectedRole,
+    selectedDepartment,
+    setSelectedDepartment,
+    candidates,
+    filteredCandidates,
+    openings,
+    filteredOpenings,
+    approvals,
+    canManageApproval,
+    recruitmentError,
+    isRecruitmentLoading,
+    selectedApprovalStatus,
+    setSelectedApprovalStatus,
+    approvalComments,
+    setApprovalComments,
+    approveOpening,
+    sendBackOpening,
+    refreshRecruitment,
+    updateCandidateStage,
+    screenCandidate,
+  } = recruitment;
+  const routeTab = view ? VIEW_TABS[view] : "pipeline";
   const isDedicatedWorkflowView =
     view === "resume-screening" ||
     view === "assessment-test" ||
@@ -129,14 +131,16 @@ export default function RecruitmentPage() {
           search={search}
           setSearch={setSearch}
           showActions={!isDedicatedWorkflowView}
-          showNewOpening={
-            view !== "job-openings" && view !== "requisition-approval"
-          }
-          onNewOpening={() =>
+          showNewOpening={view !== "requisition-approval"}
+          onNewOpening={() => {
+            if (view === "job-openings") {
+              setIsNewOpeningOpen(true);
+              return;
+            }
             navigate(
-              `/${domain}/admin/talent-hub/recruitment/job-requisition/new`
-            )
-          }
+              `/${domain}/admin/talent-hub/recruitment/job-requisition/new`,
+            );
+          }}
         />
       )}
       <main className="min-w-0 space-y-6 px-4 py-6 sm:px-8">
@@ -167,7 +171,7 @@ export default function RecruitmentPage() {
         ) : view === "interview-process" ? (
           <InterviewProcessScreen />
         ) : view === "interviewer-feedback" ? (
-          <InterviewerFeedbackScreen />
+          <InterviewerFeedbackWorkspace />
         ) : view === "final-interview-approval" ? (
           <FinalInterviewApprovalPanel />
         ) : view === "offer-management" ? (
@@ -209,7 +213,7 @@ export default function RecruitmentPage() {
           (!view && activeTab === "approvals")) && (
           <ApprovalsPanel
             approvals={approvals}
-            canManageApprovals={canManageRequisitionApprovals}
+            canManageApproval={canManageApproval}
             selectedApprovalStatus={selectedApprovalStatus}
             setSelectedApprovalStatus={setSelectedApprovalStatus}
             search={search}
@@ -225,6 +229,11 @@ export default function RecruitmentPage() {
           </p>
         )}
       </main>
+      <NewJobOpeningModal
+        isOpen={isNewOpeningOpen}
+        onClose={() => setIsNewOpeningOpen(false)}
+        onPublished={() => void refreshRecruitment()}
+      />
       {view === "job-requisition" && action === "new" && (
         <NewRequisitionScreen
           onCreated={refreshRecruitment}

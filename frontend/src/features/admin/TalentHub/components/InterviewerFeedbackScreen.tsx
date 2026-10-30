@@ -1,19 +1,12 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import {
-  CalendarDays,
   ClipboardCheck,
   Search,
   Send,
   UserRound,
-  X,
 } from "lucide-react";
-import { useAppSelector } from "@/hooks/useAppSelector";
 import {
-  useGetInterviewScheduleOptionsQuery,
-  useGetRecruitmentInterviewersQuery,
   useGetInterviewerFeedbackWorklistQuery,
-  useScheduleTechnicalRoundTwoMutation,
-  useSkipTechnicalRoundTwoMutation,
   useSubmitInterviewerCompetencyFeedbackMutation,
 } from "../api/recruitment.api";
 import type {
@@ -40,17 +33,6 @@ function formatInterviewDate(value: string) {
   return Number.isNaN(date.getTime())
     ? value
     : date.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
-}
-
-function isTechnicalOne(interview: InterviewerFeedbackWorklistItem) {
-  const normalizedType = interview.interviewType
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
-  return (
-    normalizedType === "technical1" ||
-    (normalizedType === "technical" &&
-      /^1(?:\D|$)/.test(interview.roundName))
-  );
 }
 
 function FeedbackCard({
@@ -350,13 +332,8 @@ function InterviewFeedbackForm({
   const [overallFeedback, setOverallFeedback] = useState("");
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [isSchedulingTechnicalTwo, setIsSchedulingTechnicalTwo] =
-    useState(false);
-  const [nextRoundDecided, setNextRoundDecided] = useState(false);
   const [submitFeedback, { isLoading }] =
     useSubmitInterviewerCompetencyFeedbackMutation();
-  const [skipTechnicalTwo, { isLoading: isSkippingTechnicalTwo }] =
-    useSkipTechnicalRoundTwoMutation();
 
   const scoredCount = categories.filter(
     (category) => ratings[category.categoryId]
@@ -368,6 +345,18 @@ function InterviewFeedbackForm({
           (sum, category) => sum + (ratings[category.categoryId]?.rating ?? 0),
           0
         ) / scoredCount;
+  const candidateFeedbackCount = interview?.candidateFeedbackCount ?? 0;
+  const candidateAverage =
+    interview?.feedbackSubmitted
+      ? interview.candidateAverageRating ?? null
+      : scoredCount === categories.length && average !== null
+        ? candidateFeedbackCount === 0
+          ? average
+          : ((interview?.candidateAverageRating ?? 0) *
+              candidateFeedbackCount +
+              average) /
+            (candidateFeedbackCount + 1)
+        : interview?.candidateAverageRating ?? null;
 
   const save = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -408,19 +397,6 @@ function InterviewFeedbackForm({
         overallFeedback: overallFeedback.trim(),
       }).unwrap();
       setSuccessMessage(result.message);
-    } catch (requestError) {
-      setFormError(messageFromError(requestError));
-    }
-  };
-
-  const skipTechnicalTwoAndAdvance = async () => {
-    if (!interview) return;
-    setFormError("");
-    setSuccessMessage("");
-    try {
-      const result = await skipTechnicalTwo(interview.id).unwrap();
-      setSuccessMessage(result.message);
-      setNextRoundDecided(true);
     } catch (requestError) {
       setFormError(messageFromError(requestError));
     }
@@ -484,11 +460,26 @@ function InterviewFeedbackForm({
       )}
 
       <FeedbackCard title="Competency assessment">
-        <div className="mb-5 grid gap-3 sm:grid-cols-3">
+        <div className="mb-5 grid gap-3 sm:grid-cols-4">
           <div className="rounded-xl bg-[#f8f9f7] p-3">
             <p className="text-xs text-[#78867e]">Average score</p>
             <p className="mt-1 text-xl font-bold text-[#344138]">
               {average === null ? "—" : `${average.toFixed(1)} / 10`}
+            </p>
+          </div>
+          <div className="rounded-xl bg-[#fffaf0] p-3">
+            <p className="text-xs text-[#78867e]">Candidate running average</p>
+            <p className="mt-1 text-xl font-bold text-[#344138]">
+              {candidateAverage === null
+                ? "—"
+                : `${candidateAverage.toFixed(1)} / 10`}
+            </p>
+            <p className="mt-1 text-[10px] text-[#87938c]">
+              {interview?.feedbackSubmitted
+                ? `After ${candidateFeedbackCount} feedback submissions`
+                : scoredCount === categories.length && categories.length > 0
+                  ? `After ${candidateFeedbackCount + 1} feedback submissions`
+                  : `Based on ${candidateFeedbackCount} submitted feedbacks`}
             </p>
           </div>
           <div className="rounded-xl bg-[#f8f9f7] p-3">
@@ -621,55 +612,6 @@ function InterviewFeedbackForm({
         </label>
       </FeedbackCard>
 
-      {interview?.feedbackSubmitted && isTechnicalOne(interview) && (
-        <FeedbackCard title="Next interview step">
-          {nextRoundDecided ? (
-            <p className="text-sm text-[#39724f]">
-              The candidate's next interview step has been selected.
-            </p>
-          ) : (
-            <>
-              <p className="mb-4 text-sm text-[#78867e]">
-                Choose whether this candidate needs a second technical interview.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsSchedulingTechnicalTwo(true)}
-                  disabled={isSkippingTechnicalTwo}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#e8f4ec] px-4 py-2.5 text-sm font-semibold text-[#39724f] transition hover:bg-[#d9ecdf] disabled:opacity-60"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                  Schedule Technical 2
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void skipTechnicalTwoAndAdvance()}
-                  disabled={isSkippingTechnicalTwo}
-                  className="rounded-lg border border-[#ead9b7] px-4 py-2.5 text-sm font-semibold text-[#986713] transition hover:bg-[#fffaf0] disabled:opacity-60"
-                >
-                  {isSkippingTechnicalTwo
-                    ? "Moving to final approval..."
-                    : "Skip Technical 2 · Final Approval"}
-                </button>
-              </div>
-            </>
-          )}
-          {isSchedulingTechnicalTwo && interview && (
-            <TechnicalRoundTwoScheduleDialog
-              interview={interview}
-              onClose={() => setIsSchedulingTechnicalTwo(false)}
-              onScheduled={(message) => {
-                setIsSchedulingTechnicalTwo(false);
-                setSuccessMessage(message);
-                setNextRoundDecided(true);
-              }}
-              onError={setFormError}
-            />
-          )}
-        </FeedbackCard>
-      )}
-
       {(formError || successMessage) && (
         <p
           role={formError ? "alert" : "status"}
@@ -707,183 +649,5 @@ function InterviewFeedbackForm({
         </button>
       </div>
     </form>
-  );
-}
-
-function TechnicalRoundTwoScheduleDialog({
-  interview,
-  onClose,
-  onScheduled,
-  onError,
-}: {
-  interview: InterviewerFeedbackWorklistItem;
-  onClose: () => void;
-  onScheduled: (message: string) => void;
-  onError: (message: string) => void;
-}) {
-  const currentEmployeeId = useAppSelector((state) => state.auth.employeeId);
-  const {
-    data: interviewers = [],
-    error: interviewersError,
-    isLoading: isLoadingInterviewers,
-  } = useGetRecruitmentInterviewersQuery();
-  const {
-    data: scheduleOptions,
-    error: optionsError,
-    isLoading: isLoadingOptions,
-  } = useGetInterviewScheduleOptionsQuery();
-  const [schedule, { isLoading }] = useScheduleTechnicalRoundTwoMutation();
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [modeId, setModeId] = useState("20");
-  const [interviewerId, setInterviewerId] = useState(
-    String(currentEmployeeId ?? ""),
-  );
-  const [error, setError] = useState("");
-
-  const submit = async () => {
-    setError("");
-    if (!date || !time || !interviewerId) {
-      setError("Choose an interview date, time, mode, and interviewer.");
-      return;
-    }
-
-    try {
-      const result = await schedule({
-        interviewId: interview.id,
-        date,
-        time,
-        interviewModeId: Number(modeId),
-        interviewerEmployeeId: interviewerId,
-      }).unwrap();
-      onScheduled(result.message);
-    } catch (requestError) {
-      const message = messageFromError(requestError);
-      setError(message);
-      onError(message);
-    }
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-[110] flex items-center justify-center bg-[#202a26]/45 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !isLoading) onClose();
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="technical-two-schedule-title"
-        className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[#eee9dc] bg-white shadow-2xl"
-      >
-        <div className="sticky top-0 flex items-center justify-between border-b border-[#efeee9] bg-white px-5 py-4">
-          <div>
-            <h2
-              id="technical-two-schedule-title"
-              className="font-bold text-[#26332c]"
-            >
-              Schedule Technical 2
-            </h2>
-            <p className="mt-1 text-xs text-[#78867e]">
-              {interview.candidateName} · {interview.position}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isLoading}
-            aria-label="Close Technical 2 scheduling"
-            className="rounded-lg p-1.5 text-[#7e8981] hover:bg-[#f5f4ef] disabled:opacity-50"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="grid gap-4 p-5 sm:grid-cols-2">
-          <label className="space-y-1.5 text-xs font-semibold text-[#59665d]">
-            Interview date
-            <input
-              type="date"
-              value={date}
-              onChange={(event) => setDate(event.target.value)}
-              required
-              className="h-10 w-full rounded-lg border border-[#dfe4df] px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
-            />
-          </label>
-          <label className="space-y-1.5 text-xs font-semibold text-[#59665d]">
-            Start time
-            <input
-              type="time"
-              value={time}
-              onChange={(event) => setTime(event.target.value)}
-              required
-              className="h-10 w-full rounded-lg border border-[#dfe4df] px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
-            />
-          </label>
-          <label className="space-y-1.5 text-xs font-semibold text-[#59665d]">
-            Mode
-            <select
-              value={modeId}
-              onChange={(event) => setModeId(event.target.value)}
-              disabled={isLoadingOptions}
-              className="h-10 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
-            >
-              {(scheduleOptions?.interviewModes ?? []).map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="space-y-1.5 text-xs font-semibold text-[#59665d]">
-            Interviewer
-            <select
-              value={interviewerId}
-              onChange={(event) => setInterviewerId(event.target.value)}
-              required
-              disabled={isLoadingInterviewers || interviewers.length === 0}
-              className="h-10 w-full rounded-lg border border-[#dfe4df] bg-white px-3 text-sm font-normal text-[#354239] outline-none focus:border-[#d8a43b]"
-            >
-              <option value="">Select an interviewer</option>
-              {interviewers.map((interviewer) => (
-                <option key={interviewer.id} value={interviewer.id}>
-                  {interviewer.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        {(interviewersError || optionsError || error) && (
-          <p role="alert" className="px-5 pb-3 text-sm text-rose-700">
-            {error ||
-              (interviewersError && messageFromError(interviewersError)) ||
-              (optionsError && messageFromError(optionsError))}
-          </p>
-        )}
-        <div className="flex justify-end gap-2 border-t border-[#efeee9] px-5 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isLoading}
-            className="rounded-lg border border-[#dfe4df] px-4 py-2 text-sm font-semibold text-[#566258] hover:bg-[#f8faf8] disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void submit()}
-            disabled={
-              isLoading ||
-              isLoadingOptions ||
-              isLoadingInterviewers ||
-              interviewers.length === 0
-            }
-            className="inline-flex items-center gap-2 rounded-lg bg-[#477453] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3c6547] disabled:opacity-60"
-          >
-            {isLoading ? "Scheduling..." : "Schedule Technical 2"}
-          </button>
-        </div>
-      </section>
-    </div>
   );
 }

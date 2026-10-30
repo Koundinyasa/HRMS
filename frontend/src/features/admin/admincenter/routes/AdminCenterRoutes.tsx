@@ -44,14 +44,16 @@ import UserManagementPage from "../userManagement/pages/UserManagementPage";
 import RoleMaster from "../userManagement/components/RoleMaster";
 import RoleAccessSettings from "../userManagement/pages/RoleAccessSettings";
 
- 
-//ess
+// //ess
 import Circular from "../ess/pages/circular/Circular";
 import Policy from "../ess/pages/Policy/Policy";
 import Notification from "../ess/pages/Notification/Notification";
-import FlashNews from "../ess/pages/FlashNews/Flashnews";
- import Poll from "../ess/pages/Poll/Poll";
- 
+import FlashNews from "../ess/pages/FlashNews/FlashNews";
+import HelpDesk from "../ess/pages/HelpDesk/HelpDesk";
+import Poll from "../ess/pages/Poll/Poll";
+import Feeds from "../ess/pages/Feeds/Feeds";
+import Memories from "../ess/pages/Memories/Memories";
+import WallOfFame from "../ess/pages/WallOfFame/WallOffFame";
 
 //workflows
 import WorkflowsPage from "../workflows/WorkflowsPage";
@@ -128,18 +130,18 @@ export const AdminCenterRoutes = (
     </Route>
 
     {/*ESS */}
-     <Route path="ess">
+    <Route path="ess">
       <Route index element={<Navigate to="circular" replace />} />
       <Route path="circular" element={<Circular />} />
       <Route path="policy" element={<Policy />} />
       <Route path="notification" element={<Notification />} />
       <Route path="flash-news" element={<FlashNews />} />
-      {/* <Route path="help-desk" element={<HelpDesk />} /> */}
- 
+      <Route path="help-desk" element={<HelpDesk />} />
       <Route path="poll" element={<Poll />} />
-      
+      <Route path="feeds" element={<Feeds />} />
+      <Route path="memories" element={<Memories />} />
+      <Route path="wall-of-fame" element={<WallOfFame />} />
     </Route>
- 
 
     {/*WorkFlows*/}
     <Route path="workflows">

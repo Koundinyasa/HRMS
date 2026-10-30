@@ -87,6 +87,37 @@ describe('RecruitmentService', () => {
     expect(execute).toHaveBeenCalledWith('USP_GetPendingRequisition');
   });
 
+  it('gets job opening requisitions with recruitment priority flag 10', async () => {
+    const recordset = [{ RequisitionID: 41, JobTitle: 'Engineer' }];
+    const execute = jest.fn().mockResolvedValue({ recordset });
+    const request = {
+      input: jest.fn().mockReturnThis(),
+      execute,
+    };
+    databaseService.connect.mockResolvedValue({
+      request: jest.fn(() => request),
+    });
+
+    await expect(service.getJobOpeningRequisitions(7)).resolves.toEqual({
+      success: true,
+      data: recordset,
+      message: 'Job opening requisitions retrieved successfully.',
+    });
+    expect(request.input).toHaveBeenNthCalledWith(
+      1,
+      'CompanyID',
+      expect.anything(),
+      7,
+    );
+    expect(request.input).toHaveBeenNthCalledWith(
+      2,
+      'Flag',
+      expect.anything(),
+      10,
+    );
+    expect(execute).toHaveBeenCalledWith('USP_GetRecruitmentPriority');
+  });
+
   it('surfaces the stored procedure hiring manager eligibility error', async () => {
     const execute = jest.fn().mockResolvedValue({
       recordset: [
