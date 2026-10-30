@@ -9,7 +9,7 @@ export {
   toOptions,
   withLeaveCodes,
   withApiPrefix,
-  useGetMonthlyLeaveCalendarQuery,
+  useGetAdminMonthlyLeaveCalendarQuery,
   useGetLeaveDailyFilterOptionsQuery,
   useGetCompanyDropdownDataQuery,
   useGetEmployeeLeaveBalanceQuery,
@@ -26,7 +26,7 @@ export {
   useReprocessDailyLeaveMutation,
   useImportDailyLeaveMutation,
 } from "./leaveDaily.api";
-
+ 
 export type {
   GetMonthlyLeaveCalendarRequest,
   LeaveDailyFilterKey,
@@ -45,3 +45,4 @@ export type {
   ReprocessResponse,
   ImportDailyBody,
 } from "./leaveDaily.api";
+ 

@@ -10,18 +10,18 @@ import type {
   LeaveDailyFilters,
   LeaveDailyResponse,
 } from "../types/leaveDaily.types";
-
+ 
 /* ------------------------------------------------------------------ */
 /*  CONFIG                                                             */
 /* ------------------------------------------------------------------ */
-
+ 
 const API_ROOT = String(import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
-
+ 
 export const withApiPrefix = (path: string) =>
   API_ROOT.endsWith("/api") ? path : `/api${path}`;
-
+ 
 export const LEAVE_DAILY_BASE_PATH = withApiPrefix("/admin/ta/leave/daily");
-
+ 
 export type LeaveDailyFilterKey =
   | "branch"
   | "salaryStructure"
@@ -29,7 +29,7 @@ export type LeaveDailyFilterKey =
   | "attendance"
   | "designation"
   | "empStatus";
-
+ 
 export const LEAVE_DAILY_OPTION_ENDPOINTS: Record<
   LeaveDailyFilterKey,
   string | null
@@ -41,24 +41,24 @@ export const LEAVE_DAILY_OPTION_ENDPOINTS: Record<
   designation: withApiPrefix("/admin/employee-details"),
   empStatus: null,
 };
-
+ 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
-
+ 
 export interface LeaveDailyOption {
   label: string;
   value: string;
   /** Short code if the backend sends one (e.g. "CL") - used by the Leave / Attendance filters */
   code?: string;
 }
-
+ 
 export interface GetMonthlyLeaveCalendarRequest {
   year: number;
   month: number;
   branchId?: number;
 }
-
+ 
 /**
  * Backend DTO (GetMonthlyLeaveCalendarDto) takes ONE id per filter.
  * The dropdowns allow several values, so one request is sent per combination
@@ -76,13 +76,13 @@ export interface MonthlyLeaveCalendarArgs {
   /** Leave policy id (single) */
   policyId?: number | null;
 }
-
+ 
 /** Max requests sent for one calendar load (all filter combinations together) */
 const MAX_CALENDAR_REQUESTS = 24;
 // The company is taken from the login token by the backend, so no companyId is sent from here.
-
+ 
 export type MonthlyLeaveCalendarRow = Record<string, unknown>;
-
+ 
 export interface SaveLeaveFormBody {
   employeeId: number;
   date: string;
@@ -90,13 +90,13 @@ export interface SaveLeaveFormBody {
   secondHalf?: string | null;
   remarks?: string | null;
 }
-
+ 
 export interface ApplyLeaveBody {
   employeeId: number | number[];
   dates: string[];
   leaveType: string | number;
 }
-
+ 
 /**
  * Backend DTO: BulkLeaveRequestDto
  *  - POST .../bulk-leave-request           -> popup (one employee, one day), returns JSON { summary }
@@ -119,10 +119,10 @@ export interface BulkLeaveRequestBody {
   isHRForceApply?: boolean;
   isAttendanceMarking?: boolean;
 }
-
+ 
 /** One row of the SP's final result set (columns come straight from the DB) */
 export type BulkLeaveSummaryRow = Record<string, unknown>;
-
+ 
 /** Response of POST .../bulk-leave-request: the SP's two result sets */
 export interface BulkLeaveRequestResponse {
   /** Audit log rows of the SP (not shown in the UI) */
@@ -133,7 +133,7 @@ export interface BulkLeaveRequestResponse {
    */
   summary: BulkLeaveSummaryRow[];
 }
-
+ 
 /** Response of POST .../bulk-leave-request/download (Excel already parsed to rows) */
 export interface BulkLeaveDownloadResult {
   /** File name from Content-Disposition, e.g. bulk-leave-result-2026-10-12T...xlsx */
@@ -143,7 +143,7 @@ export interface BulkLeaveDownloadResult {
   /** Rows of the "Bulk Leave Result" sheet */
   rows: BulkLeaveSummaryRow[];
 }
-
+ 
 /** Backend ReprocessItemDto - one employee + one date to recalculate */
 export interface ReprocessItem {
   /** EmployeeID, max 25 chars */
@@ -151,7 +151,7 @@ export interface ReprocessItem {
   /** YYYY-MM-DD */
   date: string;
 }
-
+ 
 /**
  * Backend ReprocessDto: POST .../reprocess
  * The pairs come from the earlier bulk leave requests (stored on the frontend).
@@ -159,7 +159,7 @@ export interface ReprocessItem {
 export interface ReprocessBody {
   items: ReprocessItem[];
 }
-
+ 
 /** One row of the reprocess response */
 export interface ReprocessResultItem {
   employeeId: string;
@@ -167,17 +167,17 @@ export interface ReprocessResultItem {
   success: boolean;
   message: string | null;
 }
-
+ 
 /** Response of POST .../reprocess */
 export interface ReprocessResponse {
   results: ReprocessResultItem[];
 }
-
-
+ 
+ 
 /* ------------------------------------------------------------------ */
 /*  Company dropdown + leave balance (backend SPs)                     */
 /* ------------------------------------------------------------------ */
-
+ 
 export interface CompanyDropdownData {
   branches: LeaveDailyOption[];
   salaryStructures: LeaveDailyOption[];
@@ -198,29 +198,29 @@ export interface CompanyDropdownData {
   /** Active leave policies (value = policy id) */
   activeLeavePolicies: LeaveDailyOption[];
 }
-
+ 
 export interface EmployeeLeaveBalanceRow {
   [key: string]: unknown;
 }
-
+ 
 export interface ImportDailyBody {
   templateType: string;
   policyId: number;
   month: string;
   file: File;
 }
-
+ 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
-
+ 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (value !== null && typeof value === "object" && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
   return null;
 }
-
+ 
 function unwrapList(raw: unknown): unknown[] {
   if (Array.isArray(raw)) return raw;
   const obj = asRecord(raw);
@@ -230,7 +230,7 @@ function unwrapList(raw: unknown): unknown[] {
   }
   return [];
 }
-
+ 
 function pickId(row: Record<string, unknown>): string {
   const v =
     row.id ??
@@ -252,7 +252,7 @@ function pickId(row: Record<string, unknown>): string {
     firstValueByKey(row, (k) => k.endsWith("id") && !k.includes("company"));
   return v == null ? "" : String(v);
 }
-
+ 
 /** First value whose (lower-case, letters+digits only) column name passes the test */
 function firstValueByKey(
   row: Record<string, unknown>,
@@ -264,7 +264,7 @@ function firstValueByKey(
   }
   return undefined;
 }
-
+ 
 function pickLabel(row: Record<string, unknown>): string {
   const v =
     row.name ??
@@ -286,7 +286,7 @@ function pickLabel(row: Record<string, unknown>): string {
     firstValueByKey(row, (k) => k.endsWith("name") || k === "description" || k === "title");
   return v == null ? pickId(row) : String(v);
 }
-
+ 
 /** Short code of an option row, e.g. "CL" / "P" (empty when the API has none) */
 function pickCode(row: Record<string, unknown>): string {
   const v =
@@ -309,7 +309,7 @@ function pickCode(row: Record<string, unknown>): string {
     );
   return v == null ? "" : String(v).trim();
 }
-
+ 
 /**
  * Leave types come without a code; the backend sends the codes in `leaveTypeCodes`
  * (same id: 1 = CL, 2 = SL ... 8 = MRL). Copy them onto the leave types.
@@ -329,9 +329,9 @@ function applyStatusCodes(options: LeaveDailyOption[], rawStatuses: unknown): Le
     return code ? { ...option, code } : option;
   });
 }
-
+ 
 const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
+ 
 /**
  * Backend `monthYear` rows ({ MonthName: "October", YearNo: 2026, Name: "Oct-2026" })
  * -> month options like "Oct/2026" (the format the pages use), oldest first.
@@ -339,17 +339,17 @@ const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
  */
 function toMonthOptions(raw: unknown): LeaveDailyOption[] {
   const found = new Map<string, { year: number; monthIndex: number }>();
-
+ 
   for (const item of unwrapList(raw)) {
     const row = asRecord(item);
     if (!row) continue;
-
+ 
     let year = Number(row.YearNo ?? row.yearNo ?? row.Year ?? row.year);
     const monthText = String(row.MonthName ?? row.monthName ?? row.Month ?? row.month ?? "");
     let monthIndex = MONTH_SHORT.findIndex((short) =>
       monthText.toLowerCase().startsWith(short.toLowerCase()),
     );
-
+ 
     // fall back to the display name: "Oct-2026" / "Oct/2026" / "October 2026"
     if (monthIndex < 0 || !Number.isInteger(year)) {
       const match = String(row.Name ?? row.name ?? row.Label ?? row.label ?? "").match(
@@ -362,15 +362,15 @@ function toMonthOptions(raw: unknown): LeaveDailyOption[] {
       year = Number(match[2]);
     }
     if (monthIndex < 0 || !Number.isInteger(year)) continue;
-
+ 
     found.set(`${MONTH_SHORT[monthIndex]}/${year}`, { year, monthIndex });
   }
-
+ 
   return Array.from(found.entries())
     .sort(([, a], [, b]) => a.year - b.year || a.monthIndex - b.monthIndex)
     .map(([value]) => ({ value, label: value }));
 }
-
+ 
 /**
  * Gives a leave list (for example one employee's leave types) a short, unique code:
  * its own code, else the code with the same id in `codeOptions` (company `leaveTypeCodes`),
@@ -393,7 +393,7 @@ export function withLeaveCodes(
     }),
   );
 }
-
+ 
 /** "Casual Leave" -> "CL", "Loss of Pay" -> "LOP", "Sick" -> "SIC" */
 function deriveCode(label: string): string {
   const words = label.split(/[^A-Za-z0-9]+/).filter(Boolean);
@@ -401,7 +401,7 @@ function deriveCode(label: string): string {
   if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
   return words.map((word) => word[0]).join("").toUpperCase();
 }
-
+ 
 /**
  * Gives every option a short, unique code: the code the API sends, or one made
  * from the name when the API has none. Two options never share a code.
@@ -425,7 +425,7 @@ function withCodes(options: LeaveDailyOption[]): LeaveDailyOption[] {
     return { ...option, code };
   });
 }
-
+ 
 export function toOptions(raw: unknown, listKey?: string): LeaveDailyOption[] {
   let list = unwrapList(raw);
   if (!list.length && listKey) {
@@ -434,7 +434,7 @@ export function toOptions(raw: unknown, listKey?: string): LeaveDailyOption[] {
       list = obj[listKey] as unknown[];
     }
   }
-
+ 
   const options: LeaveDailyOption[] = [];
   for (const item of list) {
     const row = asRecord(item);
@@ -452,21 +452,21 @@ export function toOptions(raw: unknown, listKey?: string): LeaveDailyOption[] {
   }
   return options;
 }
-
+ 
 /* ------------------------------------------------------------------ */
 /*  Bulk leave result helpers                                          */
 /* ------------------------------------------------------------------ */
-
+ 
 /** "Status Code", "status_code", "StatusCode" -> "statuscode" */
 const normalizeKey = (key: string) => key.replace(/[^a-z0-9]/gi, "").toLowerCase();
-
+ 
 const findValue = (row: BulkLeaveSummaryRow, names: string[]): unknown => {
   for (const [key, value] of Object.entries(row)) {
     if (names.includes(normalizeKey(key))) return value;
   }
   return undefined;
 };
-
+ 
 /**
  * Looks through the SP summary rows and returns the failed ones.
  * A row is "failed" when its StatusCode is not 0 / 200, or its Status / Result
@@ -478,18 +478,18 @@ export function getBulkLeaveFailures(rows: BulkLeaveSummaryRow[]): {
 } {
   let failedCount = 0;
   let firstMessage: string | null = null;
-
+ 
   for (const row of rows) {
     const code = findValue(row, ["statuscode", "status_code", "code"]);
     const statusText = String(
       findValue(row, ["status", "result", "remarks", "resultstatus"]) ?? "",
     ).toLowerCase();
     const message = findValue(row, ["message", "errormessage", "remarks", "reason", "result"]);
-
+ 
     const codeNumber = code === undefined || code === null || code === "" ? null : Number(code);
     const badCode = codeNumber !== null && Number.isFinite(codeNumber) && codeNumber !== 0 && codeNumber !== 200;
     const badText = /fail|error|reject|invalid|insufficient|not allowed|exceed/.test(statusText);
-
+ 
     if (badCode || badText) {
       failedCount += 1;
       if (!firstMessage && message != null && String(message).trim()) {
@@ -497,10 +497,10 @@ export function getBulkLeaveFailures(rows: BulkLeaveSummaryRow[]): {
       }
     }
   }
-
+ 
   return { failedCount, firstMessage };
 }
-
+ 
 /**
  * Employee ids whose summary row failed (StatusCode not 0/200, or failed status text).
  * Works with JSON keys (EmployeeId) and Excel headers (" Employee Id").
@@ -514,7 +514,7 @@ export function getBulkLeaveFailedEmployeeIds(rows: BulkLeaveSummaryRow[]): Set<
   }
   return failed;
 }
-
+ 
 /**
  * Finds the id of the Present status (code "P") in the raw attendanceStatuses list.
  * Field names differ between APIs (ID / Id / AttendanceStatusID, Code / StatusCode ...),
@@ -524,7 +524,7 @@ function findPresentStatusId(raw: unknown): number | null {
   const rows = unwrapList(raw)
     .map((item) => asRecord(item))
     .filter((row): row is Record<string, unknown> => row !== null);
-
+ 
   const idOf = (row: Record<string, unknown>): number | null => {
     const entries = Object.entries(row);
     const preferred = ["id", "attendancestatusid", "statusid", "value"];
@@ -537,7 +537,7 @@ function findPresentStatusId(raw: unknown): number | null {
     const id = Number(hit?.[1]);
     return Number.isFinite(id) && id > 0 ? id : null;
   };
-
+ 
   const codeOf = (row: Record<string, unknown>): string => {
     const entries = Object.entries(row);
     const hit =
@@ -548,7 +548,7 @@ function findPresentStatusId(raw: unknown): number | null {
       ) ?? entries.find(([key]) => normalizeKey(key).endsWith("code"));
     return String(hit?.[1] ?? "").trim().toUpperCase();
   };
-
+ 
   const nameOf = (row: Record<string, unknown>): string =>
     String(
       Object.entries(row).find(([key]) =>
@@ -559,13 +559,13 @@ function findPresentStatusId(raw: unknown): number | null {
     )
       .trim()
       .toUpperCase();
-
+ 
   const match =
     rows.find((row) => codeOf(row) === "P") ??
     rows.find((row) => nameOf(row) === "PRESENT" || nameOf(row) === "P");
   return match ? idOf(match) : null;
 }
-
+ 
 /** attendanceStatuses can come under different keys */
 function pickAttendanceStatuses(data: Record<string, unknown>): unknown {
   return (
@@ -578,7 +578,7 @@ function pickAttendanceStatuses(data: Record<string, unknown>): unknown {
     data.Statuses
   );
 }
-
+ 
 /** Normalises any backend shape to { summary: [...] } */
 function toBulkLeaveResponse(raw: unknown): BulkLeaveRequestResponse {
   const obj = asRecord(raw);
@@ -588,21 +588,21 @@ function toBulkLeaveResponse(raw: unknown): BulkLeaveRequestResponse {
   const logs = obj && Array.isArray(obj.logs) ? obj.logs : [];
   return { logs: onlyRows(logs), summary: onlyRows(summary) };
 }
-
+ 
 /** Reads the file name out of: attachment; filename="bulk-leave-result-....xlsx" */
 function fileNameFromDisposition(header: string | null): string {
   const match = header?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
   if (match?.[1]) return decodeURIComponent(match[1]);
   return `bulk-leave-result-${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`;
 }
-
+ 
 export function getLeaveDailyErrorMessage(error: unknown): string {
   const e = error as {
     status?: number | string;
     data?: { message?: string | string[]; error?: string } | string;
     error?: string;
   };
-
+ 
   if (!e) return "Something went wrong.";
   if (e.status === "FETCH_ERROR") {
     return "Cannot reach the server. Check that the backend is running.";
@@ -615,17 +615,17 @@ export function getLeaveDailyErrorMessage(error: unknown): string {
   }
   return e.error || "Request failed.";
 }
-
+ 
 /* ------------------------------------------------------------------ */
 /*  RTK Query                                                          */
 /* ------------------------------------------------------------------ */
-
+ 
 export const leaveDailyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // POST /admin/ta/leave/daily/monthly-leave-calendar
     // body: { year, month, branchId?, employmentStatusId?, designationId?, policyId?,
     //         leaveTypeId?, structureId?, attendanceStatusId? }   (all optional ints)
-    getMonthlyLeaveCalendar: build.query<
+    getAdminMonthlyLeaveCalendar: build.query<
       MonthlyLeaveCalendarRow[],
       MonthlyLeaveCalendarArgs
     >({
@@ -634,7 +634,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
           (list ?? [])
             .map((id) => Number(id))
             .filter((id) => Number.isInteger(id) && id > 0);
-
+ 
         // one entry per filter that has selected values
         const dimensions: [string, number[]][] = [
           ["branchId", ints(args.branchIds)],
@@ -644,14 +644,14 @@ export const leaveDailyApi = baseApi.injectEndpoints({
           ["leaveTypeId", ints(args.leaveTypeIds)],
           ["attendanceStatusId", ints(args.attendanceStatusIds)],
         ];
-
+ 
         // every combination of the selected values (nothing selected -> one request, no filter)
         let combos: Record<string, number>[] = [{}];
         for (const [key, values] of dimensions) {
           if (values.length === 0) continue;
           combos = combos.flatMap((combo) => values.map((value) => ({ ...combo, [key]: value })));
         }
-
+ 
         if (combos.length > MAX_CALENDAR_REQUESTS) {
           return {
             error: {
@@ -660,7 +660,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
             },
           };
         }
-
+ 
         const policyId = Number(args.policyId);
         const results = await Promise.all(
           combos.map((combo) =>
@@ -676,10 +676,10 @@ export const leaveDailyApi = baseApi.injectEndpoints({
             }),
           ),
         );
-
+ 
         const failed = results.find((r) => r.error);
         if (failed?.error) return { error: failed.error };
-
+ 
         // merge, one row per employee (same employee can come from several requests)
         const seen = new Set<string>();
         const data: MonthlyLeaveCalendarRow[] = [];
@@ -697,12 +697,12 @@ export const leaveDailyApi = baseApi.injectEndpoints({
             data.push(record as MonthlyLeaveCalendarRow);
           }
         }
-
+ 
         return { data };
       },
       providesTags: ["Leave"],
     }),
-
+ 
     // Leave types allowed for ONE employee (Leave Form).
     // GET /admin/ta/leave/daily/leave-master-data?employeeId=...   (USP_LeaveMasterData)
     // -> { success, message, data: [ ...leave types ] }. The company comes from the login token.
@@ -715,25 +715,25 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       },
       providesTags: ["Leave"],
     }),
-
+ 
     getDailyMonths: build.query<LeaveDailyOption[], void>({
       query: () => `${LEAVE_DAILY_BASE_PATH}/months`,
       transformResponse: (raw: unknown) => toOptions(raw),
       providesTags: ["Leave"],
     }),
-
+ 
     getDailyLeaveTypes: build.query<LeaveDailyOption[], void>({
       query: () => `${LEAVE_DAILY_BASE_PATH}/leavetypes`,
       transformResponse: (raw: unknown) => toOptions(raw),
       providesTags: ["Leave"],
     }),
-
+ 
     getDailyDayTypes: build.query<LeaveDailyOption[], void>({
       query: () => `${LEAVE_DAILY_BASE_PATH}/daytypes`,  // not in controller yet — may 404
       transformResponse: (raw: unknown) => toOptions(raw),
       providesTags: ["Leave"],
     }),
-
+ 
     getDailyEmployees: build.query<
       Record<string, unknown>[],
       { policyId: number; month: string }
@@ -747,7 +747,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       },
       providesTags: ["Leave"],
     }),
-
+ 
     getDailyLeaveForm: build.query<
       Record<string, unknown>[],
       { employeeId: number; date: string }
@@ -761,7 +761,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       },
       providesTags: ["Leave"],
     }),
-
+ 
     saveDailyLeaveForm: build.mutation<unknown, SaveLeaveFormBody>({
       query: (body) => ({
         url: `${LEAVE_DAILY_BASE_PATH}/leaveform`,
@@ -770,7 +770,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Leave"],
     }),
-
+ 
     // legacy apply (kept)
     applyDailyLeave: build.mutation<unknown, ApplyLeaveBody>({
       query: (body) => ({
@@ -780,7 +780,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Leave"],
     }),
-
+ 
     // Popup (one employee, one day) -> JSON { summary }
     // POST /admin/ta/leave/daily/bulk-leave-request
     bulkLeaveRequest: build.mutation<BulkLeaveRequestResponse, BulkLeaveRequestBody>({
@@ -792,7 +792,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       transformResponse: (raw: unknown) => toBulkLeaveResponse(raw),
       invalidatesTags: ["Leave"],
     }),
-
+ 
     // Multi-select (employees + dates) -> Excel file
     // POST /admin/ta/leave/daily/bulk-leave-request/download
     // The Excel is parsed here into plain rows (a Blob can't be stored in Redux).
@@ -811,7 +811,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
               return text;
             }
           }
-
+ 
           const buffer = await response.arrayBuffer();
           const workbook = XLSX.read(buffer, { type: "array", cellDates: false });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -825,7 +825,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
             .map((line) =>
               Object.fromEntries(headers.map((header, index) => [header, line[index] ?? ""])),
             );
-
+ 
           return {
             fileName: fileNameFromDisposition(response.headers.get("Content-Disposition")),
             headers,
@@ -835,7 +835,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Leave"],
     }),
-
+ 
     // Recalculates the daily attendance NOW (USP_ProcessDailyAttendance) for every employee/date pair.
     // POST /admin/ta/leave/daily/reprocess   { items: [{ employeeId, date }] }
     // -> { results: [{ employeeId, date, success, message }] }   (one result per item)
@@ -862,7 +862,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Leave"],
     }),
-
+ 
     importDailyLeave: build.mutation<unknown, ImportDailyBody>({
       query: ({ file, templateType, policyId, month }) => {
         const fd = new FormData();
@@ -878,7 +878,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Leave"],
     }),
-
+ 
     // ===== CHANGED: company dropdown data (one SP → all filter lists) =====
     // GET /admin/ta/leave/daily/company-dropdown-data   (the company comes from the login token)
     getCompanyDropdownData: build.query<CompanyDropdownData, void>({
@@ -912,7 +912,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
       },
       providesTags: ["Leave"],
     }),
-
+ 
     // ===== CHANGED: employee leave balance =====
     // GET /admin/ta/leave/daily/employee-leave-balance?employeeId=
     getEmployeeLeaveBalance: build.query<
@@ -930,7 +930,7 @@ export const leaveDailyApi = baseApi.injectEndpoints({
         { type: "Leave", id: `BALANCE_${employeeId}` },
       ],
     }),
-
+ 
     // Keep per-key helper for older callers — maps from company-dropdown lists
     getLeaveDailyFilterOptions: build.query<
       LeaveDailyOption[],
@@ -942,10 +942,10 @@ export const leaveDailyApi = baseApi.injectEndpoints({
           method: "GET",
         });
         if (result.error) return { error: result.error };
-
+ 
         const root = asRecord(result.data) ?? {};
         const data = asRecord(root.data) ?? root;
-
+ 
         const map: Record<LeaveDailyFilterKey, unknown> = {
           branch: data.branches ?? data.Branches,
           salaryStructure: data.salaryStructures ?? data.SalaryStructures,
@@ -954,16 +954,16 @@ export const leaveDailyApi = baseApi.injectEndpoints({
           designation: data.designations ?? data.Designations,
           empStatus: data.employeeStatuses ?? data.EmployeeStatuses,
         };
-
+ 
         return { data: toOptions(map[key]) };
       },
       providesTags: ["Leave"],
     }),
   }),
 });
-
+ 
 export const {
-  useGetMonthlyLeaveCalendarQuery,
+  useGetAdminMonthlyLeaveCalendarQuery,
   useGetLeaveMasterDataQuery,
   useGetDailyMonthsQuery,
   useGetDailyLeaveTypesQuery,
@@ -980,7 +980,7 @@ export const {
   useGetCompanyDropdownDataQuery,
   useGetEmployeeLeaveBalanceQuery,
 } = leaveDailyApi;
-
+ 
 export const getLeaveDaily = async (
   _filters: LeaveDailyFilters,
   _pageNumber = 1,
@@ -991,3 +991,4 @@ export const getLeaveDaily = async (
   void _pageSize;
   throw new Error("Leave Daily API endpoint is not configured yet.");
 };
+ 
