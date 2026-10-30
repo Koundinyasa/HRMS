@@ -62,6 +62,11 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
   private readonly cacheMs: number;
   private static readonly CACHE_MAX_ENTRIES = 20000;
 
+  // The browser heartbeat can arrive every few seconds; the database is
+  // written at most once per TOUCH_MIN_INTERVAL_MS per login.
+  private readonly lastTouch = new Map<string, number>();
+  private static readonly TOUCH_MIN_INTERVAL_MS = 20 * 1000;
+
   private readonly singleSessionMode: SingleSessionMode;
   private readonly activeWindowSeconds: number;
 
@@ -322,10 +327,18 @@ export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
 
   /** Records that a browser tab of this login is still open. */
   async touch(familyId: string): Promise<void> {
+    const key = String(familyId).toLowerCase();
+    const now = Date.now();
+    const last = this.lastTouch.get(key);
+    if (last !== undefined && now - last < AuthSessionService.TOUCH_MIN_INTERVAL_MS) return;
+
+    if (this.lastTouch.size >= AuthSessionService.CACHE_MAX_ENTRIES) this.lastTouch.clear();
+    this.lastTouch.set(key, now);
+
     const pool = await this.db.connect();
     await pool
       .request()
-      .input('FamilyID', sql.UniqueIdentifier, String(familyId).toLowerCase())
+      .input('FamilyID', sql.UniqueIdentifier, key)
       .execute('USP_Auth_TouchSession');
   }
 

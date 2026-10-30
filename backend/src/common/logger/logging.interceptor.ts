@@ -25,6 +25,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
+        // The browser heartbeat fires every few seconds per open tab; logging
+        // each one would bury everything else. Failures are still logged by
+        // the exception filter.
+        if (request.originalUrl?.split('?')[0].endsWith('/auth/heartbeat')) return;
+
         const duration = Date.now() - start;
 
         this.logger.info('HTTP Request Completed', {

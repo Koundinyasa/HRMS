@@ -4,6 +4,9 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { useGetSessionQuery } from "@/features/auth/api/authApi";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
+import { useTabLock } from "@/features/auth/hooks/useTabLock";
+import { useSessionHeartbeat } from "@/features/auth/hooks/useSessionHeartbeat";
+import TabBlockedScreen from "@/features/auth/components/TabBlockedScreen";
 import { IDLE_TIMEOUT_MS } from "@/shared/constants/session";
 
 interface ProtectedRouteProps {
@@ -28,6 +31,11 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const { isError, refetch } = useGetSessionQuery(undefined, {
     skip: sessionChecked,
   });
+
+  // Only one tab may use the app; the tab in use also keeps the server
+  // informed that the login is still open.
+  const { status: tabStatus, takeOver } = useTabLock(sessionChecked && isAuthenticated);
+  useSessionHeartbeat(isAuthenticated && tabStatus === "active");
 
   useIdleTimer({
     timeout: IDLE_TIMEOUT_MS,
@@ -76,5 +84,17 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   if (roleIdNumber === null || Number.isNaN(roleIdNumber) || !allowedRoles.includes(roleIdNumber)) {
     return <Navigate to="/unauthorized" replace />;
   }
+
+  if (tabStatus === "blocked") {
+    return <TabBlockedScreen onUseHere={takeOver} />;
+  }
+  if (tabStatus === "checking") {
+    return (
+      <div className="flex h-screen items-center justify-center text-sm text-slate-500">
+        Loading...
+      </div>
+    );
+  }
+
   return <Outlet />;
 }

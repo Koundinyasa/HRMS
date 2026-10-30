@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { baseApi } from "@/app/baseApi";
+import { broadcastSignedOut } from "@/app/crossTab";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useLogoutMutation } from "../api/authApi";
@@ -28,6 +29,7 @@ export function useSignOut() {
     } finally {
       dispatch(logout());
       dispatch(baseApi.util.resetApiState());
+      broadcastSignedOut();
       navigate(domain ? `/${domain}/login` : "/", { replace: true });
     }
   }, [dispatch, navigate, domainParam, domainFromStore, logoutRequest]);

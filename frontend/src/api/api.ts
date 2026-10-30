@@ -1,7 +1,9 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '@/app/apiConfig';
+import { isSessionEndCode } from '@/features/auth/constants/authErrorCodes';
 import {
+  getLastSessionEndCode,
   isRefreshablePath,
   notifySessionExpired,
   refreshSession,
@@ -16,6 +18,11 @@ const api = axios.create({
 
 type RetryableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
 
+const codeOf = (error: AxiosError): string | undefined => {
+  const code = (error.response?.data as { code?: unknown } | undefined)?.code;
+  return typeof code === 'string' ? code : undefined;
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -29,9 +36,15 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // The server already said this login is over: renewing it cannot work.
+    if (isSessionEndCode(codeOf(error))) {
+      notifySessionExpired(codeOf(error));
+      return Promise.reject(error);
+    }
+
     // The repeated request was refused as well: the session is really over.
     if (config._retried) {
-      notifySessionExpired();
+      notifySessionExpired(codeOf(error));
       return Promise.reject(error);
     }
 
@@ -39,7 +52,7 @@ api.interceptors.response.use(
     const outcome = await refreshSession();
 
     if (outcome === 'expired') {
-      notifySessionExpired();
+      notifySessionExpired(getLastSessionEndCode());
       return Promise.reject(error);
     }
     if (outcome === 'unavailable') return Promise.reject(error);

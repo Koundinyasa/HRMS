@@ -19,10 +19,28 @@ const RACE_DELAY_MS = 400;
 
 let inFlight: Promise<RefreshOutcome> | null = null;
 let lastRefreshOkAt = 0;
+// Why the last refresh was refused (SESSION_REPLACED, SESSION_ENDED, ...).
+let lastEndCode: string | undefined;
+
+/** The `code` field of a JSON error response, if it has one. */
+export async function codeFromResponse(res: Response): Promise<string | undefined> {
+  try {
+    const body = await res.clone().json();
+    return typeof body?.code === 'string' ? body.code : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Why the session ended, as reported by the last refused refresh. */
+export function getLastSessionEndCode(): string | undefined {
+  return lastEndCode;
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function callRefresh(): Promise<RefreshOutcome> {
+  lastEndCode = undefined;
   for (let attempt = 0; attempt <= RACE_RETRIES; attempt++) {
     let res: Response;
     try {
@@ -39,7 +57,10 @@ async function callRefresh(): Promise<RefreshOutcome> {
       lastRefreshOkAt = Date.now();
       return 'ok';
     }
-    if (res.status === 401) return 'expired';
+    if (res.status === 401) {
+      lastEndCode = await codeFromResponse(res);
+      return 'expired';
+    }
 
     // 409: another tab refreshed at the same moment. Its new cookie is already
     // in the browser, so wait a moment and try again with it.
@@ -67,10 +88,11 @@ export function getLastRefreshAt(): number {
 }
 
 // Under /auth/ a 401 normally means "wrong credentials / wrong code", not
-// "your login ran out", so those calls must not trigger a refresh. These three
+// "your login ran out", so those calls must not trigger a refresh. These
 // are the exceptions: they need a logged-in user.
 const REFRESHABLE_AUTH_PATHS = [
   '/auth/me',
+  '/auth/heartbeat',
   '/auth/change-password',
   '/auth/reset-password',
 ];
@@ -91,12 +113,13 @@ export function isRefreshablePath(url: string): boolean {
 
 // Callers outside Redux (plain fetch, axios) cannot dispatch, so the store
 // registers one function here that marks the user as logged out.
-let sessionExpiredHandler: (() => void) | null = null;
+// `code` says why, when the server told us (see authErrorCodes.ts).
+let sessionExpiredHandler: ((code?: string) => void) | null = null;
 
-export function setSessionExpiredHandler(handler: () => void): void {
+export function setSessionExpiredHandler(handler: (code?: string) => void): void {
   sessionExpiredHandler = handler;
 }
 
-export function notifySessionExpired(): void {
-  sessionExpiredHandler?.();
+export function notifySessionExpired(code?: string): void {
+  sessionExpiredHandler?.(code);
 }

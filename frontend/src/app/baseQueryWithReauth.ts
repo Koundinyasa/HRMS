@@ -7,12 +7,13 @@ import type {
 import { API_BASE_URL } from './apiConfig';
 import {
   getLastRefreshAt,
+  getLastSessionEndCode,
   isRefreshablePath,
   notifySessionExpired,
   refreshSession,
 } from './sessionRefresh';
 import { passwordChangeRequired } from '../features/auth/authSlice';
-import { AuthErrorCode } from '../features/auth/constants/authErrorCodes';
+import { AuthErrorCode, isSessionEndCode } from '../features/auth/constants/authErrorCodes';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
@@ -55,12 +56,20 @@ export const baseQueryWithReauth: BaseQueryFn<
   let result = await rawBaseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401 && isRefreshablePath(pathOf(args))) {
+    // The server already said this login is over (replaced, logged out, timed
+    // out): renewing it cannot work, so go straight to signing out.
+    const firstCode = errorCodeOf(result.error);
+    if (isSessionEndCode(firstCode)) {
+      notifySessionExpired(firstCode);
+      return result;
+    }
+
     // Another request may already have refreshed after this one started;
     // then its cookie is fresh and only a retry is needed.
     if (getLastRefreshAt() < startedAt) {
       const outcome = await refreshSession();
       if (outcome === 'expired') {
-        notifySessionExpired();
+        notifySessionExpired(getLastSessionEndCode());
         return result;
       }
       // Server or network trouble: keep the user logged in, show the error.
@@ -68,7 +77,7 @@ export const baseQueryWithReauth: BaseQueryFn<
     }
 
     result = await rawBaseQuery(args, api, extraOptions);
-    if (result.error?.status === 401) notifySessionExpired();
+    if (result.error?.status === 401) notifySessionExpired(errorCodeOf(result.error));
   }
 
   if (

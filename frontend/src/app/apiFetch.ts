@@ -1,6 +1,9 @@
 import { API_BASE_URL } from './apiConfig';
+import { isSessionEndCode } from '../features/auth/constants/authErrorCodes';
 import {
+  codeFromResponse,
   getLastRefreshAt,
+  getLastSessionEndCode,
   isRefreshablePath,
   notifySessionExpired,
   refreshSession,
@@ -45,17 +48,24 @@ export async function fetchWithSession(url: string, init: RequestInit = {}): Pro
 
   if (res.status !== 401 || !isRefreshablePath(url)) return res;
 
+  // The server already said this login is over: renewing it cannot work.
+  const firstCode = await codeFromResponse(res);
+  if (isSessionEndCode(firstCode)) {
+    notifySessionExpired(firstCode);
+    return res;
+  }
+
   // Another request may already have refreshed after this one started.
   if (getLastRefreshAt() < startedAt) {
     const outcome = await refreshSession();
     if (outcome === 'expired') {
-      notifySessionExpired();
+      notifySessionExpired(getLastSessionEndCode());
       return res;
     }
     if (outcome === 'unavailable') return res;
   }
 
   res = await send();
-  if (res.status === 401) notifySessionExpired();
+  if (res.status === 401) notifySessionExpired(await codeFromResponse(res));
   return res;
 }
