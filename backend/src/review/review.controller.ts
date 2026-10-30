@@ -42,7 +42,11 @@ export class ReviewController {
     @Req() req: any,
     @Body() dto: MonthlyLeaveCalendarDto,
   ) {
-    return this.reviewService.getMonthlyLeaveCalendar(dto, req.user.companyId);
+    return this.reviewService.getMonthlyLeaveCalendar(
+      dto,
+      req.user.companyId,
+      req.user.employeeId,
+    );
   }
 
   // 2. Pending Leave Requests
@@ -59,7 +63,11 @@ export class ReviewController {
     @Req() req: any,
     @Body() dto: MissedPunchEmployeesDto,
   ) {
-    return this.reviewService.getMissedPunchEmployees(dto, req.user.companyId);
+    return this.reviewService.getMissedPunchEmployees(
+      dto,
+      req.user.companyId,
+      req.user.employeeId,
+    );
   }
 
   // 4. Employee Punch Dashboard

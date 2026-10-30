@@ -4,15 +4,36 @@ import * as sql from 'mssql';
 import { DatabaseService } from '../database/database.service';
 import { MonthlyLeaveCalendarDto } from './dto/monthly-leave-calendar.dto';
 import { MissedPunchEmployeesDto } from './dto/missed-punch-employees.dto';
+import { keepReportees } from './reportee-filter';
 
 @Injectable()
 export class ReviewService {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  /** EmployeeIDs (lower case) of the manager's active direct reports. */
+  private async reporteeIdsOf(managerEmployeeId: string): Promise<Set<string>> {
+    const manager = String(managerEmployeeId ?? '').trim();
+    if (!manager) return new Set();
+    const pool = await this.databaseService.connect();
+    const result = await pool
+      .request()
+      .input('ManagerID', sql.VarChar(25), manager)
+      .query(
+        `SELECT EmployeeID FROM Employee
+          WHERE ReportingManagerID = @ManagerID
+            AND Deleted = 0
+            AND EmploymentStatusID = 1`,
+      );
+    return new Set(
+      (result.recordset ?? []).map((r: any) => String(r.EmployeeID).trim().toLowerCase()),
+    );
+  }
+
   // 1. Monthly Leave Calendar
   async getMonthlyLeaveCalendar(
     dto: MonthlyLeaveCalendarDto,
     companyId: number,
+    managerEmployeeId: string,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -24,7 +45,12 @@ export class ReviewService {
       .input('BranchId', sql.Int, dto.branchId ?? null)
       .execute('usp_GetMonthlyLeaveCalendar');
 
-    return result.recordset;
+    // The procedure returns the whole company; a manager sees only their team.
+    return keepReportees(
+      result.recordset,
+      await this.reporteeIdsOf(managerEmployeeId),
+      'EmployeeID',
+    );
   }
 
   // 2. Pending Leave Requests
@@ -43,6 +69,7 @@ export class ReviewService {
   async getMissedPunchEmployees(
     dto: MissedPunchEmployeesDto,
     companyId: number,
+    managerEmployeeId: string,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -53,7 +80,12 @@ export class ReviewService {
       .input('CompanyId', sql.Int, companyId)
       .execute('usp_GetMissedPunchEmployees');
 
-    return result.recordset;
+    // The procedure returns the whole company; a manager sees only their team.
+    return keepReportees(
+      result.recordset,
+      await this.reporteeIdsOf(managerEmployeeId),
+      'Employee ID',
+    );
   }
 
   // 4. Employee Punch Dashboard
