@@ -13,8 +13,11 @@ import { ForceLeaveApprovalService } from './forceleaveapproval.service';
 import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
+import { RequiresMenu } from '../../../../common/decorators/module-gate.decorator';
+import { MenuCode } from '../../../../common/constants/menu-codes';
 
 @Roles(...ADMIN_PORTAL_ROLES)
+@RequiresMenu(MenuCode.ForceLeaveApproval)
 @Controller('admin/ta/leave/forceleaveapproval')
 @UseGuards(JwtAuthGuard)
 export class ForceLeaveApprovalController {

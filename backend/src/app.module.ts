@@ -9,6 +9,8 @@ import { join } from 'path';
 import { JwtConfigModule } from './common/jwt/jwt-config.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { ModuleGateGuard } from './common/guards/module-gate.guard';
+import { MenuAccessModule } from './common/menu/menu-access.module';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
 import { EmployeeScopeModule } from './common/scope/employee-scope.module';
@@ -45,6 +47,7 @@ import { InterviewsModule } from './recruitment/interviews/interviews.module';
  
     DatabaseModule,
     EmployeeScopeModule,
+    MenuAccessModule,
     MailModule,
 
     AuthSessionModule,
@@ -66,10 +69,11 @@ import { InterviewsModule } from './recruitment/interviews/interviews.module';
   controllers: [AppController],
 
   providers: [
-    // Order matters: authenticate first, then check roles.
+    // Order matters: authenticate, then check roles, then the Phase 1 module gate.
     // Every route requires a login unless it is marked @Public().
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: ModuleGateGuard },
   ],
 })
 

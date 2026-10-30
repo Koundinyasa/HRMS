@@ -29,8 +29,11 @@ import { ProcessHistoryDto } from './dto/process-history.dto';
 import { AttendanceProcessingDashboardDto } from './dto/attendance-processing-dashboard.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
+import { RequiresMenu } from '../../../../common/decorators/module-gate.decorator';
+import { MenuCode } from '../../../../common/constants/menu-codes';
 
 @Roles(...ADMIN_PORTAL_ROLES)
+@RequiresMenu(MenuCode.TimeOfficeDashboard)
 @Controller('admin/timeattendance/timeoffice/punchprocess')
 @UseGuards(JwtAuthGuard)
 export class PunchProcessController {

@@ -13,6 +13,8 @@ import {
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { EmployeeScopeService } from '../common/scope/employee-scope.service';
+import { RequiresMenu } from '../common/decorators/module-gate.decorator';
+import { MenuCode } from '../common/constants/menu-codes';
 
 import { MonthlyLeaveCalendarDto } from './dto/monthly-leave-calendar.dto';
 import { MissedPunchEmployeesDto } from './dto/missed-punch-employees.dto';
@@ -23,6 +25,9 @@ import { EmployeeMonthlyAttendanceDetailsDto } from './dto/employee-monthly-atte
 import { EmployeeAttendanceOverviewDto } from './dto/employee-attendance-overview.dto';
 import { EmployeeDashboardDetailsDto } from './dto/employee-dashboard-details.dto';
 import { HierarchicalLeaveActionDto } from '../employee/leave/dto/hierarchical-leave-action.dto';
+// Review is the reporting-manager menu. Force Leave Approval (HR Admin) also
+// uses the approval route.
+@RequiresMenu(MenuCode.Review)
 @Controller('review')
 export class ReviewController {
   constructor(
@@ -154,6 +159,7 @@ export class ReviewController {
     );
   }
   // Approval / Rejection
+  @RequiresMenu(MenuCode.Review, MenuCode.ForceLeaveApproval)
   @UseGuards(JwtAuthGuard)
   @Post('approval')
   async hierarchicalLeaveAction(

@@ -23,9 +23,12 @@ import { GetMonthlyLeaveCalendarDto } from './dto/get-monthly-leave-calendar.dto
 import { BulkLeaveRequestDto } from './dto/bulk-leave-request.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
+import { RequiresMenu } from '../../../../common/decorators/module-gate.decorator';
+import { MenuCode } from '../../../../common/constants/menu-codes';
 
 
 @Roles(...ADMIN_PORTAL_ROLES)
+@RequiresMenu(MenuCode.LeaveDaily)
 @Controller('admin/ta/leave/daily')
 @UseGuards(JwtAuthGuard)
 export class DailyController {

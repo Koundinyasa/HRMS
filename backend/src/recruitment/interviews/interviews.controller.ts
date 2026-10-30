@@ -25,6 +25,7 @@ import {
 } from './interviews.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES, Role } from '../../common/constants/roles';
+import { GateOpen } from '../../common/decorators/module-gate.decorator';
 
 // Recruitment management is for Super Admin and HR Admin. The routes marked
 // INTERVIEWER below are also used by employees who are interviewers (the
@@ -37,6 +38,7 @@ export class InterviewsController {
   constructor(private readonly interviews: InterviewsService) {}
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Get('interviewers')
   getInterviewers() {
@@ -44,6 +46,7 @@ export class InterviewsController {
   }
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Get('interviews/schedule-options')
   scheduleOptions() {
@@ -72,6 +75,7 @@ export class InterviewsController {
   }
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Get('interviewer-feedback')
   interviewerFeedbackWorklist(
@@ -138,6 +142,7 @@ export class InterviewsController {
   }
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/feedback')
   feedback(
@@ -149,6 +154,7 @@ export class InterviewsController {
   }
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/competency-feedback')
   submitCompetencyFeedback(
@@ -164,6 +170,7 @@ export class InterviewsController {
   }
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/technical-round-2')
   scheduleTechnicalRoundTwo(
@@ -179,6 +186,7 @@ export class InterviewsController {
   }
 
   // INTERVIEWER: also used from the employee portal
+  @GateOpen()
   @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/technical-round-decision')
   technicalRoundDecision(

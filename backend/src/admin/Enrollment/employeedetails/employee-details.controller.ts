@@ -250,8 +250,11 @@ import { OrganizationChartDto } from './dto/organization-chart.dto';
 import { UpdateEmployeeGeneralDetailsDto } from './dto/update-employee-general-details.dto';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
+import { RequiresMenu } from '../../../common/decorators/module-gate.decorator';
+import { MenuCode } from '../../../common/constants/menu-codes';
  
 @Roles(...ADMIN_PORTAL_ROLES)
+@RequiresMenu(MenuCode.AddEmployee, MenuCode.LeaveDaily, MenuCode.AppliedLeave)
 @Controller('admin/employee-details')
 @UseGuards(JwtAuthGuard)
 export class EmployeeDetailsController {
