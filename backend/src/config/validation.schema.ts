@@ -45,8 +45,14 @@ export const validationSchema = Joi.object({
     .default('15m'),
   SESSION_IDLE_MINUTES: Joi.number().integer().min(1).default(60),
   SESSION_ABSOLUTE_MINUTES: Joi.number().integer().min(1).default(1440),
-  COOKIE_SECURE: Joi.boolean().optional(),
+  COOKIE_SECURE: Joi.boolean().allow('').optional(), // empty = default (on in production)
   ALLOW_LEGACY_TOKENS: Joi.boolean().default(false),
+  // How long a "session is active" answer is cached, in seconds (0 = no cache).
+  SESSION_CACHE_SECONDS: Joi.number().integer().min(0).max(300).default(30),
+  // Removal of old session rows (done by the backend, daily by default).
+  SESSION_PURGE_ENABLED: Joi.boolean().default(true),
+  SESSION_PURGE_INTERVAL_HOURS: Joi.number().integer().min(1).max(168).default(24),
+  SESSION_PURGE_RETENTION_DAYS: Joi.number().integer().min(1).max(3650).default(30),
 
   // Mail
   EMAIL_USER: Joi.string().email().required(),
@@ -54,5 +60,12 @@ export const validationSchema = Joi.object({
 
   // Captcha
   CAPTCHA_TTL_MINUTES: Joi.number().default(5),
-  CAPTCHA_DEBUG_ANSWER: Joi.boolean().default(false),
+  // Returns the captcha answer to the caller. Refused in production.
+  CAPTCHA_DEBUG_ANSWER: Joi.boolean()
+    .when('NODE_ENV', {
+      is: 'production',
+      then: Joi.boolean().valid(false),
+      otherwise: Joi.boolean(),
+    })
+    .default(false),
 });

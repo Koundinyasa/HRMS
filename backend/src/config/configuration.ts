@@ -53,7 +53,22 @@ export default () => ({
     // rollout window while old logins are still around.
     allowLegacyTokens: readEnv(process.env.ALLOW_LEGACY_TOKENS) === 'true',
     // How long a "session is active" answer is remembered, in seconds.
-    sessionCacheSeconds: 30,
+    // On another server instance a logout takes effect within this window.
+    sessionCacheSeconds: readEnv(process.env.SESSION_CACHE_SECONDS)
+      ? parseInt(readEnv(process.env.SESSION_CACHE_SECONDS), 10)
+      : 30,
+    // Old session rows are deleted by the backend itself (SQL Server Express
+    // has no SQL Agent). Rows ended or expired longer ago than the retention
+    // period are removed, in small batches.
+    sessionPurge: {
+      enabled: readEnv(process.env.SESSION_PURGE_ENABLED) !== 'false',
+      intervalHours: readEnv(process.env.SESSION_PURGE_INTERVAL_HOURS)
+        ? parseInt(readEnv(process.env.SESSION_PURGE_INTERVAL_HOURS), 10)
+        : 24,
+      retentionDays: readEnv(process.env.SESSION_PURGE_RETENTION_DAYS)
+        ? parseInt(readEnv(process.env.SESSION_PURGE_RETENTION_DAYS), 10)
+        : 30,
+    },
   },
 
   mail: {

@@ -14,6 +14,7 @@ import { SessionBoundaryEvents } from './session-boundary.events';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { SendWishDto } from './dto/SendWish.dto';
 import { AuthSessionService, SessionMeta } from './session/auth-session.service';
+import { AuthErrorCode } from './auth-error-codes';
 @Injectable()
 export class AuthService {
   constructor(
@@ -848,7 +849,7 @@ export class AuthService {
       throw new ConflictException({
         statusCode: 409,
         message: 'Session was just refreshed. Please retry.',
-        code: 'REFRESH_RACE',
+        code: AuthErrorCode.REFRESH_RACE,
       });
     }
 

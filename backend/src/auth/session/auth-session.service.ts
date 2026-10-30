@@ -1,6 +1,8 @@
 import {
   Injectable,
   Logger,
+  OnModuleDestroy,
+  OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -41,17 +43,76 @@ export interface RotateResult {
  * instance it takes effect within that window.
  */
 @Injectable()
-export class AuthSessionService {
+export class AuthSessionService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AuthSessionService.name);
   private readonly cache = new Map<string, { active: boolean; until: number }>();
   private readonly cacheMs: number;
   private static readonly CACHE_MAX_ENTRIES = 20000;
+
+  private readonly purgeEnabled: boolean;
+  private readonly purgeIntervalMs: number;
+  private readonly purgeRetentionDays: number;
+  private purgeTimer?: NodeJS.Timeout;
+  private purgeRunning = false;
+  // First purge shortly after start-up, so a restart never skips a day.
+  private static readonly FIRST_PURGE_DELAY_MS = 2 * 60 * 1000;
 
   constructor(
     private readonly db: DatabaseService,
     config: ConfigService,
   ) {
     this.cacheMs = (config.get<number>('auth.sessionCacheSeconds') ?? 30) * 1000;
+    this.purgeEnabled = config.get<boolean>('auth.sessionPurge.enabled') ?? true;
+    this.purgeIntervalMs =
+      (config.get<number>('auth.sessionPurge.intervalHours') ?? 24) * 60 * 60 * 1000;
+    this.purgeRetentionDays = config.get<number>('auth.sessionPurge.retentionDays') ?? 30;
+  }
+
+  onModuleInit(): void {
+    if (!this.purgeEnabled) {
+      this.logger.log('Session purge is turned off (SESSION_PURGE_ENABLED=false).');
+      return;
+    }
+    this.scheduleNextPurge(AuthSessionService.FIRST_PURGE_DELAY_MS);
+  }
+
+  onModuleDestroy(): void {
+    if (this.purgeTimer) clearTimeout(this.purgeTimer);
+  }
+
+  private scheduleNextPurge(delayMs: number): void {
+    this.purgeTimer = setTimeout(() => {
+      void this.runPurge().finally(() => this.scheduleNextPurge(this.purgeIntervalMs));
+    }, delayMs);
+    // Never keep the process alive just for this timer.
+    this.purgeTimer.unref();
+  }
+
+  private async runPurge(): Promise<void> {
+    if (this.purgeRunning) return;
+    this.purgeRunning = true;
+    try {
+      const deleted = await this.purgeExpired(this.purgeRetentionDays);
+      this.logger.log(
+        `Session purge: removed ${deleted} row(s) older than ${this.purgeRetentionDays} day(s).`,
+      );
+    } catch (error) {
+      // A failed purge must never affect logins; try again next time.
+      this.logger.error(`Session purge failed: ${(error as Error).message}`);
+    } finally {
+      this.purgeRunning = false;
+    }
+  }
+
+  /** Deletes ended or expired session rows older than the retention period. */
+  async purgeExpired(retentionDays: number): Promise<number> {
+    const pool = await this.db.connect();
+    const result = await pool
+      .request()
+      .input('RetentionDays', sql.Int, retentionDays)
+      .input('BatchSize', sql.Int, 5000)
+      .execute('USP_Auth_PurgeExpired');
+    return Number(result.recordset?.[0]?.DeletedRows ?? 0);
   }
 
   static hashToken(token: string): string {
