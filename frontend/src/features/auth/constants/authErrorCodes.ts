@@ -16,8 +16,6 @@ export const AuthErrorCode = {
   SESSION_EXPIRED: 'SESSION_EXPIRED',
   /** The user was inactive for longer than the idle window. HTTP 401. */
   SESSION_IDLE: 'SESSION_IDLE',
-  /** No longer sent (sign-in is never refused now). Kept so old references still compile. */
-  SESSION_ACTIVE_ELSEWHERE: 'SESSION_ACTIVE_ELSEWHERE',
 } as const;
 
 export type AuthErrorCode = (typeof AuthErrorCode)[keyof typeof AuthErrorCode];
