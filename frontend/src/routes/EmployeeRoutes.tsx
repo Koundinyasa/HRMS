@@ -130,7 +130,10 @@ export default function EmployeeRoutes() {
         <Route path="assets/request" element={<AssetRequest />} />
         <Route path="assets/return" element={<AssetTracking />} />
         <Route path="assets/assigned" element={<AssignedAssets />} />
-        <Route path="assets/approval" element={<AssetApproval />} />
+        {/* Approver screen: same gate as the Review menu (reporting managers) */}
+        <Route element={<ReviewMenuRoute />}>
+          <Route path="assets/approval" element={<AssetApproval />} />
+        </Route>
         {/* Separation Management */}
         <Route path="separation/resignation" element={<ResignationPage />} />
         <Route path="separation/status" element={<StatusPage />} />
