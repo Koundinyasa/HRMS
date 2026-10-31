@@ -62,12 +62,6 @@ export default function LeaveNavbar() {
       <div className="flex w-full min-w-0 justify-between">
 
         {tabs.map((tab: MenuItem) => {
-          // // Get route dynamically from API
-          // const route =
-          //   tab.routeUrl?.replace(
-          //     "/Employee",
-          //     `/${domain}/employee`
-          //   ) ?? "";
 
           const route =
             tab.menuName === "Holiday List"

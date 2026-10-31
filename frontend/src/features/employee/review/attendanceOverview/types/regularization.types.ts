@@ -411,29 +411,6 @@ export interface MonthlyOverviewItem {
   [key: string]: unknown;
 }
 
-// ============================================================
-// RAW / PROCESSED PUNCH
-// ============================================================
-//
-// Actual raw punch API response:
-//
-// {
-//   "PunchType": "IN",
-//   "OriginalTime": "09:47:39",
-//   "EntryType": "GPS",
-//   "Approverstatus": "Success"
-// }
-//
-// The API layer will transform those backend names into:
-//
-// {
-//   time: "09:47:39",
-//   type: "IN",
-//   source: "GPS",
-//   approverStatus: "Success"
-// }
-// ============================================================
-
 export interface PunchRecord {
   time: string;
   type: PunchType;

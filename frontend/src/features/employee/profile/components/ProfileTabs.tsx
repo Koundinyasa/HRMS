@@ -244,14 +244,6 @@ export default function ProfileTabs() {
                 }
                 `
               }
-            // style={({ isActive }) =>
-            //   isActive
-            //     ? {
-            //         color: "var(--primary-color)",
-            //         borderColor: "var(--primary-color)",
-            //       }
-            //     : {}
-            // }
  
  
             >

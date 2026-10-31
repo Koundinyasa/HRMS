@@ -2,10 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { toast } from "react-toastify";
-// import {
-//   CalendarDays,
-//   HelpCircle,
-// } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

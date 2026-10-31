@@ -85,17 +85,6 @@ export default function CelebrationsCard() {
     return "Congratulations on another successful milestone! 👏";
   }, [celebration]);
  
-  // return (
-  //   <div
-  //    className="rounded-2xl border shadow-sm h-full flex flex-col p-4 sm:p-5 min-w-0 overflow-hidden"
-  //     style={{
-  //       backgroundColor:
-  //         "var(--card-bg)",
-  //       borderColor:
-  //         "var(--primary-border)",
-  //     }}
-  //   >
- 
  
      return (
     <div

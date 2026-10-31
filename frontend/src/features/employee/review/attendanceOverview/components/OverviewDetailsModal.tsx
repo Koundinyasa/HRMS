@@ -52,11 +52,6 @@ export default function OverviewDetailsModal({
   onClose: () => void;
   days: AttendanceDay[];
 
-  // Month is 1-based:
-  // January = 1
-  // February = 2
-  // ...
-  // September = 9
   selectedMonth: number;
 
   selectedYear: number;

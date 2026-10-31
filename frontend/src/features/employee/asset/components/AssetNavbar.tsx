@@ -107,14 +107,6 @@ sm:text-sm
             `
               }
 
-              // style={({ isActive }) =>
-              //   isActive
-              //     ? {
-              //         color: "var(--primary-color)",
-              //         borderColor: "var(--primary-color)",
-              //       }
-              //     : {}
-              // }
             >
               <Icon size={14} className="shrink-0 sm:h-4 sm:w-4" />
               <span className="truncate">{tab.menuName}</span>
