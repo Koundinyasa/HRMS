@@ -1,58 +1,51 @@
+import { lazy } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 
 import Layout from "@/features/employee/components/Layout";
 import PageNotAvailable from "./PageNotAvailable";
 import ReviewMenuRoute from "./ReviewMenuRoute";
-import EmployeeDashboard from "@/features/employee/dashboard/pages/DashboardPage";
  
 // Profile Module
 import ProfileLayout from "@/features/employee/profile/components/ProfileLayout";
-import PersonalInformationPage from "@/features/employee/profile/pages/PersonalInformationPage";
-import FamilyDetailsPage from "@/features/employee/profile/pages/FamilyDetailsPage";
-import EducationDetailsPage from "@/features/employee/profile/pages/EducationDetailsPage";
-import ExperienceDetailsPage from "@/features/employee/profile/pages/ExperienceDetailsPage";
-import BankInformationPage from "@/features/employee/profile/pages/BankInformationPage";
-import UploadedDocumentsPage from "@/features/employee/profile/pages/UploadedDocumentsPage";
 
 // Leave Module
 import LeaveLayout from "@/features/employee/leave/components/LeaveLayout";
-import LeaveApply from "@/features/employee/leave/pages/LeaveApply";
-import ApplyLeaveForEmployee from "@/features/employee/leave/components/ApplyleaveForEmployee";
-import LeaveBalance from "@/features/employee/leave/pages/LeaveBalance";
-import LeaveHistory from "@/features/employee/leave/pages/LeaveHistory";
-import LeaveStatus from "@/features/employee/leave/pages/LeaveStatus";
-import HolidayListPage from "@/features/employee/leave/pages/HolidayListPage";
 
-// Asset Module
-import AssetRequest from "@/features/employee/asset/pages/AssetRequest";
-import AssetTracking from "@/features/employee/asset/pages/AssetTracking";
-import AssignedAssets from "@/features/employee/asset/pages/AssignedAssets";
-import AssetApproval from "@/features/employee/asset/pages/AssetApproval";
-
-// Separation Module
-import ResignationPage from "@/features/employee/separation/pages/ResignationPage";
-import StatusPage from "@/features/employee/separation/pages/StatusPage";
-import WithdrawPage from "@/features/employee/separation/pages/WithdrawPage";
-
-// HelpDesk Module
-import RaiseTicket from "@/features/employee/helpdesk/pages/RaiseTicket";
-import TicketStatus from "@/features/employee/helpdesk/pages/TicketStatus";
-import KnowledgeBase from "@/features/employee/helpdesk/pages/KnowledgeBase";
-
-// Review Module
-import PunchPage from "@/features/employee/review/timeOffice/punch/pages/PunchPage";
-import MissedPunchPage from "@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage";
-import AttendanceOverview from "@/features/employee/review/attendanceOverview/pages/AttendanceOverview";
-import LeaveCalendarHistory from "@/features/employee/review/timeOffice/attendance/components/LeaveCalendarHistory";
-import LeaveCalendar from "@/features/employee/review/leaveCalender/pages/LeaveCalendar";
-import TimeOfficeLeaveCalendar from "@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar";
-import RequisitionPage from "@/features/employee/review/requisition/pages/RequisitionPage";
-
-// Attendance Module — NEW
-import FaceRegistrationPage from "@/features/employee/dashboard/pages/FaceRegistrationPage";
-import AssetRequestsApprovalPage from "@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage";
-import HelpdeskRequestsPage from "@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage";
-import ResignationRequestPage from "@/features/employee/review/resignationRequest/pages/ResignationRequestPage";
+// Pages are loaded on demand (each one becomes its own file in the build).
+const EmployeeDashboard = lazy(() => import("@/features/employee/dashboard/pages/DashboardPage"));
+const PersonalInformationPage = lazy(() => import("@/features/employee/profile/pages/PersonalInformationPage"));
+const FamilyDetailsPage = lazy(() => import("@/features/employee/profile/pages/FamilyDetailsPage"));
+const EducationDetailsPage = lazy(() => import("@/features/employee/profile/pages/EducationDetailsPage"));
+const ExperienceDetailsPage = lazy(() => import("@/features/employee/profile/pages/ExperienceDetailsPage"));
+const BankInformationPage = lazy(() => import("@/features/employee/profile/pages/BankInformationPage"));
+const UploadedDocumentsPage = lazy(() => import("@/features/employee/profile/pages/UploadedDocumentsPage"));
+const LeaveApply = lazy(() => import("@/features/employee/leave/pages/LeaveApply"));
+const ApplyLeaveForEmployee = lazy(() => import("@/features/employee/leave/components/ApplyleaveForEmployee"));
+const LeaveBalance = lazy(() => import("@/features/employee/leave/pages/LeaveBalance"));
+const LeaveHistory = lazy(() => import("@/features/employee/leave/pages/LeaveHistory"));
+const LeaveStatus = lazy(() => import("@/features/employee/leave/pages/LeaveStatus"));
+const HolidayListPage = lazy(() => import("@/features/employee/leave/pages/HolidayListPage"));
+const AssetRequest = lazy(() => import("@/features/employee/asset/pages/AssetRequest"));
+const AssetTracking = lazy(() => import("@/features/employee/asset/pages/AssetTracking"));
+const AssignedAssets = lazy(() => import("@/features/employee/asset/pages/AssignedAssets"));
+const AssetApproval = lazy(() => import("@/features/employee/asset/pages/AssetApproval"));
+const ResignationPage = lazy(() => import("@/features/employee/separation/pages/ResignationPage"));
+const StatusPage = lazy(() => import("@/features/employee/separation/pages/StatusPage"));
+const WithdrawPage = lazy(() => import("@/features/employee/separation/pages/WithdrawPage"));
+const RaiseTicket = lazy(() => import("@/features/employee/helpdesk/pages/RaiseTicket"));
+const TicketStatus = lazy(() => import("@/features/employee/helpdesk/pages/TicketStatus"));
+const KnowledgeBase = lazy(() => import("@/features/employee/helpdesk/pages/KnowledgeBase"));
+const PunchPage = lazy(() => import("@/features/employee/review/timeOffice/punch/pages/PunchPage"));
+const MissedPunchPage = lazy(() => import("@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage"));
+const AttendanceOverview = lazy(() => import("@/features/employee/review/attendanceOverview/pages/AttendanceOverview"));
+const LeaveCalendarHistory = lazy(() => import("@/features/employee/review/timeOffice/attendance/components/LeaveCalendarHistory"));
+const LeaveCalendar = lazy(() => import("@/features/employee/review/leaveCalender/pages/LeaveCalendar"));
+const TimeOfficeLeaveCalendar = lazy(() => import("@/features/employee/review/timeOffice/attendance/pages/LeaveCalendar"));
+const RequisitionPage = lazy(() => import("@/features/employee/review/requisition/pages/RequisitionPage"));
+const FaceRegistrationPage = lazy(() => import("@/features/employee/dashboard/pages/FaceRegistrationPage"));
+const AssetRequestsApprovalPage = lazy(() => import("@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage"));
+const HelpdeskRequestsPage = lazy(() => import("@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage"));
+const ResignationRequestPage = lazy(() => import("@/features/employee/review/resignationRequest/pages/ResignationRequestPage"));
 
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {

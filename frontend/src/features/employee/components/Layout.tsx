@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { Outlet, useLocation } from "react-router-dom";
 import { ArrowUp } from "lucide-react";
@@ -81,13 +81,16 @@ export default function Layout() {
           } overflow-x-hidden bg-slate-100 p-3 sm:p-4 lg:p-5`}
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {isDashboard ? (
-            <Outlet />
-          ) : (
-            <div className="module-shell p-3 sm:p-4 lg:p-5">
+          {/* Pages are loaded on demand; show the same skeleton while a page's code downloads. */}
+          <Suspense fallback={<SkeletonLoading pathname={location.pathname} />}>
+            {isDashboard ? (
               <Outlet />
-            </div>
-          )}
+            ) : (
+              <div className="module-shell p-3 sm:p-4 lg:p-5">
+                <Outlet />
+              </div>
+            )}
+          </Suspense>
           {isInitialDataLoading && (
             <div className="absolute inset-0 z-10 overflow-y-auto bg-slate-100 p-3 sm:p-4 lg:p-5">
               <SkeletonLoading pathname={location.pathname} />
