@@ -177,6 +177,16 @@ describe('route inventory', () => {
     expect(stale).toEqual([]);
   });
 
+  // Run with LIST_ROUTES=1 to print every route that needs a login but no role.
+  (process.env.LIST_ROUTES ? it : it.skip)('lists login-only routes', () => {
+    const lines = routes
+      .filter((r) => !r.isPublic && !r.hasRoles)
+      .map((r) => `${r.key}   (${r.controller})`)
+      .sort();
+    // eslint-disable-next-line no-console
+    console.log(lines.join('\n'));
+  });
+
   it('prints a summary', () => {
     const count = (f: (r: RouteInfo) => boolean) => routes.filter(f).length;
     // eslint-disable-next-line no-console
