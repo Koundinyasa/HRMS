@@ -3,6 +3,7 @@ import { Menu, Search, Calendar, Bell, X, Users } from "lucide-react";
 import NotificationPanel from "./Notificationpanel";
 import UserMenu from "./UserMenu";
 import CalendarPanel from "./CalendarPanel";
+import SessionCountdown from "@/features/auth/components/SessionCountdown";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import { useSidebar } from "./SidebarContext";
 import { useNavigate, useParams } from "react-router-dom";
@@ -104,6 +105,8 @@ export default function Navbar() {
           {calendarOpen && <CalendarPanel onClose={() => setCalendarOpen(false)} />}
         </div>
  
+        <SessionCountdown />
+
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setNotifOpen((p) => !p)}
@@ -126,4 +129,4 @@ export default function Navbar() {
       </div>
     </header>
   );
-}
+}
