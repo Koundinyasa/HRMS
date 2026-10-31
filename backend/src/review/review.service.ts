@@ -155,7 +155,7 @@ export class ReviewService {
 
   // 7. Employee Monthly Attendance Details
   async getEmployeeMonthlyAttendanceDetails(
-    employeeId: number,
+    employeeId: string,
     companyId: number,
     month: number | undefined,
     year: number | undefined,
@@ -165,7 +165,7 @@ export class ReviewService {
 
     const result = await pool
       .request()
-      .input('EmployeeID', sql.Int, employeeId)
+      .input('EmployeeID', sql.VarChar(25), employeeId)
       .input('CompanyID', sql.Int, companyId)
       .input('Month', sql.Int, month ?? null)
       .input('Year', sql.Int, year ?? null)

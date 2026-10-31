@@ -53,7 +53,7 @@ export function useAttendance({
     refetch: refetchAttendance,
   } = useGetEmployeeMonthlyAttendanceDetailsQuery(
     {
-      employeeId: Number(employeeId),
+      employeeId,
       month,
       year,
       classificationId,

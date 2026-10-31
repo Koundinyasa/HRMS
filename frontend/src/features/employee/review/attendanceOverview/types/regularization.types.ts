@@ -447,7 +447,7 @@ export interface UseAttendanceProps {
 // ============================================================
 
 export interface MonthlyAttendanceParams {
-  employeeId: number;
+  employeeId: string;
   month: number;
   year: number;
   classificationId?: number;
