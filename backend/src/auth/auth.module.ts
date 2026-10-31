@@ -11,7 +11,6 @@ import { SessionBoundaryEvents } from './session-boundary.events';
 import { DatabaseModule } from '../database/database.module';
 import { MailModule } from '../mail/mail.module';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { PermissionGuard } from '../common/guards/permission.guard';
 
 @Module({
   imports: [
@@ -22,7 +21,7 @@ import { PermissionGuard } from '../common/guards/permission.guard';
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 60 }]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthCookieService, SessionBoundaryEvents, JwtAuthGuard, CaptchaService, PermissionGuard],
+  providers: [AuthService, AuthCookieService, SessionBoundaryEvents, JwtAuthGuard, CaptchaService],
   // SessionBoundaryEvents lets other modules react to login/logout without
   // AuthModule depending on them.
   exports: [AuthService, SessionBoundaryEvents],

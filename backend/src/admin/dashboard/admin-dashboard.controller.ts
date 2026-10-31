@@ -11,21 +11,17 @@ import { AdminDashboardService } from './admin-dashboard.service';
 import { DashboardSummaryDto } from './dto/dashboard.summary.dto';
 import { ClassificationWiseCountDto } from './dto/Classification.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { PermissionGuard } from '../../common/guards/permission.guard';
-import { Permission } from '../../common/decorators/permission.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 import { GateOpen } from '../../common/decorators/module-gate.decorator';
-
-const ADMIN_DASHBOARD_MENU_ID = 1 || 2;
 
 // The admin landing page. Usp_AdminDashboard also returns the sidebar menus, so
 // every admin login needs this controller; it is not a switchable module.
 @GateOpen()
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/dashboard')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard)
 export class AdminDashboardController {
   constructor(private readonly adminDashboardService: AdminDashboardService) {}
  
@@ -41,7 +37,6 @@ export class AdminDashboardController {
    *   ageGroupWiseCount   → age bracket breakdown (male / female)
    */
   @Get('summary')
-  @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
   async getSummary(
     @CurrentUser() user: { employeeId: string },
   ): Promise<DashboardSummaryDto> {
@@ -49,7 +44,6 @@ export class AdminDashboardController {
   }
  
    @Get('classification/:classificationId')
-  @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
   async getClassificationWiseCount(
     @CurrentUser() user: { companyId: number },
     @Param('classificationId', ParseIntPipe) classificationId: number,
@@ -69,7 +63,6 @@ export class AdminDashboardController {
  
  
   @Get('team-employees')
-  @Permission(ADMIN_DASHBOARD_MENU_ID, 'CanView')
   async getTeamEmployeeDetails(
     @CurrentUser() user: { companyId: number },
     @Query('flag', ParseIntPipe) flag: number,
