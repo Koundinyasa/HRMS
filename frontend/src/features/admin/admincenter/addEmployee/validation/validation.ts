@@ -24,6 +24,11 @@ const reName = /^[A-Za-z][A-Za-z .'-]*$/;
 const reEmployeeId = /^[A-Za-z0-9_-]{1,10}$/;
 const reCode = /^[A-Z0-9]{1,6}$/;
 
+// Standard Indian PF Account Number
+// Accepts: TNMAS12345671231234567  |  TN/MAS/1234567/123/1234567  |  TN MAS 1234567 123 1234567
+const rePF =
+  /^[A-Z]{2}[\s/]?[A-Z]{3}[\s/]?[0-9]{7}[\s/]?[0-9]{3}[\s/]?[0-9]{7}$/;
+
 /* =========================================================
    Validation Messages
    ========================================================= */
@@ -42,6 +47,9 @@ const employeeIdLengthMsg =
 
 const codeLengthMsg =
   "Employee code must not exceed 6 characters.";
+
+const pfFormatMsg =
+  "Enter a valid PF number (e.g. TNMAS12345671231234567 or TN/MAS/1234567/123/1234567).";
 
 /* =========================================================
    Date Helpers
@@ -262,9 +270,10 @@ export const RULES: Record<FieldName, Rule> = {
     required: true,
   },
 
-  /* Reporting Manager */
+  /* Reporting Manager – MANDATORY */
   ReportingManagerID: {
     label: "Reporting manager",
+    required: true,
   },
 
   /* Grade */
@@ -460,13 +469,20 @@ export const RULES: Record<FieldName, Rule> = {
         : "UAN is 12 digits.",
   },
 
-  /* PF Number */
+  /* PF Number – length + format validation */
   PFNumber: {
     label: "PF number",
-    check: (v) =>
-      /^[A-Z0-9/]{5,30}$/.test(v)
-        ? ""
-        : "Use 5–30 letters, numbers or slashes.",
+    check: (v) => {
+      // spaces are already stripped by handleChange
+      if (v.length < 22) {
+        return "PF number is too short. Enter the complete 22-character number.";
+      }
+      if (v.length > 22) {
+        return "PF number cannot be more than 22 characters.";
+      }
+
+      return rePF.test(v) ? "" : pfFormatMsg;
+    },
   },
 
   /* User ID */
