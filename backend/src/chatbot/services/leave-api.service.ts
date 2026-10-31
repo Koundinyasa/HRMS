@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { LeaveService as EmployeeLeaveService } from '../../employee/leave/leave.service';
+import { TtlCache } from '../../common/ttl-cache';
 
 type ChatUser = Record<string, any>;
 
@@ -23,6 +24,11 @@ const MAX_REASON_LENGTH = 500; // USP_LeaveRequestSubmission @Reason is NVARCHAR
  */
 @Injectable()
 export class LeaveApiService {
+  // The leave types of an employee hardly ever change; the chatbot asks for
+  // them on every message, so they are kept for 60 seconds per company and
+  // employee. Failed calls are not kept.
+  private readonly leaveTypesCache = new TtlCache(60_000);
+
   constructor(private readonly leaves: EmployeeLeaveService) {}
 
   // The old HTTP path returned JSON, so dates arrived as plain strings.
@@ -48,9 +54,14 @@ export class LeaveApiService {
   }
 
   async getLeaveTypes(user: ChatUser) {
-    return this.plain(
-      await this.leaves.getLeaveTypes(this.employeeId(user), this.companyId(user)),
+    const employeeId = this.employeeId(user);
+    const companyId = this.companyId(user);
+    const types = await this.leaveTypesCache.get(
+      `${companyId}:${employeeId}`,
+      () => this.leaves.getLeaveTypes(employeeId, companyId),
     );
+    // plain() hands every caller its own copy of the cached result.
+    return this.plain(types);
   }
 
   async getLeaveBalance(user: ChatUser) {

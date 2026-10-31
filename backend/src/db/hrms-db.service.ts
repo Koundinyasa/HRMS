@@ -2,6 +2,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
 import { PoolHolder, buildSqlConfig } from '../database/sql-pool';
+import { TtlCache } from '../common/ttl-cache';
 
 @Injectable()
 export class HrmsDbService implements OnModuleDestroy {
@@ -12,6 +13,14 @@ export class HrmsDbService implements OnModuleDestroy {
   private readonly holder = new PoolHolder('chatbot', () =>
     buildSqlConfig(this.config, true),
   );
+
+  // The chatbot asks for the same company-wide data on every message. These
+  // short-lived caches let one lookup serve many messages (and many employees of
+  // the same company for the directory). Each key includes the company, so one
+  // company's data is never handed to another. Failed lookups are not kept.
+  private readonly userInfoCache = new TtlCache(5_000);
+  private readonly directoryCache = new TtlCache(60_000);
+  private readonly masterDataCache = new TtlCache(60_000);
 
   constructor(private readonly config: ConfigService) {}
 
@@ -24,7 +33,18 @@ export class HrmsDbService implements OnModuleDestroy {
   }
 
   // ─── HRMSDEV: real basic-info via USP_GetUserInfo ────────────────────────────
+  // One USP_GetUserInfo run is shared by the calls made for the same employee
+  // within a few seconds (a single chat message asks for it more than once).
+  // A missing result (not found, or the call failed) is not kept.
   async getUserInfo(employeeId: string) {
+    return this.userInfoCache.get(
+      employeeId,
+      () => this.loadUserInfo(employeeId),
+      (info) => info !== null,
+    );
+  }
+
+  private async loadUserInfo(employeeId: string) {
     const pool = await this.getPool();
 
     let result: sql.IProcedureResult<any>;
@@ -220,22 +240,32 @@ export class HrmsDbService implements OnModuleDestroy {
   // longer selects Code. Any caller that used to show e.code (e.g. the
   // "Tester (T1)" style badge in the chatbot's employee list) needs to switch
   // to e.designation, or the SP needs Code added back — check with the team.
+  //
+  // The list is for one company and is kept for 60 seconds, shared by everyone
+  // in that company, so the database is not asked again for every chat message.
   async getEmployeeDirectory(companyId: number) {
-    const pool = await this.getPool();
     try {
-      const result = await pool
-        .request()
-        .input('CompanyID', sql.Int, companyId)
-        .execute('USP_GetEmployeeDirectory');
-      return result.recordset.map((r: any) => ({
-        id: r.EmployeeID as string,
-        name: r.FullName as string,
-        designation: r.Designation ?? '',
-      }));
+      const rows = await this.directoryCache.get(String(companyId), () =>
+        this.loadEmployeeDirectory(companyId),
+      );
+      return [...rows];
     } catch (err) {
       console.error('getEmployeeDirectory failed -', (err as Error).message);
       return [];
     }
+  }
+
+  private async loadEmployeeDirectory(companyId: number) {
+    const pool = await this.getPool();
+    const result = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId)
+      .execute('USP_GetEmployeeDirectory');
+    return result.recordset.map((r: any) => ({
+      id: r.EmployeeID as string,
+      name: r.FullName as string,
+      designation: r.Designation ?? '',
+    }));
   }
 
   // ─── HRMSDEV: batched read for the chatbot's per-message ctx build ───────────
@@ -243,7 +273,27 @@ export class HrmsDbService implements OnModuleDestroy {
   // single USP_GetCompanyMasterData call instead of 5 separate ones. Used by
   // chatbot.service.ts; the individual getters above remain for callers that
   // only need one piece (e.g. the team export endpoint).
+  //
+  // Kept for 60 seconds per company and employee (the own-office part is
+  // specific to the employee). The lists are copied so a caller cannot change
+  // the cached ones.
   async getCompanyMasterData(companyId: number | null, employeeId: string) {
+    const data = await this.masterDataCache.get(
+      `${companyId ?? 'none'}:${employeeId}`,
+      () => this.loadCompanyMasterData(companyId, employeeId),
+    );
+    return {
+      ...data,
+      departments: [...data.departments],
+      designation: [...data.designation],
+      branches: [...data.branches],
+    };
+  }
+
+  private async loadCompanyMasterData(
+    companyId: number | null,
+    employeeId: string,
+  ) {
     const sets = await this.execCompanyMasterData(companyId, employeeId);
     return {
       departments: (sets[1] ?? []).map((r: any) => r.Name as string),
