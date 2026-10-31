@@ -5,7 +5,7 @@
 
 
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Filter, X, Upload } from "lucide-react";
 import documentImage from "../../../../../assets/images/documentImage.png";
 

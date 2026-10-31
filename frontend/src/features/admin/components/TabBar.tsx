@@ -12,7 +12,7 @@ interface TabItem {
  
 interface TabBarProps {
   basePath: string;
-  tabs: TabItem[];
+  tabs: readonly TabItem[];
 }
  
 export default function TabBar({ basePath, tabs }: TabBarProps) {

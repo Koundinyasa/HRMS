@@ -2,7 +2,6 @@
 
 
 
-import React from "react";
 import { Filter } from "lucide-react";
 import contactImage from "../../../../../assets/images/contactImage.png";
 

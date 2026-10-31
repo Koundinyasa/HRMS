@@ -70,7 +70,6 @@
 
 
 
-import React from "react";
 import { Filter } from "lucide-react";
 import subscriptionImage from "../../../../../assets/images/subscriptionImage.png";
 

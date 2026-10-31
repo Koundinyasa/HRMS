@@ -258,18 +258,6 @@ function mapPeriodTypeOptions(response: unknown): SalaryRoundOffOption[] {
   );
 }
 
-function mapPeriodLabelToId(
-  label: string | undefined,
-): number {
-  const value = (label ?? "").toLowerCase();
-
-  if (value.includes("quarterly")) return 2;
-  if (value.includes("half")) return 3;
-  if (value.includes("yearly")) return 4;
-
-  return 1;
-}
-
 // ------------------------------------------------------------
 // Row / id helpers
 // ------------------------------------------------------------
