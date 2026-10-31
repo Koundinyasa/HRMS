@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,30 +15,46 @@ const EMPTY_ESI: EsiConfiguration = {
   employeeRate: 0,
   employerRate: 0,
   minimumDailyWage: 0,
-  roundOff: "Nearest Amount",
+  roundOff: "",
 };
 
-const ROUND_OFF_OPTIONS = ["Higher Amount", "Lower Amount", "Nearest Amount"];
-
 export default function EsiDetailsForm() {
-  const { esi, isLoading, updateEsi, isSaving, refetch } = useEsiDetails();
+  const {
+    esi,
+    roundOffOptions,
+    isRoundOffLoading,
+    isRoundOffError,
+    isLoading,
+    updateEsi,
+    isSaving,
+    refetch,
+  } = useEsiDetails();
   const [esiData, setEsiData] = useState<EsiConfiguration>(EMPTY_ESI);
-  const [previousEsi, setPreviousEsi] = useState<typeof esi>();
+  const selectedRoundOff = roundOffOptions.find(
+    (option) => option.name === esiData.roundOff,
+  );
   const { toast, showToast } = useToast();
- 
-  if (esi && esi !== previousEsi) {
-    setPreviousEsi(esi);
-    setEsiData(esi);
-  }
- 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+
+  useEffect(() => {
+    if (esi) setEsiData(esi);
+  }, [esi]);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { id, value } = e.target;
     setEsiData((prev) => ({ ...prev, [id]: value }));
   }
 
   async function handleSave() {
+    if (!selectedRoundOff) {
+      showToast("Select a valid salary round-off option before saving.", "error");
+      return;
+    }
+
     try {
-      await updateEsi(esiData).unwrap();
+      await updateEsi({
+        configuration: esiData,
+        roundOffTypeId: selectedRoundOff.id,
+      }).unwrap();
       await refetch();
       showToast("ESI details saved successfully");
     } catch (err) {
@@ -144,18 +160,31 @@ export default function EsiDetailsForm() {
             <FormSelect
               id="roundOff"
               value={esiData.roundOff}
-              onValueChange={(value) => setEsiData((prev) => ({ ...prev, roundOff: value }))}
-              options={ROUND_OFF_OPTIONS}
+              onValueChange={(value) =>
+                setEsiData((prev) => ({ ...prev, roundOff: value }))
+              }
+              options={roundOffOptions.map((option) => option.name)}
               placeholder="Select"
+              disabled={isRoundOffLoading || isRoundOffError || roundOffOptions.length === 0}
             />
           </div>
+          {isRoundOffError && (
+            <p className="mt-2 text-sm text-[#B42318]" role="alert">
+              Could not load salary round-off options. Please refresh and try again.
+            </p>
+          )}
+          {!isRoundOffLoading && !isRoundOffError && roundOffOptions.length === 0 && (
+            <p className="mt-2 text-sm text-[#B42318]" role="alert">
+              No salary round-off options were returned.
+            </p>
+          )}
         </div>
       </Card>
 
       <div className="mt-4 flex flex-col-reverse justify-end gap-3 sm:mt-6 sm:flex-row sm:gap-4">
         <button
           type="button"
-          onClick={() => setEsiData(EMPTY_ESI)}
+          onClick={() => setEsiData(esi ?? EMPTY_ESI)}
           className="w-full rounded-xl border border-[#EDEDED] bg-white px-5 py-2 text-sm font-medium text-[#2E2E2E] transition hover:bg-[#EDEDED] sm:w-auto"
         >
           Load Default Value
@@ -164,7 +193,7 @@ export default function EsiDetailsForm() {
           type="button"
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7A5BED] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#5932E9] disabled:opacity-60 sm:w-auto"
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || !selectedRoundOff || isRoundOffLoading || isRoundOffError}
         >
           {isSaving ? (
             <Loader2 className="h-4 w-4 animate-spin" />

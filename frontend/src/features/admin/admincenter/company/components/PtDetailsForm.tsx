@@ -1,215 +1,3 @@
-// import { useState, useEffect } from "react";
-// import { Card, CardContent } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Button } from "@/components/ui/button";
-// import { usePtDetails } from "../hooks/usePtDetails";
-// import { useToast, Toast } from "./common/Toast";
-// import { CalendarDays, Clock3, Plus, Loader2 } from "lucide-react";
-// import { MonthPicker } from "@/components/ui/monthpicker";
-// import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-
-// type LocalSlab = { fromSalary: string; toSalary: string; ptAmount: string };
-
-// export default function PtDetailsForm() {
-//   const { ptSlabs, isLoading, updatePt, isSaving, refetch } = usePtDetails();
-//   const [effectiveFrom, setEffectiveFrom] = useState("");
-//   const [period, setPeriod] = useState("Monthly");
-//   const [slabs, setSlabs] = useState<LocalSlab[]>([
-//     { fromSalary: "0", toSalary: "15000", ptAmount: "0" },
-//     { fromSalary: "15001", toSalary: "20000", ptAmount: "150" },
-//     { fromSalary: "20001", toSalary: "999999999", ptAmount: "200" },
-//   ]);
-
-//   useEffect(() => {
-//     if (ptSlabs && ptSlabs.length > 0) {
-//       setEffectiveFrom(ptSlabs[0].effectiveFrom);
-//       setPeriod(ptSlabs[0].period);
-//       setSlabs(
-//         ptSlabs.map((item) => ({
-//           fromSalary: String(item.fromSalary),
-//           toSalary: String(item.toSalary),
-//           ptAmount: String(item.ptAmount),
-//         }))
-//       );
-//     }
-//   }, [ptSlabs]);
-
-//   function handleSlabChange(index: number, field: keyof LocalSlab, value: string) {
-//     setSlabs((prev) =>
-//       prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
-//     );
-//   }
-
-//   function addRow() {
-//     setSlabs((prev) => [...prev, { fromSalary: "", toSalary: "", ptAmount: "" }]);
-//   }
-
-//   const { toast, showToast } = useToast();
-
-//   async function handleSave() {
-//     const payload = {
-//       slabs: slabs.map((item) => ({
-//         effectiveFrom,
-//         period,
-//         fromSalary: Number(item.fromSalary),
-//         toSalary: Number(item.toSalary),
-//         ptAmount: Number(item.ptAmount),
-//       })),
-//     };
-//     try {
-//       await updatePt(payload).unwrap();
-//       await refetch();
-//       showToast("PT details saved successfully");
-//     } catch (error) {
-//       console.error("Failed to save PT Details", error);
-//       showToast("Failed to save PT details. Please try again.", "error");
-//     }
-//   }
-
-//   if (isLoading) {
-//     return <div className="p-4 sm:p-6 text-sm text-slate-500">Loading PT Details...</div>;
-//   }
-
-//   return (
-//     <div className="w-full min-w-0 max-w-full">
-//       <Toast toast={toast} />
-//       <Card data-company-module-card className="w-full min-w-0 rounded-2xl border border-gray-200 bg-white shadow-sm">
-//         <CardContent className="p-4 sm:p-6 space-y-6 sm:space-y-8">
-//           <div className="rounded-2xl bg-violet-100 px-3 sm:px-4 py-3">
-//             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-//               <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-white shrink-0">
-//                 <CalendarDays className="h-5 w-5 text-violet-600" />
-//               </div>
-//               <Label className="text-sm font-semibold whitespace-nowrap">Effective From</Label>
-//               <div className="w-full max-w-[160px] sm:w-36 shrink-0">
-//                 <MonthPicker
-//                   value={effectiveFrom}
-//                   onChange={(value) => setEffectiveFrom(value)}
-//                   className="h-9"
-//                 />
-//               </div>
-//               <Clock3 className="h-5 w-5 text-gray-600 hidden sm:block shrink-0 ml-1" />
-//             </div>
-//           </div>
-
-//           <div className="space-y-2">
-//             <Label className="text-sm font-medium">
-//               Period <span className="text-red-500">*</span>
-//             </Label>
-//             <div className="w-full sm:w-72 max-w-full">
-//               <Select value={period} onValueChange={setPeriod}>
-//                 <SelectTrigger>
-//                   <SelectValue placeholder="Select period" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="Monthly">Monthly</SelectItem>
-//                   <SelectItem value="Quarterly">Quarterly</SelectItem>
-//                   <SelectItem value="Half Yearly">Half Yearly</SelectItem>
-//                   <SelectItem value="Yearly">Yearly</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//             </div>
-//           </div>
-
-//           <div>
-//             <div className="mb-4 sm:mb-5 flex items-center gap-4">
-//               <h3 className="whitespace-nowrap text-base font-semibold text-black">Slab Rates</h3>
-//               <div className="h-px flex-1 bg-gray-300" />
-//             </div>
-
-//             <div className="overflow-x-auto -mx-1 sm:mx-0">
-//               <div className="min-w-[480px] sm:min-w-0">
-//                 <div className="grid grid-cols-4 gap-2 sm:gap-4 rounded-xl bg-gray-100 px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-gray-700">
-//                   <div>From Salary</div>
-//                   <div>To Salary</div>
-//                   <div>PT Amount</div>
-//                   <div className="text-center">Action</div>
-//                 </div>
-
-//                 <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
-//                   {slabs.map((slab, index) => (
-//                     <div key={index} className="grid grid-cols-4 items-center gap-2 sm:gap-4">
-//                       <Input
-//                         value={slab.fromSalary}
-//                         onChange={(e) => handleSlabChange(index, "fromSalary", e.target.value)}
-//                         placeholder="0"
-//                         className="h-10 sm:h-11 rounded-xl border-gray-300 w-full text-sm"
-//                       />
-//                       <Input
-//                         value={slab.toSalary}
-//                         onChange={(e) => handleSlabChange(index, "toSalary", e.target.value)}
-//                         placeholder="0"
-//                         className="h-10 sm:h-11 rounded-xl border-gray-300 w-full text-sm"
-//                       />
-//                       <Input
-//                         value={slab.ptAmount}
-//                         onChange={(e) => handleSlabChange(index, "ptAmount", e.target.value)}
-//                         placeholder="0"
-//                         className="h-10 sm:h-11 rounded-xl border-gray-300 w-full text-sm"
-//                       />
-//                       <div className="flex justify-center">
-//                         {index === slabs.length - 1 && (
-//                           <Button
-//                             type="button"
-//                             variant="outline"
-//                             onClick={addRow}
-//                             className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-violet-200 p-0 hover:bg-violet-50"
-//                           >
-//                             <Plus className="h-5 w-5 text-violet-600" />
-//                           </Button>
-//                         )}
-//                       </div>
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 border-t border-gray-200 pt-4 sm:pt-6">
-//             <Button
-//               type="button"
-//               variant="outline"
-//               className="h-10 sm:h-11 rounded-xl border border-gray-300 px-6 font-medium text-gray-700 hover:bg-gray-100 w-full sm:w-auto"
-//             >
-//               Load Default Value
-//             </Button>
-//             <Button
-//               type="button"
-//               onClick={handleSave}
-//               disabled={isSaving}
-//               className="h-10 sm:h-11 rounded-xl bg-violet-600 px-8 font-medium text-white hover:bg-violet-700 disabled:opacity-50 w-full sm:w-auto"
-//             >
-//               {isSaving && <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />}
-//               {isSaving ? "Saving..." : "Save"}
-//             </Button>
-//           </div>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -217,57 +5,181 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { usePtDetails } from "../hooks/usePtDetails";
 import { useToast, Toast } from "./common/Toast";
-import { Plus, Loader2 } from "lucide-react";
-import { EffectiveFromBar } from "./common/EffectiveFromBar";
+import { Loader2 } from "lucide-react";
 import { FormSelect } from "./common/FormSelect";
+import { EffectiveFromBar } from "./common/EffectiveFromBar";
 
-type LocalSlab = { fromSalary: string; toSalary: string; ptAmount: string };
+type LocalSlab = {
+  slabId?: number;
+  groupId?: number;
+  isActive?: boolean;
+  fromSalary: string;
+  toSalary: string;
+  ptAmount: string;
+};
 
-const PERIOD_OPTIONS = ["Monthly", "Quarterly", "Half Yearly", "Yearly"];
+/** Effective dates arrive as "DD-MM-YYYY"; newest first. */
+function toSortableDate(value: string): number {
+  const [day, month, year] = value.split("-");
+  return Number(year) * 10000 + Number(month) * 100 + Number(day);
+}
 
-const DEFAULT_SLABS: LocalSlab[] = [
-  { fromSalary: "0", toSalary: "15000", ptAmount: "0" },
-  { fromSalary: "15001", toSalary: "20000", ptAmount: "150" },
-  { fromSalary: "20001", toSalary: "999999999", ptAmount: "200" },
-];
+function compareEffectiveFromDescending(a: string, b: string): number {
+  return toSortableDate(b) - toSortableDate(a);
+}
+
+/** "DD-MM-YYYY" → "YYYY-MM-DD" for EffectiveFromBar */
+function displayToIso(display: string): string {
+  if (!display) return "";
+  // Already ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(display.trim())) return display.trim();
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(display.trim());
+  if (!m) return "";
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
+/** "YYYY-MM-DD" → "DD-MM-YYYY" (PT internal / display format) */
+function isoToDisplay(iso: string): string {
+  if (!iso) return "";
+  // Already DD-MM-YYYY
+  if (/^\d{2}-\d{2}-\d{4}$/.test(iso.trim())) return iso.trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+  if (!m) return "";
+  return `${m[3]}-${m[2]}-${m[1]}`;
+}
+
+function toLocalSlab(
+  item: NonNullable<ReturnType<typeof usePtDetails>["ptSlabs"]>[number],
+): LocalSlab {
+  return {
+    slabId: item.slabId,
+    groupId: item.groupId,
+    isActive: item.isActive,
+    fromSalary: String(item.fromSalary),
+    toSalary: String(item.toSalary),
+    ptAmount: String(item.ptAmount),
+  };
+}
 
 export default function PtDetailsForm() {
-  const { ptSlabs, isLoading, updatePt, isSaving, refetch } = usePtDetails();
-  const [effectiveFrom, setEffectiveFrom] = useState("");
-  const [period, setPeriod] = useState("Monthly");
-  const [slabs, setSlabs] = useState<LocalSlab[]>([
-    { fromSalary: "0", toSalary: "15000", ptAmount: "0" },
-    { fromSalary: "15001", toSalary: "20000", ptAmount: "150" },
-    { fromSalary: "20001", toSalary: "999999999", ptAmount: "200" },
-  ]);
-  const [previousSlabs, setPreviousSlabs] = useState<typeof ptSlabs>();
+  const {
+    ptSlabs,
+    isLoading,
+    updatePt,
+    isSaving,
+    refetch,
+    periodTypeOptions,
+  } = usePtDetails();
+  const [effectiveFromSelection, setEffectiveFromSelection] = useState<
+    string | null
+  >(null);
+  const [periodSelection, setPeriodSelection] = useState<string | null>(null);
+  const [slabDraft, setSlabDraft] = useState<LocalSlab[] | null>(null);
+  const { toast, showToast } = useToast();
 
-  if (ptSlabs && ptSlabs.length > 0 && ptSlabs !== previousSlabs) {
-      setPreviousSlabs(ptSlabs);
-      setEffectiveFrom(ptSlabs[0].effectiveFrom);
-      setPeriod(ptSlabs[0].period || "Monthly");
-      setSlabs(
-        ptSlabs.map((item) => ({
-          fromSalary: String(item.fromSalary),
-          toSalary: String(item.toSalary),
-          ptAmount: String(item.ptAmount),
-        }))
-      );
+  const effectiveFromOptions = [
+    ...new Set((ptSlabs ?? []).map((item) => item.effectiveFrom)),
+  ].sort(compareEffectiveFromDescending);
+  const effectiveFrom =
+    effectiveFromSelection ?? effectiveFromOptions[0] ?? "";
+  const selectedDateSlabs = (ptSlabs ?? []).filter(
+    (slab) => slab.effectiveFrom === effectiveFrom,
+  );
+  const period = periodSelection ?? selectedDateSlabs[0]?.period ?? "";
+  const defaultSlabs = selectedDateSlabs
+    .filter((item) => item.period === period)
+    .map(toLocalSlab);
+  const slabs = slabDraft ?? defaultSlabs;
+
+  // Period dropdown: prefer master list from salary-round-off API (periodType),
+  // always include periods that exist on current slabs so selection stays valid.
+  const periodNamesFromApi = periodTypeOptions.map((o) => o.name.trim()).filter(Boolean);
+  const periodNamesFromSlabs = [
+    ...new Set(
+      selectedDateSlabs
+        .map((slab) => slab.period.trim())
+        .filter((value) => value !== ""),
+    ),
+  ];
+  const selectedPeriodOptions = [
+    ...new Set([...periodNamesFromApi, ...periodNamesFromSlabs]),
+  ];
+
+  const canSafelyUpdate =
+    slabs.length > 0 &&
+    slabs.every(
+      (slab) => Number.isInteger(slab.slabId) && (slab.slabId ?? 0) > 0,
+    );
+
+  function handleEffectiveFromChange(value: string) {
+    // value is DD-MM-YYYY from isoToDisplay
+    setEffectiveFromSelection(value);
+    setPeriodSelection(null);
+    setSlabDraft(null);
   }
 
-  function handleSlabChange(index: number, field: keyof LocalSlab, value: string) {
-    setSlabs((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+  function handlePeriodChange(value: string) {
+    setPeriodSelection(value);
+    setSlabDraft(null);
+  }
+
+  function handleLoadDefault() {
+    setSlabDraft(null);
+  }
+
+  function handleSlabChange(
+    index: number,
+    field: keyof LocalSlab,
+    value: string,
+  ) {
+    setSlabDraft((previous) =>
+      (previous ?? defaultSlabs).map((row, i) =>
+        i === index ? { ...row, [field]: value } : row,
+      ),
     );
   }
 
-  function addRow() {
-    setSlabs((prev) => [...prev, { fromSalary: "", toSalary: "", ptAmount: "" }]);
-  }
-
   async function handleSave() {
+    if (!effectiveFrom.trim()) {
+      showToast("Effective From is required.", "error");
+      return;
+    }
+    if (!period.trim()) {
+      showToast("Select a period.", "error");
+      return;
+    }
+    if (!canSafelyUpdate) {
+      showToast(
+        "Cannot save PT slabs: each slab must have a unique ID from the server.",
+        "error",
+      );
+      return;
+    }
+    if (
+      slabs.some((slab) =>
+        [slab.fromSalary, slab.toSalary, slab.ptAmount].some(
+          (value) => value.trim() === "" || !Number.isFinite(Number(value)),
+        ),
+      )
+    ) {
+      showToast("Enter valid values for every PT slab.", "error");
+      return;
+    }
+
+    const ids = slabs.map((s) => s.slabId).filter((id) => id != null) as number[];
+    if (ids.length > 1 && new Set(ids).size < ids.length) {
+      showToast(
+        "Slabs share the same ID from the server. Only one row can be updated.",
+        "error",
+      );
+      return;
+    }
+
     const payload = {
       slabs: slabs.map((item) => ({
+        slabId: item.slabId,
+        groupId: item.groupId,
+        isActive: item.isActive ?? true,
         effectiveFrom,
         period,
         fromSalary: Number(item.fromSalary),
@@ -275,18 +187,38 @@ export default function PtDetailsForm() {
         ptAmount: Number(item.ptAmount),
       })),
     };
+
     try {
       await updatePt(payload).unwrap();
+      setSlabDraft(null);
+      setEffectiveFromSelection(null);
+      setPeriodSelection(null);
       await refetch();
       showToast("PT details saved successfully");
     } catch (error) {
       console.error("Failed to save PT Details", error);
-      showToast("Failed to save PT details. Please try again.", "error");
+      const data = (error as {
+        data?: string | { message?: string | string[]; error?: string };
+      })?.data;
+      const apiMessage =
+        typeof data === "string"
+          ? data
+          : Array.isArray(data?.message)
+            ? data.message.join(", ")
+            : data?.message ?? data?.error;
+      showToast(
+        apiMessage ?? "Failed to save PT details. Please try again.",
+        "error",
+      );
     }
   }
 
   if (isLoading) {
-    return <div className="p-4 text-sm text-[#626262] sm:p-6">Loading PT Details...</div>;
+    return (
+      <div className="p-4 text-sm text-[#626262] sm:p-6">
+        Loading PT Details...
+      </div>
+    );
   }
 
   return (
@@ -297,106 +229,109 @@ export default function PtDetailsForm() {
         className="w-full min-w-0 rounded-2xl border border-[#EDEDED] bg-white shadow-sm"
       >
         <CardContent className="space-y-6 p-4 sm:space-y-8 sm:p-6">
-          <EffectiveFromBar value={effectiveFrom} onChange={setEffectiveFrom} />
+          <EffectiveFromBar
+            id="pt-effective-from"
+            value={displayToIso(effectiveFrom)}
+            onChange={(iso) => handleEffectiveFromChange(isoToDisplay(iso))}
+          />
 
           <div className="space-y-2">
             <Label className="text-[13px] font-medium leading-5 text-[#2E2E2E]">
               Period <span className="text-[#DD3232]">*</span>
             </Label>
-            <div className="w-full sm:w-72 max-w-full">
-              <Select value={period} onValueChange={setPeriod}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select period" />
-                </SelectTrigger>
-                <SelectContent
-                  side="bottom"
-                  align="start"
-                  sideOffset={8}
-                  alignItemWithTrigger={false}
-                >
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                  <SelectItem value="Quarterly">Quarterly</SelectItem>
-                  <SelectItem value="Half Yearly">Half Yearly</SelectItem>
-                  <SelectItem value="Yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="w-full max-w-full sm:w-72">
+              <FormSelect
+                id="pt-period"
+                value={period}
+                onValueChange={handlePeriodChange}
+                options={selectedPeriodOptions}
+                placeholder="Select period"
+              />
             </div>
           </div>
 
           <div>
             <div className="mb-4 flex items-center gap-4 sm:mb-5">
-              <h3 className="whitespace-nowrap text-base font-semibold text-black">Slab Rates</h3>
+              <h3 className="whitespace-nowrap text-base font-semibold text-black">
+                Slab Rates
+              </h3>
               <div className="h-px flex-1 bg-[#DDDDDD]" />
             </div>
 
             <div className="-mx-1 overflow-x-auto sm:mx-0">
               <div className="min-w-[480px] sm:min-w-0">
-                <div className="grid grid-cols-4 gap-2 rounded-xl bg-[#DDDDDD] px-3 py-3 text-xs font-semibold text-[#2E2E2E] sm:gap-4 sm:px-4 sm:text-sm">
+                <div className="grid grid-cols-3 gap-2 rounded-xl bg-[#DDDDDD] px-3 py-3 text-xs font-semibold text-[#2E2E2E] sm:gap-4 sm:px-4 sm:text-sm">
                   <div>From Salary</div>
                   <div>To Salary</div>
                   <div>PT Amount</div>
-                  <div className="text-center">Action</div>
                 </div>
 
                 <div className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
                   {slabs.map((slab, index) => (
-                    <div key={index} className="grid grid-cols-4 items-center gap-2 sm:gap-4">
+                    <div
+                      key={`pt-slab-${slab.slabId ?? index}-${index}`}
+                      className="grid grid-cols-3 items-center gap-2 sm:gap-4"
+                    >
                       <Input
                         value={slab.fromSalary}
-                        onChange={(e) => handleSlabChange(index, "fromSalary", e.target.value)}
+                        onChange={(e) =>
+                          handleSlabChange(index, "fromSalary", e.target.value)
+                        }
                         placeholder="0"
                         className="h-10 w-full rounded-xl border-[#DDDDDD] text-sm sm:h-11"
                       />
                       <Input
                         value={slab.toSalary}
-                        onChange={(e) => handleSlabChange(index, "toSalary", e.target.value)}
+                        onChange={(e) =>
+                          handleSlabChange(index, "toSalary", e.target.value)
+                        }
                         placeholder="0"
                         className="h-10 w-full rounded-xl border-[#DDDDDD] text-sm sm:h-11"
                       />
                       <Input
                         value={slab.ptAmount}
-                        onChange={(e) => handleSlabChange(index, "ptAmount", e.target.value)}
+                        onChange={(e) =>
+                          handleSlabChange(index, "ptAmount", e.target.value)
+                        }
                         placeholder="0"
                         className="h-10 w-full rounded-xl border-[#DDDDDD] text-sm sm:h-11"
                       />
-                      <div className="flex justify-center">
-                        {index === slabs.length - 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={addRow}
-                            className="h-10 w-10 rounded-xl border border-[#ECE7FF] p-0 hover:bg-[#F6F3FF] sm:h-11 sm:w-11"
-                          >
-                            <Plus className="h-5 w-5 text-[#7A5BED]" />
-                          </Button>
-                        )}
-                      </div>
                     </div>
                   ))}
+                  {slabs.length === 0 && (
+                    <p className="py-4 text-sm text-[#626262]">
+                      No PT slabs were returned for this date and period.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
+            {slabs.length > 0 && !canSafelyUpdate && (
+              <p className="mt-4 text-sm text-[#B42318]" role="alert">
+                Saving requires a unique ID for every slab from the server.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#EDEDED] pt-4 sm:flex-row sm:items-center sm:gap-4 sm:pt-6">
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setPeriod("Monthly");
-                setSlabs(DEFAULT_SLABS);
-              }}
-              className="h-10 w-full rounded-xl border border-[#DDDDDD] px-6 font-medium text-[#2E2E2E] hover:bg-[#DDDDDD] sm:h-11 sm:w-auto"
+              onClick={handleLoadDefault}
+              disabled={selectedDateSlabs.length === 0}
+              className="h-10 w-full rounded-xl border border-[#DDDDDD] px-6 font-medium text-[#2E2E2E] hover:bg-[#F6F3FF] sm:h-11 sm:w-auto"
             >
               Load Default Value
             </Button>
             <Button
               type="button"
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isSaving || !canSafelyUpdate}
               className="h-10 w-full rounded-xl bg-[#7A5BED] px-8 font-medium text-white hover:bg-[#5932E9] disabled:opacity-50 sm:h-11 sm:w-auto"
             >
-              {isSaving && <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />}
+              {isSaving && (
+                <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+              )}
               {isSaving ? "Saving..." : "Save"}
             </Button>
           </div>

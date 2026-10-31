@@ -1,58 +1,86 @@
-import { IsBoolean, IsDateString, IsInt, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDateString,
+  IsInt,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 
-export class PFGroupDto {
-  id!: number;
-  name!: string;
+export class PFConfigurationDto {
+  group!: any[];
+  configuration!: any[];
 }
 
 export class PFDefaultConfigurationDto {
+  @Type(() => Number)
+  @IsInt()
+  id!: number;
+
+  @Type(() => Number)
   @IsInt()
   pfGroupId!: number;
 
   @IsDateString()
   effectiveFrom!: string;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  epfPercentage!: number;
+  epfPercentage?: number;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  employerEPFPercentage!: number;
+  employerEPFPercentage?: number;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  pensionFundPercentage!: number;
+  pensionFundPercentage?: number;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  cutoff!: number;
+  cutoff?: number;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  accountNo02Rate!: number;
+  accountNo02Rate?: number;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  accountNo21Rate!: number;
+  accountNo21Rate?: number;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  minimumChargesAccNo02!: number;
+  minimumChargesAccNo02?: number;
 
+  @IsOptional()
   @IsBoolean()
-  pfOnPayDays!: boolean;
+  pfOnPayDays?: boolean;
 
+  @IsOptional()
+  @Type(() => Number)
   @IsInt()
-  roundOffTypeId!: number;
+  roundOffTypeId?: number;
 
+  @IsOptional()
   @IsBoolean()
-  restrictEmployerShare!: boolean;
+  restrictEmployerShare?: boolean;
 
+  @IsOptional()
   @IsBoolean()
-  restrictEmployerEmployeeWise!: boolean;
+  restrictEmployerEmployeeWise?: boolean;
 
+  @IsOptional()
   @IsBoolean()
-  isDefault!: boolean;
+  isDefault?: boolean;
 
+  @IsOptional()
   @IsBoolean()
-  isActive!: boolean;
-}
-
-export class PFConfigurationDto {
-  group!: PFGroupDto[];
-  configuration!: PFDefaultConfigurationDto[];
+  isActive?: boolean;
 }

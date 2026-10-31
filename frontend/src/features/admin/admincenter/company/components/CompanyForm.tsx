@@ -1,6 +1,4 @@
-
-
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,13 +9,26 @@ import type { CompanyDetails } from "../types/company.types";
 import { Switch } from "@/components/ui/switch";
 import { DatePicker, type DatePickerCell } from "@/components/ui/datepicker";
 
-import { MapPinned, Info, Upload, Bookmark, Loader2 } from "lucide-react";
+import { MapPinned, Info, Upload, Bookmark, Loader2, Image as ImageIcon } from "lucide-react";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+/** "uploads/company-documents/1793363971391-Screenshot 2026.png" -> "Screenshot 2026.png" */
+function getLogoFileName(path: string): string {
+  const last = path.replace(/\\/g, "/").split("/").filter(Boolean).pop() ?? "";
+  let name = last;
+  try {
+    name = decodeURIComponent(last);
+  } catch {
+    // keep the raw name when it is not URI-encoded
+  }
+  // backend prefixes every upload with Date.now() + "-"
+  return name.replace(/^\d{10,}-/, "");
+}
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
@@ -94,7 +105,7 @@ const CompanyInformationIcon = ({
     <rect x="5.5" y="13" width="1.8" height="1.8" />
   </svg>
 );
- 
+
 const ApplicableIcon = ({
   color = "#7A5BED",
   size = 18,
@@ -117,7 +128,7 @@ const ApplicableIcon = ({
     <line x1="4" y1="19" x2="15" y2="19" />
   </svg>
 );
- 
+
 const EMPTY_COMPANY: CompanyDetails = {
   companyName: "",
   dateOfEstablishment: "",
@@ -138,12 +149,29 @@ const EMPTY_COMPANY: CompanyDetails = {
   isLWFAvailable: true,
   companyLogoPath: "",
 };
- 
+
 export default function CompanyForm() {
-  const { company, isLoading, updateCompany, isSaving, refetch } = useCompany();
+  const { company, isLoading, updateCompany, uploadDocument, isSaving, refetch } =
+    useCompany();
   const [companyData, setCompanyData] = useState<CompanyDetails>(EMPTY_COMPANY);
   const [logo, setLogo] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [logoLoadFailed, setLogoLoadFailed] = useState(false);
+
+  // One preview URL per selected file (avoids creating a new blob URL on every render)
+  const logoPreviewUrl = useMemo(
+    () => (logo ? URL.createObjectURL(logo) : ""),
+    [logo],
+  );
+  useEffect(() => {
+    return () => {
+      if (logoPreviewUrl) URL.revokeObjectURL(logoPreviewUrl);
+    };
+  }, [logoPreviewUrl]);
+
+  useEffect(() => {
+    setLogoLoadFailed(false);
+  }, [company?.companyLogoUrl]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const today = new Date();
@@ -151,17 +179,12 @@ export default function CompanyForm() {
   const [dateCalendarOpen, setDateCalendarOpen] = useState(false);
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [previousCompany, setPreviousCompany] = useState<typeof company>();
-  const [previousEstablishmentDate, setPreviousEstablishmentDate] =
-    useState<string>();
 
-  if (company && company !== previousCompany) {
-    setPreviousCompany(company);
-    setCompanyData(company);
-  }
+  useEffect(() => {
+    if (company) setCompanyData(company);
+  }, [company]);
 
-  if (companyData.dateOfEstablishment !== previousEstablishmentDate) {
-    setPreviousEstablishmentDate(companyData.dateOfEstablishment);
+  useEffect(() => {
     setDateText(isoToDisplay(companyData.dateOfEstablishment));
     if (companyData.dateOfEstablishment) {
       const [y, m] = companyData.dateOfEstablishment.split("-");
@@ -170,7 +193,7 @@ export default function CompanyForm() {
         setViewMonth(Number(m) - 1);
       }
     }
-  }
+  }, [companyData.dateOfEstablishment]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { id, value } = e.target;
@@ -243,11 +266,11 @@ export default function CompanyForm() {
     }
     setLogo(file);
   }
- 
+
   function handleFileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     handleLogoSelect(e.target.files?.[0] ?? null);
   }
- 
+
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDragging(false);
@@ -271,7 +294,24 @@ export default function CompanyForm() {
     }
 
     try {
-      await updateCompany(companyData).unwrap();
+      let logoPath = companyData.companyLogoPath ?? "";
+
+      // 1) Upload logo via multipart/form-data if a new file was selected
+      if (logo) {
+        const uploadResult = await uploadDocument(logo).unwrap();
+        logoPath = uploadResult.path;
+        if (!logoPath) {
+          showToast("Logo upload did not return a file path.", "error");
+          return;
+        }
+      }
+
+      // 2) PUT company config including companyLogoPath + all mandatory fields
+      await updateCompany({
+        ...companyData,
+        companyLogoPath: logoPath,
+      }).unwrap();
+      setLogo(null);
       await refetch();
       showToast("Company details saved successfully");
     } catch (err: unknown) {
@@ -302,11 +342,11 @@ export default function CompanyForm() {
       showToast(msg, "error");
     }
   }
- 
+
   if (isLoading) {
     return <div className="text-sm text-[#626262] p-6">Loading company details…</div>;
   }
- 
+
   return (
     <div className="grid w-full min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-3">
       <Toast toast={toast} />
@@ -334,7 +374,7 @@ export default function CompanyForm() {
               onChange={handleChange}
             />
           </div>
- 
+
           <div>
             <Label htmlFor="dateOfEstablishment">Date of Establishment</Label>
             <div className="mt-2">
@@ -357,7 +397,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
- 
+
           <div>
             <Label htmlFor="cin_LPIN">CIN / LLPIN</Label>
             <div className="relative mt-2">
@@ -374,7 +414,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
- 
+
           <div>
             <Label htmlFor="tan">TAN</Label>
             <div className="relative mt-2">
@@ -391,7 +431,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
- 
+
           <div>
             <Label htmlFor="website">Website</Label>
             <Input
@@ -404,7 +444,7 @@ export default function CompanyForm() {
           </div>
         </div>
       </Card>
- 
+
       {/* Address Details */}
       <Card data-company-module-card className="min-w-0 rounded-2xl border border-[#EDEDED] p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
@@ -473,7 +513,7 @@ export default function CompanyForm() {
               />
             </div>
           </div>
- 
+
           <div>
             <p className="mb-2 text-xs text-[#626262]">
               Note: This ShortName will be used as ESS Login URL.
@@ -550,7 +590,7 @@ export default function CompanyForm() {
                 <h2 className="text-[16px] leading-6 font-semibold text-[#5932E9]">Company Logo</h2>
               </div>
             </div>
- 
+
             {logo && (
               <button
                 type="button"
@@ -575,11 +615,56 @@ export default function CompanyForm() {
             }`}
           >
             {logo ? (
-              <img
-                src={URL.createObjectURL(logo)}
-                alt="Company Logo"
-                className="max-h-32 object-contain p-2"
-              />
+              <div className="flex flex-col items-center gap-3 px-4 py-4 text-center">
+                <img
+                  src={logoPreviewUrl}
+                  alt="Company Logo"
+                  className="max-h-32 max-w-full object-contain"
+                />
+                <p
+                  title={logo.name}
+                  className="max-w-full truncate text-xs font-medium text-[#2E2E2E]"
+                >
+                  {logo.name}
+                </p>
+                <p className="text-[11px] text-[#626262]">
+                  New logo selected. Click Save to apply.
+                </p>
+              </div>
+            ) : companyData.companyLogoPath ? (
+              <div className="flex w-full flex-col items-center gap-3 px-4 py-4 text-center">
+                {!logoLoadFailed && (companyData.companyLogoUrl || companyData.companyLogoPath) ? (
+                  <img
+                    src={companyData.companyLogoUrl || companyData.companyLogoPath}
+                    alt="Company Logo"
+                    className="max-h-32 max-w-full object-contain"
+                    onError={() => setLogoLoadFailed(true)}
+                  />
+                ) : (
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[#F6F3FF]">
+                    <ImageIcon className="h-9 w-9 text-[#7A5BED]" />
+                  </div>
+                )}
+
+                <p
+                  title={getLogoFileName(companyData.companyLogoPath)}
+                  className="max-w-full truncate rounded-full bg-[#F6F3FF] px-3 py-1 text-xs font-medium text-[#5932E9]"
+                >
+                  {getLogoFileName(companyData.companyLogoPath)}
+                </p>
+
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className="bg-[#7A5BED] hover:bg-[#5932E9]"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Replace Logo
+                </Button>
+              </div>
             ) : (
               <div className="flex flex-col items-center gap-2 py-6 text-center">
                 <Upload className="h-8 w-8 text-[#7A5BED]" />
@@ -598,7 +683,7 @@ export default function CompanyForm() {
                 </Button>
               </div>
             )}
- 
+
             <input
               ref={fileInputRef}
               type="file"
@@ -611,7 +696,7 @@ export default function CompanyForm() {
           <div className="mt-3 flex items-center justify-between">
             <div className="flex items-center gap-1 text-xs text-[#626262]">
               <Info className="h-4 w-4" />
-              <span>Max Size 1 MB</span>
+              <span>PNG, JPG - Max Size 5 MB</span>
             </div>
           </div>
         </Card>

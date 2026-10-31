@@ -11,6 +11,10 @@ export class LWFDefaultConfigurationDto {
   stateId!: number;
 
   @IsInt()
+
+id!: number;
+
+  @IsInt()
   lwfGroupId!: number;
 
   @IsDateString()

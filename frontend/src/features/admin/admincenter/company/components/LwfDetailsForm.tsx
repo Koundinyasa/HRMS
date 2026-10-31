@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,16 +30,18 @@ export default function LwfDetailsForm() {
   const [employeeContribution, setEmployeeContribution] = useState(0);
   const [employerContribution, setEmployerContribution] = useState(0);
   const [deductionMonths, setDeductionMonths] = useState<string[]>([]);
-  const [previousLwf, setPreviousLwf] = useState<typeof lwf>();
 
-  if (lwf && lwf !== previousLwf) {
-      setPreviousLwf(lwf);
+  const { toast, showToast } = useToast();
+
+  useEffect(() => {
+    if (lwf) {
       setEffectiveFrom(lwf.effectiveFrom);
       setCutoffAmount(lwf.cutoffAmount);
       setEmployeeContribution(lwf.employeeContribution);
       setEmployerContribution(lwf.employerContribution);
       setDeductionMonths(monthsToArray(lwf));
-  }
+    }
+  }, [lwf]);
 
   function handleMonthChange(month: string) {
     setDeductionMonths((prev) =>
@@ -48,9 +50,31 @@ export default function LwfDetailsForm() {
   }
 
   async function handleSave() {
-    if (!lwf) return;
+    if (!lwf) {
+      showToast("LWF configuration is not loaded yet. Please wait and try again.", "error");
+      return;
+    }
+    if (!lwf.id || lwf.id <= 0) {
+      showToast(
+        "Cannot update: LWF configuration ID is missing from the server response. Open browser console (F12) and check the [LWF] log for available keys.",
+        "error",
+      );
+      return;
+    }
+    if (!lwf.groupId || lwf.groupId <= 0) {
+      showToast(
+        "Cannot update: LWF group ID is missing. Refresh the page or contact support.",
+        "error",
+      );
+      return;
+    }
+
     const payload = {
       ...lwf,
+      id: lwf.id,
+      groupId: lwf.groupId,
+      stateId: lwf.stateId,
+      stateName: lwf.stateName,
       ...arrayToMonths(
         {
           effectiveFrom,
@@ -58,7 +82,7 @@ export default function LwfDetailsForm() {
           employeeContribution,
           employerContribution,
         },
-        deductionMonths
+        deductionMonths,
       ),
     };
     try {
@@ -67,7 +91,19 @@ export default function LwfDetailsForm() {
       showToast("LWF details saved successfully");
     } catch (err) {
       console.error("Failed to save LWF details", err);
-      showToast("Failed to save LWF details. Please try again.", "error");
+      const data = (err as {
+        data?: string | { message?: string | string[]; error?: string };
+      })?.data;
+      const apiMessage =
+        typeof data === "string"
+          ? data
+          : Array.isArray(data?.message)
+            ? data.message.join(", ")
+            : data?.message ?? data?.error;
+      showToast(
+        apiMessage ?? "Failed to save LWF details. Please try again.",
+        "error",
+      );
     }
   }
 
@@ -192,6 +228,15 @@ export default function LwfDetailsForm() {
       <div className="mt-4 flex flex-col-reverse justify-end gap-3 sm:mt-6 sm:flex-row sm:gap-4">
         <button
           type="button"
+          onClick={() => {
+            if (lwf) {
+              setEffectiveFrom(lwf.effectiveFrom);
+              setCutoffAmount(lwf.cutoffAmount);
+              setEmployeeContribution(lwf.employeeContribution);
+              setEmployerContribution(lwf.employerContribution);
+              setDeductionMonths(monthsToArray(lwf));
+            }
+          }}
           className="w-full rounded-xl border border-[#EDEDED] bg-white px-5 py-2 text-sm font-medium text-[#2E2E2E] transition hover:bg-[#EDEDED] sm:w-auto"
         >
           Load Default Value

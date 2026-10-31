@@ -29,7 +29,10 @@ export function arrayToMonths(
 }
 
 export const useLwfDetails =()=>{
-    const {data,isLoading,isFetching,isError,refetch}=useGetLwfDetailsQuery();
+    const {data,isLoading,isFetching,isError,refetch}=useGetLwfDetailsQuery(
+        undefined,
+        { refetchOnMountOrArgChange: true },
+    );
     const [updateLwf,{isLoading:isSaving}]=useUpdateLwfDetailsMutation();
 
     return {

@@ -21,8 +21,6 @@ interface ToastState {
  * a save succeeds, or showToast("Failed to save", "error") if it fails.
  * Render <Toast toast={toast} /> once near the top of the page.
  */
-// Keep this hook exported beside Toast without forcing a new module for callers.
-// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const [toast, setToast] = useState<ToastState | null>(null);
  

@@ -1,18 +1,37 @@
-import { useGetPtDetailsQuery, useUpdatePtDetailsMutation } from "../api/companyApi";
+import {
+  useGetPtDetailsQuery,
+  useUpdatePtDetailsMutation,
+  useGetPeriodTypesQuery,
+} from "../api/companyApi";
 
+export const usePtDetails = () => {
+  const { data, isLoading, isFetching, isError, refetch } =
+    useGetPtDetailsQuery();
+  const [updatePt, { isLoading: isSaving }] = useUpdatePtDetailsMutation();
+  const {
+    data: periodTypeOptions = [],
+    isLoading: isPeriodTypesLoading,
+  } = useGetPeriodTypesQuery();
 
-export const usePtDetails =()=>{
-    const { data, isLoading, isFetching, isError ,refetch} =useGetPtDetailsQuery();
-    const [updatePt,{isLoading:isSaving}]=useUpdatePtDetailsMutation();
-
-    return {
-        ptSlabs: data?.slabs,
-        ptGroups: data?.group,
-        isLoading,
-        isFetching,
-        isError,
-        refetch,
-        updatePt,
-        isSaving
-    }
-}
+  return {
+    ptSlabs: data?.slabs,
+    /** Periods present on current PT slabs (fallback) */
+    periodOptions: [
+      ...new Set(
+        (data?.slabs ?? [])
+          .map((slab) => slab.period.trim())
+          .filter((period) => period !== ""),
+      ),
+    ],
+    /** Full period list from GET /admin/configuration/salary-round-off → data.periodType */
+    periodTypeOptions,
+    isPeriodTypesLoading,
+    ptGroups: data?.group,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+    updatePt,
+    isSaving,
+  };
+};
