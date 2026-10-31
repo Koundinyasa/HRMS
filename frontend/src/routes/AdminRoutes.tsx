@@ -5,9 +5,9 @@ import { EnrollmentRoutes } from "@/features/admin/Enrollment/routes/EnrollmentR
 import { TalentHubRoutes } from "@/features/admin/Time & Office/routes/TalentHubRoutes";
 import { RecruitmentRoutes } from "@/features/admin/TalentHub/routes/RecruitmentRoutes";
 import { PayrollRoutes } from "@/features/admin/Payroll/routes/PayrollRoutes";
-import { InsightsRoutes } from "@/features/admin/Insights/routes/InsightRoutes";
 import { OrganizationsRoutes } from "@/features/admin/organizations/routes/organizationsRoutes";
 import DashboardPage from "@/features/admin/dashboard/pages/DashboardPage";
+import PageNotAvailable from "./PageNotAvailable";
 
 export const AdminChildRoutes = (
   <>
@@ -17,7 +17,8 @@ export const AdminChildRoutes = (
     {RecruitmentRoutes}
     {PayrollRoutes}
     {TalentHubRoutes}
-    {InsightsRoutes}
     {OrganizationsRoutes}
+    {/* Anything else (for example Insights, not in Phase 1) */}
+    <Route path="*" element={<PageNotAvailable />} />
   </>
 );
