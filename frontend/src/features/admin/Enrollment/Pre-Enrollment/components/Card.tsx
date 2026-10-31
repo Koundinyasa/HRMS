@@ -1,10 +1,9 @@
-﻿import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+﻿import { getIcon, type IconName } from "@/shared/icons/lucideByName";
 
 interface CardProps {
   title: string;
   value: number | string;
-  icon: keyof typeof Icons;
+  icon: IconName;
   iconBg?: string;
   iconColor?: string;
   badgeText?: string;
@@ -22,7 +21,7 @@ export default function Card({
   badgeBg = "#EFF6FF",
   badgeColor = "#2563EB",
 }: CardProps) {
-  const Icon = Icons[icon] as LucideIcon;
+  const Icon = getIcon(icon);
 
   return (
     <div

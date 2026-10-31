@@ -1,6 +1,5 @@
  import { NavLink, useParams } from "react-router-dom";
-import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { getIcon } from "@/shared/icons/lucideByName";
  
 import { useSidebar } from "./SidebarContext";
 import { useAdminMenus } from "./adminMenus";
@@ -49,9 +48,7 @@ export default function Sidebar() {
           `}
         >
           {links.map((link) => {
-            const Icon = (
-              Icons[link.icon as keyof typeof Icons] ?? Icons.Circle
-            ) as LucideIcon;
+            const Icon = getIcon(link.icon);
  
             return (
               <NavLink

@@ -1,8 +1,7 @@
  
 import { useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { getIcon } from "@/shared/icons/lucideByName";
  
 interface TabItem {
   label: string;
@@ -43,9 +42,7 @@ export default function TabBar({ basePath, tabs }: TabBarProps) {
         className="flex w-full min-w-0 max-w-full snap-x snap-proximity items-stretch gap-1.5 overflow-x-auto rounded-[20px] border border-[#9B6AEF] bg-[#F0EBFF] p-1 [-webkit-overflow-scrolling:touch] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 sm:rounded-[30px] sm:p-2"
       >
         {tabs.map((tab, index) => {
-          const Icon = tab.icon
-            ? ((Icons[tab.icon as keyof typeof Icons] ?? Icons.Circle) as LucideIcon)
-            : null;
+          const Icon = tab.icon ? getIcon(tab.icon) : null;
  
           return (
             <NavLink

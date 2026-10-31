@@ -12,12 +12,11 @@
 
 
 import { useEffect, useState } from "react";
-import * as Icons from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { getIcon } from "@/shared/icons/lucideByName";
 import type { StatsCardProps } from "../types/dashboard.types";
 
 export default function StatsCard({ config, value, change, onClick }: StatsCardProps) {
-  const Icon = (Icons[config.icon as keyof typeof Icons] ?? Icons.Circle) as LucideIcon;
+  const Icon = getIcon(config.icon);
   const [animatedValue, setAnimatedValue] = useState(0);
 
   useEffect(() => {
