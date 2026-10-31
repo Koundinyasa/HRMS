@@ -4,8 +4,8 @@ import { Menu } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import SubSidebar from "./subSidebar";
-import { SUB_NAV_REGISTRY } from "./subNav.registry";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
+import { useAdminMenus } from "./adminMenus";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
 
 export default function AdminLayout() {
@@ -27,7 +27,11 @@ function AdminLayoutContent() {
 
   const section = afterAdmin.split("/")[0];
 
-  const subNavItems = SUB_NAV_REGISTRY[section];
+  const { sections } = useAdminMenus();
+
+  // Second-level menu of this section, from the database menus.
+  const subNavItems =
+    sections.find((s) => s.path.toLowerCase() === section.toLowerCase())?.items ?? [];
 
   return (
     <>
@@ -39,7 +43,7 @@ function AdminLayoutContent() {
         <div className="flex min-h-0 flex-1">
           <Sidebar />
 
-          {subNavItems && (
+          {subNavItems.length > 0 && (
             <SubSidebar
               sectionPath={section}
               items={subNavItems}

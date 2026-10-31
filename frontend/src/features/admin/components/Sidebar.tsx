@@ -2,13 +2,15 @@
 import * as Icons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
  
-import { SIDEBAR_LINKS } from "../dashboard/constants/dashboard.constants";
 import { useSidebar } from "./SidebarContext";
+import { useAdminMenus } from "./adminMenus";
  
 export default function Sidebar() {
   const { domain } = useParams();
  
   const { isOpen, toggleSidebar } = useSidebar();
+  // Sections, names and order come from the database menus.
+  const { sections: links } = useAdminMenus();
  
   return (
     <>
@@ -46,7 +48,7 @@ export default function Sidebar() {
             }
           `}
         >
-          {SIDEBAR_LINKS.map((link) => {
+          {links.map((link) => {
             const Icon = (
               Icons[link.icon as keyof typeof Icons] ?? Icons.Circle
             ) as LucideIcon;
