@@ -608,9 +608,4 @@ export class HrmsDbService implements OnModuleDestroy {
     const result = await pool.request().execute('usp_GetCompanyLogo');
     return result.recordset[0]?.logo_url ?? null;
   }
-  async ping() {
-    const pool = await this.getPool();
-    const result = await pool.request().execute('usp_Ping');
-    return result.recordset[0] ?? null;
-  }
 }

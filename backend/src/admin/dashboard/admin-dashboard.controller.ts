@@ -54,11 +54,6 @@ export class AdminDashboardController {
     );
   }
  
-  @Get('ping')
-  ping() {
-    return { ok: true };
-  }
- 
  
  
  

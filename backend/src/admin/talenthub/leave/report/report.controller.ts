@@ -88,14 +88,6 @@ export class ReportController {
     );
   }
 
-  @Get('test')
-  async testReport() {
-    return {
-      success: true,
-      message: 'Report controller is working',
-    };
-  }
-
   @Post('attendance')
   async getAttendanceReport(@Req() req: any, @Body() body: any) {
     return this.reportService.getAttendanceReport(
