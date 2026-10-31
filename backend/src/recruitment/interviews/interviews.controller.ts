@@ -24,30 +24,24 @@ import {
   UpdateInterviewDto,
 } from './interviews.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { ADMIN_PORTAL_ROLES, Role } from '../../common/constants/roles';
-import { GateOpen } from '../../common/decorators/module-gate.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 
-// Recruitment management is for Super Admin and HR Admin. The routes marked
-// INTERVIEWER below are also used by employees who are interviewers (the
-// Interviewer Feedback screen in the employee portal), so they stay open to
-// every signed-in role.
+// Recruitment management is for Super Admin and HR Admin. None of it is part
+// of Phase 1 (the employee Interview Feedback screen is off too), so no route
+// here carries a menu tag and the module gate answers MODULE_DISABLED. To turn
+// the interviewer routes back on, tag them with @GateOpen() and
+// @Roles(Role.Admin, Role.HR, Role.Employee).
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('recruitment')
 @UseGuards(JwtAuthGuard)
 export class InterviewsController {
   constructor(private readonly interviews: InterviewsService) {}
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Get('interviewers')
   getInterviewers() {
     return this.interviews.getInterviewers();
   }
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Get('interviews/schedule-options')
   scheduleOptions() {
     return this.interviews.getScheduleOptions();
@@ -74,9 +68,6 @@ export class InterviewsController {
     return this.interviews.list(request.user.employeeId, query);
   }
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Get('interviewer-feedback')
   interviewerFeedbackWorklist(
     @Req() request: { user: { employeeId: string } },
@@ -141,9 +132,6 @@ export class InterviewsController {
     return this.interviews.getInterviewFeedback(id);
   }
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/feedback')
   feedback(
     @Param('id', ParseIntPipe) id: number,
@@ -153,9 +141,6 @@ export class InterviewsController {
     return this.interviews.submitFeedback(id, dto, request.user.employeeId);
   }
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/competency-feedback')
   submitCompetencyFeedback(
     @Param('id', ParseIntPipe) id: number,
@@ -169,9 +154,6 @@ export class InterviewsController {
     );
   }
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/technical-round-2')
   scheduleTechnicalRoundTwo(
     @Param('id', ParseIntPipe) id: number,
@@ -185,9 +167,6 @@ export class InterviewsController {
     );
   }
 
-  // INTERVIEWER: also used from the employee portal
-  @GateOpen()
-  @Roles(Role.Admin, Role.HR, Role.Employee)
   @Post('interviews/:id/technical-round-decision')
   technicalRoundDecision(
     @Param('id', ParseIntPipe) id: number,
