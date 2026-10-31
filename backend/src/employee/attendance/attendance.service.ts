@@ -8,8 +8,6 @@ import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { DatabaseService } from '../../database/database.service';
 
-const PYTHON_ATTENDANCE_URL = 'http://127.0.0.1:8000';
-
 export interface PunchResult {
   success: boolean;
   action?: 'IN' | 'OUT';
@@ -120,6 +118,13 @@ export class AttendanceService {
   private readonly ACCURACY_THRESHOLD_METERS = 200;
   private readonly ESS_DEVICE_ID = 4;
   private readonly ANGLE_LABEL_COLUMN_READY = true;
+
+  // Address of the Python face service (attendance-service). It has no login
+  // of its own, so it must only listen on the local machine (start uvicorn
+  // with --host 127.0.0.1). Set PYTHON_ATTENDANCE_URL in the backend .env only
+  // if it runs somewhere else.
+  private readonly PYTHON_ATTENDANCE_URL =
+    process.env.PYTHON_ATTENDANCE_URL ?? 'http://127.0.0.1:8000';
 
   // Street address for each punch, looked up from the public OpenStreetMap
   // service (nominatim.openstreetmap.org) while the punch is being saved
@@ -778,7 +783,7 @@ export class AttendanceService {
 
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/verify`, form, {
+        this.http.post(`${this.PYTHON_ATTENDANCE_URL}/verify`, form, {
           headers: form.getHeaders(),
           timeout: 20000,
         }),
@@ -1210,7 +1215,7 @@ export class AttendanceService {
     });
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/enroll/check-frame`, form, {
+        this.http.post(`${this.PYTHON_ATTENDANCE_URL}/enroll/check-frame`, form, {
           headers: form.getHeaders(),
           timeout: 8000,
         }),
@@ -1241,7 +1246,7 @@ export class AttendanceService {
     });
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/enroll`, form, {
+        this.http.post(`${this.PYTHON_ATTENDANCE_URL}/enroll`, form, {
           headers: form.getHeaders(),
           timeout: 20000,
         }),
