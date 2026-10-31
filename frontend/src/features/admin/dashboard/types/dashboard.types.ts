@@ -87,7 +87,7 @@ export interface StatCardConfig {
   icon: string;
   iconBg: string;
   format?: "currency" | "number";
-  filterType?: EmployeeFilterType;
+  filterType?: EmployeeFilterType | "open";
 }
  
 export interface ActivityItem {

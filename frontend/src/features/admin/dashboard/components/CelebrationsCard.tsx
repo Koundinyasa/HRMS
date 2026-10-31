@@ -71,7 +71,7 @@ export default function CelebrationsCard({ events }: CelebrationsCardProps) {
             type="button"
             disabled={!celebration}
             onClick={() => {
-              setSelected(celebration);
+              setSelected(celebration ?? null);
               setOpenWishModal(true);
             }}
             className="mt-3 px-8 py-1.5 rounded-full text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"

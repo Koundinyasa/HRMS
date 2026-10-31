@@ -4,7 +4,7 @@ import { useGetDescriptionsQuery, useGetAttendancetypesQuery } from "../api/atte
 import { useGetBranchesQuery, useGetDesignationsQuery } from "@/features/admin/admincenter/classifications/api/classificationApi";
 import { LEAVE_POLICY_GROUPS } from "@/features/admin/admincenter/classifications/constants/leavePolicy.constants";
 import FilterBar, { type FilterValues } from "@/features/admin/components/FilterBar";
-import type { FilterFieldKey } from "@/features/admin/components/filterFields.constants";
+import type { FilterFieldKey } from "@/features/admin/components/Filterfields.constants";
 
 // ⚠️ No API endpoint exists yet for salary structures in this module —
 // seeded from the screenshot's exact options until a real one is wired up.

@@ -50,7 +50,9 @@ export default function TabBar({ basePath, tabs }: TabBarProps) {
           return (
             <NavLink
               key={tab.path}
-              ref={(el) => (tabRefs.current[index] = el)}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
               to={`${basePath}/${tab.path}`}
               className={({ isActive }) =>
                 `flex shrink-0 snap-start items-center justify-center gap-1 rounded-[14px] border px-2.5 py-1.5 text-[12px] font-medium transition-all duration-200 sm:flex-[1_0_auto] sm:gap-2 sm:rounded-[18px] sm:px-3 sm:py-2.5 sm:text-sm ${

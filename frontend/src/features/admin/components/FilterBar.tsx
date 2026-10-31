@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, X, MoreVertical } from "lucide-react";
 import FilterDropdown, { type FilterOption } from "./FilterDropdown";
-import { FILTER_FIELD_DEFS, type FilterFieldKey } from "./filterFields.constants";
+import { FILTER_FIELD_DEFS, type FilterFieldKey } from "./Filterfields.constants";
 
 export type FilterValues = Partial<Record<FilterFieldKey, string[] | string>>;
 

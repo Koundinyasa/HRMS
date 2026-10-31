@@ -791,7 +791,9 @@ export default function AddEmployee({
     value: values[name],
     error: visibleError(name),
     onChange: handleChange,
-    onBlur: CHECKED_FIELDS.includes(name as CheckedField) ? handleIdentityBlur : handleBlur,
+    onBlur: CHECKED_FIELDS.includes(name as CheckedField)
+      ? (handleIdentityBlur as (name: ErrorKey) => void)
+      : handleBlur,
   });
  
   /** Shared by the submit-without-onSave branch and the standalone Preview button */
@@ -853,7 +855,9 @@ export default function AddEmployee({
     setSaving(true);
     setStatus({ text: "Creating employee…", bad: false });
     try {
-      const result = await onSave(payload, photo);
+      const saved = await onSave(payload, photo);
+      // The server may answer with either capitalisation.
+      const result = saved as typeof saved & { FullName?: string; UserID?: string };
       setDialog({
         kind: "success",
         title: "Employee created",

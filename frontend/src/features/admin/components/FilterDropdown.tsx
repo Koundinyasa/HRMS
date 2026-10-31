@@ -180,7 +180,7 @@ export default function FilterDropdown(props: FilterDropdownProps) {
             {props.type === "text" ? (
               <TextPanel value={props.value} onChange={props.onChange} />
             ) : (
-              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} />
+              <CheckboxPanel label={label} options={props.options} selected={props.selected} onChange={props.onChange} hideScrollbar={hideScrollbar} />
             )}
 
             <button

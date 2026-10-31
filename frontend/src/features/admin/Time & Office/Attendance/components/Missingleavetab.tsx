@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CheckCircle2, Search } from "lucide-react";
 import FilterBar, { type FilterValues } from "@/features/admin/components/FilterBar";
-import type { FilterFieldKey } from "@/features/admin/components/filterFields.constants";
+import type { FilterFieldKey } from "@/features/admin/components/Filterfields.constants";
 import {
   useGetMissingLeaveRecordsQuery,
   useGetReconcileLeaveTypesQuery,

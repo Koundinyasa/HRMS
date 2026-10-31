@@ -59,7 +59,6 @@ export default function DashboardPage() {
     departmentWiseCount,
     genderWiseCount,
     ageGroupWiseCount,
-    team,
     avgTenure,
     TenureDatum,
     isLoading,
@@ -232,7 +231,7 @@ export default function DashboardPage() {
           <ClassificationWiseChart />
         </div>
         <div className="lg:col-span-5">
-          <TeamCard team={team} />
+          <TeamCard />
         </div>
         <div className={`lg:col-span-3 ${BIRTHDAY_OVERRIDES}`}>
           <BirthdayCard />
