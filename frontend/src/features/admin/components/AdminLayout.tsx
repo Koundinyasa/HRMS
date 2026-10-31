@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import SubSidebar from "./subSidebar";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
 import { useAdminMenus } from "./adminMenus";
+import AdminRouteGuard from "./AdminRouteGuard";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
 
 export default function AdminLayout() {
@@ -63,7 +64,9 @@ function AdminLayoutContent() {
                 Recruitment sections
               </button>
             )}
-            <Outlet />
+            <AdminRouteGuard>
+              <Outlet />
+            </AdminRouteGuard>
           </main>
         </div>
       </div>
