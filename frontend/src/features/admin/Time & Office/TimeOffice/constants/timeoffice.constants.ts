@@ -197,7 +197,7 @@ export const PUNCH_METRIC_LABELS: Record<PunchMetric, string> = {
 export const PUNCH_METRIC_ACCENTS: Record<PunchMetric, string> = {
   "yet-to-login": "#6366F1",
   "logged-in": "#3B82F6",
-  present: "#10B981",
+  present: "#3B82F6",
   absent: "#EF4444",
   "late-in": "#EF4444",
   "early-in": "#10B981",
@@ -296,7 +296,12 @@ export const ATTENDANCE_OVERVIEW_SERIES = [
 ] as const;
 
 export const PUNCH_MODE_COLORS: Record<string, string> = {
-  "Bio Metric": "#60A5FA",
+  Biometric: "#6BD4B8",
+  "FaceRecognition(ESS)": "#A78BFA",
+  QRReader: "#38BDF8",
+  "Bio Metric": "#6BD4B8",
+  "Face Recognition": "#A78BFA",
+  "Face Recognition (ESS)": "#A78BFA",
   ESS: "#34D399",
 };
 
@@ -309,15 +314,17 @@ export const PROCESS_TILES: {
   unit: "Employee(s)" | "Record(s)";
   color: string;
   hasDrilldown: boolean;
+  showArrow?: boolean;
+  actionable?: boolean;
 }[] = [
   { key: "timeAttendance", label: "Time & Attendance", unit: "Employee(s)", color: "#2563EB", hasDrilldown: false },
   // ponytail: no /nontimeattendance endpoint yet, flip to true once the backend adds one.
-  { key: "nonTimeAttendance", label: "Non Time & Attendance", unit: "Employee(s)", color: "#7C3AED", hasDrilldown: false },
-  { key: "missedPunch", label: "Missed Punch", unit: "Record(s)", color: "#F59E0B", hasDrilldown: true },
-  { key: "shiftUnassigned", label: "Shift Unassigned", unit: "Employee(s)", color: "#0EA5E9", hasDrilldown: true },
-  { key: "processed", label: "Processed", unit: "Employee(s)", color: "#10B981", hasDrilldown: true },
-  { key: "yetToProcess", label: "Yet To Process", unit: "Employee(s)", color: "#F59E0B", hasDrilldown: true },
-  { key: "reProcessEffectiveDate", label: "Re-Process Effective Date", unit: "Record(s)", color: "#7C3AED", hasDrilldown: true },
+  { key: "nonTimeAttendance", label: "Non Time & Attendance", unit: "Employee(s)", color: "#7C3AED", hasDrilldown: false, showArrow: true, actionable: true },
+  { key: "missedPunch", label: "Missed Punch", unit: "Record(s)", color: "#EF4444", hasDrilldown: true },
+  { key: "shiftUnassigned", label: "Shift Unassigned", unit: "Employee(s)", color: "#9333EA", hasDrilldown: true },
+  { key: "processed", label: "Processed", unit: "Employee(s)", color: "#10B981", hasDrilldown: true, showArrow: false },
+  { key: "yetToProcess", label: "Yet To Process", unit: "Employee(s)", color: "#F59E0B", hasDrilldown: true, showArrow: false },
+  // { key: "reProcessEffectiveDate", label: "Re-Process Effective Date", unit: "Record(s)", color: "#F97316", hasDrilldown: true },
   { key: "allReProcess", label: "All Re-Process", unit: "Record(s)", color: "#EC4899", hasDrilldown: true },
 ];
 

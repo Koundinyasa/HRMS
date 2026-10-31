@@ -163,7 +163,7 @@ export default function SubSidebar({
                     {item.children.map((child) => (
                       <NavLink
                         key={child.path}
-                        to={`${basePath}/${item.path}/${child.path}`}
+                        to={child.href ? `${basePath}/${child.href}` : `${basePath}/${item.path}/${child.path}`}
                         onClick={closeSubSidebar}
                         className={({ isActive }) =>
                           `
@@ -300,7 +300,7 @@ function NavItem({
           {item.children.map((child) => (
             <NavLink
               key={child.path}
-              to={`${basePath}/${item.path}/${child.path}`}
+              to={child.href ? `${basePath}/${child.href}` : `${basePath}/${item.path}/${child.path}`}
               className={({ isActive }) =>
                 `
                   flex items-center gap-2

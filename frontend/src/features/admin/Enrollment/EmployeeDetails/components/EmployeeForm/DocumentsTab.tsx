@@ -1313,13 +1313,13 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   };
 
   return (
-    <div className="flex gap-5 min-h-[480px]">
+    <div className="flex flex-col gap-5 lg:min-h-[480px] lg:flex-row">
 
       {/* ======================================================
           LEFT SIDEBAR
       ====================================================== */}
 
-      <div className="w-[210px] shrink-0">
+      <div className="w-full shrink-0 sm:mx-auto sm:max-w-[210px] lg:mx-0 lg:w-[210px]">
 
         <div className="bg-white rounded-lg border border-gray-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
 

@@ -149,9 +149,9 @@ export default function MonthYearField({ label, value, onChange, error }: MonthY
   };
  
   return (
-    <div ref={wrapRef} className="relative flex items-center gap-3">
-      <label className="whitespace-nowrap text-[13px] font-medium text-[#626262]">{label}</label>
-      <div className="relative w-[130px]">
+    <div ref={wrapRef} className="relative flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+      <label className="text-[13px] font-medium text-[#626262] sm:whitespace-nowrap">{label}</label>
+      <div className="relative w-full sm:w-[130px]">
         <button
           type="button"
           onClick={() => setOpen((p) => !p)}

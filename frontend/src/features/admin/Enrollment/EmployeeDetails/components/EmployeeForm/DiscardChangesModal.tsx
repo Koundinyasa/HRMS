@@ -160,7 +160,7 @@ export default function DiscardChangesModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
           onCancel();
@@ -169,11 +169,13 @@ export default function DiscardChangesModal({
     >
       <div
         className="
-          w-[420px]
+          w-full
+          max-w-[420px]
           rounded-lg
           bg-[#FFF5EE]
           shadow-2xl
-          px-6
+          px-4
+          sm:px-6
           py-6
           text-center
         "

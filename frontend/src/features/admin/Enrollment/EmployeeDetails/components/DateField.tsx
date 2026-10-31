@@ -304,7 +304,7 @@ export default function DateField({
       {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
  
       {open && (
-        <div className="absolute z-20 mt-1 w-[230px] rounded-[8px] border border-[#E2E2E2] bg-white p-2.5 shadow-[0_8px_24px_rgba(19,19,19,0.14)]">
+        <div className="absolute z-20 mt-1 w-[230px] max-w-[calc(100vw-2rem)] rounded-[8px] border border-[#E2E2E2] bg-white p-2.5 shadow-[0_8px_24px_rgba(19,19,19,0.14)]">
           <div className="flex items-center justify-between mb-2">
             <button
               type="button"

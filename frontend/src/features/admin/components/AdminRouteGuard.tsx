@@ -14,10 +14,12 @@ import type { MenuInfo } from "../dashboard/types/dashboard.types";
  * A page is allowed when its path (after the company domain) is
  *  - the landing page (/admin or /admin/dashboard), or
  *  - exactly the route of one of the user's menus, or
- *  - below the route of a menu that has no child menus (a screen, whose own
- *    tabs and sub-pages share its path).
- * A menu that only groups other menus (for example "Time & Office") allows
- * its own path but not everything below it.
+ *  - below the route of a menu that is a screen (its own tabs and sub-pages
+ *    share its path). A menu is a screen when none of its child menus sit
+ *    below its own path: "Leave Daily" can list child menus that live
+ *    elsewhere and still own its tabs.
+ * A menu that groups other menus below its path (for example
+ * "Time & Office") allows its own path but not everything below it.
  *
  * It does nothing while the menus are loading or when the user has no menus
  * or the menus could not be loaded: the backend gate decides in those cases.
@@ -30,14 +32,16 @@ export function isAdminPathAllowed(path: string, menus: readonly MenuInfo[]): bo
 
   if (current === "/admin" || current === "/admin/dashboard") return true;
 
-  const parentIds = new Set(menus.map((menu) => menu.parentId));
-
   return menus.some((menu) => {
     const route = clean(menu.routeUrl ?? "");
     if (!route) return false;
     if (current === route) return true;
-    const isScreen = !parentIds.has(menu.menuId);
-    return isScreen && current.startsWith(`${route}/`);
+    const groupsPagesBelowItself = menus.some(
+      (child) =>
+        child.parentId === menu.menuId &&
+        clean(child.routeUrl ?? "").startsWith(`${route}/`),
+    );
+    return !groupsPagesBelowItself && current.startsWith(`${route}/`);
   });
 }
 

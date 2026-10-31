@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
-import { MOCK_TODAY_ISO, PROCESS_HISTORY, PROCESS_SUMMARY, PUNCH_REQUESTS_SUMMARY } from "../constants/punch.mock";
+import { PUNCH_REQUESTS_SUMMARY } from "../constants/punch.mock";
 import {
   useGetAllReprocessQuery,
   useGetMissedPunchQuery,
@@ -45,20 +45,29 @@ const useDrilldownQuery = (tile: ProcessDrilldownTile | null, range: { fromDate:
 };
 
 export const useProcessTab = () => {
-  const [dateFrom, setDateFrom] = useState(MOCK_TODAY_ISO);
-  const [dateTo, setDateTo] = useState(MOCK_TODAY_ISO);
+  const [dateFrom, setDateFrom] = useState(() => format(new Date(), "yyyy-MM-dd"));
+  const [dateTo, setDateTo] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [openTile, setOpenTile] = useState<ProcessDrilldownTile | null>(null);
 
   const range = { fromDate: dateFrom, tillDate: dateTo };
 
   const summaryQuery = useGetProcessSummaryQuery(range);
-  const historyQuery = useGetProcessHistoryQuery();
+  const historyQuery = useGetProcessHistoryQuery(range);
   const punchRequestsQuery = useGetPunchRequestsSummaryQuery();
   const drilldownQuery = useDrilldownQuery(openTile, range);
   const [processAttendance, processState] = useProcessAttendanceMutation();
 
-  const summary = summaryQuery.data ?? PROCESS_SUMMARY;
-  const history = historyQuery.data ?? PROCESS_HISTORY;
+  const summary = summaryQuery.currentData ?? {
+    timeAttendance: 0,
+    nonTimeAttendance: 0,
+    missedPunch: 0,
+    shiftUnassigned: 0,
+    processed: 0,
+    yetToProcess: 0,
+    reProcessEffectiveDate: 0,
+    allReProcess: 0,
+  };
+  const history = historyQuery.currentData ?? [];
   const punchRequests = punchRequestsQuery.data ?? PUNCH_REQUESTS_SUMMARY;
 
   const handleProcess = async () => {
@@ -76,7 +85,10 @@ export const useProcessTab = () => {
     dateTo,
     setDateTo,
     summary,
+    isSummaryLoading: summaryQuery.isFetching,
+    isSummaryError: summaryQuery.isError,
     history,
+    isHistoryError: historyQuery.isError,
     punchRequests,
     handleProcess,
     isProcessing: processState.isLoading,

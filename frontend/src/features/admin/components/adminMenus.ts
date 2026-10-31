@@ -68,7 +68,15 @@ export function buildAdminSections(menus: readonly MenuInfo[]): AdminSection[] {
       const children: SubNavItem[] = [];
       for (const grandChild of childrenOf(child.menuId)) {
         const childPath = below(grandChild.routeUrl ?? "", child.routeUrl);
-        if (childPath) children.push({ label: grandChild.menuName, path: childPath });
+        if (childPath) {
+          children.push({ label: grandChild.menuName, path: childPath });
+          continue;
+        }
+        // The database may place a child menu elsewhere in the section.
+        const sectionPath = below(grandChild.routeUrl ?? "", menu.routeUrl);
+        if (sectionPath) {
+          children.push({ label: grandChild.menuName, path: sectionPath, href: sectionPath });
+        }
       }
 
       items.push(

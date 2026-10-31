@@ -6,6 +6,7 @@ interface ProcessDrilldownListProps {
   color: string;
   rows: ProcessDrilldownRow[];
   isLoading: boolean;
+  scrollable?: boolean;
   /** Omit when this table isn't reached via a tile drill-down (e.g. a standalone approval queue). */
   onBack?: () => void;
 }
@@ -22,7 +23,7 @@ const toCsv = (columns: string[], rows: ProcessDrilldownRow[]) => {
   return [header, ...body].join("\n");
 };
 
-export default function ProcessDrilldownList({ title, color, rows, isLoading, onBack }: ProcessDrilldownListProps) {
+export default function ProcessDrilldownList({ title, color, rows, isLoading, onBack, scrollable = false }: ProcessDrilldownListProps) {
   const columns = Object.keys(rows[0] ?? {});
 
   const handleExport = () => {
@@ -36,7 +37,7 @@ export default function ProcessDrilldownList({ title, color, rows, isLoading, on
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm flex flex-col">
+    <div className="flex min-w-0 max-w-full flex-col rounded-xl border border-slate-100 bg-white shadow-sm">
       <div className="flex items-center justify-between gap-2 px-4 py-3 flex-wrap">
         {onBack ? (
           <button
@@ -65,8 +66,8 @@ export default function ProcessDrilldownList({ title, color, rows, isLoading, on
         </button>
       </div>
 
-      <div className="px-4 pb-4 overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className={`punch-horizontal-scroll max-w-full overflow-x-auto px-4 pb-4 ${scrollable ? "h-[420px] max-h-[60vh] min-h-0 overflow-y-scroll" : ""}`}>
+        <table className="w-full min-w-max text-sm">
           <thead className="bg-[#EAF1FE]">
             <tr className="text-left">
               {columns.map((column) => (

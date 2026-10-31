@@ -23,11 +23,23 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import {
+  PUNCH_PROCESS_TABS,
+  TIME_OFFICE_SECTION_PATH,
+} from "@/features/admin/Time & Office/TimeOffice/constants/timeoffice.constants";
 
-export default function AttendanceOverview() {
+interface AttendanceOverviewProps {
+  /** Admin Time Office > Punch Process: company-wide employees and data. */
+  adminMode?: boolean;
+}
+
+export default function AttendanceOverview({
+  adminMode = false,
+}: AttendanceOverviewProps) {
   const [showAttendanceDetails, setShowAttendanceDetails] = useState(false);
   const { domain } = useParams();
   const { data: profileData } = useGetProfileQuery();
+  const adminBasePath = `/${domain}/admin/${TIME_OFFICE_SECTION_PATH}`;
 
   const {
     view,
@@ -81,7 +93,7 @@ export default function AttendanceOverview() {
     handleExport,
 
     rawPunches,
-  } = useAttendanceOverview();
+  } = useAttendanceOverview(adminMode);
 
   const profile = profileData?.data?.profile;
   const managerEmployee = profile
@@ -92,9 +104,43 @@ export default function AttendanceOverview() {
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-800 font-[Urbanist]">
+    <div
+      className={
+        adminMode
+          ? "min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100 px-4 pb-4 pt-0 font-sans text-slate-800 font-[Urbanist]"
+          : "min-h-screen bg-slate-100 p-4 font-sans text-slate-800 font-[Urbanist]"
+      }
+    >
       <div className="mx-auto max-w-[1600px] space-y-4 font-[Urbanist]">
-        <div className="flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4 font-[Urbanist]">
+        <div
+          className={
+            adminMode
+              ? "flex w-full min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-500 bg-emerald-50 px-2 py-1.5 font-[Urbanist]"
+              : "flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4 font-[Urbanist]"
+          }
+        >
+          {adminMode ? (
+            <nav
+              aria-label="Punch process"
+              className="flex min-w-0 flex-wrap items-center gap-1"
+            >
+              {PUNCH_PROCESS_TABS.map((tab) => (
+                <NavLink
+                  key={tab.path}
+                  to={`${adminBasePath}/${tab.path}`}
+                  className={({ isActive }) =>
+                    `shrink-0 whitespace-nowrap rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "border-emerald-500 bg-white text-emerald-600"
+                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                    }`
+                  }
+                >
+                  {tab.label}
+                </NavLink>
+              ))}
+            </nav>
+          ) : (
           <div className="flex min-w-max items-center gap-8 font-[Urbanist]">
             <NavLink
               to={`/${domain}/employee/TA/attendanceoverview`}
@@ -103,6 +149,7 @@ export default function AttendanceOverview() {
               Attendance Overview
             </NavLink>
           </div>
+          )}
           <div className="flex min-w-max items-center gap-2 font-[Urbanist]">
             <button
               type="button"
@@ -227,7 +274,7 @@ export default function AttendanceOverview() {
             employees={employees}
             reportingEmployeesLoading={reportingEmployeesLoading}
             selectedEmployee={selectedEmployee}
-            managerEmployee={managerEmployee}
+            managerEmployee={adminMode ? null : managerEmployee}
             selectedDate={selectedDate}
             selectedMonthNumber={selectedMonthNumber}
             selectedYear={selectedYear}

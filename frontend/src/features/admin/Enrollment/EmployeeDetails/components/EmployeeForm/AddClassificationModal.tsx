@@ -219,12 +219,12 @@ export default function AddClassificationModal({
  
   return (
     <div
-      className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center"
+      className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center px-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-[320px] overflow-hidden rounded-[8px] border border-[#E2E2E2] bg-white text-[13px] shadow-[0_12px_32px_rgba(19,19,19,0.16)]">
+      <div className="w-full max-w-[320px] overflow-hidden rounded-[8px] border border-[#E2E2E2] bg-white text-[13px] shadow-[0_12px_32px_rgba(19,19,19,0.16)]">
         <div className="flex items-center justify-between border-b border-[#E2E2E2] bg-[#FFF5EE] px-4 py-3">
           <span className="text-[13px] font-semibold text-[#131313]">
             Add New Classification

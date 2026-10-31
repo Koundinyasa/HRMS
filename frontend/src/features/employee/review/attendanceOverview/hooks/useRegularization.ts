@@ -6,6 +6,12 @@ import {
 } from "react";
 
 import {
+  usePostPpEmployeeRawPunchesMutation,
+  useGetPpEmployeeAttendanceOverviewQuery,
+  useGetPpEmployeeMonthlyAttendanceDetailsQuery,
+} from "@/features/admin/Time & Office/TimeOffice/api/timeofficeApi";
+
+import {
   useGetEmployeeMonthlyAttendanceDetailsQuery,
   useGetEmployeeAttendanceOverviewQuery,
   useLazyGetEmployeePunchDashboardQuery,
@@ -13,6 +19,7 @@ import {
 } from "../api/regularizationApi";
 
 import type {
+  AttendanceDay,
   AttendanceOverviewData,
   PunchRecord,
   UseAttendanceProps,
@@ -25,6 +32,7 @@ import {
 } from "../validations/regularization.validations";
 
 export function useAttendance({
+  adminMode = false,
   employeeId,
   month,
   year,
@@ -46,42 +54,82 @@ export function useAttendance({
   // MONTHLY ATTENDANCE
   // =====================================================
 
-  const {
-    data: attendanceData = [],
-    isLoading: isAttendanceLoading,
-    isError: isAttendanceError,
-    refetch: refetchAttendance,
-  } = useGetEmployeeMonthlyAttendanceDetailsQuery(
-    {
-      employeeId,
-      month,
-      year,
-      classificationId,
-    },
-    {
-      skip: !validRequest,
-    },
+  // Reporting managers read their reportees through /review; the admin
+  // Time Office screen reads the whole company through the punchprocess
+  // routes (the company comes from the login token on the server).
+  const reviewAttendanceQuery =
+    useGetEmployeeMonthlyAttendanceDetailsQuery(
+      {
+        employeeId,
+        month,
+        year,
+        classificationId,
+      },
+      {
+        skip: !validRequest || adminMode,
+      },
+    );
+
+  const adminAttendanceQuery =
+    useGetPpEmployeeMonthlyAttendanceDetailsQuery(
+      {
+        employeeId,
+        month,
+        year,
+      },
+      {
+        skip: !validRequest || !adminMode,
+      },
+    );
+
+  const attendanceQuery = adminMode
+    ? adminAttendanceQuery
+    : reviewAttendanceQuery;
+
+  const attendanceData = useMemo(
+    () => (attendanceQuery.data ?? []) as unknown as AttendanceDay[],
+    [attendanceQuery.data],
   );
+  const isAttendanceLoading = attendanceQuery.isLoading;
+  const isAttendanceError = attendanceQuery.isError;
+  const refetchAttendance = attendanceQuery.refetch;
 
   // =====================================================
   // ATTENDANCE OVERVIEW
   // =====================================================
 
-  const {
-    data: overviewData,
-    isLoading: isOverviewLoading,
-    isError: isOverviewError,
-    refetch: refetchOverview,
-  } = useGetEmployeeAttendanceOverviewQuery(
-    {
-      employeeId,
-      month,
-      year,
-    },
-    {
-      skip: !validRequest,
-    },
-  );
+  const reviewOverviewQuery =
+    useGetEmployeeAttendanceOverviewQuery(
+      {
+        employeeId,
+        month,
+        year,
+      },
+      {
+        skip: !validRequest || adminMode,
+      },
+    );
+
+  const adminOverviewQuery =
+    useGetPpEmployeeAttendanceOverviewQuery(
+      {
+        employeeId,
+        month,
+        year,
+      },
+      {
+        skip: !validRequest || !adminMode,
+      },
+    );
+
+  const overviewQuery = adminMode
+    ? adminOverviewQuery
+    : reviewOverviewQuery;
+
+  const overviewData: unknown = overviewQuery.data;
+  const isOverviewLoading = overviewQuery.isLoading;
+  const isOverviewError = overviewQuery.isError;
+  const refetchOverview = overviewQuery.refetch;
 
   const overviewRows = useMemo(
     () =>
@@ -108,6 +156,11 @@ export function useAttendance({
     getRawPunches,
     { isLoading: isRawPunchLoading },
   ] = useLazyGetEmployeeDailyRawPunchesQuery();
+
+  const [
+    postAdminRawPunches,
+    { isLoading: isAdminRawPunchLoading },
+  ] = usePostPpEmployeeRawPunchesMutation();
 
   // The two calls return their data under each other's names: the 31-day
   // grid (rows with MetricName and Day1..Day31) and the monthly summary
@@ -163,7 +216,9 @@ export function useAttendance({
   const loadPunchDetails =
     useCallback(
       async (selectedDate: string) => {
-        if (!validRequest) {
+        // The punch dashboard is a reportee-only route; the admin screen
+        // reads the day's raw punches instead (loadRawPunches).
+        if (!validRequest || adminMode) {
           return {
             employeeProfile: [],
             attendanceSummary: [],
@@ -202,15 +257,37 @@ export function useAttendance({
           return [];
         }
 
+        if (adminMode) {
+          const rows = await postAdminRawPunches({
+            employeeId,
+            date,
+          }).unwrap();
+
+          const records: PunchRecord[] = rows
+            .map((item) => ({
+              time: String(item.OriginalTime ?? ""),
+              type: String(item.PunchType ?? ""),
+              source: String(item.EntryType ?? ""),
+            }))
+            .filter(
+              (item) => item.time || item.type || item.source,
+            );
+
+          setPunchRecords(records);
+          return records;
+        }
+
         return getRawPunches({
           employeeId,
           date,
         }).unwrap();
       },
       [
+        adminMode,
         validRequest,
         employeeId,
         getRawPunches,
+        postAdminRawPunches,
       ],
     );
 
@@ -227,7 +304,8 @@ export function useAttendance({
       isAttendanceLoading ||
       isOverviewLoading ||
       isPunchLoading ||
-      isRawPunchLoading,
+      isRawPunchLoading ||
+      isAdminRawPunchLoading,
 
     isAttendanceLoading,
     isOverviewLoading,

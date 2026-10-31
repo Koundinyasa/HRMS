@@ -423,6 +423,8 @@ export interface PunchRecord {
 // ============================================================
 
 export interface UseAttendanceProps {
+  /** Admin Time Office screen: read company-wide data instead of the reportee-only /review data. */
+  adminMode?: boolean;
   employeeId: string;
   month: number;
   year: number;

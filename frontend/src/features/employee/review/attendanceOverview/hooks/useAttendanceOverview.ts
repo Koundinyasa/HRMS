@@ -1,8 +1,12 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+
+import { useGetPpEmployeesByCompanyQuery } from "@/features/admin/Time & Office/TimeOffice/api/timeofficeApi";
+import type { TimeOfficeEmployee } from "@/features/admin/Time & Office/TimeOffice/types/timeoffice.types";
 
 import { useAttendance } from "./useRegularization";
 import { useGetAttendanceOverviewEmployeesQuery } from "../api/regularizationApi";
@@ -14,7 +18,13 @@ import type {
   Toast,
 } from "../types/attendanceOverview.types";
 
-import type { Employee } from "../types/regularization.types";
+import type {
+  Employee,
+  ReportingEmployee,
+} from "../types/regularization.types";
+
+const NO_REVIEW_EMPLOYEES: ReportingEmployee[] = [];
+const NO_ADMIN_EMPLOYEES: TimeOfficeEmployee[] = [];
 
 import { buildOverview } from "../utils/buildOverview";
 import { downloadAttendanceCsv } from "../utils/downloadAttendanceCsv";
@@ -26,18 +36,33 @@ import {
 } from "../validations/regularization.validations";
 
 
-export function useAttendanceOverview() {
+export function useAttendanceOverview(adminMode = false) {
   // =====================================================
   // REPORTING EMPLOYEES
   // =====================================================
 
-  const {
-    data: reportingEmployees = [],
-    isLoading: reportingEmployeesLoading,
-    error: reportingEmployeesError,
-  } = useGetAttendanceOverviewEmployeesQuery();
+  // Reporting managers pick from their reportees; the admin Time Office
+  // screen picks from every employee of the logged-in company.
+  const reviewEmployeesQuery = useGetAttendanceOverviewEmployeesQuery(
+    undefined,
+    { skip: adminMode },
+  );
+  const adminEmployeesQuery = useGetPpEmployeesByCompanyQuery(undefined, {
+    skip: !adminMode,
+  });
 
-  const employeeOptions = useMemo<Employee[]>(
+  const reportingEmployees =
+    reviewEmployeesQuery.data ?? NO_REVIEW_EMPLOYEES;
+  const adminEmployees =
+    adminEmployeesQuery.data ?? NO_ADMIN_EMPLOYEES;
+  const reportingEmployeesLoading = adminMode
+    ? adminEmployeesQuery.isLoading
+    : reviewEmployeesQuery.isLoading;
+  const reportingEmployeesError = adminMode
+    ? adminEmployeesQuery.error
+    : reviewEmployeesQuery.error;
+
+  const reviewEmployeeOptions = useMemo<Employee[]>(
     () =>
       reportingEmployees.map((employee) => {
         const rawClassId =
@@ -57,6 +82,22 @@ export function useAttendanceOverview() {
       }),
     [reportingEmployees],
   );
+
+  const adminEmployeeOptions = useMemo<Employee[]>(
+    () =>
+      adminEmployees.map((employee) => ({
+        id: employee.employeeId,
+        name: employee.employeeName,
+        ...(employee.classificationId
+          ? { classificationId: employee.classificationId }
+          : {}),
+      })),
+    [adminEmployees],
+  );
+
+  const employeeOptions = adminMode
+    ? adminEmployeeOptions
+    : reviewEmployeeOptions;
 
   // =====================================================
   // SELECTED EMPLOYEE
@@ -198,6 +239,8 @@ export function useAttendanceOverview() {
      * (some backends accept 0 / ignore the field).
      */
     classificationId: selectedEmployee?.classificationId,
+
+    adminMode,
   });
 
   // =====================================================
@@ -295,6 +338,24 @@ export function useAttendanceOverview() {
       (day) =>
         day.date === selectedDate,
     ) ?? days[0];
+
+  // =====================================================
+  // ADMIN: LOAD THE SELECTED DAY'S PUNCHES
+  // =====================================================
+
+  const selectedDayIso = activeDay
+    ? `${selectedYear}-${String(selectedMonthNumber).padStart(2, "0")}-${String(activeDay.date).padStart(2, "0")}`
+    : "";
+
+  useEffect(() => {
+    if (!adminMode || !selectedEmployee || !selectedDayIso) {
+      return;
+    }
+
+    loadRawPunches(selectedDayIso).catch((punchError) => {
+      console.error("Failed to load punches:", punchError);
+    });
+  }, [adminMode, selectedEmployee, selectedDayIso, loadRawPunches]);
 
   // =====================================================
   // TOAST

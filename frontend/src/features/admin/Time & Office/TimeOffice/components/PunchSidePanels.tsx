@@ -11,7 +11,7 @@ export function PoliciesShiftsPanel({
   const [tab, setTab] = useState<"policies" | "shifts">("policies");
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.12)] p-4 flex h-full flex-col gap-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {(["policies", "shifts"] as const).map((key) => (
@@ -20,27 +20,31 @@ export function PoliciesShiftsPanel({
               type="button"
               onClick={() => setTab(key)}
               className={`text-sm font-medium capitalize pb-1 border-b-2 transition-colors ${
-                tab === key ? "border-emerald-600 text-emerald-600" : "border-transparent text-slate-500"
+                tab === key ? "border-sky-600 text-sky-600" : "border-transparent text-slate-500"
               }`}
             >
               {key}
             </button>
           ))}
         </div>
-        <button type="button" className="text-xs font-medium text-emerald-600 hover:underline">
+        <button type="button" className="text-xs font-medium text-sky-600 hover:underline">
           See All
         </button>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-1 flex-col gap-2">
         {tab === "policies" &&
           policies.map((policy) => (
             <div key={policy.name} className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-medium text-slate-800">{policy.name}</p>
-                <p className="text-xs text-slate-500">{policy.effectiveFrom}</p>
+                {policy.effectiveFrom && (
+                  <p className="text-xs text-slate-500">{policy.effectiveFrom}</p>
+                )}
               </div>
-              <span className="text-xs text-slate-400 whitespace-nowrap">{policy.updatedAgo}</span>
+              {policy.updatedAgo && (
+                <span className="text-xs text-slate-400 whitespace-nowrap">{policy.updatedAgo}</span>
+              )}
             </div>
           ))}
 
@@ -53,7 +57,7 @@ export function PoliciesShiftsPanel({
           ))}
 
         {((tab === "policies" && policies.length === 0) || (tab === "shifts" && shifts.length === 0)) && (
-          <p className="text-sm text-slate-400 py-6 text-center">No data found</p>
+          <p className="flex flex-1 items-center justify-center py-6 text-sm text-slate-400">No data found</p>
         )}
       </div>
     </div>
@@ -68,10 +72,10 @@ export function PendingRequestsCard({
   monthLabel: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3 min-h-[200px]">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.12)] p-4 flex h-full flex-col gap-3 min-h-[200px]">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-800">Pending Requests</h3>
-        <span className="text-xs font-medium text-emerald-600">{monthLabel}</span>
+        <span className="text-xs font-medium text-sky-600">{monthLabel}</span>
       </div>
 
       {requests.length === 0 ? (

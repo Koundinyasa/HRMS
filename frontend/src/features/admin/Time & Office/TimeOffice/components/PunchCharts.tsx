@@ -34,7 +34,7 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.12)] p-4 flex h-full flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
         {action}
@@ -50,12 +50,11 @@ export function AttendanceOverviewChart({ data }: { data: AttendanceOverviewPoin
       <ResponsiveContainer width="100%" height={240}>
         <BarChart data={data} barGap={2}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-          <XAxis dataKey="date" tick={AXIS} axisLine={false} tickLine={false}
-            label={{ value: "Date", position: "insideBottom", offset: -4, style: AXIS }} />
+          <XAxis dataKey="date" tick={AXIS} axisLine={false} tickLine={false} />
           <YAxis tick={AXIS} axisLine={false} tickLine={false}
             label={{ value: "Number of Employees", angle: -90, position: "insideLeft", style: AXIS }} />
           <Tooltip cursor={{ fill: "#F8FAFC" }} />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+          <Legend iconType="circle" wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
           {ATTENDANCE_OVERVIEW_SERIES.map((series) => (
             <Bar key={series.key} dataKey={series.key} name={series.label} fill={series.color} radius={[2, 2, 0, 0]} />
           ))}
@@ -68,17 +67,45 @@ export function AttendanceOverviewChart({ data }: { data: AttendanceOverviewPoin
 export function PunchModeChart({ data }: { data: { mode: string; count: number }[] }) {
   return (
     <ChartCard title="Punch Mode Distribution">
-      <ResponsiveContainer width="100%" height={240}>
-        <PieChart>
-          <Pie data={data} dataKey="count" nameKey="mode" outerRadius={90} stroke="none">
-            {data.map((slice) => (
-              <Cell key={slice.mode} fill={PUNCH_MODE_COLORS[slice.mode] ?? "#94A3B8"} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 py-0">
+        <div className="h-[240px] w-[240px] max-w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="count"
+                nameKey="mode"
+                cx="50%"
+                cy="50%"
+                outerRadius="70%"
+                stroke="#ffffff"
+                strokeWidth={1}
+              >
+                {data.map((slice) => (
+                  <Cell key={slice.mode} fill={PUNCH_MODE_COLORS[slice.mode] ?? "#94A3B8"} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex w-full flex-nowrap items-center justify-center gap-x-2 text-[10px]">
+          {data.map((slice) => (
+            <span
+              key={slice.mode}
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap"
+              style={{ color: PUNCH_MODE_COLORS[slice.mode] ?? "#64748B" }}
+            >
+              <span
+                aria-hidden="true"
+                className="h-3.5 w-3.5 rounded-full"
+                style={{ backgroundColor: PUNCH_MODE_COLORS[slice.mode] ?? "#94A3B8" }}
+              />
+              {slice.mode}
+            </span>
+          ))}
+        </div>
+      </div>
     </ChartCard>
   );
 }
@@ -92,7 +119,7 @@ export function IrregularityCharts({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.12)] p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-800">Attendance Irregularities (Last 7 Days)</h3>
         {action}
@@ -107,7 +134,7 @@ export function IrregularityCharts({
 
 export function WorkingHoursCharts({ data }: { data: WorkingHoursPoint[] }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex flex-col gap-3">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(15,23,42,0.12)] p-4 flex h-full flex-col gap-3">
       <h3 className="text-sm font-semibold text-slate-800">Average Working Hours (Last 7 Days)</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SingleBarChart data={data} dataKey="avgWorkMinutes" title="Avg Work Hours" color="#A78BFA"
@@ -135,7 +162,7 @@ function SingleBarChart({
   tickFormatter?: (value: number) => string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-100 p-3">
+    <div className="rounded-xl border border-slate-200 p-3">
       <p className="text-xs font-medium text-slate-600 mb-2">{title}</p>
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={data}>

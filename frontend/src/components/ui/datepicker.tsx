@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from "react";
+﻿import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
   CalendarDays,
   ChevronLeft,
@@ -32,6 +32,9 @@ export interface DatePickerProps {
   inputClassName?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Position the calendar with `position: fixed` so it is not clipped by a
+  // scrolling or overflow-hidden parent (used inside tables and cards).
+  fixedPosition?: boolean;
  
   monthLabel: string;
   weekdayLabels: string[];
@@ -54,6 +57,7 @@ export function DatePicker({
   inputClassName,
   open,
   onOpenChange,
+  fixedPosition,
   monthLabel,
   weekdayLabels,
   cells,
@@ -64,6 +68,30 @@ export function DatePicker({
   onToday,
 }: DatePickerProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [fixedStyle, setFixedStyle] = useState<CSSProperties>();
+
+  useLayoutEffect(() => {
+    if (!open || !fixedPosition) return;
+
+    const place = () => {
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const width = Math.min(264, window.innerWidth - 24);
+      const wanted = align === "right" ? rect.right - width : rect.left;
+      setFixedStyle({
+        top: rect.bottom + 4,
+        left: Math.max(12, Math.min(wanted, window.innerWidth - width - 12)),
+      });
+    };
+
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [open, fixedPosition, align]);
   useEffect(() => {
     if (!open) return;
  
@@ -135,10 +163,9 @@ export function DatePicker({
       </Button>
       {open && (
         <div
+          style={fixedPosition ? fixedStyle : undefined}
           className={`
-      absolute
-       ${align === "right" ? "right-0" : "left-0"}
-      top-full
+      ${fixedPosition ? "fixed" : `absolute ${align === "right" ? "right-0" : "left-0"} top-full`}
       z-[9999]
       w-[min(16.5rem,calc(100vw-1.5rem))]
       overflow-hidden

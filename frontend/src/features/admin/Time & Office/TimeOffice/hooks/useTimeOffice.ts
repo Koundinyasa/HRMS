@@ -1,172 +1,192 @@
 import { useMemo, useState } from "react";
-import {
-  ATTENDANCE_OVERVIEW,
-  IRREGULARITIES,
-  LATEST_PUNCH_INTEGRATED_AT,
-  PENDING_REQUESTS,
-  POLICIES,
-  PUNCH_RECORDS,
-  SHIFTS,
-  TODAY_LABEL,
-  TOTAL_EMPLOYEES,
-  WORKING_HOURS,
-} from "../constants/punch.mock";
 import { PUNCH_TILES_BY_PERIOD } from "../constants/timeoffice.constants";
-import {
-  METRIC_PREDICATES,
-  applyFilters,
-  countMetric,
-  groupIrregularities,
-  paginate,
-  toRow,
-} from "./punchMetrics";
 import {
   mergeHours,
   useGetAttendanceOverviewQuery,
   useGetAverageOtHoursQuery,
   useGetAverageWorkingHoursQuery,
   useGetDashboardEmployeesQuery,
-  useGetPunchProcessDashboardSummaryQuery,
+  useGetTimeOfficeDashboardSummaryQuery,
   useGetIrregularitiesQuery,
-  useGetPendingRequestsQuery,
-  useGetPoliciesQuery,
+  useGetAttendancePolicyShiftsQuery,
   useGetPunchModeDistributionQuery,
 } from "../api/timeofficeApi";
+import { toRow, applyFilters, paginate } from "./punchMetrics";
 import type {
   IrregularityClassification,
   PunchFilters,
   PunchMetric,
   PunchPeriod,
+  PunchRow,
+  PolicySummary,
+  ShiftSummary,
 } from "../types/timeoffice.types";
+
+const asPolicySummary = (rows: PolicySummary[]): PolicySummary[] => rows;
+
+const formatSelectedDate = (value?: string) => {
+  if (!value) {
+    return new Date().toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  const date = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+};
+
+const getErrorText = (error: unknown) => {
+  if (!error || typeof error !== "object") return "";
+  const record = error as Record<string, unknown>;
+  const data = record.data && typeof record.data === "object"
+    ? record.data as Record<string, unknown>
+    : undefined;
+  return String(data?.message ?? record.error ?? record.message ?? "Unable to load dashboard data.");
+};
 
 export const useTimeOffice = () => {
   const [period, setPeriod] = useState<PunchPeriod>("today");
   const [classification, setClassification] = useState<IrregularityClassification>("all");
-  // null = showing the dashboard; a metric = showing that drill-down in its place.
   const [metric, setMetric] = useState<PunchMetric | null>(null);
   const [filters, setFilters] = useState<PunchFilters>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Every query falls back to the mock, so the dashboard renders before the
-  // backend exists. Delete punch.mock.ts and the `?? MOCK` tails once it does.
-  const summaryQuery = useGetPunchProcessDashboardSummaryQuery(period);
+  const summaryQuery = useGetTimeOfficeDashboardSummaryQuery(period);
+  const employeeTotalQuery = useGetTimeOfficeDashboardSummaryQuery("today");
   const employeesQuery = useGetDashboardEmployeesQuery(
-    { metric: metric as PunchMetric, period },
-    { skip: !metric }
+    {
+      metric: metric as PunchMetric,
+      period,
+      selectedDate: summaryQuery.data?.selectedDate,
+    },
+    { skip: !metric },
   );
   const overviewQuery = useGetAttendanceOverviewQuery();
   const punchModeQuery = useGetPunchModeDistributionQuery(period);
   const irregularitiesQuery = useGetIrregularitiesQuery(classification);
   const workHoursQuery = useGetAverageWorkingHoursQuery();
   const otHoursQuery = useGetAverageOtHoursQuery();
-  const policiesQuery = useGetPoliciesQuery();
-  const pendingRequestsQuery = useGetPendingRequestsQuery();
+  const policyShiftsQuery = useGetAttendancePolicyShiftsQuery();
 
-  const records = PUNCH_RECORDS[period];
-  const rows = useMemo(() => records.map(toRow), [records]);
-
-  const counts = useMemo(() => {
-    const fromApi = summaryQuery.data?.counts;
-    return Object.fromEntries(
-      PUNCH_TILES_BY_PERIOD[period].map((tile) => [tile, fromApi?.[tile] ?? countMetric(records, tile)])
-    ) as Record<PunchMetric, number>;
-  }, [summaryQuery.data, records, period]);
-
-  const punchModeDistribution = useMemo(() => {
-    if (punchModeQuery.data?.length) return punchModeQuery.data;
-
-    const tally = new Map<string, number>();
-    records.forEach((record) => {
-      if (!record.checkInTime) return;
-      const mode = record.punchMode ?? "Bio Metric";
-      tally.set(mode, (tally.get(mode) ?? 0) + 1);
-    });
-    return [...tally].map(([mode, count]) => ({ mode, count }));
-  }, [punchModeQuery.data, records]);
-
-  const irregularities = useMemo(
-    () => irregularitiesQuery.data ?? groupIrregularities(IRREGULARITIES, records, classification),
-    [irregularitiesQuery.data, records, classification]
+  const rows = useMemo<PunchRow[]>(() => [], []);
+  const counts = useMemo(
+    () => Object.fromEntries(
+      PUNCH_TILES_BY_PERIOD[period].map((tile) => [tile, summaryQuery.data?.counts[tile] ?? 0]),
+    ) as Record<PunchMetric, number>,
+    [summaryQuery.data, period],
   );
 
-  const workingHours = useMemo(() => {
-    const merged = mergeHours(workHoursQuery.data, otHoursQuery.data);
-    return merged.length ? merged : WORKING_HOURS;
-  }, [workHoursQuery.data, otHoursQuery.data]);
+  const punchModeDistribution = punchModeQuery.data ?? [];
+  const irregularities = irregularitiesQuery.data ?? [];
+  const workingHours = useMemo(
+    () => mergeHours(workHoursQuery.data, otHoursQuery.data),
+    [workHoursQuery.data, otHoursQuery.data],
+  );
 
-  // Drill-down list: filter first, then page what's left.
-  const metricRows = useMemo(() => {
-    if (!metric) return [];
-    if (employeesQuery.data?.length) return employeesQuery.data.map(toRow);
-    return rows.filter(METRIC_PREDICATES[metric]);
-  }, [metric, employeesQuery.data, rows]);
-  const filteredRows = useMemo(() => applyFilters(metricRows, filters), [metricRows, filters]);
-  const pagedRows = useMemo(() => paginate(filteredRows, page, pageSize), [filteredRows, page, pageSize]);
+  const metricRows = useMemo(
+    () => (employeesQuery.data ?? []).map(toRow),
+    [employeesQuery.data],
+  );
+  const filteredRows = useMemo(
+    () => applyFilters(metricRows, filters),
+    [metricRows, filters],
+  );
+  const pagedRows = useMemo(
+    () => paginate(filteredRows, page, pageSize),
+    [filteredRows, page, pageSize],
+  );
 
   const openMetric = (next: PunchMetric) => {
     setMetric(next);
     setFilters({});
     setPage(1);
   };
-
   const closeMetric = () => setMetric(null);
-
   const changePeriod = (next: PunchPeriod) => {
     setPeriod(next);
     setMetric(null);
   };
-
   const updateFilters = (next: PunchFilters) => {
-    setFilters((prev) => ({ ...prev, ...next }));
+    setFilters((previous) => ({ ...previous, ...next }));
     setPage(1);
   };
-
   const clearFilters = () => {
     setFilters({});
     setPage(1);
   };
-
   const changePageSize = (next: number) => {
     setPageSize(next);
     setPage(1);
   };
+
+  const dashboardQueries = [
+    summaryQuery,
+    overviewQuery,
+    punchModeQuery,
+    irregularitiesQuery,
+    workHoursQuery,
+    otHoursQuery,
+    policyShiftsQuery,
+  ];
+  const errorQuery = dashboardQueries.find((query) => query.isError);
+  const hasDashboardData = dashboardQueries.some((query) => query.data !== undefined);
+
+  const policies = asPolicySummary(policyShiftsQuery.data?.attendancePolicies ?? []);
+  const shifts: ShiftSummary[] = (policyShiftsQuery.data?.shifts ?? []).map((shift) => ({
+    name: shift.shiftName || shift.shiftCode,
+    timing: [shift.startTime, shift.endTime].filter(Boolean).join(" - "),
+  }));
 
   return {
     period,
     changePeriod,
     classification,
     setClassification,
-
     metric,
     openMetric,
     closeMetric,
-
     filters,
     updateFilters,
     clearFilters,
-
     page,
     setPage,
     pageSize,
     changePageSize,
-
     rows,
     metricRows,
     filteredRows,
     pagedRows,
-
     counts,
-    totalEmployees: summaryQuery.data?.totalEmployees ?? TOTAL_EMPLOYEES,
-    latestPunchIntegratedAt: summaryQuery.data?.latestPunchIntegratedAt ?? LATEST_PUNCH_INTEGRATED_AT,
-    todayLabel: TODAY_LABEL,
-
-    attendanceOverview: overviewQuery.data ?? ATTENDANCE_OVERVIEW,
+    totalEmployees:
+      employeeTotalQuery.data?.totalEmployees ?? summaryQuery.data?.totalEmployees ?? 0,
+    latestPunchIntegratedAt: summaryQuery.data?.latestPunchIntegratedAt ?? "—",
+    todayLabel: formatSelectedDate(summaryQuery.data?.selectedDate),
+    attendanceOverview: overviewQuery.data ?? [],
     punchModeDistribution,
     irregularities,
     workingHours,
-    policies: policiesQuery.data ?? POLICIES,
-    shifts: SHIFTS,
-    pendingRequests: pendingRequestsQuery.data ?? PENDING_REQUESTS,
+    policies,
+    shifts,
+    pendingRequests: [],
+    isMetricLoading: employeesQuery.isLoading || employeesQuery.isFetching,
+    metricErrorMessage: employeesQuery.isError ? getErrorText(employeesQuery.error) : "",
+    isLoading: dashboardQueries.some((query) => query.isLoading),
+    isError: Boolean(errorQuery),
+    errorMessage: errorQuery ? getErrorText(errorQuery.error) : "",
+    hasDashboardData,
   };
 };

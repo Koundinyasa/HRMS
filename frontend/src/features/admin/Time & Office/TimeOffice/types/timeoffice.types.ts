@@ -1,5 +1,3 @@
-// ---- Punch Process ----
- 
 /** The dashboard's only period selector. */
 export type PunchPeriod = "today" | "yesterday";
  
@@ -158,7 +156,7 @@ export type ProcessTile =
  
 export type ProcessSummary = Record<ProcessTile, number>;
  
-export type ProcessHistoryStatus = "Completed" | "Processing" | "Failed";
+export type ProcessHistoryStatus = "Completed" | "Processing" | "Failed" | "Unknown";
  
 export interface ProcessHistoryEntry {
   id: string;
@@ -302,6 +300,32 @@ export interface PunchEvent {
   direction: "In" | "Out";
   time: string;
 }
+
+export interface EmployeeRawPunchesRequest {
+  employeeId: string;
+  date?: string;
+}
+
+export interface EmployeeRawPunch extends Record<string, unknown> {
+  PunchID?: string | number;
+  PunchType?: string | number | null;
+  Direction?: string | null;
+  OriginalTime?: string | null;
+  CorrectedTime?: string | null;
+  PunchTimestamp?: string | null;
+  LocationAddress?: string | null;
+  CaptureSource?: string | number | null;
+  Device?: string | null;
+  PunchDate?: string | null;
+  SelfieURL?: string | null;
+}
+
+export interface TimeOfficeEmployee {
+  employeeId: string;
+  employeeName: string;
+  classificationId?: number;
+}
+
  
 // ---- Sidebar ----
  
@@ -321,4 +345,3 @@ export type TimeOfficeSection =
   | "masters"
   | "assign"
   | "settings";
- 

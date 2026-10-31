@@ -101,6 +101,10 @@ interface DateFieldProps {
   className?: string;
   inputClassName?: string;
   align?: "left" | "right";
+  /** Called when the calendar opens or closes. */
+  onOpenChange?: (open: boolean) => void;
+  /** Use fixed positioning so the calendar is not clipped by a scrolling parent. */
+  fixedCalendarPosition?: boolean;
 }
 
 /** Wraps the shared DatePicker + useDatePicker so callers just pass an ISO value/onChange, like a native date input. */
@@ -111,13 +115,24 @@ export default function DateField({
   className,
   inputClassName,
   align,
+  onOpenChange,
+  fixedCalendarPosition,
 }: DateFieldProps) {
   const picker = useDatePicker(value, onChange);
 
   return (
     <label className={className ?? "flex items-center gap-2 text-sm text-slate-600"}>
       {label}
-      <DatePicker {...picker} align={align} inputClassName={inputClassName} />
+      <DatePicker
+        {...picker}
+        align={align}
+        inputClassName={inputClassName}
+        fixedPosition={fixedCalendarPosition}
+        onOpenChange={(open) => {
+          picker.onOpenChange(open);
+          onOpenChange?.(open);
+        }}
+      />
     </label>
   );
 }

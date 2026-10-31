@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Navigate, Outlet, Route } from "react-router-dom";
+import { Navigate, Outlet, Route, useParams } from "react-router-dom";
  
  
  
@@ -51,10 +51,11 @@ const TagAttendanceReport = lazy(() => import("../Leave/Report/pages/TopAttendan
 const TagLeaveReport = lazy(() => import("../Leave/Report/pages/TopLeaveTakenPage"));
 const PunchDashboardPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchDashboardPage"));
 const ProcessPage = lazy(() => import("../TimeOffice/pages/punchprocess/ProcessPage"));
-const PunchPlaceholderPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchPlaceholderPage"));
 const PunchProcessPunchPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessPunchPage"));
 const PunchProcessAttendanceOverviewPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessAttendanceOverviewPage"));
 const PunchProcessImportPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessImportPage"));
+const PunchProcessTaInsightsPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessTaInsightsPage"));
+const ShiftUnassignedPage = lazy(() => import("../TimeOffice/pages/punchprocess/ShiftUnassignedPage"));
 const PunchPage = lazy(() => import("../TimeOffice/pages/regularization/PunchPage"));
 const MissedPunchPage = lazy(() => import("../TimeOffice/pages/regularization/MissedPunchPage"));
 const AttendancePage = lazy(() => import("../TimeOffice/pages/regularization/AttendancePage"));
@@ -75,6 +76,13 @@ const PolicyUpdateAssignPage = lazy(() => import("../TimeOffice/pages/assign/Pol
 const FaceTemplateAssignPage = lazy(() => import("../TimeOffice/pages/assign/FaceTemplateAssignPage"));
 const AssignImportPage = lazy(() => import("../TimeOffice/pages/assign/AssignImportPage"));
  
+// Menu rows in the database sometimes point at the Punch Process address for
+// the leave pages; send those addresses to the real screens.
+function TimeOfficeRedirect({ to }: { to: string }) {
+  const { domain } = useParams();
+  return <Navigate to={`${domain ? `/${domain}` : ""}/admin/time-office/${to}`} replace />;
+}
+
 export const TalentHubRoutes = (
   <Route path="time-office" element={<TalentHubPage />}>
     <Route path="attendance" element={<AttendancePage1 />}>
@@ -156,11 +164,15 @@ export const TalentHubRoutes = (
           path="attendance-overview"
           element={<PunchProcessAttendanceOverviewPage />}
         />
-        <Route
-          path="ta-insights"
-          element={<PunchPlaceholderPage title="TA Insights" />}
-        />
+        <Route path="ta-insights" element={<PunchProcessTaInsightsPage />} />
         <Route path="import" element={<PunchProcessImportPage />} />
+        <Route path="leave" element={<TimeOfficeRedirect to="leave/daily/apply-leave" />} />
+        <Route path="forceleaveapproval" element={<TimeOfficeRedirect to="leave/forceleaveapproval" />} />
+      </Route>
+
+      <Route path="shift-unassigned">
+        <Route index element={<Navigate to="shift-pattern" replace />} />
+        <Route path=":tab" element={<ShiftUnassignedPage />} />
       </Route>
  
       <Route path="regularization">
