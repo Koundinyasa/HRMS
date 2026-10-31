@@ -365,50 +365,6 @@ export default function Sidebar({
   // ====================================================
 
   const menuItems = menuData?.data?.[0]?.children || [];
-  const reviewMenuItems = menuItems.some(
-    (item) => item.menuName.trim().toLowerCase() === "review"
-  )
-    ? menuItems.map((item) => {
-        if (item.menuName.trim().toLowerCase() !== "review") return item;
-        const children = item.children ?? [];
-        if (
-          children.some(
-            (child) => child.menuName.trim().toLowerCase() === "recruitment"
-          )
-        ) {
-          return item;
-        }
-        return {
-          ...item,
-          children: [
-            ...children,
-            {
-              menuId: -1,
-              menuName: "Recruitment",
-              routeUrl: "/Employee/review/recruitment",
-            },
-          ],
-        };
-      })
-    : [
-        ...menuItems,
-        {
-          menuId: -1,
-          menuName: "Review",
-          children: [
-            {
-              menuId: -2,
-              menuName: "Recruitment",
-              routeUrl: "/Employee/review/recruitment",
-            },
-          ],
-        },
-      ];
-
-  // ====================================================
-  // ACTIVE MODULE COLOR
-  // ====================================================
-
   const activeModule = getActiveModuleKey(location.pathname);
   const iconColor = activeModule
     ? MODULE_COLORS[activeModule] || DEFAULT_ICON_COLOR
@@ -670,7 +626,7 @@ export default function Sidebar({
         }}
       >
         <nav className="py-4">
-          {reviewMenuItems.map((item: MenuItem) => renderMenu(item))}
+          {menuItems.map((item: MenuItem) => renderMenu(item))}
         </nav>
       </aside>
     </>
