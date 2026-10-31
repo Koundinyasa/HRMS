@@ -2302,3 +2302,18 @@ export interface UsePunchDashboardResult {
   refetch:
     () => Promise<void>;
 }
+/* =========================================================
+   Result returned by usePunchEditor
+   ========================================================= */
+
+export interface UsePunchEditorResult {
+  edits: PunchEdits;
+  savingId: string | number | null;
+  saveError: string | null;
+  updateField: (
+    punchId: string | number,
+    field: keyof EditablePunch,
+    value: string,
+  ) => void;
+  saveRecord: (punchId: string | number) => Promise<void>;
+}
