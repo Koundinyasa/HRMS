@@ -253,7 +253,6 @@ import {
   CalendarCheck,
   ClipboardCheck,
   ChartNoAxesColumnIncreasing,
-  MessageSquareText,
 } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import type { MenuItem } from "../dashboard/types/dashboard.types";

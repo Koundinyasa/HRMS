@@ -2,7 +2,7 @@
 
 
 
-import type { StatCardConfig, ActivityItem } from '../types/dashboard.types';
+import type { StatCardConfig } from '../types/dashboard.types';
 
 // Styling-only update: icon background colors and icons now match Figma.
 // Keys, labels, filterType and order are unchanged.
@@ -23,47 +23,3 @@ export const SIDEBAR_LINKS = [
   { label: 'Insights', icon: 'BarChart3', path: 'insights' },
   { label: 'Organizations', icon: 'Building2', path: 'organizations' },
 ] as const;
-
-export const CLASSIFICATION_OPTIONS = [
-  { id: '1',       label: 'Company' },
-  { id: '2',       label: 'Branch' },
-  { id: '3',       label: 'Department' },
-  { id: '4',       label: 'Salary' },
-  { id: '5',       label: 'Designation' },
-  { id: '6',       label: 'Gender' },
-  { id: '7',       label: 'LeavePolicy'},
-  { id: '8',       label: 'Team' },
-  { id: '10',      label: 'Attendance'},
-  { id: '11',      label: 'Bank' },
-] as const;
-
-export type ClassificationId = (typeof CLASSIFICATION_OPTIONS)[number]['id'];
-
-// Placeholder activity feed until a notifications endpoint exists
-export const MOCK_NOTIFICATIONS: ActivityItem[] = [
-  {
-    id: '1',
-    title: 'Project 1 Status',
-    priority: 'High',
-    scheduledFor: 'Scheduled for 04:00 PM on 24 Jun 2026',
-    done: true,
-  },
-  {
-    id: '2',
-    title: 'Project 2 Status',
-    priority: 'Medium',
-    scheduledFor: 'Scheduled for 03:00 PM on 28 Jun 2026',
-  },
-  {
-    id: '3',
-    title: 'New Employee Onboarding',
-    priority: 'Low',
-    scheduledFor: 'Scheduled for 11:00 AM on 30 Jun 2026',
-  },
-  {
-    id: '4',
-    title: 'Meeting with MD',
-    priority: 'High',
-    scheduledFor: 'Scheduled for 04:00 PM on 3 Jul 2026',
-  },
-];
