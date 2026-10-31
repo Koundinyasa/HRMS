@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useParams } from "react-router-dom";
+import { Navigate, Outlet, useLocation, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
@@ -18,6 +18,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const { domain: domainParam } = useParams();
+  const location = useLocation();
   const domainFromStore = useAppSelector((state) => state.domain.domain);
   const domain = domainParam || domainFromStore;
 
@@ -91,6 +92,21 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
 
   if (roleIdNumber === null || Number.isNaN(roleIdNumber) || !allowedRoles.includes(roleIdNumber)) {
     return <Navigate to="/unauthorized" replace />;
+  }
+
+  // Pages build their links from the domain in the URL. Both /admin/... and
+  // /<domain>/admin/... exist, so a visit without the domain (typed address,
+  // old bookmark) would make every link /undefined/.... Put the domain back
+  // into the URL, or ask for it if this tab does not know it.
+  if (!domainParam) {
+    return domainFromStore ? (
+      <Navigate
+        to={`/${domainFromStore}${location.pathname}${location.search}${location.hash}`}
+        replace
+      />
+    ) : (
+      <Navigate to="/" replace />
+    );
   }
 
   if (tabStatus === "blocked") {
