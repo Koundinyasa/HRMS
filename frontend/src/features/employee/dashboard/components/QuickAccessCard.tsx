@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
   CheckCheck,
   MessageSquareMore,
   ReceiptText,
-  BarChart3,
   CalendarDays,
   ChevronDown,
   ChevronRight,
@@ -212,19 +211,6 @@ export default function QuickAccessCard() {
     icon: typeof CheckCheck;
     path?: string;
   }[] = [
-    {
-      title: "Payslip Report",
-      subtitle: "View Payslip",
-      icon: ReceiptText,
-      path: `/${domain}/employee/reports/payslip`,
-      
-    },
-    {
-      title: "STI Reports",
-      subtitle: "Performance & Statistics",
-      icon: BarChart3,
-      path: `/${domain}/employee/reports/sti`,
-    },
     {
       title: "Holiday List",
       subtitle: "View List",
