@@ -1,5 +1,8 @@
+import { lazy } from "react";
 import { Navigate, Route } from "react-router-dom";
-import PayrollPage from "../pages/PayrollPage";
+
+// Pages are loaded on demand (each one becomes its own file in the build).
+const PayrollPage = lazy(() => import("../pages/PayrollPage"));
 
 export const PayrollRoutes = (
   <Route path="payroll">

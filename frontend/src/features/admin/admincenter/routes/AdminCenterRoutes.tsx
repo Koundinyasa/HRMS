@@ -1,64 +1,55 @@
+import { lazy } from "react";
 import { Navigate, Route } from "react-router-dom";
-import AdminCenterPage from "../pages/AdminCenterPage";
 
 
-import AddEmployeePage from "../addEmployee/pages/AddEmployeePage";
-//Company
-import CompanyDetailsPage from "../company/pages/CompanyDetailsPage";
-import CompanyDocumentsPage from "../company/pages/CompanyDocumentsPage";
-import CompanyForm from "../company/components/CompanyForm";
-import PfDetailsForm from "../company/components/PfDetailsForm";
-import EsiDetailsForm from "../company/components/EsiDetailsForm";
-import PtDetailsForm from "../company/components/PtDetailsForm";
-import LwfDetailsForm from "../company/components/LwfDetailsForm";
-import EstablishmentDetailsForm from "../company/components/EstablishmentDetailsForm";
-import DocumentPage from "../company/components/DocumentPage";
-import AppliedLeavePage from "../appliedLeave/pages/AppliedLeavePage";
-
-//Settings
-import SettingsPage from "../settings/pages/SettingsPage";
-import PayrollSettings from "../settings/PayrollSettings";
-import ReminderSettings from "../settings/ReminderSettings";
-import EmailSettings from "../settings/EmailSettings";
-import TenantSettings from "../settings/TenantSettings";
-
-//Classifications
-import ClassificationSummaryPage from "../classifications/pages/ClassificationSummaryPage";
-import BranchPage from "../classifications/pages/BranchPage";
-import AdditionalClassificationPage from "../classifications/pages/AdditionalClassificationPage";
-import DesignationPage from "../classifications/pages/DesignationPage";
-import BanksPage from "../classifications/pages/BanksPage";
-import BankFieldMappingPage from "../classifications/pages/BankFieldMappingPage";
-import ImportPage from "../classifications/pages/ImportPage";
-import LeavePage from "../classifications/pages/LeavePage";
-import LeaveApplyPage from "../classifications/pages/LeaveApplyPage";
-import LeaveSummaryPage from "../classifications/pages/LeaveSummaryPage";
-import LeaveHistoryPage from "../classifications/pages/LeaveHistoryPage";
-import SalaryStructurePage from "../classifications/pages/SalaryStructurePage";
-import LeavePolicyPage from "../classifications/pages/LeavePolicyPage";
-import LeavePolicySettingsPage from "../classifications/pages/LeavePolicySettingsPage";
-import AttendancePage from "../classifications/pages/AttendancePage";
-
-//userManagement
-import UserManagementPage from "../userManagement/pages/UserManagementPage";
-import RoleMaster from "../userManagement/components/RoleMaster";
-import RoleAccessSettings from "../userManagement/pages/RoleAccessSettings";
-
-// //ess
-import Circular from "../ess/pages/circular/Circular";
-import Policy from "../ess/pages/Policy/Policy";
-import Notification from "../ess/pages/Notification/Notification";
-import FlashNews from "../ess/pages/FlashNews/FlashNews";
-import HelpDesk from "../ess/pages/HelpDesk/HelpDesk";
-import Poll from "../ess/pages/Poll/Poll";
-import Feeds from "../ess/pages/Feeds/Feeds";
-import Memories from "../ess/pages/Memories/Memories";
-import WallOfFame from "../ess/pages/WallOfFame/WallOffFame";
-
-//workflows
-import WorkflowsPage from "../workflows/WorkflowsPage";
-import EmployeeGroup from "../workflows/EmployeeGroup";
-import ModuleSettings from "../workflows/ModuleSettings";
+// Pages are loaded on demand (each one becomes its own file in the build).
+const AdminCenterPage = lazy(() => import("../pages/AdminCenterPage"));
+const AddEmployeePage = lazy(() => import("../addEmployee/pages/AddEmployeePage"));
+const CompanyDetailsPage = lazy(() => import("../company/pages/CompanyDetailsPage"));
+const CompanyDocumentsPage = lazy(() => import("../company/pages/CompanyDocumentsPage"));
+const CompanyForm = lazy(() => import("../company/components/CompanyForm"));
+const PfDetailsForm = lazy(() => import("../company/components/PfDetailsForm"));
+const EsiDetailsForm = lazy(() => import("../company/components/EsiDetailsForm"));
+const PtDetailsForm = lazy(() => import("../company/components/PtDetailsForm"));
+const LwfDetailsForm = lazy(() => import("../company/components/LwfDetailsForm"));
+const EstablishmentDetailsForm = lazy(() => import("../company/components/EstablishmentDetailsForm"));
+const DocumentPage = lazy(() => import("../company/components/DocumentPage"));
+const AppliedLeavePage = lazy(() => import("../appliedLeave/pages/AppliedLeavePage"));
+const SettingsPage = lazy(() => import("../settings/pages/SettingsPage"));
+const PayrollSettings = lazy(() => import("../settings/PayrollSettings"));
+const ReminderSettings = lazy(() => import("../settings/ReminderSettings"));
+const EmailSettings = lazy(() => import("../settings/EmailSettings"));
+const TenantSettings = lazy(() => import("../settings/TenantSettings"));
+const ClassificationSummaryPage = lazy(() => import("../classifications/pages/ClassificationSummaryPage"));
+const BranchPage = lazy(() => import("../classifications/pages/BranchPage"));
+const AdditionalClassificationPage = lazy(() => import("../classifications/pages/AdditionalClassificationPage"));
+const DesignationPage = lazy(() => import("../classifications/pages/DesignationPage"));
+const BanksPage = lazy(() => import("../classifications/pages/BanksPage"));
+const BankFieldMappingPage = lazy(() => import("../classifications/pages/BankFieldMappingPage"));
+const ImportPage = lazy(() => import("../classifications/pages/ImportPage"));
+const LeavePage = lazy(() => import("../classifications/pages/LeavePage"));
+const LeaveApplyPage = lazy(() => import("../classifications/pages/LeaveApplyPage"));
+const LeaveSummaryPage = lazy(() => import("../classifications/pages/LeaveSummaryPage"));
+const LeaveHistoryPage = lazy(() => import("../classifications/pages/LeaveHistoryPage"));
+const SalaryStructurePage = lazy(() => import("../classifications/pages/SalaryStructurePage"));
+const LeavePolicyPage = lazy(() => import("../classifications/pages/LeavePolicyPage"));
+const LeavePolicySettingsPage = lazy(() => import("../classifications/pages/LeavePolicySettingsPage"));
+const AttendancePage = lazy(() => import("../classifications/pages/AttendancePage"));
+const UserManagementPage = lazy(() => import("../userManagement/pages/UserManagementPage"));
+const RoleMaster = lazy(() => import("../userManagement/components/RoleMaster"));
+const RoleAccessSettings = lazy(() => import("../userManagement/pages/RoleAccessSettings"));
+const Circular = lazy(() => import("../ess/pages/circular/Circular"));
+const Policy = lazy(() => import("../ess/pages/Policy/Policy"));
+const Notification = lazy(() => import("../ess/pages/Notification/Notification"));
+const FlashNews = lazy(() => import("../ess/pages/FlashNews/FlashNews"));
+const HelpDesk = lazy(() => import("../ess/pages/HelpDesk/HelpDesk"));
+const Poll = lazy(() => import("../ess/pages/Poll/Poll"));
+const Feeds = lazy(() => import("../ess/pages/Feeds/Feeds"));
+const Memories = lazy(() => import("../ess/pages/Memories/Memories"));
+const WallOfFame = lazy(() => import("../ess/pages/WallOfFame/WallOffFame"));
+const WorkflowsPage = lazy(() => import("../workflows/WorkflowsPage"));
+const EmployeeGroup = lazy(() => import("../workflows/EmployeeGroup"));
+const ModuleSettings = lazy(() => import("../workflows/ModuleSettings"));
 
 export const AdminCenterRoutes = (
   <Route path="admin-center" element={<AdminCenterPage />}>

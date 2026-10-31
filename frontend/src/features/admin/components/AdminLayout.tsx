@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -7,6 +7,7 @@ import { SidebarProvider } from "./SidebarContext";
 import { useAdminMenus } from "./adminMenus";
 import AdminRouteGuard from "./AdminRouteGuard";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
+import PageLoader from "@/shared/components/PageLoader";
 
 export default function AdminLayout() {
   return (
@@ -52,7 +53,9 @@ function AdminLayoutContent() {
           {/* Only the main content area scrolls */}
           <main className="min-w-0 flex-1 overflow-y-auto p-4 lg:p-6">
             <AdminRouteGuard>
-              <Outlet />
+              <Suspense fallback={<PageLoader />}>
+                <Outlet />
+              </Suspense>
             </AdminRouteGuard>
           </main>
         </div>

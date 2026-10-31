@@ -1,89 +1,79 @@
+import { lazy } from "react";
 import { Navigate, Outlet, Route } from "react-router-dom";
-import TalentHubPage from "../pages/TalentHubPage";
-// import AttendancePage from "../Attendance/pages/AttendancePage";
- 
-//Attendance
-import AttendancePage1 from "../Attendance/pages/AttendancePage1";
-import AttendanceConfigurationPage from "../Attendance/pages/AttendanceConfigurationPage";
-import AttendanceIntegrationsPage from "../Attendance/pages/AttendanceIntegrationsPage";
-import { ForceApprovalPanel1 } from "../Attendance/components/Forceapprovalpanel1";
-import IntegrationSettingsPanel from "../Attendance/components/IntegrationSettingsPanel";
-import AttendanceIntegrationPanel from "../Attendance/components/AttendanceIntegrationsPanel";
-import ReconcileLeavePanel from "../Attendance/components/ReconileLeavePanel";
  
  
  
-//Leave
  
-//Leave //Settings
-import LeaveSettingsPage from "../Leave/Settings/pages/leavesettingspage";
-import LeaveSettingsSectionPage from "../Leave/Settings/pages/LeaveSettingsSectionPage";
-import LeavePolicyPage from "../Leave/Settings/pages/policypage";
-import LeaveBehaviorPage from "../Leave/Settings/pages/leavebehaviourpage";
- 
- 
-//Leave//Holiday and weeklyoff
-import HolidayWeeklyOffPage from "../Leave/HolidayAndWeeklyoff/pages/HolidayWeeklyOffPage";
-import HolidayPanel from "../Leave/HolidayAndWeeklyoff/components/HolidayPanel";
-import WeeklyOffPanel from "../Leave/HolidayAndWeeklyoff/components/Weeklyoffpanel";
-import HolidayImportPanel from "../Leave/HolidayAndWeeklyoff/components/HolidayImportPanel";
-import LeaveDailyPage from "../Leave/Daily/pages/LeaveDailyPage";
-import LeaveDailyImportPage from "../Leave/Daily/pages/LeaveDailyImportPage";
-import AdjustmentPage from "../Leave/Adjustment/pages/AdjustmentPage";
-import LeaveAdjustmentConfigurationPage from "../Leave/Adjustment/pages/LeaveAdjustmentConfigurationPage";
-import ManualLeaveAllotmentPage from "../Leave/Adjustment/pages/ManualLeaveAllotmentPage";
-import AdjustmentImportPage from "../Leave/Adjustment/pages/AdjustmentImportPage";
-import ForceLeaveApprovalPage from "../Leave/ForceLeaveApproval/pages/ForceLeaveApprovalPage";
- 
-// Leave reports use the shared TalentHub report pages and components.
-import LeaveAllotmentReport from "../Leave/Report/pages/LeaveAllotmentReportPage";
-import LeaveReportLandingPage from "../Leave/Report/pages/LeaveReportLandingPage";
-import LeaveAvailedReport from "../Leave/Report/pages/LeaveAvailedReportPage";
-import LeaveLapsedReport from "../Leave/Report/pages/LeaveLapsedReportPage";
-import LeaveEncashedReport from "../Leave/Report/pages/LeaveEncashedReportPage";
-import LeaveSummaryReport from "../Leave/Report/pages/LeaveSummaryReportPage";
-import LeaveSummaryBetweenMonths from "../Leave/Report/pages/LeaveSummaryBetweenMonthsPage";
-import LeaveSummaryDetailed from "../Leave/Report/pages/LeaveSummaryDetailedPage";
-import LeaveHistoryMonthWise from "../Leave/Report/pages/LeaveHistoryMonthWisePage";
-import LeaveHistoryDateWise from "../Leave/Report/pages/LeaveHistoryDateWisePage";
-import AttendanceRegularizationReport from "../Leave/Report/pages/AttendanceIndependentReportPage";
-import HourlyAttendanceReport from "../Leave/Report/pages/HourlyAttendanceReportPage";
-import AttendanceIntegrationReport from "../Leave/Report/pages/AttendanceIntegrationReportPage";
-import OverTimeReport from "../Leave/Report/pages/OverTimeReportPage";
-import LateEarlyOutReport from "../Leave/Report/pages/LateInEarlyOutReportPage";
-import LateEarlyOutReportMonthly from "../Leave/Report/pages/LateInEarlyOutMonthlyPage";
-import ExceptionReport from "../Leave/Report/pages/ExceptionReconcileReportPage";
-import ExceptionReportMonthly from "../Leave/Report/pages/ExceptionReconcileMonthlyPage";
-import TagAttendanceReport from "../Leave/Report/pages/TopAttendancePage";
-import TagLeaveReport from "../Leave/Report/pages/TopLeaveTakenPage";
- 
-//Timeoffice Routes
- 
-import PunchDashboardPage from "../TimeOffice/pages/punchprocess/PunchDashboardPage";
-import ProcessPage from "../TimeOffice/pages/punchprocess/ProcessPage";
-import PunchPlaceholderPage from "../TimeOffice/pages/punchprocess/PunchPlaceholderPage";
-import PunchProcessPunchPage from "../TimeOffice/pages/punchprocess/PunchProcessPunchPage";
-import PunchProcessAttendanceOverviewPage from "../TimeOffice/pages/punchprocess/PunchProcessAttendanceOverviewPage";
-import PunchProcessImportPage from "../TimeOffice/pages/punchprocess/PunchProcessImportPage";
-import PunchPage from "../TimeOffice/pages/regularization/PunchPage";
-import MissedPunchPage from "../TimeOffice/pages/regularization/MissedPunchPage";
-import AttendancePage from "../TimeOffice/pages/regularization/AttendancePage";
-import TaInsightsPage from "../TimeOffice/pages/regularization/TaInsightsPage";
-import TaReportsPage from "../TimeOffice/pages/TAreports/TaReportsPage";
-import ForceApprovalPanel from "../TimeOffice/pages/forceapproval/ForceApprovalPanel";
-import PolicyPage from "../TimeOffice/pages/masters/PolicyPage";
-import ShiftPatternPage from "../TimeOffice/pages/masters/ShiftPatternPage";
-import ShiftMasterPage from "../TimeOffice/pages/masters/ShiftMasterPage";
-import GeoLocationPage from "../TimeOffice/pages/masters/GeoLocationPage";
-import MastersImportPage from "../TimeOffice/pages/masters/MastersImportPage";
-import GeneralSettingsPage from "../TimeOffice/pages/settings/GeneralSettingsPage";
-import AutoProcessPage from "../TimeOffice/pages/settings/AutoProcessPage";
-import MailSchedulerPage from "../TimeOffice/pages/settings/MailSchedulerPage";
-import PunchIntegrationPage from "../TimeOffice/pages/settings/PunchIntegrationPage";
-import GeoLocationAssignPage from "../TimeOffice/pages/assign/GeoLocationAssignPage";
-import PolicyUpdateAssignPage from "../TimeOffice/pages/assign/PolicyUpdateAssignPage";
-import FaceTemplateAssignPage from "../TimeOffice/pages/assign/FaceTemplateAssignPage";
-import AssignImportPage from "../TimeOffice/pages/assign/AssignImportPage";
+
+// Pages are loaded on demand (each one becomes its own file in the build).
+const TalentHubPage = lazy(() => import("../pages/TalentHubPage"));
+const AttendancePage1 = lazy(() => import("../Attendance/pages/AttendancePage1"));
+const AttendanceConfigurationPage = lazy(() => import("../Attendance/pages/AttendanceConfigurationPage"));
+const AttendanceIntegrationsPage = lazy(() => import("../Attendance/pages/AttendanceIntegrationsPage"));
+const ForceApprovalPanel1 = lazy(() => import("../Attendance/components/Forceapprovalpanel1").then((m) => ({ default: m.ForceApprovalPanel1 })));
+const IntegrationSettingsPanel = lazy(() => import("../Attendance/components/IntegrationSettingsPanel"));
+const AttendanceIntegrationPanel = lazy(() => import("../Attendance/components/AttendanceIntegrationsPanel"));
+const ReconcileLeavePanel = lazy(() => import("../Attendance/components/ReconileLeavePanel"));
+const LeaveSettingsPage = lazy(() => import("../Leave/Settings/pages/leavesettingspage"));
+const LeaveSettingsSectionPage = lazy(() => import("../Leave/Settings/pages/LeaveSettingsSectionPage"));
+const LeavePolicyPage = lazy(() => import("../Leave/Settings/pages/policypage"));
+const LeaveBehaviorPage = lazy(() => import("../Leave/Settings/pages/leavebehaviourpage"));
+const HolidayWeeklyOffPage = lazy(() => import("../Leave/HolidayAndWeeklyoff/pages/HolidayWeeklyOffPage"));
+const HolidayPanel = lazy(() => import("../Leave/HolidayAndWeeklyoff/components/HolidayPanel"));
+const WeeklyOffPanel = lazy(() => import("../Leave/HolidayAndWeeklyoff/components/Weeklyoffpanel"));
+const HolidayImportPanel = lazy(() => import("../Leave/HolidayAndWeeklyoff/components/HolidayImportPanel"));
+const LeaveDailyPage = lazy(() => import("../Leave/Daily/pages/LeaveDailyPage"));
+const LeaveDailyImportPage = lazy(() => import("../Leave/Daily/pages/LeaveDailyImportPage"));
+const AdjustmentPage = lazy(() => import("../Leave/Adjustment/pages/AdjustmentPage"));
+const LeaveAdjustmentConfigurationPage = lazy(() => import("../Leave/Adjustment/pages/LeaveAdjustmentConfigurationPage"));
+const ManualLeaveAllotmentPage = lazy(() => import("../Leave/Adjustment/pages/ManualLeaveAllotmentPage"));
+const AdjustmentImportPage = lazy(() => import("../Leave/Adjustment/pages/AdjustmentImportPage"));
+const ForceLeaveApprovalPage = lazy(() => import("../Leave/ForceLeaveApproval/pages/ForceLeaveApprovalPage"));
+const LeaveAllotmentReport = lazy(() => import("../Leave/Report/pages/LeaveAllotmentReportPage"));
+const LeaveReportLandingPage = lazy(() => import("../Leave/Report/pages/LeaveReportLandingPage"));
+const LeaveAvailedReport = lazy(() => import("../Leave/Report/pages/LeaveAvailedReportPage"));
+const LeaveLapsedReport = lazy(() => import("../Leave/Report/pages/LeaveLapsedReportPage"));
+const LeaveEncashedReport = lazy(() => import("../Leave/Report/pages/LeaveEncashedReportPage"));
+const LeaveSummaryReport = lazy(() => import("../Leave/Report/pages/LeaveSummaryReportPage"));
+const LeaveSummaryBetweenMonths = lazy(() => import("../Leave/Report/pages/LeaveSummaryBetweenMonthsPage"));
+const LeaveSummaryDetailed = lazy(() => import("../Leave/Report/pages/LeaveSummaryDetailedPage"));
+const LeaveHistoryMonthWise = lazy(() => import("../Leave/Report/pages/LeaveHistoryMonthWisePage"));
+const LeaveHistoryDateWise = lazy(() => import("../Leave/Report/pages/LeaveHistoryDateWisePage"));
+const AttendanceRegularizationReport = lazy(() => import("../Leave/Report/pages/AttendanceIndependentReportPage"));
+const HourlyAttendanceReport = lazy(() => import("../Leave/Report/pages/HourlyAttendanceReportPage"));
+const AttendanceIntegrationReport = lazy(() => import("../Leave/Report/pages/AttendanceIntegrationReportPage"));
+const OverTimeReport = lazy(() => import("../Leave/Report/pages/OverTimeReportPage"));
+const LateEarlyOutReport = lazy(() => import("../Leave/Report/pages/LateInEarlyOutReportPage"));
+const LateEarlyOutReportMonthly = lazy(() => import("../Leave/Report/pages/LateInEarlyOutMonthlyPage"));
+const ExceptionReport = lazy(() => import("../Leave/Report/pages/ExceptionReconcileReportPage"));
+const ExceptionReportMonthly = lazy(() => import("../Leave/Report/pages/ExceptionReconcileMonthlyPage"));
+const TagAttendanceReport = lazy(() => import("../Leave/Report/pages/TopAttendancePage"));
+const TagLeaveReport = lazy(() => import("../Leave/Report/pages/TopLeaveTakenPage"));
+const PunchDashboardPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchDashboardPage"));
+const ProcessPage = lazy(() => import("../TimeOffice/pages/punchprocess/ProcessPage"));
+const PunchPlaceholderPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchPlaceholderPage"));
+const PunchProcessPunchPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessPunchPage"));
+const PunchProcessAttendanceOverviewPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessAttendanceOverviewPage"));
+const PunchProcessImportPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessImportPage"));
+const PunchPage = lazy(() => import("../TimeOffice/pages/regularization/PunchPage"));
+const MissedPunchPage = lazy(() => import("../TimeOffice/pages/regularization/MissedPunchPage"));
+const AttendancePage = lazy(() => import("../TimeOffice/pages/regularization/AttendancePage"));
+const TaInsightsPage = lazy(() => import("../TimeOffice/pages/regularization/TaInsightsPage"));
+const TaReportsPage = lazy(() => import("../TimeOffice/pages/TAreports/TaReportsPage"));
+const ForceApprovalPanel = lazy(() => import("../TimeOffice/pages/forceapproval/ForceApprovalPanel"));
+const PolicyPage = lazy(() => import("../TimeOffice/pages/masters/PolicyPage"));
+const ShiftPatternPage = lazy(() => import("../TimeOffice/pages/masters/ShiftPatternPage"));
+const ShiftMasterPage = lazy(() => import("../TimeOffice/pages/masters/ShiftMasterPage"));
+const GeoLocationPage = lazy(() => import("../TimeOffice/pages/masters/GeoLocationPage"));
+const MastersImportPage = lazy(() => import("../TimeOffice/pages/masters/MastersImportPage"));
+const GeneralSettingsPage = lazy(() => import("../TimeOffice/pages/settings/GeneralSettingsPage"));
+const AutoProcessPage = lazy(() => import("../TimeOffice/pages/settings/AutoProcessPage"));
+const MailSchedulerPage = lazy(() => import("../TimeOffice/pages/settings/MailSchedulerPage"));
+const PunchIntegrationPage = lazy(() => import("../TimeOffice/pages/settings/PunchIntegrationPage"));
+const GeoLocationAssignPage = lazy(() => import("../TimeOffice/pages/assign/GeoLocationAssignPage"));
+const PolicyUpdateAssignPage = lazy(() => import("../TimeOffice/pages/assign/PolicyUpdateAssignPage"));
+const FaceTemplateAssignPage = lazy(() => import("../TimeOffice/pages/assign/FaceTemplateAssignPage"));
+const AssignImportPage = lazy(() => import("../TimeOffice/pages/assign/AssignImportPage"));
  
 export const TalentHubRoutes = (
   <Route path="time-office" element={<TalentHubPage />}>

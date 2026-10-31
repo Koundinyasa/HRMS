@@ -1,10 +1,13 @@
+import { lazy } from "react";
 import { Route, Navigate } from "react-router-dom";
-import DetailsTabBar from "../Details/components/DetailsTabBar";
-import OrganizationsDashboardPage from "../Details/pages/OrganizationsDashboardPage";
-import ComplianceOverviewPage from "../Details/pages/ComplianceOverviewPage";
-import ConsolidatedSalaryPage from "../Details/pages/ConsolidatedSalaryPage";
-import ConsolidatedSalarySheetPage from "../Details/pages/ConsolidatedSalarySheetPage";
-import AllCompanyApprovalsPage from "../Approvals/pages/AllCompanyApprovalsPage";
+
+// Pages are loaded on demand (each one becomes its own file in the build).
+const DetailsTabBar = lazy(() => import("../Details/components/DetailsTabBar"));
+const OrganizationsDashboardPage = lazy(() => import("../Details/pages/OrganizationsDashboardPage"));
+const ComplianceOverviewPage = lazy(() => import("../Details/pages/ComplianceOverviewPage"));
+const ConsolidatedSalaryPage = lazy(() => import("../Details/pages/ConsolidatedSalaryPage"));
+const ConsolidatedSalarySheetPage = lazy(() => import("../Details/pages/ConsolidatedSalarySheetPage"));
+const AllCompanyApprovalsPage = lazy(() => import("../Approvals/pages/AllCompanyApprovalsPage"));
 
 export const OrganizationsRoutes = (
   <Route path="organizations">

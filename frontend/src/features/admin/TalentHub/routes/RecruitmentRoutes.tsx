@@ -1,5 +1,8 @@
+import { lazy } from "react";
 import { Navigate, Route } from "react-router-dom";
-import RecruitmentPage from "../pages/RecruitmentPage";
+
+// Pages are loaded on demand (each one becomes its own file in the build).
+const RecruitmentPage = lazy(() => import("../pages/RecruitmentPage"));
 
 export const RecruitmentRoutes = (
   <Route path="talent-hub">

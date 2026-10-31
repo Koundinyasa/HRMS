@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { Route } from "react-router-dom";
 
 import { AdminCenterRoutes } from "@/features/admin/admincenter/routes/AdminCenterRoutes";
@@ -6,8 +7,10 @@ import { TalentHubRoutes } from "@/features/admin/Time & Office/routes/TalentHub
 import { RecruitmentRoutes } from "@/features/admin/TalentHub/routes/RecruitmentRoutes";
 import { PayrollRoutes } from "@/features/admin/Payroll/routes/PayrollRoutes";
 import { OrganizationsRoutes } from "@/features/admin/organizations/routes/organizationsRoutes";
-import DashboardPage from "@/features/admin/dashboard/pages/DashboardPage";
 import PageNotAvailable from "./PageNotAvailable";
+
+// Pages are loaded on demand (each one becomes its own file in the build).
+const DashboardPage = lazy(() => import("@/features/admin/dashboard/pages/DashboardPage"));
 
 export const AdminChildRoutes = (
   <>
