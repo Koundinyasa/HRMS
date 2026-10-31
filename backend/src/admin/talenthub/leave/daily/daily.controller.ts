@@ -16,7 +16,6 @@ import { SaveLeaveFormDto } from './dto/save-leave-form.dto';
 import { ApplyLeaveDto } from './dto/apply-leave.dto';
 import { ReprocessDto } from './dto/reprocess.dto';
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImportDailyDto } from './dto/import-daily.dto';
 import { GetMonthlyLeaveCalendarDto } from './dto/get-monthly-leave-calendar.dto';
@@ -30,7 +29,6 @@ import { MenuCode } from '../../../../common/constants/menu-codes';
 @Roles(...ADMIN_PORTAL_ROLES)
 @RequiresMenu(MenuCode.LeaveDaily)
 @Controller('admin/ta/leave/daily')
-@UseGuards(JwtAuthGuard)
 export class DailyController {
   constructor(private readonly dailyService: DailyService) {}
   //===============================
@@ -139,7 +137,6 @@ async getMonthlyLeaveCalendar(
   // Employee leave balance
 //Actual sp is used here
   @Get('employee-leave-balance')
-@UseGuards(JwtAuthGuard)
 async employeeLeaveBalance(@Query('employeeId') employeeId: string) {
   return this.dailyService.employeeLeaveBalance(employeeId);
 }
@@ -148,7 +145,6 @@ async employeeLeaveBalance(@Query('employeeId') employeeId: string) {
 // Dropdowns
 //Actual sp is used here
 @Get('company-dropdown-data')
-@UseGuards(JwtAuthGuard)
 async getCompanyDropdownData(@Req() req: any) {
   return this.dailyService.getCompanyDropdownData(req.user.companyId);
 }
@@ -161,7 +157,6 @@ async getCompanyDropdownData(@Req() req: any) {
 // Actual Sp is used here
 // Popup: one employee, one day. Returns the SP rows as JSON, no file.
 @Post('bulk-leave-request')
-@UseGuards(JwtAuthGuard)
 async bulkLeaveRequest(@Body() dto: BulkLeaveRequestDto, @Req() req: any) {
   // { logs, summary } straight from USP_BulkLeaveRequestSubmission
   return this.dailyService.bulkLeaveRequestSubmission(
@@ -172,7 +167,6 @@ async bulkLeaveRequest(@Body() dto: BulkLeaveRequestDto, @Req() req: any) {
  
 // Multi-select: employees and dates. Returns the Excel.
 @Post('bulk-leave-request/download')
-@UseGuards(JwtAuthGuard)
 async bulkLeaveRequestDownload(
   @Body() dto: BulkLeaveRequestDto,
   @Req() req: any,

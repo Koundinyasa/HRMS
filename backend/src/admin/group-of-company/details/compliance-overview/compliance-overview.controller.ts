@@ -3,10 +3,8 @@ import {
   Controller,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { ComplianceOverviewService } from './compliance-overview.service';
 import { ComplianceOverviewDto } from './dto/company-compliance-overview.dto';
@@ -15,7 +13,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/group-of-company/details/compliance-overview')
-@UseGuards(JwtAuthGuard)
 export class ComplianceOverviewController {
   constructor(
     private readonly complianceOverviewService: ComplianceOverviewService,

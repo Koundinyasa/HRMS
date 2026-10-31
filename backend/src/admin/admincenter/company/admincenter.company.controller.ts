@@ -6,10 +6,8 @@ import {
   Body,
   Req,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { AdmincentercompanyService} from './admincenter.company.service';
 import { CompanyConfigurationDto } from './dto/company-configuration.dto';
 import { PFConfigurationDto, PFDefaultConfigurationDto } from './dto/pf-configuration.dto';
@@ -30,7 +28,6 @@ import { MenuCode } from '../../../common/constants/menu-codes';
 @Roles(...ADMIN_PORTAL_ROLES)
 @RequiresMenu(MenuCode.CompanyDetails)
 @Controller('admin/configuration')
-@UseGuards(JwtAuthGuard)
 export class AdmincentercompanyController {
   constructor(private readonly admincenterService: AdmincentercompanyService) {}
 

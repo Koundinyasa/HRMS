@@ -7,10 +7,8 @@ import {
   Put,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { RegularizationService } from './regularization.service';
 
@@ -25,7 +23,6 @@ import { EmployeeScopeService } from '../../../../common/scope/employee-scope.se
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/regularization')
-@UseGuards(JwtAuthGuard)
 export class RegularizationController {
   constructor(
     private readonly regularizationService: RegularizationService,

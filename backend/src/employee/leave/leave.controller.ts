@@ -19,7 +19,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 import { EmployeeScopeService } from '../../common/scope/employee-scope.service';
@@ -37,7 +36,6 @@ export class LeaveController {
   ) {}
 
   // Leave Types
-  @UseGuards(JwtAuthGuard)
   @Get('leavetypes')
   async getLeaveTypes(
     @Req() req: any,
@@ -73,27 +71,23 @@ export class LeaveController {
 
   // Employee Leave Balance
   @Get('balance')
-  @UseGuards(JwtAuthGuard)
   async getEmployeeLeaveBalance(@Req() req) {
     return this.leaveService.getEmployeeLeaveBalance(req.user.employeeId);
   }
 
   // Leave History
   @Get('history')
-  @UseGuards(JwtAuthGuard)
   async getLeaveHistory(@Req() req) {
     return this.leaveService.getLeaveHistory(req.user.employeeId);
   }
 
   // Leave Status
   @Get('status')
-  @UseGuards(JwtAuthGuard)
   async getLeaveStatus(@Req() req) {
     return this.leaveService.getLeaveStatus(req.user.employeeId);
   }
 
   // Apply Leave
-  @UseGuards(JwtAuthGuard)
   @Post('apply')
   @UseInterceptors(
     FileInterceptor('document', {
@@ -204,7 +198,6 @@ export class LeaveController {
   // The document is kept in memory until that check has passed, so nothing is
   // written to disk for a caller who is not allowed.
   @Post('applyhr')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('document', {
       storage: memoryStorage(),
@@ -255,7 +248,6 @@ export class LeaveController {
     }
   }
   // Approval / Rejection
-  @UseGuards(JwtAuthGuard)
   @Post('approval')
   async hierarchicalLeaveAction(
     @Req() req,
@@ -270,7 +262,6 @@ export class LeaveController {
   }
 
   // Withdraw / Cancel Leave  <-- NEW API
-  @UseGuards(JwtAuthGuard)
   @Post('withdrawcancel')
   async withdrawCancelLeave(@Req() req, @Body() body: WithdrawCancelDto) {
     return this.leaveService.withdrawCancelLeave(
@@ -284,7 +275,6 @@ export class LeaveController {
 
   // Pending Leave Requests
   @Get('pending')
-  @UseGuards(JwtAuthGuard)
   async getPendingLeaveRequests(@Req() req) {
     return this.leaveService.getPendingLeaveRequests(req.user.employeeId);
   }
@@ -314,14 +304,12 @@ export class LeaveController {
   }
 
   @Get('reporting-employees')
-  @UseGuards(JwtAuthGuard)
   async getReportingManagerEmployeeList(@Req() req) {
     return this.leaveService.getReportingManagerEmployeeList(
       req.user.createdBy,
     );
   }
   @Get('employee-details')
-  @UseGuards(JwtAuthGuard)
   async getEmployeeLeaveDetails(
     @Req() req: any,
     @Query('employeeId') employeeId: string,

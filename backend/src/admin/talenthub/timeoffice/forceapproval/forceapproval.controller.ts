@@ -1,13 +1,11 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { ForceApprovalService } from './forceapproval.service';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/forceapproval')
-@UseGuards(JwtAuthGuard)
 export class ForceApprovalController {
   constructor(private readonly forceApprovalService: ForceApprovalService) {}
 

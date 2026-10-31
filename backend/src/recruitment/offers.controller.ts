@@ -11,9 +11,7 @@ import {
   Query,
   Req,
   StreamableFile,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { OfferResponseDto } from './dto/offer-response.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
@@ -23,7 +21,6 @@ import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('offers')
-@UseGuards(JwtAuthGuard)
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 

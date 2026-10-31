@@ -15,7 +15,6 @@ import {
   Query,
   Req,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -26,7 +25,6 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { catchError, throwError } from 'rxjs';
  
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { EssService, getEssTempDir } from './ess.service';
 import { CreateEssModuleDto } from './dto/create-ess-module.dto';
 import { UpdateEssModuleDto } from './dto/update-ess-module.dto';
@@ -128,7 +126,6 @@ class EssUploadErrorInterceptor implements NestInterceptor {
  
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ess')
-@UseGuards(JwtAuthGuard)
 export class EssController {
   constructor(private readonly essService: EssService) {}
  

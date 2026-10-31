@@ -7,11 +7,9 @@ import {
   Query,
   Get,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 
 import { ReviewService } from './review.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { EmployeeScopeService } from '../common/scope/employee-scope.service';
 import { GateClosed, RequiresMenu } from '../common/decorators/module-gate.decorator';
 import { MenuCode } from '../common/constants/menu-codes';
@@ -36,7 +34,6 @@ export class ReviewController {
   ) {}
 
   // 1. Monthly Leave Calendar
-  @UseGuards(JwtAuthGuard)
   @Post('monthlyleavecalendar')
   async getMonthlyLeaveCalendar(
     @Req() req: any,
@@ -50,14 +47,12 @@ export class ReviewController {
   }
 
   // 2. Pending Leave Requests
-  @UseGuards(JwtAuthGuard)
   @Post('pendingleaverequests')
   async getPendingLeaveRequests(@Req() req: any) {
     return this.reviewService.getPendingLeaveRequests(req.user.employeeId);
   }
 
   // 3. Missed Punch Employees
-  @UseGuards(JwtAuthGuard)
   @Post('missedpunchemployees')
   async getMissedPunchEmployees(
     @Req() req: any,
@@ -71,7 +66,6 @@ export class ReviewController {
   }
 
   // 4. Employee Punch Dashboard
-  @UseGuards(JwtAuthGuard)
   @Post('employeepunchdashboard')
   async getEmployeePunchDashboard(
     @Req() req: any,
@@ -87,7 +81,6 @@ export class ReviewController {
   }
 
   // 5. Employee Raw Punches
-  @UseGuards(JwtAuthGuard)
   @Post('employeerawpunches')
   async getEmployeeRawPunches(
     @Req() req: any,
@@ -99,7 +92,6 @@ export class ReviewController {
 
   // 6. Employee Dashboard Counts (TA Insights screen, not part of Phase 1)
   @GateClosed()
-  @UseGuards(JwtAuthGuard)
   @Post('employeedashboardcounts')
   async getEmployeeDashboardCounts(
     @Req() req: any,
@@ -112,7 +104,6 @@ export class ReviewController {
     );
   }
   // 7. Employee Monthly Attendance Details
-  @UseGuards(JwtAuthGuard)
   @Post('employeemonthlyattendancedetails')
   async getEmployeeMonthlyAttendanceDetails(
     @Req() req: any,
@@ -128,7 +119,6 @@ export class ReviewController {
     );
   }
   // 8. Employee Attendance Overview
-  @UseGuards(JwtAuthGuard)
   @Post('employeeattendanceoverview')
   async getEmployeeAttendanceOverview(
     @Req() req: any,
@@ -144,7 +134,6 @@ export class ReviewController {
   }
   // 9. Employee Dashboard Details (TA Insights screen, not part of Phase 1)
   @GateClosed()
-  @UseGuards(JwtAuthGuard)
   @Post('employeedashboarddetails')
   async getEmployeeDashboardDetails(
     @Req() req: any,
@@ -159,7 +148,6 @@ export class ReviewController {
   }
   //10. Reporting Employee List
   @Get('reporting-employees')
-  @UseGuards(JwtAuthGuard)
   async getReportingManagerEmployeeList(@Req() req) {
     const reportingUserId = Number(
       req.user?.createdBy ?? req.user?.userId ?? 0,
@@ -170,7 +158,6 @@ export class ReviewController {
   }
   // Approval / Rejection
   @RequiresMenu(MenuCode.Review, MenuCode.ForceLeaveApproval)
-  @UseGuards(JwtAuthGuard)
   @Post('approval')
   async hierarchicalLeaveAction(
     @Req() req,
@@ -185,7 +172,6 @@ export class ReviewController {
   }
   //Dropdown for Attendance Statuses
   @Get('attendance-statuses')
-  @UseGuards(JwtAuthGuard)
   async getAttendanceStatuses(@Req() req: any) {
     return this.reviewService.getAttendanceStatuses(req.user.companyId);
   }

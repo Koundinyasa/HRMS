@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { AssignService } from './assign.service';
 
 import { UpdateGeoLocationDto } from './dto/update-geo-location.dto';
@@ -10,7 +9,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/assign')
-@UseGuards(JwtAuthGuard)
 export class AssignController {
   constructor(private readonly assignService: AssignService) {}
 

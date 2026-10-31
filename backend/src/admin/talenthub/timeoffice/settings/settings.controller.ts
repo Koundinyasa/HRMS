@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { TimeOfficeSettingsService } from './settings.service';
 
@@ -18,7 +17,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/settings')
-@UseGuards(JwtAuthGuard)
 export class TimeOfficeSettingsController {
   constructor(
     private readonly timeOfficeSettingsService: TimeOfficeSettingsService,

@@ -8,7 +8,6 @@ import {
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
-  UseGuards,
   BadRequestException,
   NotFoundException,
   Res,
@@ -19,7 +18,6 @@ import {
   FileInterceptor,
   FilesInterceptor,
 } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AttendanceService } from './attendance.service';
 import type { Response } from 'express';
 
@@ -81,7 +79,6 @@ export class AttendanceController {
   // the dashboard whether the logged-in employee has an active face vector
   // at all, so it can offer "Register your face" instead of a camera flow
   // that's guaranteed to fail.
-  @UseGuards(JwtAuthGuard)
   @Get('face-status')
   async faceStatus(@Req() req: any) {
     const employeeId = req.user.employeeId;
@@ -90,7 +87,6 @@ export class AttendanceController {
 
   // 1-to-1 check against the LOGGED-IN employee's own vector — employeeId
   // comes from the JWT, never guessed from the photo itself.
-  @UseGuards(JwtAuthGuard)
   @Post('punch')
   @UseInterceptors(FilesInterceptor('frames', 30))
   async punch(
@@ -153,7 +149,6 @@ export class AttendanceController {
   // Read-only history for the "Recent Punches" slide — most recent first,
   // capped at a sane count since this is a quick-glance UI list, not a
   // full attendance report.
-  @UseGuards(JwtAuthGuard)
   @Get('recent')
 async recentPunches(@Req() req: any) {
     const employeeId = req.user.employeeId;
@@ -162,7 +157,6 @@ async recentPunches(@Req() req: any) {
 
   // Backs the "Manage Face Registration" view — which angles are
   // actually on file, and when they were last updated.
-  @UseGuards(JwtAuthGuard)
   @Get('registration-status')
   async registrationStatus(@Req() req: any) {
     const employeeId = req.user.employeeId;
@@ -172,7 +166,6 @@ async recentPunches(@Req() req: any) {
   // PHOTO — the logged-in employee's own enrollment photo. The employee id
   // comes from the token, so nobody can request someone else's photo here.
   // It is served only through this guarded route, never as a public file.
-  @UseGuards(JwtAuthGuard)
   @Get('face-photo')
   async facePhoto(
     @Req() req: any,
@@ -193,7 +186,6 @@ async recentPunches(@Req() req: any) {
 
   // Development aid: powers the coordinates/distance panel in the punch
   // modal. Read-only. See LOCATION_DEBUG_ENABLED in attendance.service.ts.
-  @UseGuards(JwtAuthGuard)
   @Get('location-check')
   async locationCheck(
     @Req() req: any,
@@ -220,7 +212,6 @@ async recentPunches(@Req() req: any) {
   // the source of truth (see attendance.service.ts) — purely so the
   // employee finds out immediately if one angle came out blurry, instead
   // of only after finishing all 5 steps.
-  @UseGuards(JwtAuthGuard)
   @Post('enroll/check-frame')
   @UseInterceptors(FileInterceptor('frame'))
   async checkEnrollmentFrame(@UploadedFile() frame: Express.Multer.File) {
@@ -232,7 +223,6 @@ async recentPunches(@Req() req: any) {
 
   // Self-service enrollment — always enrolls whoever is currently logged
   // in. There is no "enroll someone else" path; HR is never involved.
-  @UseGuards(JwtAuthGuard)
   @Post('enroll')
   // PHOTO — the request now carries the face-angle frames (field
   // "frames") AND, optionally, the step-6 profile photo (field "photo").

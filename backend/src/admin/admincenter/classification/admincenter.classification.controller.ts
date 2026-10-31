@@ -4,7 +4,6 @@ import {
   Req,
   Param,
   Query,
-  UseGuards,
   Body,
   Post,
   Put,
@@ -14,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { AdmincenterClassificationService } from './admincenter.classification.service';
 import { CreateLeavePolicyDto } from './dto/create-leave-policy.dto';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UpdateLeavePolicyDetailsDto } from './dto/update-leave-policy-details.dto';
 import { CreateLeavePolicyDetailsDto } from './dto/create-leave-policy-details.dto';
 import { UpdateLeavePolicyDto } from './dto/update-leave-policy.dto';
@@ -36,7 +34,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/classification')
-@UseGuards(JwtAuthGuard)
 export class AdmincenterClassificationController {
   constructor(
     private readonly classificationService: AdmincenterClassificationService,

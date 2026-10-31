@@ -17,7 +17,6 @@ import { CreateLeaveAdjustmentDto } from './dto/create-leave-adjustment.dto';
 import { UpdateManualAllotmentDto } from './dto/update-manual-allotment.dto';
 import { ImportLeaveAdjustmentDto } from './dto/import-leave-adjustment.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { GetManualLeaveAllotmentListDto } from './dto/get-manual-leave-allotment-list.dto';
 import { GetLeaveAdjustmentDto } from './dto/get-leave-adjustment.dto';
@@ -26,7 +25,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/adjustment')
-@UseGuards(JwtAuthGuard)
 export class AdjustmentController {
   constructor(private readonly adjustmentService: AdjustmentService) {}
   // //========================================

@@ -5,10 +5,8 @@ import {
   Post,
   Req,
   Param,
-  UseGuards,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { SeparationService } from './separation.service';
 import { SubmitResignationDto } from './dto/submit-resignation.dto';
 import { UpdateSeparationApprovalDto } from './dto/update-separation-approval.dto';
@@ -19,7 +17,6 @@ import { WithdrawResignationDto } from './dto/withdraw-resignation.dto';
 export class SeparationController {
   constructor(private readonly separationService: SeparationService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post('resignation')
   submitResignation(@Req() req, @Body() body: SubmitResignationDto) {
     return this.separationService.submitResignation(
@@ -28,7 +25,6 @@ export class SeparationController {
       body.reason,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('approval')
   updateApproval(@Req() req, @Body() body: UpdateSeparationApprovalDto) {
     return this.separationService.updateApproval(
@@ -40,7 +36,6 @@ export class SeparationController {
       body.isExitInterviewCompleted,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('relieve')
   relieveEmployee(@Req() req, @Body() body: RelieveEmployeeDto) {
     return this.separationService.relieveEmployee(
@@ -51,7 +46,6 @@ export class SeparationController {
       body.remarks,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('withdraw')
   withdrawResignation(@Req() req, @Body() body: WithdrawResignationDto) {
     return this.separationService.withdrawResignation(
@@ -60,12 +54,10 @@ export class SeparationController {
       body.withdrawalReason,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Get('approvals')
   getApprovalList(@Req() req) {
     return this.separationService.getApprovalList(req.user.employeeId);
   }
-  @UseGuards(JwtAuthGuard)
   @Get('status')
   getDetails(@Req() req) {
     return this.separationService.getResignationDetails(req.user.employeeId);

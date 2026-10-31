@@ -7,7 +7,6 @@ import {
   Param,
   Req,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -17,7 +16,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { extname } from 'path';
 import { v4 as uuid } from 'uuid';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -52,23 +50,19 @@ export class HelpdeskController {
   ) {
     return this.helpdeskService.getSubCategories(Number(categoryId));
   }
-  @UseGuards(JwtAuthGuard)
   @Post('ticket')
   async raiseTicket(@Req() req, @Body() body: CreateTicketDto) {
     return this.helpdeskService.raiseTicket(req.user.employeeId, body);
   }
   @Get('mytickets')
-  @UseGuards(JwtAuthGuard)
   async getMyTickets(@Req() req) {
     return this.helpdeskService.getMyTickets(req.user.employeeId);
   }
   @Get('pending')
-  @UseGuards(JwtAuthGuard)
   async getPendingTickets(@Req() req) {
     return this.helpdeskService.getPendingTickets(req.user.employeeId);
   }
   @Post('action')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('document', {
       storage: diskStorage({
@@ -122,7 +116,6 @@ export class HelpdeskController {
   }
   @Roles(...ADMIN_PORTAL_ROLES)
   @Post('assign')
-  @UseGuards(JwtAuthGuard)
   async assignTicket(@Req() req, @Body() body: AssignTicketDto) {
     return this.helpdeskService.assignTicket(
       body.ticketId,
@@ -130,7 +123,6 @@ export class HelpdeskController {
       body.assignToEmployeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('reply')
   @UseInterceptors(
     FileInterceptor('document', {
@@ -184,7 +176,6 @@ export class HelpdeskController {
     );
   }
   @Post('reopen')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('document', {
       storage: diskStorage({

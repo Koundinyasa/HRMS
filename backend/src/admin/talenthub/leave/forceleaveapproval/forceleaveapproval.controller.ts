@@ -5,10 +5,8 @@ import {
   Query,
   Post,
   Body,
-  UseGuards,
   Req,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { ForceLeaveApprovalService } from './forceleaveapproval.service';
 import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
@@ -19,7 +17,6 @@ import { MenuCode } from '../../../../common/constants/menu-codes';
 @Roles(...ADMIN_PORTAL_ROLES)
 @RequiresMenu(MenuCode.ForceLeaveApproval)
 @Controller('admin/ta/leave/forceleaveapproval')
-@UseGuards(JwtAuthGuard)
 export class ForceLeaveApprovalController {
   constructor(
     private readonly forceLeaveApprovalService: ForceLeaveApprovalService,
@@ -82,7 +79,6 @@ async getLeaveApproval(
 // Actual SP is used here
  
 @Get('company-dropdown')
-@UseGuards(JwtAuthGuard)
 async getCompanyDropdownData(@Req() req: any) {
   return this.forceLeaveApprovalService.getCompanyDropdownData(req.user.companyId);
 }

@@ -1,5 +1,4 @@
-import { Controller, Get, UseGuards, Body, Post } from '@nestjs/common';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
+import { Controller, Get, Body, Post } from '@nestjs/common';
 import { IntegrationsService } from './integrations.service';
 import { AttendanceIntegrationDto } from './dto/attendance-integration.dto';
 import { ReconcileLeaveUpdateDto } from './dto/reconcile-leave-update.dto';
@@ -8,7 +7,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/attendance/integrations')
-@UseGuards(JwtAuthGuard)
 export class IntegrationsController {
   constructor(private readonly integrationsService: IntegrationsService) {}
 

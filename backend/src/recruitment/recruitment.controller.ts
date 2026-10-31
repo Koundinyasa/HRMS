@@ -40,7 +40,6 @@ import { UpdateCandidateAssessmentResultDto } from './dto/update-candidate-asses
 import { FinalInterviewApprovalDto } from './dto/final-interview-approval.dto';
 import { SubmitInterviewFeedbackDto } from './dto/submit-interview-feedback.dto';
 import { CreateCandidateOfferDto } from './dto/create-candidate-offer.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UploadCandidateDocumentDto } from './dto/upload-candidate-document.dto';
 import { BgvCandidateDto } from './dto/bgv-candidate.dto';
 import { ApproveCandidateJoiningDto } from './dto/approve-candidate-joining.dto';
@@ -65,12 +64,10 @@ export class RecruitmentController {
     private readonly mailService: MailService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('pendingrequisitions')
   async getPendingRequisitions(@Req() req) {
     return this.recruitmentService.getPendingRequisitions(req.user.employeeId);
   }
-  @UseGuards(JwtAuthGuard)
   @Post('requisitionaction')
   async requisitionAction(@Body() dto: RequisitionActionDto, @Req() req) {
     return this.recruitmentService.requisitionAction(
@@ -81,7 +78,6 @@ export class RecruitmentController {
       dto.reviewRemarks,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('jobopening')
   async createJobOpening(@Body() dto: CreateJobOpeningDto, @Req() req) {
     return this.recruitmentService.createJobOpening(
@@ -89,7 +85,6 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('jobopeningpublish')
   async publishJobOpening(@Body() dto: PublishJobOpeningDto, @Req() req) {
     return this.recruitmentService.publishJobOpening(
@@ -98,12 +93,10 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Get('jobopenings')
   async getJobOpenings() {
     return this.recruitmentService.getJobOpenings();
   }
-  @UseGuards(JwtAuthGuard)
   @Get('job-opening-requisitions')
   async getJobOpeningRequisitions(
     @Req() req: { user: { companyId: number } },
@@ -116,7 +109,6 @@ export class RecruitmentController {
     }
     return this.recruitmentService.getJobOpeningRequisitions(companyId);
   }
-  @UseGuards(JwtAuthGuard)
   @Post('requisition')
   async createRequisition(@Body() dto: CreateRequisitionDto, @Req() req: any) {
     const companyId = Number(req.user.companyId);
@@ -131,7 +123,6 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('candidateapplication')
   @UseInterceptors(
     FileInterceptor('resume', {
@@ -318,7 +309,6 @@ export class RecruitmentController {
 //       throw new NotFoundException('Resume not found.');
 //     }
 
-   @UseGuards(JwtAuthGuard)
   @Get('candidatescreening')
   async getCandidatesForScreening(
     @Req() req: any,
@@ -330,7 +320,6 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Get('candidateapplications')
   async getCandidateApplications(
     @Req() req: any,
@@ -341,8 +330,6 @@ export class RecruitmentController {
       applicationStatusId ? Number(applicationStatusId) : undefined,
     );
   }
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(JwtAuthGuard)
   @Post('screening')
   async resumeScreening(@Body() dto: ResumeScreeningDto, @Req() req) {
     return this.recruitmentService.resumeScreening(
@@ -352,17 +339,14 @@ export class RecruitmentController {
       dto.reviewRemarks,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Get('assessmentscheduling')
   async getCandidatesForAssessmentScheduling() {
     return this.recruitmentService.getCandidatesForAssessmentScheduling();
   }
-  @UseGuards(JwtAuthGuard)
   @Get('intervieweligible')
   async getInterviewEligibleCandidates() {
     return this.recruitmentService.getInterviewEligibleCandidates();
   }
-  @UseGuards(JwtAuthGuard)
   @Post('finalinterviewapproval')
   async updateFinalInterviewApproval(
     @Body() dto: FinalInterviewApprovalDto,
@@ -373,7 +357,6 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('interviewfeedback')
   async submitInterviewFeedback(
     @Body() dto: SubmitInterviewFeedbackDto,
@@ -383,21 +366,18 @@ export class RecruitmentController {
     return this.recruitmentService.submitInterviewFeedback(dto, actionBy);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('candidatesforverification')
   async getCandidatesForVerification(@Req() req: any) {
     return this.recruitmentService.getCandidatesForVerification(
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Get('all-verification-candidates')
   async getAllVerificationCandidates(@Req() req: any) {
     return this.recruitmentService.getAllVerificationCandidates(
       String(req.user.employeeId),
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Get('pending-bgv-documents')
   async getPendingBgvDocuments(
     @Query('applicationId') applicationId: string | undefined,
@@ -433,12 +413,10 @@ export class RecruitmentController {
       parsedFlag,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('uploadcandidatedocument')
   async uploadCandidateDocument(@Body() dto: UploadCandidateDocumentDto) {
     return this.recruitmentService.uploadCandidateDocument(dto);
   }
-  @UseGuards(JwtAuthGuard)
   @Post('bgvcandidate')
   async performBgvCandidate(@Body() dto: BgvCandidateDto, @Req() req: any) {
     const hrManagerEmployeeId = req.user.employeeId;
@@ -710,13 +688,11 @@ export class RecruitmentController {
 //     return this.recruitmentService.getRecruitmentSources();
 //   }
  
-  @UseGuards(JwtAuthGuard)
   @Get('sources')
   async getRecruitmentSources() {
     return this.recruitmentService.getRecruitmentSources();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('requisitionmaster')
   async getRequisitionMaster(
     @Req() req: { user: { companyId: number } },
@@ -731,7 +707,6 @@ export class RecruitmentController {
     return this.recruitmentService.getRequisitionMaster(companyId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('jobopeningmaster')
   async getActiveJobOpenings(
     @Req() req: { user: { companyId: number } },
@@ -746,7 +721,6 @@ export class RecruitmentController {
     return this.recruitmentService.getActiveJobOpenings(companyId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('dashboard')
   async getRecruitmentDashboard(
     @Query('stage') stage: string = 'ALL',
@@ -754,7 +728,6 @@ export class RecruitmentController {
     return this.recruitmentService.getRecruitmentDashboard(stage);
   }
 
- @UseGuards(JwtAuthGuard)
   @Get('all-requisitions-for-hr')
   async getAllRequisitionsForHR(@Req() req: any) {
    if (!req.user?.employeeId) {
@@ -768,7 +741,6 @@ export class RecruitmentController {
    );
  }
  // scheduled candidate assessment start from here
-  @UseGuards(JwtAuthGuard)
   @Post('assessmentschedule')
   async scheduleCandidateAssessment(
     @Body() dto: ScheduleCandidateAssessmentDto,
@@ -781,7 +753,6 @@ export class RecruitmentController {
       req.user.employeeId,
     );
   }
-  @UseGuards(JwtAuthGuard)
   @Post('skipcandidateassessment')
   async skipCandidateAssessment(
     @Body() dto: SkipCandidateAssessmentDto,
@@ -794,7 +765,6 @@ export class RecruitmentController {
     );
   }
 // Assessment Scheduling Dropdowns
-  @UseGuards(JwtAuthGuard)
   @Get('assessment-schedule-dropdowns')
   async getAssessmentScheduleDropdowns(@Req() req) {
     return this.recruitmentService.getAssessmentScheduleDropdowns(
@@ -802,7 +772,6 @@ export class RecruitmentController {
     );
   }
   //update candidate assessment result
-  @UseGuards(JwtAuthGuard)
   @Post('assessmentresult')
   async updateCandidateAssessmentResult(
     @Body() dto: UpdateCandidateAssessmentResultDto,
@@ -817,7 +786,6 @@ export class RecruitmentController {
     );
   }
   // Job Requisition Details Endpoint
-  @UseGuards(JwtAuthGuard)
   @Get('jobrequisitiondetails/:requisitionId')
   async getJobRequisitionDetails(
     @Param('requisitionId', ParseIntPipe) requisitionId: number,

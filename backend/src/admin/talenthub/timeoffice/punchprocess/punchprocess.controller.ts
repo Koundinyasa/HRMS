@@ -4,11 +4,9 @@ import {
   Post,
   Query,
   Body,
-  UseGuards,
   Req,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { PunchProcessService } from './punchprocess.service';
 
@@ -35,7 +33,6 @@ import { MenuCode } from '../../../../common/constants/menu-codes';
 @Roles(...ADMIN_PORTAL_ROLES)
 @RequiresMenu(MenuCode.TimeOfficeDashboard)
 @Controller('admin/timeattendance/timeoffice/punchprocess')
-@UseGuards(JwtAuthGuard)
 export class PunchProcessController {
   constructor(private readonly punchProcessService: PunchProcessService) {}
 

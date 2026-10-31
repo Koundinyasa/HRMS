@@ -7,11 +7,9 @@ import {
   Param,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
  
 import { EmployeeDetailsService } from './employee-details.service';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { OrganizationChartDto } from './dto/organization-chart.dto';
 import { UpdateEmployeeGeneralDetailsDto } from './dto/update-employee-general-details.dto';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -22,7 +20,6 @@ import { MenuCode } from '../../../common/constants/menu-codes';
 @Roles(...ADMIN_PORTAL_ROLES)
 @RequiresMenu(MenuCode.AddEmployee, MenuCode.LeaveDaily, MenuCode.AppliedLeave)
 @Controller('admin/employee-details')
-@UseGuards(JwtAuthGuard)
 export class EmployeeDetailsController {
   constructor(
     private readonly employeeDetailsService: EmployeeDetailsService,

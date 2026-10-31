@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 
 import { DashboardService } from './dashboard.service';
@@ -12,7 +11,6 @@ import { DashboardService } from './dashboard.service';
 import { AttendanceOverviewDto } from './dto/attendance-overview.dto';
 import { EmployeeDashboardDto } from './dto/employee-dashboard.dto';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
@@ -29,7 +27,6 @@ export class DashboardController {
   // Employee Dashboard
   // ==========================================
 
-  @UseGuards(JwtAuthGuard)
   @Post('employee-dashboard')
   async getEmployeeDashboard(
     @Req() req: any,

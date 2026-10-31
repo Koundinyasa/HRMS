@@ -4,13 +4,11 @@ import {
   Body,
   Post,
   Query,
-  UseGuards,
   Req,
   Res,
 } from '@nestjs/common';
 
 import type { Response } from 'express';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { ReportService } from './report.service';
 import { ReportExportService } from './report-export.service';
 import { LeaveSummaryDetailedDto } from './dto/leave-summary-detailed.dto';
@@ -21,7 +19,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/ta/leave/report')
-@UseGuards(JwtAuthGuard)
 export class ReportController {
   constructor(
     private readonly reportService: ReportService,

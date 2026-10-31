@@ -7,10 +7,8 @@ import {
   Put,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { EmployeesService } from './employees.service';
 
@@ -20,7 +18,6 @@ import { UpdateEmployeeStatusDto } from './dto/update-employee-status.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
-@UseGuards(JwtAuthGuard)
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/user-management/employees')
 export class EmployeesController {

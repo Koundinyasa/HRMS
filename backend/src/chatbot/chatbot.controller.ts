@@ -9,14 +9,12 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { ChatbotService } from './chatbot.service';
 import { ChatRequestDto } from './dto/chat-request.dto';
 import { HrmsDbService } from '../db/hrms-db.service';
 import { ReportService } from './services/report.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { DraftService } from './services/draft.service';
 
 const isPrivileged = (role: string) => role === 'admin' || role === 'hr';
@@ -45,7 +43,6 @@ export class ChatbotController {
   // CHAT
   // ============================================================
 
-  @UseGuards(JwtAuthGuard)
   @Post('chat')
   async chat(@Body() body: ChatRequestDto, @Req() req: any): Promise<any> {
     return this.chatbotService.chat(body.message, req.user);
@@ -55,7 +52,6 @@ export class ChatbotController {
   // RESET CONVERSATION
   // ============================================================
 
-  @UseGuards(JwtAuthGuard)
   @Post('reset')
   resetConversation(@Req() req: any): any {
     const employeeId = req.user.employeeId;
@@ -71,7 +67,6 @@ export class ChatbotController {
   // TEAM EXPORT
   // Existing functionality - DO NOT CHANGE
   // ============================================================
-  @UseGuards(JwtAuthGuard)
   @Get('teams/:teamId/export')
   async exportTeam(
     @Param('teamId') teamId: string,
@@ -161,7 +156,6 @@ export class ChatbotController {
   // Admin / HR only
   // ============================================================
 
-  @UseGuards(JwtAuthGuard)
   @Get('employees/export')
   async exportAllEmployees(
     @Query('format') format: string,

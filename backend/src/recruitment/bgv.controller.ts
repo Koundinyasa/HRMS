@@ -9,9 +9,7 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { StartBgvDto } from './dto/start-bgv.dto';
 import { UpdateBgvDocumentDto } from './dto/update-bgv-document.dto';
 import { UpdateBgvDto } from './dto/update-bgv.dto';
@@ -21,7 +19,6 @@ import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('bgv')
-@UseGuards(JwtAuthGuard)
 export class BgvController {
   constructor(private readonly bgvService: BgvService) {}
 

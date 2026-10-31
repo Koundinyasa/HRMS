@@ -4,13 +4,11 @@ import {
   Get,
   Put,
   Req,
-  UseGuards,
   ParseIntPipe,
   Param,
   Post,
 } from '@nestjs/common';
 import { AdmincenterSettingService } from './admincenter.setting.service';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UpdatePayrollConfigurationDto } from './dto/update-payroll-configuration.dto';
 import { AddReminderDto } from './dto/add-reminder.dto';
 import { UpdateReminderStatusDto } from './dto/update-reminder-status.dto';
@@ -19,7 +17,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/setting')
-@UseGuards(JwtAuthGuard)
 export class AdmincenterSettingController {
   constructor(
     private readonly admincenterSettingService: AdmincenterSettingService,

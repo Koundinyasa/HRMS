@@ -8,11 +8,9 @@ import {
   Query,
   Delete,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 
 import { MastersService } from './masters.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -34,7 +32,6 @@ import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/timeattendance/timeoffice/masters')
-@UseGuards(JwtAuthGuard)
 export class MastersController {
   constructor(private readonly mastersService: MastersService) {}
 

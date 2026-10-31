@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  UseGuards,
   Param,
   Query,
   BadRequestException,
@@ -10,7 +9,6 @@ import {
 import { AdminDashboardService } from './admin-dashboard.service';
 import { DashboardSummaryDto } from './dto/dashboard.summary.dto';
 import { ClassificationWiseCountDto } from './dto/Classification.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
@@ -21,7 +19,6 @@ import { GateOpen } from '../../common/decorators/module-gate.decorator';
 @GateOpen()
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/dashboard')
-@UseGuards(JwtAuthGuard)
 export class AdminDashboardController {
   constructor(private readonly adminDashboardService: AdminDashboardService) {}
  

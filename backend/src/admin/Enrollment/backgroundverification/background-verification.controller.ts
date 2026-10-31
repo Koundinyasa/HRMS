@@ -7,18 +7,15 @@ import {
   Put,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { BackgroundVerificationService } from './background-verification.service';
 import { InitiateBackgroundVerificationDto } from './dto/initiate-background-verification.dto';
 import { SaveBackgroundVerificationSettingsDto } from './dto/save-background-verification-settings.dto';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('admin/background-verification')
-@UseGuards(JwtAuthGuard)
 export class BackgroundVerificationController {
   constructor(
     private readonly backgroundVerificationService: BackgroundVerificationService,

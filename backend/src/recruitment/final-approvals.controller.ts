@@ -9,9 +9,7 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { FinalApprovalDecisionDto } from './dto/final-approval-decision.dto';
 import { RecruitmentService } from './recruitment.service';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -19,7 +17,6 @@ import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('final-approvals')
-@UseGuards(JwtAuthGuard)
 export class FinalApprovalsController {
   constructor(private readonly recruitmentService: RecruitmentService) {}
 

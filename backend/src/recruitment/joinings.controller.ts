@@ -7,9 +7,7 @@ import {
   Patch,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ConfirmJoiningDto } from './dto/confirm-joining.dto';
 import { PrepareJoiningDto } from './dto/prepare-joining.dto';
 import { UpdateJoiningDto } from './dto/update-joining.dto';
@@ -19,7 +17,6 @@ import { ADMIN_PORTAL_ROLES } from '../common/constants/roles';
 
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('joinings')
-@UseGuards(JwtAuthGuard)
 export class JoiningsController {
   constructor(private readonly joiningsService: JoiningsService) {}
 

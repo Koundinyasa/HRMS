@@ -7,10 +7,8 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
   Patch,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { InterviewsService } from './interviews.service';
 import {
   InterviewFeedbackDto,
@@ -33,7 +31,6 @@ import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 // @Roles(Role.Admin, Role.HR, Role.Employee).
 @Roles(...ADMIN_PORTAL_ROLES)
 @Controller('recruitment')
-@UseGuards(JwtAuthGuard)
 export class InterviewsController {
   constructor(private readonly interviews: InterviewsService) {}
 
