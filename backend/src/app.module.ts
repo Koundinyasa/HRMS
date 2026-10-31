@@ -4,8 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 import { AppController } from './app.controller';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { JwtConfigModule } from './common/jwt/jwt-config.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -37,12 +35,7 @@ import { InterviewsModule } from './recruitment/interviews/interviews.module';
       validationSchema,
     }),
 
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-    }),
- 
- 
+    // Uploaded files are served from main.ts, behind a login check.
     JwtConfigModule,
  
     DatabaseModule,

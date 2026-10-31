@@ -9,7 +9,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/logger/logging.interceptor';
 import { createRequireAuth } from './common/middleware/require-auth.middleware';
 import { AuthSessionService } from './auth/session/auth-session.service';
-import { Role } from './common/constants/roles';
+import { ADMIN_PORTAL_ROLES, Role } from './common/constants/roles';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import express from 'express';
@@ -80,6 +80,27 @@ async function bootstrap() {
       index: false,
       dotfiles: 'deny',
     }),
+  );
+
+  // Files in backend/uploads (leave and help desk attachments, circulars,
+  // company documents) also require a logged-in user. Company documents and
+  // the old recruitment folder are limited to admin-portal roles.
+  // The more specific folders are registered first.
+  const staticOptions = { index: false, dotfiles: 'deny' as const };
+  server.use(
+    '/uploads/company-documents',
+    createRequireAuth(requireAuthOptions, ADMIN_PORTAL_ROLES),
+    express.static(join(process.cwd(), 'uploads', 'company-documents'), staticOptions),
+  );
+  server.use(
+    '/uploads/recruitment',
+    createRequireAuth(requireAuthOptions, ADMIN_PORTAL_ROLES),
+    express.static(join(process.cwd(), 'uploads', 'recruitment'), staticOptions),
+  );
+  server.use(
+    '/uploads',
+    createRequireAuth(requireAuthOptions),
+    express.static(join(process.cwd(), 'uploads'), staticOptions),
   );
 
   app.setGlobalPrefix('api');
