@@ -121,6 +121,14 @@ export class AttendanceService {
   private readonly ESS_DEVICE_ID = 4;
   private readonly ANGLE_LABEL_COLUMN_READY = true;
 
+  // Street address for each punch, looked up from the public OpenStreetMap
+  // service (nominatim.openstreetmap.org) while the punch is being saved
+  // (waits at most 3 seconds, then the coordinates text is used). This sends
+  // the punch coordinates outside the company. It is on by default; set
+  // PUNCH_ADDRESS_LOOKUP=false in the backend .env to switch it off.
+  private readonly ADDRESS_LOOKUP_ENABLED =
+    process.env.PUNCH_ADDRESS_LOOKUP !== 'false';
+
   // PHOTO — step-6 profile photo saved at enrollment. The image file goes
   // in FACE_PHOTO_DIR and only its RELATIVE path (<EmployeeID>/<guid>.jpg)
   // is stored, in EmployeeFaceVectors.ImagePath. Run the ImagePath
@@ -440,6 +448,21 @@ export class AttendanceService {
       await this.checkWfhSelfDistance(employeeId, latitude, longitude);
     }
 
+    // Location text saved with the punch. Normally the street address; when
+    // the lookup is off, slow or fails, the coordinates text instead. It is
+    // worked out BEFORE the punch is saved, so the punch row is written once
+    // and never updated afterwards.
+    let punchLocation = AttendanceService.describePunchLocation(
+      latitude,
+      longitude,
+      geoFenceId,
+      isWfhPunch,
+    );
+    if (this.ADDRESS_LOOKUP_ENABLED && verify.verified) {
+      const address = await this.reverseGeocode(latitude, longitude);
+      if (address) punchLocation = address;
+    }
+
     const recorded = await this.recordVerificationAttempt(
       employeeId,
       verify,
@@ -449,6 +472,7 @@ export class AttendanceService {
       geoFenceId,
       locationInfo?.branchId ?? null,
       punchMode ?? null,
+      punchLocation,
     );
 
     if (!verify.verified) {
@@ -472,10 +496,6 @@ export class AttendanceService {
         success: false,
         message: 'Could not record the punch. Please try again.',
       };
-    }
-
-    if (punchType && latitude !== undefined && longitude !== undefined) {
-      this.resolvePunchLocationInBackground(employeeId, latitude, longitude);
     }
 
     return {
@@ -790,6 +810,21 @@ export class AttendanceService {
     }
   }
 
+  // The location text saved with a punch and shown in the punch lists. It is
+  // built here from the punch itself, so no coordinates leave the company
+  // (no address lookup on a public map service).
+  private static describePunchLocation(
+    latitude: number,
+    longitude: number,
+    geoFenceId: number | null,
+    isWfhPunch: boolean,
+  ): string {
+    const coordinates = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    if (isWfhPunch) return `Work from home (${coordinates})`;
+    if (geoFenceId !== null) return `Approved office location (${coordinates})`;
+    return coordinates;
+  }
+
   private async recordVerificationAttempt(
     claimedEmployeeId: string,
     verify: FaceVerifyResult,
@@ -799,6 +834,7 @@ export class AttendanceService {
     geoFenceId?: number | null,
     clientLocationId?: number | null,
     punchMode?: number | null,
+    punchLocation?: string | null,
   ): Promise<{ ok: boolean }> {
     try {
       const pool = await this.databaseService.connect();
@@ -836,7 +872,7 @@ export class AttendanceService {
         .input('GeoFenceID', sql.Int, geoFenceId ?? null)
         .input('ClientLocationID', sql.Int, clientLocationId ?? null)
         .input('PunchMode', sql.Int, punchMode ?? null)
-        .input('PunchLocation', sql.VarChar(sql.MAX), null)
+        .input('PunchLocation', sql.VarChar(sql.MAX), punchLocation ?? null)
         .execute('USP_RecordFaceVerificationPunch');
       return { ok: true };
     } catch (err) {
@@ -845,26 +881,6 @@ export class AttendanceService {
       );
       return { ok: false };
     }
-  }
-
-  private resolvePunchLocationInBackground(
-    employeeId: string,
-    latitude: number,
-    longitude: number,
-  ): void {
-    void (async () => {
-      const rawPunchId = await this.getLatestRawPunchId(employeeId);
-      if (!rawPunchId) return;
-
-      const locationText = await this.reverseGeocode(latitude, longitude);
-      if (!locationText) return;
-
-      await this.updatePunchLocation(rawPunchId, locationText);
-    })().catch((err) => {
-      this.logger.error(
-        `resolvePunchLocationInBackground failed for ${employeeId} - ${(err as Error).message}`,
-      );
-    });
   }
 
   private async reverseGeocode(
@@ -879,7 +895,7 @@ export class AttendanceService {
             'User-Agent':
               'KTS-People360-Attendance/1.0 (internal HRMS attendance system)',
           },
-          timeout: 5000,
+          timeout: 3000,
         }),
       );
       return response.data?.display_name ?? null;
@@ -888,44 +904,6 @@ export class AttendanceService {
         `reverseGeocode failed for (${latitude}, ${longitude}) - ${(err as Error).message}`,
       );
       return null;
-    }
-  }
-
-  private async getLatestRawPunchId(
-    employeeId: string,
-  ): Promise<number | null> {
-    try {
-      const pool = await this.databaseService.connect();
-      const result = await pool
-        .request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query(
-          'SELECT TOP 1 ID FROM RawPunches WHERE EmployeeID = @EmployeeID ORDER BY ID DESC',
-        );
-      return result.recordset?.[0]?.ID ?? null;
-    } catch (err) {
-      this.logger.error(
-        `getLatestRawPunchId failed for ${employeeId} - ${(err as Error).message}`,
-      );
-      return null;
-    }
-  }
-
-  private async updatePunchLocation(
-    rawPunchId: number,
-    locationText: string,
-  ): Promise<void> {
-    try {
-      const pool = await this.databaseService.connect();
-      await pool
-        .request()
-        .input('RawPunchID', sql.BigInt, rawPunchId)
-        .input('PunchLocation', sql.VarChar(sql.MAX), locationText)
-        .execute('USP_UpdatePunchLocation');
-    } catch (err) {
-      this.logger.error(
-        `updatePunchLocation failed for RawPunches ID ${rawPunchId} - ${(err as Error).message}`,
-      );
     }
   }
 

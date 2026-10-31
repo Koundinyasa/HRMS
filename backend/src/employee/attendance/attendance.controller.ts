@@ -33,11 +33,10 @@ import type { Response } from 'express';
 // request-body input — the actual enforcement lives in the service, not
 // the type system.
 //
-// accuracy (NEW) is the browser's own confidence radius, in meters, for
-// the geolocation fix it returned. Optional/best-effort: older frontend
-// builds won't send it, and it's only used for a logged warning right
-// now (see ACCURACY_CHECK_REQUIRED in attendance.service.ts), not to
-// block anything yet.
+// accuracy is the browser's own confidence radius, in meters, for the
+// geolocation fix it returned. The service rejects a punch when it is
+// missing or worse than ACCURACY_THRESHOLD_METERS (see
+// attendance.service.ts).
 interface PunchLocationBody {
   latitude?: string;
   longitude?: string;
@@ -123,11 +122,10 @@ export class AttendanceController {
       !Number.isNaN(latitude) &&
       !Number.isNaN(longitude);
 
-    // NEW — accuracy (meters). Same defensive parse as lat/long: malformed
-    // or absent just becomes undefined, never blocks the request at this
-    // layer. attendance.service.ts's punch() only logs a warning on a poor
-    // fix right now (ACCURACY_CHECK_REQUIRED is still false), so there's
-    // nothing to enforce here either — this is pure pass-through.
+    // accuracy (meters). Same defensive parse as lat/long: malformed or
+    // absent just becomes undefined. attendance.service.ts's punch()
+    // rejects a punch without a good enough accuracy, so this layer only
+    // passes the value through.
     const accuracy =
       body.accuracy !== undefined ? Number(body.accuracy) : undefined;
     const hasValidAccuracy = accuracy !== undefined && !Number.isNaN(accuracy);
