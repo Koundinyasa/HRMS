@@ -25,6 +25,9 @@ export interface DatePickerProps {
   onTextChange: (raw: string) => void;
   onBlur: () => void;
   isInvalid?: boolean;
+  // Accepted for callers that pass it. The field is always click-to-pick,
+  // so this does not change behaviour.
+  readOnly?: boolean;
   placeholder?: string;
   inputClassName?: string;
   open: boolean;

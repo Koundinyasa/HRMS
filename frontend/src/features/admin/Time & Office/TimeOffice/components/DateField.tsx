@@ -99,6 +99,7 @@ interface DateFieldProps {
   value: string;
   onChange: (iso: string) => void;
   className?: string;
+  inputClassName?: string;
   align?: "left" | "right";
 }
 
@@ -108,6 +109,7 @@ export default function DateField({
   value,
   onChange,
   className,
+  inputClassName,
   align,
 }: DateFieldProps) {
   const picker = useDatePicker(value, onChange);
@@ -115,7 +117,7 @@ export default function DateField({
   return (
     <label className={className ?? "flex items-center gap-2 text-sm text-slate-600"}>
       {label}
-      <DatePicker {...picker} align={align} />
+      <DatePicker {...picker} align={align} inputClassName={inputClassName} />
     </label>
   );
 }
