@@ -2,9 +2,9 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { Camera, ClipboardEdit, MapPin, Pencil, Plus, TimerReset, UserCheck, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import PunchEntryModal from "./PunchEntryModal";
+import PunchEntryModal from "@/shared/components/PunchEntryModal";
+import { useAddDailyLogPunchMutation } from "@/shared/api/dailyLogPunchApi";
 import {
-  useAddDailyLogPunchMutation,
   useApplyDailyLogLeaveMutation,
   useCorrectDailyLogStatusMutation,
   useEditDailyLogPunchMutation,

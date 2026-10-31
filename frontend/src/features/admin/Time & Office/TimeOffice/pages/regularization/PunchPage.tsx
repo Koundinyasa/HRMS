@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { Inbox, Pencil, Plus } from "lucide-react";
 import RegularizationLayout from "./RegularizationLayout";
 import DateField from "../../components/DateField";
-import PunchEntryModal from "../../components/PunchEntryModal";
+import PunchEntryModal from "@/shared/components/PunchEntryModal";
 import { useAddPunchMutation, useGetPunchDetailsQuery, useUpdatePunchMutation } from "../../api/regularizationApi";
 import type { PunchDetailRow } from "../../types/timeoffice.types";
 

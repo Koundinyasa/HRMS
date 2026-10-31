@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import DropdownSelect from "../../../components/DropdownSelect";
+import DropdownSelect from "./DropdownSelect";
 
 const PUNCH_DIRECTION_OPTIONS = [
   { label: "In", value: "In" },

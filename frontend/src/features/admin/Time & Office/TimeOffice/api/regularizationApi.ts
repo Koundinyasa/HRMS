@@ -99,16 +99,6 @@ export const regularizationApi = baseApi.injectEndpoints({
       ],
     }),
 
-    addDailyLogPunch: builder.mutation<void, { employeeId: string; date: string } & PunchBody>({
-      query: ({ employeeId, ...body }) => ({
-        url: `${REG_BASE}/attendance/dailylog/punch`,
-        method: "POST",
-        params: { employeeId },
-        body,
-      }),
-      invalidatesTags: [{ type: "TimeOffice", id: "DAILY_LOG" }],
-    }),
-
     editDailyLogPunch: builder.mutation<void, { punchId: string } & PunchBody>({
       query: ({ punchId, ...body }) => ({ url: `${REG_BASE}/attendance/dailylog/punch/${punchId}`, method: "PUT", body }),
       invalidatesTags: [{ type: "TimeOffice", id: "DAILY_LOG" }],
@@ -151,7 +141,6 @@ export const {
   useGetDailyLogQuery,
   useCorrectDailyLogStatusMutation,
   useApplyDailyLogLeaveMutation,
-  useAddDailyLogPunchMutation,
   useEditDailyLogPunchMutation,
   useGetTaInsightsSummaryQuery,
   useGetTaInsightsDetailsQuery,

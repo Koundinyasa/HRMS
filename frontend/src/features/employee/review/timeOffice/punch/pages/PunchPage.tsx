@@ -5,7 +5,7 @@ import { ChevronDown, RefreshCw, Plus, Bookmark } from "lucide-react";
 import PunchDatePicker from "../components/PunchDatePicker";
 import PunchRecordCard from "../components/PunchRecordCard";
 import TimeOfficeNavbar from "../../components/TimeOfficeNavbar";
-import PunchEntryModal from "@/features/admin/Time & Office/TimeOffice/components/PunchEntryModal";
+import PunchEntryModal from "@/shared/components/PunchEntryModal";
 import {
   Select,
   SelectContent,
@@ -15,7 +15,7 @@ import {
 import { useReportingEmployees } from "../hooks/useReportingEmployees";
 import { usePunchDashboard } from "../hooks/usePunchDashboard";
 import { usePunchEditor } from "../hooks/usePunchEditor";
-import { useAddDailyLogPunchMutation } from "@/features/admin/Time & Office/TimeOffice/api/regularizationApi";
+import { useAddDailyLogPunchMutation } from "@/shared/api/dailyLogPunchApi";
 import type {
   PunchPageProps,
   PunchNavigationState,
