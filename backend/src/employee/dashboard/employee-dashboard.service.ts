@@ -10,6 +10,55 @@ import * as sql from 'mssql';
 @Injectable()
 export class DashboardService {
   constructor(private readonly dbService: DatabaseService) {}
+
+  // USP_GetUserInfo returns five result sets (profile, menus, holidays,
+  // attendance summary, events) and the dashboard asks for several of them in
+  // the same moment (profile, menus, holidays, approvals). Running it once per
+  // request meant 3 to 4 identical executions for every dashboard load. The
+  // calls for the same employee that arrive within a few seconds now share one
+  // execution. The result is only read, never changed, by the callers. A failed
+  // call is not kept, so the next request tries again.
+  private static readonly USER_INFO_SHARE_MS = 5000;
+  private readonly userInfoRuns = new Map<
+    string,
+    { startedAt: number; run: Promise<sql.IProcedureResult<any>> }
+  >();
+
+  private getUserInfoResult(
+    employeeId: string,
+  ): Promise<sql.IProcedureResult<any>> {
+    const now = Date.now();
+    const existing = this.userInfoRuns.get(employeeId);
+    if (
+      existing &&
+      now - existing.startedAt < DashboardService.USER_INFO_SHARE_MS
+    ) {
+      return existing.run;
+    }
+
+    // drop finished entries so the map cannot grow without limit
+    for (const [key, entry] of this.userInfoRuns) {
+      if (now - entry.startedAt >= DashboardService.USER_INFO_SHARE_MS) {
+        this.userInfoRuns.delete(key);
+      }
+    }
+
+    const run = this.dbService
+      .connect()
+      .then((pool) =>
+        pool
+          .request()
+          .input('EmployeeID', employeeId)
+          .execute('USP_GetUserInfo'),
+      );
+    this.userInfoRuns.set(employeeId, { startedAt: now, run });
+    run.catch(() => {
+      if (this.userInfoRuns.get(employeeId)?.run === run) {
+        this.userInfoRuns.delete(employeeId);
+      }
+    });
+    return run;
+  }
  
   async getWelcomeMessage(employeeId: string) {
     const pool = await this.dbService.connect();
@@ -51,12 +100,7 @@ export class DashboardService {
   // }
  
   async getProfile(employeeId: string) {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .input('EmployeeID', employeeId)
-      .execute('USP_GetUserInfo');
+    const result = await this.getUserInfoResult(employeeId);
  
     const profile = result.recordsets?.[0]?.[0];
  
@@ -81,12 +125,7 @@ export class DashboardService {
   }
  
   async getRoleMenus(employeeId: string) {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .input('EmployeeID', employeeId)
-      .execute('USP_GetUserInfo');
+    const result = await this.getUserInfoResult(employeeId);
  
     const menus = Array.isArray(result.recordsets?.[1])
       ? result.recordsets[1]
@@ -99,12 +138,7 @@ export class DashboardService {
   }
  
   async getHolidayList(employeeId: string) {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .input('EmployeeID', employeeId)
-      .execute('USP_GetUserInfo');
+    const result = await this.getUserInfoResult(employeeId);
  
     const holidays = Array.isArray(result.recordsets?.[2])
       ? result.recordsets[2]
@@ -150,19 +184,12 @@ export class DashboardService {
  
   async getApprovalSummary(employeeId: string) {
     try {
-      const pool = await this.dbService.connect();
+      const result = await this.getUserInfoResult(employeeId);
+      const recordsets = result.recordsets as unknown as Array<
+        Array<Record<string, any>>
+      >;
  
-      const result = await pool
-        .request()
-        .input('EmployeeID', employeeId)
-        .execute<{
-          PendingApprovals?: number;
-          MyRequests?: string;
-          MyApprovals?: string;
-          RequestCount?: number | string;
-        }>('USP_GetUserInfo');
- 
-      const allRows = result.recordsets.flat();
+      const allRows = recordsets.flat();
  
       const pendingApprovals =
         allRows.find(
@@ -172,7 +199,7 @@ export class DashboardService {
         )?.PendingApprovals ?? 0;
  
       const myRequestsDetails =
-        result.recordsets
+        recordsets
           .find((recordset) =>
             recordset.some((row) => typeof row.MyRequests === 'string'),
           )
@@ -182,7 +209,7 @@ export class DashboardService {
           })) ?? [];
  
       const myApprovalsDetails =
-        result.recordsets
+        recordsets
           .find((recordset) =>
             recordset.some((row) => typeof row.MyApprovals === 'string'),
           )
