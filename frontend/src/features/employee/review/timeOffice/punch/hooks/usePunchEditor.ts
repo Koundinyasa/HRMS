@@ -414,62 +414,11 @@ export function usePunchEditor(
      SAVE RECORD
      ======================================================= */
 
-  const saveRecord = async (
-    punchId: string | number,
-  ): Promise<void> => {
-    setSavingId(punchId);
-    setSaveError(null);
-
-    try {
-      const edit =
-        edits[
-          String(punchId)
-        ];
-
-      if (!edit) {
-        throw new Error(
-          "Punch record not found.",
-        );
-      }
-
-      /*
-       * Your backend currently provides
-       * GET punch APIs only.
-       *
-       * Do not call a fake update endpoint.
-       */
-
-      console.log(
-        "[Punch] Update prepared:",
-        {
-          punchId,
-
-          correctedTime:
-            edit.correctedTime,
-
-          remarks:
-            edit.remarks,
-        },
-      );
-
-      /*
-       * Temporary success.
-       *
-       * Add the real POST/PUT endpoint here
-       * after the backend update API is provided.
-       */
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to update punch.";
-
-      setSaveError(message);
-
-      throw err;
-    } finally {
-      setSavingId(null);
-    }
+  const saveRecord = async (_punchId: string | number): Promise<void> => {
+    // Saving an edit to an existing punch needs a server call that is not
+    // wired up yet. Tell the user instead of pretending it was saved.
+    setSavingId(null);
+    setSaveError("Editing an existing punch is not available yet.");
   };
 
   return {
