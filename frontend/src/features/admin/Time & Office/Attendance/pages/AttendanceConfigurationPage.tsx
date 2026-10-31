@@ -1,6 +1,6 @@
 import { Outlet, useParams } from "react-router-dom";
 import TabBar from "@/features/admin/components/TabBar";
-import { Configurations_Details_Tab } from "../constants/attendance.constants";
+import { Configurations_Details_Tab } from "../Constants/attendance.constants";
 
 export default function AttendanceConfigurationPage() {
   const { domain } = useParams();

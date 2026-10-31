@@ -262,8 +262,8 @@ import PolicySidebar from "../components/PolicySidebar";
 import PolicyContent from "../components/PolicyContent";
 import type { LeaveSettingsOutletContext } from "./leavesettingspage";
 
-import AddLeavePolicyModal from "../components/AddLeavePolicyModal";
-import AddLeaveTypeModal from "../components/AddLeaveTypeModal";
+import AddLeavePolicyModal from "../components/addleavepolicymodal";
+import AddLeaveTypeModal from "../components/addleavetypemodal";
 import { useGetClassificationLeaveTypesQuery } from "@/features/admin/admincenter/classifications/api/leaveApi";
 
 const ICONS: Record<
