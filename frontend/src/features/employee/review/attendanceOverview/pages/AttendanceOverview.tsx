@@ -74,18 +74,10 @@ export default function AttendanceOverview() {
     setToasts,
     pushToast,
 
-    processed,
-    processedAt,
-    processMenuOpen,
-    setProcessMenuOpen,
-
     activeDetailModal,
     openDetailModal,
     closeDetailModal,
 
-    handleProcessClick,
-    handleReprocess,
-    handleUndoProcess,
     handleExport,
 
     rawPunches,
@@ -243,9 +235,6 @@ export default function AttendanceOverview() {
             workedShift={workedShift}
             assignedPolicy={assignedPolicy}
             assignedPattern={assignedPattern}
-            processed={processed}
-            processedAt={processedAt}
-            processMenuOpen={processMenuOpen}
             days={days}
             onDateChange={setSelectedDate}
             onEmployeeChange={(employee) => {
@@ -256,11 +245,7 @@ export default function AttendanceOverview() {
             onWorkedShiftChange={setWorkedShift}
             onPolicyChange={setAssignedPolicy}
             onPatternChange={setAssignedPattern}
-            onProcessClick={handleProcessClick}
-            onReprocess={handleReprocess}
-            onUndoProcess={handleUndoProcess}
             onExport={handleExport}
-            onProcessMenuOpenChange={setProcessMenuOpen}
           />
         )}
 

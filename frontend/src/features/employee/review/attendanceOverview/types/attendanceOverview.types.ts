@@ -158,12 +158,6 @@ export interface AttendanceFiltersProps {
 
   assignedPattern: string;
 
-  processed: boolean;
-
-  processedAt: string | null;
-
-  processMenuOpen: boolean;
-
   days: AttendanceDay[];
 
   onDateChange: (
@@ -186,17 +180,7 @@ export interface AttendanceFiltersProps {
     value: string,
   ) => void;
 
-  onProcessClick: () => void;
-
-  onReprocess: () => void;
-
-  onUndoProcess: () => void;
-
   onExport: () => void;
-
-  onProcessMenuOpenChange: (
-    open: boolean,
-  ) => void;
 }
 
 // ============================================================

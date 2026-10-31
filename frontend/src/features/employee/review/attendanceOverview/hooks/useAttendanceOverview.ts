@@ -280,22 +280,6 @@ export function useAttendanceOverview() {
     useState<Toast[]>([]);
 
   // =====================================================
-  // PROCESSING STATE
-  // =====================================================
-  // These are currently local UI states.
-  // They should be connected to an API when the
-  // attendance processing API is available.
-
-  const [processed, setProcessed] =
-    useState(false);
-
-  const [processedAt, setProcessedAt] =
-    useState<string | null>(null);
-
-  const [processMenuOpen, setProcessMenuOpen] =
-    useState(false);
-
-  // =====================================================
   // OVERVIEW DETAIL MODAL
   // =====================================================
 
@@ -604,69 +588,6 @@ export function useAttendanceOverview() {
   );
 
   // =====================================================
-  // PROCESS ATTENDANCE
-  // =====================================================
-  // Temporary local UI behavior.
-  // Replace with API mutation once processing API is provided.
-
-  const handleProcessClick =
-    useCallback(() => {
-      if (!processed) {
-        setProcessed(true);
-
-        setProcessedAt(
-          new Date().toLocaleString(),
-        );
-
-        pushToast(
-          "Attendance processed successfully.",
-          "success",
-        );
-      } else {
-        setProcessMenuOpen(
-          (value) => !value,
-        );
-      }
-    }, [
-      processed,
-      pushToast,
-    ]);
-
-  // =====================================================
-  // REPROCESS
-  // =====================================================
-
-  const handleReprocess =
-    useCallback(() => {
-      setProcessedAt(
-        new Date().toLocaleString(),
-      );
-
-      setProcessMenuOpen(false);
-
-      pushToast(
-        "Attendance re-processed successfully.",
-        "success",
-      );
-    }, [pushToast]);
-
-  // =====================================================
-  // UNDO PROCESS
-  // =====================================================
-
-  const handleUndoProcess =
-    useCallback(() => {
-      setProcessed(false);
-      setProcessedAt(null);
-      setProcessMenuOpen(false);
-
-      pushToast(
-        "Attendance processing undone.",
-        "info",
-      );
-    }, [pushToast]);
-
-  // =====================================================
   // EXPORT
   // =====================================================
 
@@ -911,19 +832,10 @@ export function useAttendanceOverview() {
     setToasts,
     pushToast,
 
-    processed,
-    processedAt,
-
-    processMenuOpen,
-    setProcessMenuOpen,
-
     activeDetailModal,
     openDetailModal,
     closeDetailModal,
 
-    handleProcessClick,
-    handleReprocess,
-    handleUndoProcess,
     handleExport,
 
     loadSelectedDayPunches,

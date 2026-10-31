@@ -1,9 +1,7 @@
-import { useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowRightLeft,
   Bookmark,
   Calendar,
-  Check,
   ChevronDown,
   ClipboardList,
   Clock,
@@ -28,88 +26,14 @@ export default function AttendanceFilters({
   workedShift,
   assignedPolicy,
   assignedPattern,
-  processed,
-  processedAt,
-  processMenuOpen,
   days,
   onDateChange,
   onShiftChange,
   onWorkedShiftChange,
   onPolicyChange,
   onPatternChange,
-  onProcessClick,
-  onReprocess,
-  onUndoProcess,
   onExport,
-  onProcessMenuOpenChange,
 }: AttendanceFiltersProps) {
-  const processRef = useRef<HTMLDivElement>(null);
-
-  const processPanelRef = useRef<HTMLDivElement>(null);
-
-  const [processPosition, setProcessPosition] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-
-  const updateProcessPosition = () => {
-    if (!processRef.current) return;
-
-    const rect = processRef.current.getBoundingClientRect();
-
-    const width = 256;
-    const margin = 8;
-
-    const left = Math.min(
-      Math.max(rect.right - width, margin),
-      window.innerWidth - width - margin,
-    );
-
-    const top = Math.min(rect.bottom + 8, window.innerHeight - 40);
-
-    setProcessPosition({
-      top,
-      left,
-    });
-  };
-
-  useLayoutEffect(() => {
-    if (!processMenuOpen) return;
-
-    updateProcessPosition();
-
-    window.addEventListener("resize", updateProcessPosition);
-
-    window.addEventListener("scroll", updateProcessPosition, true);
-
-    return () => {
-      window.removeEventListener("resize", updateProcessPosition);
-
-      window.removeEventListener("scroll", updateProcessPosition, true);
-    };
-  }, [processMenuOpen]);
-
-  useLayoutEffect(() => {
-    if (!processMenuOpen) return;
-
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      if (
-        !processRef.current?.contains(target) &&
-        !processPanelRef.current?.contains(target)
-      ) {
-        onProcessMenuOpenChange(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClick);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-    };
-  }, [processMenuOpen, onProcessMenuOpenChange]);
-
   return (
     <div className="w-full overflow-x-auto rounded-xl border border-[#dbe3ee] bg-white shadow-sm font-[Urbanist]">
       <div className="flex w-full min-w-max items-stretch divide-x divide-[#dbe3ee] font-[Urbanist]">
@@ -336,75 +260,17 @@ export default function AttendanceFilters({
           )}
         </AttendanceDropdown>
 
-        {/* Process */}
-        <div ref={processRef} className="relative min-w-[200px] flex-1 font-[Urbanist]">
+        {/* Process: not available yet. There is no server action behind it. */}
+        <div className="relative min-w-[200px] flex-1 font-[Urbanist]">
           <button
             type="button"
-            onClick={onProcessClick}
-            className={`flex h-[60px] w-full items-center justify-center gap-1.5 text-[12px] font-medium transition-colors ${
-              processed
-                ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                : "bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-            }`}
+            disabled
+            title="Attendance processing is not available here yet"
+            className="flex h-[60px] w-full cursor-not-allowed items-center justify-center gap-1.5 bg-slate-50 text-[12px] font-medium text-slate-300"
           >
-            {processed ? (
-              <Check className="h-3.5 w-3.5 font-[Urbanist]" />
-            ) : (
-              <Bookmark className="h-3.5 w-3.5 font-[Urbanist]" />
-            )}
-
-            <span>{processed ? "Processed" : "Process"}</span>
-
-            {processed && (
-              <ChevronDown
-                className={`h-3 w-3 ${processMenuOpen ? "rotate-180" : ""}`}
-              />
-            )}
+            <Bookmark className="h-3.5 w-3.5 font-[Urbanist]" />
+            <span>Process (not available yet)</span>
           </button>
-
-          {processed && processMenuOpen && processPosition && (
-            <div
-              ref={processPanelRef}
-              className="fixed z-[100] w-64 rounded-lg border border-black bg-white p-3 shadow-lg font-[Urbanist]"
-              style={{
-                top: processPosition.top,
-                left: processPosition.left,
-              }}
-            >
-              <p className="text-xs font-semibold text-slate-500 font-[Urbanist]">
-                Processing status
-              </p>
-
-              <p className="mt-1 text-sm text-slate-700 font-[Urbanist]">
-                Processed for{" "}
-                <span className="font-semibold font-[Urbanist]">
-                  {selectedEmployee?.name ?? ""}
-                </span>
-              </p>
-
-              {processedAt && (
-                <p className="text-xs text-slate-400 font-[Urbanist]">on {processedAt}</p>
-              )}
-
-              <div className="mt-3 flex gap-2 font-[Urbanist]">
-                <button
-                  type="button"
-                  onClick={onReprocess}
-                  className="flex-1 rounded-md border border-black bg-sky-50 px-2 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-100 font-[Urbanist]"
-                >
-                  Reprocess
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onUndoProcess}
-                  className="flex-1 rounded-md border border-black bg-red-50 px-2 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 font-[Urbanist]"
-                >
-                  Undo
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Export */}
