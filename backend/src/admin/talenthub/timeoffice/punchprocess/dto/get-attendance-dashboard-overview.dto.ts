@@ -1,12 +1,6 @@
-import { IsDateString, IsInt, IsOptional, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class GetAttendanceDashboardOverviewDto {
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  companyId!: number;
-
   @IsOptional()
   @IsDateString()
   toDate?: string;

@@ -4,6 +4,7 @@ import { DatabaseService } from '../../../../database/database.service';
 
 import { UpdateGeoLocationDto } from './dto/update-geo-location.dto';
 import { UpdatePolicyDto } from './dto/update-policy.dto';
+import * as sql from 'mssql';
 
 @Injectable()
 export class AssignService {
@@ -113,15 +114,20 @@ export class AssignService {
   }
 
   // 6. Get Policy List
-  async getPolicies() {
+  async getPolicies(companyId: number) {
     try {
       const pool = await this.databaseService.connect();
-
       const result = await pool
         .request()
-        .execute('USP_TimeOffice_Assign_Policies_Get');
+        .input('CompanyID', sql.Int, companyId)
+        .execute('USP_GetAttendancePolicy');
 
-      return result.recordset;
+      return (result.recordset ?? []).map((row: Record<string, unknown>) => ({
+        PolicyId: row.ID,
+        PolicyName: row.AttendanceName,
+        ShortName: row.ShortName,
+        IsActive: row.IsActive,
+      }));
     } catch (error) {
       console.error('Error fetching policies:', error);
 

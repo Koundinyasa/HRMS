@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import * as sql from 'mssql';
 
 import { DatabaseService } from '../../../../database/database.service';
 
@@ -23,13 +24,14 @@ export class MastersService {
   // POLICY - ATTENDANCE
   // =========================================================
 
-  async getAttendancePolicy() {
+  async getAttendancePolicy(companyId: number) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute('USP_Masters_Policy_Attendance_Get');
+        .input('CompanyID', sql.Int, companyId)
+        .execute('USP_GetAttendancePolicy');
 
       return {
         success: true,
@@ -609,13 +611,24 @@ export class MastersService {
 
   // 22. Get Shift Master List
 
-  async getShiftMasters() {
+  async getShiftMasters(companyId: number) {
     try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .execute('USP_Masters_ShiftMaster_Get');
+        .input('CompanyID', sql.Int, companyId)
+        .query(`
+          SELECT
+            ShiftCode,
+            ShiftName,
+            StartTime,
+            EndTime
+          FROM dbo.ShiftMaster
+          WHERE CompanyID = @CompanyID
+            AND ISNULL(IsActive, 1) = 1
+          ORDER BY ShiftName
+        `);
 
       return {
         success: true,

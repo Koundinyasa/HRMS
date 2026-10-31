@@ -1,11 +1,6 @@
-import { IsDateString, IsInt, IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class GetOnLeaveEmployeesDto {
-  @Type(() => Number)
-  @IsInt()
-  companyId!: number;
-
   @IsOptional()
   @IsDateString()
   fromDate?: string;

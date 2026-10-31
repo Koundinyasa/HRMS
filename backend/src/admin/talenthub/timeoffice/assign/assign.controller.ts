@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Req } from '@nestjs/common';
 
 import { AssignService } from './assign.service';
 
@@ -52,8 +52,8 @@ export class AssignController {
 
   // 6. Get Policy List
   @Get('policy-update/policies')
-  async getPolicies() {
-    return this.assignService.getPolicies();
+  async getPolicies(@Req() req: any) {
+    return this.assignService.getPolicies(req.user.companyId);
   }
 
   // 7. Update Employee Policy

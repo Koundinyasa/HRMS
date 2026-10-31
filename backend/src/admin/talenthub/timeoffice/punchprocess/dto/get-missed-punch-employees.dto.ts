@@ -1,5 +1,4 @@
-import { IsDateString, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString } from 'class-validator';
 
 export class GetMissedPunchEmployeesDto {
   @IsDateString()
@@ -7,9 +6,4 @@ export class GetMissedPunchEmployeesDto {
 
   @IsDateString()
   toDate!: string;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  companyId!: number;
 }

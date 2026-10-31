@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Query,
+  Req,
   Delete,
   UploadedFile,
   UseInterceptors,
@@ -40,8 +41,8 @@ export class MastersController {
   // =========================================================
 
   @Get('policy/attendance')
-  async getAttendancePolicy() {
-    return this.mastersService.getAttendancePolicy();
+  async getAttendancePolicy(@Req() req: any) {
+    return this.mastersService.getAttendancePolicy(req.user.companyId);
   }
 
   @Put('policy/attendance')
@@ -194,8 +195,8 @@ export class MastersController {
   // 22. Get Shift Master List
 
   @Get('shiftmaster')
-  async getShiftMasters() {
-    return this.mastersService.getShiftMasters();
+  async getShiftMasters(@Req() req: any) {
+    return this.mastersService.getShiftMasters(req.user.companyId);
   }
 
   // 23. Get Shift Master Details
