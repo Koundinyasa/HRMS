@@ -432,7 +432,7 @@ export default function LeaveHistoryTable({
         onOpenChange={setDialogOpen}
         record={selectedRecord}
         onSuccess={() => {
-          refetchLeaveHistory();
+          refetchLeaveHistory?.();
 
           setDialogOpen(false);
 

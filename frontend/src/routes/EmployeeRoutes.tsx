@@ -20,7 +20,6 @@ import LeaveApply from "@/features/employee/leave/pages/LeaveApply";
 import ApplyLeaveForEmployee from "@/features/employee/leave/components/ApplyleaveForEmployee";
 import LeaveBalance from "@/features/employee/leave/pages/LeaveBalance";
 import LeaveHistory from "@/features/employee/leave/pages/LeaveHistory";
-import LeaveCancellation from "@/features/employee/leave/pages/LeaveCancellation";
 import LeaveStatus from "@/features/employee/leave/pages/LeaveStatus";
 import HolidayListPage from "@/features/employee/leave/pages/HolidayListPage";
 
@@ -114,7 +113,6 @@ export default function EmployeeRoutes() {
 
           <Route path="history" element={<LeaveHistory />} />
 
-          <Route path="cancel" element={<LeaveCancellation />} />
 
           <Route path="holidaylist" element={<HolidayListPage />} />
 
