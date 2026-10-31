@@ -391,9 +391,31 @@ export function useAttendance({
     { isLoading: isRawPunchLoading },
   ] = useLazyGetEmployeeDailyRawPunchesQuery();
 
-  const attendance = validRequest ? attendanceData : [];
+  // The two calls return their data under each other's names: the 31-day
+  // grid (rows with MetricName and Day1..Day31) and the monthly summary
+  // (rows with Classification and Value). Each one is picked by what it
+  // contains, so the screen works whichever call returns which.
+  const hasKeys = (data: unknown, ...keys: string[]) =>
+    Array.isArray(data) &&
+    data.some(
+      (row) =>
+        row &&
+        typeof row === "object" &&
+        keys.every((key) => key in (row as Record<string, unknown>)),
+    );
+
+  const gridData = [attendanceData, overviewData].find((data) =>
+    hasKeys(data, "MetricName"),
+  );
+  const summaryData = [attendanceData, overviewData].find((data) =>
+    hasKeys(data, "Classification", "Value"),
+  );
+
+  const attendance = validRequest
+    ? ((gridData ?? attendanceData) as typeof attendanceData)
+    : [];
   const overview = validRequest
-    ? (overviewRows as unknown as AttendanceOverviewData)
+    ? ((summaryData ?? overviewRows) as unknown as AttendanceOverviewData)
     : null;
   const error = !validRequest
     ? "Invalid employee or attendance selection."
