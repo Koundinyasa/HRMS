@@ -101,16 +101,19 @@ export const useSeparationManagement = () => {
     try {
       const response = await withdrawResignation(request).unwrap();
 
-      if (isErrorResult(response)) {
+      // Backend may return an array, like the submit call.
+      const result = Array.isArray(response) ? response[0] : response;
+
+      if (isErrorResult(result)) {
         throw {
           data: {
-            Message: response.Message,
+            Message: result.Message,
           },
         };
       }
 
       toast.success(
-        response.Message || "Withdrawal request submitted successfully.",
+        result.Message || "Withdrawal request submitted successfully.",
       );
 
       await refetch();

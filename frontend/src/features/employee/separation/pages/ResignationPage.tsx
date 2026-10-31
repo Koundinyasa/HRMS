@@ -46,11 +46,8 @@ export default function ResignationPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleDateChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = e.target.value;
-
+  // DateField passes the picked date as an ISO "YYYY-MM-DD" string.
+  const handleDateChange = (value: string) => {
     if (!value) {
       setRequestedLastWorkingDate("");
       return;
