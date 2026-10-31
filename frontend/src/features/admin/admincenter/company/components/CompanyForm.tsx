@@ -370,7 +370,7 @@ export default function CompanyForm() {
               id="companyName"
               placeholder="Company Name"
               className="mt-2 h-11"
-              value={companyData.companyName}
+              value={companyData.companyName ?? ""}
               onChange={handleChange}
             />
           </div>
@@ -405,7 +405,7 @@ export default function CompanyForm() {
                 id="cin_LPIN"
                 placeholder="Enter CIN / LLPIN"
                 className="h-11 pr-10"
-                value={companyData.cin_LPIN}
+                value={companyData.cin_LPIN ?? ""}
                 onChange={handleChange}
               />
               <Info
@@ -422,7 +422,7 @@ export default function CompanyForm() {
                 id="tan"
                 placeholder="Enter TAN"
                 className="h-11 pr-10"
-                value={companyData.tan}
+                value={companyData.tan ?? ""}
                 onChange={handleChange}
               />
               <Info
@@ -438,7 +438,7 @@ export default function CompanyForm() {
               id="website"
               placeholder="https://example.com"
               className="mt-2 h-11"
-              value={companyData.website}
+              value={companyData.website ?? ""}
               onChange={handleChange}
             />
           </div>
@@ -464,7 +464,7 @@ export default function CompanyForm() {
               id="address1"
               placeholder="Enter Address Line 1"
               className="mt-2 h-11"
-              value={companyData.address1}
+              value={companyData.address1 ?? ""}
               onChange={handleChange}
             />
           </div>
@@ -474,7 +474,7 @@ export default function CompanyForm() {
               id="address2"
               placeholder="Enter Address Line 2"
               className="mt-2 h-11"
-              value={companyData.address2}
+              value={companyData.address2 ?? ""}
               onChange={handleChange}
             />
           </div>
@@ -484,7 +484,7 @@ export default function CompanyForm() {
               id="address3"
               placeholder="Enter Address Line 3"
               className="mt-2 h-11"
-              value={companyData.address3}
+              value={companyData.address3 ?? ""}
               onChange={handleChange}
             />
           </div>
@@ -498,7 +498,7 @@ export default function CompanyForm() {
                 id="contactMobile"
                 placeholder="9876543210"
                 className="mt-2 h-11"
-                value={companyData.contactMobile}
+                value={companyData.contactMobile ?? ""}
                 onChange={handleChange}
               />
             </div>
@@ -508,7 +508,7 @@ export default function CompanyForm() {
                 id="contactMobile2"
                 placeholder="9876543210"
                 className="mt-2 h-11"
-                value={companyData.contactMobile2}
+                value={companyData.contactMobile2 ?? ""}
                 onChange={handleChange}
               />
             </div>
@@ -524,7 +524,7 @@ export default function CompanyForm() {
                 id="companyCode"
                 placeholder="Enter Short Name"
                 className="h-11 pr-10"
-                value={companyData.companyCode}
+                value={companyData.companyCode ?? ""}
                 onChange={handleChange}
               />
               <Info
@@ -567,7 +567,7 @@ export default function CompanyForm() {
                     data-[state=checked]:bg-[#10B981]
                     data-[state=unchecked]:bg-[#DDDDDD]
                   "
-                  checked={companyData[t.name as keyof CompanyDetails] as boolean}
+                  checked={Boolean(companyData[t.name as keyof CompanyDetails])}
                   onCheckedChange={(checked) =>
                     setCompanyData((prev) => ({
                       ...prev,
