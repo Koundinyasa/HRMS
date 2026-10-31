@@ -14,161 +14,17 @@ import type {
   Toast,
 } from "../types/attendanceOverview.types";
 
-import type {
-  AttendanceOverviewData,
-  Employee,
-} from "../types/regularization.types";
+import type { Employee } from "../types/regularization.types";
+
+import { buildOverview } from "../utils/buildOverview";
+import { downloadAttendanceCsv } from "../utils/downloadAttendanceCsv";
+import { extractStatusByDay } from "../utils/attendanceStatus";
 
 import {
   getOverviewStats,
   normalizeAttendanceRows,
 } from "../validations/regularization.validations";
 
-
-type AttendanceRow = Record<string, unknown>;
-
-const getAttendanceStatus = (value: unknown): string => {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-
-  const status = String(value).trim().toUpperCase();
-
-  if (!status) return "-";
-
-  // Keep the backend attendance codes exactly as they are.
-  // P = Present, AB = Absent, H/HD = Holiday, WO = Week Off.
-  if (
-    status === "P" ||
-    status === "AB" ||
-    status === "A" ||
-    status === "H" ||
-    status === "HD" ||
-    status === "WO" ||
-    status === "W" ||
-    status === "LV" ||
-    status === "LOP"
-  ) {
-    return status;
-  }
-
-  // Backend may return descriptive values.
-  if (status === "PRESENT") return "P";
-  if (status === "ABSENT") return "AB";
-  if (status === "HOLIDAY") return "H";
-  if (status === "WEEK OFF" || status === "WEEK-OFF") return "WO";
-
-  return status;
-};
-
-const extractStatusByDay = (
-  source: unknown,
-): Record<number, string> => {
-  const result: Record<number, string> = {};
-
-  const records: unknown[] = Array.isArray(source)
-    ? source
-    : source && typeof source === "object"
-      ? [source]
-      : [];
-
-  for (const item of records) {
-    if (!item || typeof item !== "object") continue;
-
-    const row = item as AttendanceRow;
-
-    const metricName = String(
-      row.MetricName ??
-        row.metricName ??
-        row.Metric ??
-        row.metric ??
-        row.Name ??
-        row.name ??
-        "",
-    )
-      .trim()
-      .toLowerCase();
-
-    const isWorkStatusRow =
-      metricName === "work status" ||
-      metricName === "status" ||
-      metricName.includes("workstatus") ||
-      metricName.includes("attendance");
-
-    if (isWorkStatusRow) {
-      for (let day = 1; day <= 31; day += 1) {
-        const value =
-          row[`Day${day}`] ??
-          row[`day${day}`];
-
-        if (
-          value !== undefined &&
-          value !== null &&
-          String(value).trim() !== ""
-        ) {
-          result[day] = getAttendanceStatus(value);
-        }
-      }
-    }
-
-    // Also support responses such as:
-    // { Day: 1, Status: "P" }
-    // { day: 2, WorkStatus: "AB" }
-    const dayValue =
-      row.Day ??
-      row.day ??
-      row.DayNumber ??
-      row.dayNumber;
-
-    const statusValue =
-      row.Status ??
-      row.status ??
-      row.WorkStatus ??
-      row.workStatus ??
-      row.AttendanceStatus ??
-      row.attendanceStatus;
-
-    const dayNumber = Number(dayValue);
-
-    if (
-      Number.isInteger(dayNumber) &&
-      dayNumber >= 1 &&
-      dayNumber <= 31 &&
-      statusValue !== undefined &&
-      statusValue !== null
-    ) {
-      result[dayNumber] =
-        getAttendanceStatus(statusValue);
-    }
-
-    // Also support overview keys such as:
-    // "1 Tue": "P", "2 Wed": "AB", "6 Sun": "WO".
-    for (const [key, value] of Object.entries(row)) {
-      const match = key.match(/^(\d{1,2})(?:\s|$)/);
-
-      if (!match) continue;
-
-      const dayNumberFromKey = Number(match[1]);
-
-      if (
-        dayNumberFromKey >= 1 &&
-        dayNumberFromKey <= 31 &&
-        value !== undefined &&
-        value !== null
-      ) {
-        const normalized =
-          getAttendanceStatus(value);
-
-        if (normalized !== "-") {
-          result[dayNumberFromKey] =
-            normalized;
-        }
-      }
-    }
-  }
-
-  return result;
-};
 
 export function useAttendanceOverview() {
   // =====================================================
@@ -412,123 +268,10 @@ export function useAttendanceOverview() {
   // Backend returns an array of employee calendar rows.
   // UI components expect a single employee object (or null).
 
-  const overview = useMemo(() => {
-    let base: Record<string, unknown> | null;
-
-    if (!rawOverview) {
-      base = null;
-    } else if (Array.isArray(rawOverview)) {
-      const metricRows = rawOverview.filter(
-        (row) =>
-          row &&
-          typeof row === "object" &&
-          "Classification" in row &&
-          "Value" in row,
-      ) as Array<Record<string, unknown>>;
-
-      if (metricRows.length > 0) {
-        base = metricRows.reduce<Record<string, unknown>>(
-          (summary, row) => {
-            const classification = String(row.Classification ?? "")
-              .trim()
-              .toLowerCase()
-              .replace(/[^a-z]/g, "");
-            const keyByClassification: Record<string, string> = {
-              totalhours: "totalHours",
-              avghoursperday: "averageHoursPerDay",
-              averagehoursperday: "averageHoursPerDay",
-              othours: "overtimeHours",
-              presentdays: "presentDays",
-              absentdays: "absentDays",
-              earlyin: "earlyIn",
-              latein: "lateIn",
-              earlyout: "earlyOut",
-              overstay: "overstay",
-            };
-            const key = keyByClassification[classification];
-            const [amount, total] = String(row.Value ?? "")
-              .split("/")
-              .map((part) => part.trim());
-            const numericAmount = Number(amount);
-            const numericTotal = Number(total);
-
-            if (key) {
-              summary[key] = Number.isFinite(numericAmount)
-                ? numericAmount
-                : amount;
-            }
-
-            if (Number.isFinite(numericTotal)) {
-              summary.totalDays = numericTotal;
-            }
-
-            return summary;
-          },
-          {},
-        );
-      } else if (!selectedEmployee?.id) {
-        base =
-          rawOverview[0] && typeof rawOverview[0] === "object"
-            ? (rawOverview[0] as Record<string, unknown>)
-            : null;
-      } else {
-        const match = rawOverview.find(
-          (row) =>
-            String(
-              (row as Record<string, unknown>).EmployeeID ?? "",
-            ) === String(selectedEmployee.id),
-        );
-        const selectedRow = match ?? rawOverview[0];
-        base =
-          selectedRow && typeof selectedRow === "object"
-            ? (selectedRow as Record<string, unknown>)
-            : null;
-      }
-    } else {
-      base = rawOverview as Record<string, unknown>;
-    }
-
-    // Enrich with simple aggregates from normalized days when
-    // the overview payload does not already carry totals.
-    // This keeps Monthly Overview cards from staying at 0.00
-    // when only the metric-style daily rows are present.
-    if (base && days.length > 0) {
-      const hasTotalHours =
-        base.totalHours != null ||
-        base.TotalHours != null ||
-        base.total_hours != null ||
-        base.totalWorkHours != null;
-
-      if (!hasTotalHours) {
-        // Sum workHours / grossWorkHours that look like HH:MM or numbers
-        let totalMinutes = 0;
-        for (const d of days) {
-          const raw =
-            d.workHours || d.grossWorkHours || "";
-          if (!raw) continue;
-          const str = String(raw).trim();
-          if (str.includes(":")) {
-            const [h, m] = str.split(":").map(Number);
-            if (Number.isFinite(h) && Number.isFinite(m)) {
-              totalMinutes += h * 60 + m;
-            }
-          } else {
-            const n = Number(str);
-            if (Number.isFinite(n)) totalMinutes += n * 60;
-          }
-        }
-        const hrs = Math.floor(totalMinutes / 60);
-        const mins = totalMinutes % 60;
-        base = {
-          ...base,
-          totalHours: `${hrs}.${String(mins).padStart(2, "0")}`,
-          TotalHours: `${hrs}.${String(mins).padStart(2, "0")}`,
-        };
-      }
-    }
-
-    return base as unknown as AttendanceOverviewData;
-  }, [rawOverview, selectedEmployee, days]);
+  const overview = useMemo(
+    () => buildOverview(rawOverview, selectedEmployee?.id, days),
+    [rawOverview, selectedEmployee?.id, days],
+  );
 
   // =====================================================
   // OVERVIEW STATS
@@ -594,69 +337,10 @@ export function useAttendanceOverview() {
   const handleExport =
     useCallback(() => {
       try {
-        const header =
-          "Date,Day,Shift,Status,Check In,Check Out,Gross Work Hours,Work Hours,Break Hours";
-
-        const rows = days.map(
-          (day) =>
-            [
-              day.date,
-              day.day,
-              day.shift,
-              day.status,
-              day.checkIn ?? "",
-              day.checkOut ?? "",
-              day.grossWorkHours ?? "",
-              day.workHours ?? "",
-              day.breakHours ?? "",
-            ].join(","),
+        downloadAttendanceCsv(
+          days,
+          `attendance_${selectedEmployee?.id ?? ""}_${selectedMonth.replace("/", "-")}.csv`,
         );
-
-        const csv = [
-          header,
-          ...rows,
-        ].join("\n");
-
-        const blob =
-          new Blob([csv], {
-            type: "text/csv;charset=utf-8;",
-          });
-
-        const url =
-          URL.createObjectURL(
-            blob,
-          );
-
-        const anchor =
-          document.createElement(
-            "a",
-          );
-
-        anchor.href = url;
-
-        anchor.download =
-          `attendance_${
-            selectedEmployee?.id ?? ""
-          }_${selectedMonth.replace(
-            "/",
-            "-",
-          )}.csv`;
-
-        document.body.appendChild(
-          anchor,
-        );
-
-        anchor.click();
-
-        document.body.removeChild(
-          anchor,
-        );
-
-        window.setTimeout(() => {
-          URL.revokeObjectURL(
-            url,
-          );
-        }, 5000);
 
         pushToast(
           "Attendance exported successfully.",
