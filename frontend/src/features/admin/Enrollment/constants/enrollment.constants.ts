@@ -3,7 +3,6 @@ import type { SubNavItem } from "../../components/sidebar.types";
 export const ENROLLMENT_SUB_NAV: SubNavItem[] = [
   { label: "Background Verification", path: "background-verification" },
   { label: "Pre-Enrollment", path: "pre-Enrollment" },
-  { label: "Employee Details", path: "EmployeeDetails" },
   { label: "Bulk Update", path: "bulk-update" },
   {
     label: "Separation",

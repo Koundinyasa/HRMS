@@ -48,7 +48,7 @@
 
 
 import CandidateBadge from "./CandidateBadge";
-import type { CandidateTaskItem } from "../../types/preEnrollment.types";
+import type { CandidateTaskItem } from "../types/preEnrollment.types";
 
 interface CandidateTaskListProps {
   title: string;

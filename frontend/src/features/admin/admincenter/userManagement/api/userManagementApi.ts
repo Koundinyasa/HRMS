@@ -39,7 +39,7 @@ export const fetchInactiveEmployees = (): Promise<CreatedEmployee[]> =>
 export const fetchEmployeeSummary = (): Promise<{ totalRecords: number; totalPages: number }> =>
   simulateRequest({ totalRecords: EMPLOYEE_TOTAL_RECORDS, totalPages: EMPLOYEE_TOTAL_PAGES });
 
-export const resendEmployeeInvitation = (employeeId: number): Promise<{ success: true }> => {
+export const resendEmployeeInvitation = (_employeeId: number): Promise<{ success: true }> => {
   
   return simulateRequest({ success: true }, 200);
 };

@@ -12,6 +12,15 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import { Mark, mergeAttributes } from "@tiptap/core";
 
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    fontSize: {
+      setFontSize: (size: string) => ReturnType;
+      unsetFontSize: () => ReturnType;
+    };
+  }
+}
+
 import {
   Bold,
   Italic,

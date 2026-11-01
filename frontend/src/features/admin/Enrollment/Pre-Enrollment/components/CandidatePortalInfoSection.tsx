@@ -58,7 +58,7 @@
 //   );
 // }
 
-import type { CompletedCandidateRow } from "../../types/preEnrollment.types";
+import type { CompletedCandidateRow } from "../types/preEnrollment.types";
 
 interface CandidatePortalInfoSectionProps {
   candidate: CompletedCandidateRow;

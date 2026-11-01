@@ -531,7 +531,10 @@ export default function PolicyPage() {
              ================================================= */}
 
           <PolicySidebar
-            policies={policies}
+            policies={policies.map((policy) => ({
+              policyId: policy.policyId,
+              policyName: policy.name,
+            }))}
             activePolicyId={
               activePolicyId
             }
@@ -556,13 +559,6 @@ export default function PolicyPage() {
           <div className="min-w-0 flex-1 bg-[#F8FAFC]">
 
             <PolicyContent
-              policyName={
-                activePolicy?.name ??
-                "Employee Leave Policy"
-              }
-              activePolicyId={
-                activePolicyId
-              }
               leaves={leaves.map(
                 (leave) => ({
                   leaveId:
@@ -583,14 +579,7 @@ export default function PolicyPage() {
                     ] ?? DollarSign,
                 }),
               )}
-              onAddLeave={
-                handleAddLeave
-              }
-              onHistory={() => {
-                // History API will be connected
-                // once backend provides it.
-              }}
-              onConfigureLeave={
+              onSettings={
                 handleLeaveSettings
               }
               onDeleteLeave={

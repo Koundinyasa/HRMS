@@ -22,6 +22,6 @@ const leaveSlice = createSlice({
 
 export const { setSelectedEmployeeId } = leaveSlice.actions;
 
-export const selectSelectedEmployeeId = (state: RootState) => state.leave.selectedEmployeeId;
+export const selectSelectedEmployeeId = (state: RootState) => state.admin.adminCenter.leave.selectedEmployeeId;
 
 export default leaveSlice.reducer;

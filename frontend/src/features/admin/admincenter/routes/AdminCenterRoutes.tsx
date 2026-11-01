@@ -5,6 +5,8 @@ import { Navigate, Route } from "react-router-dom";
 // Pages are loaded on demand (each one becomes its own file in the build).
 const AdminCenterPage = lazy(() => import("../pages/AdminCenterPage"));
 const AddEmployeePage = lazy(() => import("../addEmployee/pages/AddEmployeePage"));
+const EmployeeListPage = lazy(() => import("../employeeList/pages/EmployeeListPage"));
+const EmployeeDetailPage = lazy(() => import("../employeeList/pages/EmployeeDetailPage"));
 const CompanyDetailsPage = lazy(() => import("../company/pages/CompanyDetailsPage"));
 const CompanyDocumentsPage = lazy(() => import("../company/pages/CompanyDocumentsPage"));
 const CompanyForm = lazy(() => import("../company/components/CompanyForm"));
@@ -56,6 +58,10 @@ export const AdminCenterRoutes = (
     <Route path="applied-leave" element={<AppliedLeavePage />} />
     <Route index element={<Navigate to="add-employee" replace />} />
     <Route path="add-employee" element={<AddEmployeePage />} />
+
+    {/* Employee List (menu route /admin/admin-center/employee/list) */}
+    <Route path="employee/list" element={<EmployeeListPage />} />
+    <Route path="employee/list/:empId" element={<EmployeeDetailPage />} />
 
     {/* Company */}
     <Route path="company">

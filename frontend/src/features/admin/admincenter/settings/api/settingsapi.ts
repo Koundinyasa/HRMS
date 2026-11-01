@@ -7,7 +7,6 @@ import { baseApi } from "@/app/baseApi";
 import type {
   EmailType,
   EmailPayslipSettings,
-  TenantSettings,
   AddReminderInput,
   UpdateCompanyTenantInput,
 } from "../types/settingstypes";

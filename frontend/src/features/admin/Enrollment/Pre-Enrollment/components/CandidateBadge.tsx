@@ -23,7 +23,7 @@
 // }
 
 
-import type { CandidateStatus } from "../../types/preEnrollment.types";
+import type { CandidateStatus } from "../types/preEnrollment.types";
 
 interface CandidateBadgeProps {
   status: CandidateStatus;

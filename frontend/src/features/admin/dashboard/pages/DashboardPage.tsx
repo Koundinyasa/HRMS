@@ -22,7 +22,7 @@ import type { KpiSummary } from "../types/dashboard.types";
 
 // Only the Total Current Employees card navigates; the other cards are not clickable.
 const STAT_CARD_NAV: Partial<Record<keyof KpiSummary, string>> = {
-  totalEmployees: "EmployeeDetails",
+  totalEmployees: "admin-center/employee/list",
 };
 
 // Shared Figma card surface
@@ -131,7 +131,7 @@ export default function DashboardPage() {
                 change={0}
                 onClick={
                   target && domain
-                    ? () => navigate(`/${domain}/admin/enrollment/${target}`)
+                    ? () => navigate(`/${domain}/admin/${target}`)
                     : undefined
                 }
               />

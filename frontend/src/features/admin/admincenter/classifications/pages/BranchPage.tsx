@@ -442,7 +442,6 @@ export default function BranchPage() {
                       <SelectValue placeholder="Select state" />
                     </SelectTrigger>
                     <SelectContent
-                      position="popper"
                       sideOffset={4}
                       className="!w-(--anchor-width) !min-w-0"
                     >

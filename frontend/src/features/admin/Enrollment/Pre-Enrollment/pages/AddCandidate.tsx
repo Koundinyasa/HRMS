@@ -3970,12 +3970,7 @@ export default function AddCandidate() {
 
       {auditOpen &&
         selectedCandidate && (
-          <AuditLogModal
-            candidateName={
-              selectedCandidate.name
-            }
-            onClose={closeAuditLog}
-          />
+          <AuditLogModal onClose={closeAuditLog} />
         )}
     </PreOnboardPageShell>
   );

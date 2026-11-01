@@ -80,11 +80,11 @@ export const {
     resetRegularizationFilters,
 } = timeofficeSlice.actions;
  
-export const selectTimeOfficeActiveSection = (state: RootState) => state.timeOffice.activeSection;
-export const selectTimeOfficePunchProcessTab = (state: RootState) => state.timeOffice.punchProcessTab;
-export const selectTimeOfficeRegularizationTab = (state: RootState) => state.timeOffice.regularizationTab;
-export const selectTimeOfficeSelectedEmployeeIds = (state: RootState) => state.timeOffice.selectedEmployeeIds;
-export const selectTimeOfficePunchProcessFilters = (state: RootState) => state.timeOffice.punchProcessFilters;
-export const selectTimeOfficeRegularizationFilters = (state: RootState) => state.timeOffice.regularizationFilters;
+export const selectTimeOfficeActiveSection = (state: RootState) => state.admin.talentHub.timeOffice.activeSection;
+export const selectTimeOfficePunchProcessTab = (state: RootState) => state.admin.talentHub.timeOffice.punchProcessTab;
+export const selectTimeOfficeRegularizationTab = (state: RootState) => state.admin.talentHub.timeOffice.regularizationTab;
+export const selectTimeOfficeSelectedEmployeeIds = (state: RootState) => state.admin.talentHub.timeOffice.selectedEmployeeIds;
+export const selectTimeOfficePunchProcessFilters = (state: RootState) => state.admin.talentHub.timeOffice.punchProcessFilters;
+export const selectTimeOfficeRegularizationFilters = (state: RootState) => state.admin.talentHub.timeOffice.regularizationFilters;
  
 export default timeofficeSlice.reducer;

@@ -116,7 +116,6 @@ export default function ImportPage() {
                     rounded-xl
                     p-2
                   "
-                  position="popper"
                   sideOffset={6}
                 >
                   {templateTypes.map((t) => (

@@ -400,7 +400,7 @@ export default function PolicySidebar({
                       : "font-medium text-[#172033]"
                   }`}
                 >
-                  {policy.name}
+                  {policy.policyName}
                 </span>
               </button>
 

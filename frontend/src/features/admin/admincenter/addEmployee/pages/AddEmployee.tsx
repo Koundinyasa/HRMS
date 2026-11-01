@@ -571,11 +571,11 @@ export default function AddEmployee({
   const fileRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // ✅ CHANGED (2/4): navigation helper -> /:domain/admin/enrollment/EmployeeDetails
+  // Navigation helper -> /:domain/admin/admin-center/employee/list
   const navigate = useNavigate();
   const { domain } = useParams();
   const goToEmployeeList = () => {
-    navigate(`/${domain}/admin/enrollment/EmployeeDetails`);
+    navigate(`/${domain}/admin/admin-center/employee/list`);
   };
  
   /* ---------- Derived data ---------- */

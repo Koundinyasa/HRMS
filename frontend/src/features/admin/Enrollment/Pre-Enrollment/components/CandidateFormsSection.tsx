@@ -100,7 +100,7 @@
 
 
 import { Download, Eye } from "lucide-react";
-import type { CandidateDocumentItem } from "../../types/preEnrollment.types";
+import type { CandidateDocumentItem } from "../types/preEnrollment.types";
 
 interface CandidateFormsSectionProps {
   documents: CandidateDocumentItem[];

@@ -28,12 +28,13 @@ type SaveMessage = { type: "success" | "error"; text: string } | null;
 /** Case-insensitive pick of first defined key on API objects */
 export function pick(raw: unknown, keys: string[]): unknown {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const record = raw as Record<string, unknown>;
   for (const k of keys) {
-    const hit = Object.keys(raw).find(
+    const hit = Object.keys(record).find(
       (rk) => rk.toLowerCase() === k.toLowerCase(),
     );
-    if (hit !== undefined && raw[hit] !== null && raw[hit] !== undefined) {
-      return raw[hit];
+    if (hit !== undefined && record[hit] !== null && record[hit] !== undefined) {
+      return record[hit];
     }
   }
   return undefined;

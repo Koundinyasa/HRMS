@@ -59,7 +59,6 @@ export function useDateField(value: string, onChange: (iso: string) => void) {
                 day: d.getDate(),
                 inMonth: isSameMonth(d, month),
                 disabled: false,
-                isweekend: d.getDay() === 0 || d.getDay() === 6,
                 selected: iso === value,
             });
         }

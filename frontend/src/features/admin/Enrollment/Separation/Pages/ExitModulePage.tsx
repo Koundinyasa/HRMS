@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CalendarDays, Plus, History, ChevronDown, X, Save } from "lucide-react";
 
 /* =========================================================
@@ -462,7 +462,7 @@ export default function ExitModulePage() {
     setKtTaskDraft((previous) => [...previous, { id: Date.now() + Math.random(), taskName: "", assignedTo: "" }]);
   };
 
-  const removeKTTaskRow = (id) => {
+  const removeKTTaskRow = (id: number) => {
     setKtTaskDraft((previous) => (previous.length > 1 ? previous.filter((task) => task.id !== id) : previous));
   };
 
@@ -772,14 +772,14 @@ export default function ExitModulePage() {
     }
   };
 
-  const inputCls = (hasError = false): string =>
+  const inputCls = (hasError: boolean | string | undefined = false): string =>
     `w-full h-[31px] border rounded-[3px] px-2.5 outline-none text-[10px] text-[#344054] placeholder:text-[#98a2b3] ${
       hasError
         ? "border-[#f04438] bg-[#fff7f6]"
         : "border-transparent bg-[#e9f0f7] focus:border-[#1598df] focus:bg-white"
     }`;
   const errorTextCls = "text-[#f04438] text-[9px] block mt-[3px]";
-  const reasonSelectCls = (hasError = false): string =>
+  const reasonSelectCls = (hasError: boolean | string | undefined = false): string =>
     `w-full h-[31px] rounded-[3px] px-2.5 flex items-center justify-between cursor-pointer text-[10px] border hover:border-[#1598df] ${
       hasError ? "border-[#f04438] bg-[#fff7f6] text-[#344054]" : "border-transparent bg-[#e9f0f7] text-[#667085]"
     }`;

@@ -1437,7 +1437,7 @@ import EmployeeGroup from "./EmployeeGroup";
 import ModuleSettings from "./ModuleSettings";
 
 import { useWorkflows } from "./hooks/useWorkflows";
-import type { WorkflowModule } from "./types/workflowTypes";
+import type { WorkflowItem, WorkflowModule } from "./types/workflowTypes";
 import {
   validateWorkflowName,
   validateAddLevel,
@@ -1455,7 +1455,7 @@ const MODULE_OPTIONS: { label: string; value: WorkflowModule }[] = [
   { label: "Expense", value: "expense" },
 ];
 
-const DEFAULT_WORKFLOWS = [
+const DEFAULT_WORKFLOWS: WorkflowItem[] = [
   {
     id: "wf-1",
     name: "Leave Apply RA Level 1",
@@ -1607,14 +1607,14 @@ export default function WorkflowsPage() {
           <div className="flex items-center gap-3">
             <div className="min-w-[160px] flex-1 sm:flex-none sm:min-w-[180px]">
               <StyledSelect
-                value={selectedModule}
-                onValueChange={(v) =>
-                  handleModuleChange(v as WorkflowModule)
+                value={
+                  MODULE_OPTIONS.find((m) => m.value === selectedModule)?.label
                 }
-                options={MODULE_OPTIONS.map((m) => ({
-                  label: m.label,
-                  value: m.value,
-                }))}
+                onValueChange={(label) => {
+                  const option = MODULE_OPTIONS.find((m) => m.label === label);
+                  if (option) handleModuleChange(option.value);
+                }}
+                options={MODULE_OPTIONS.map((m) => m.label)}
                 className="!h-10 !rounded-xl !border-transparent !bg-[#7C3AED] !text-white"
               />
             </div>

@@ -176,6 +176,7 @@ export default function GratuityModulePage() {
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showThreeDotMenu, setShowThreeDotMenu] = useState(false);
   const [toast, setToast] = useState<string>("");
+  const toastTimer = useRef<number>(0);
 
   const monthPickerRef = useRef<HTMLDivElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
@@ -199,8 +200,8 @@ export default function GratuityModulePage() {
 
   const showToast = (message: string) => {
     setToast(message);
-    window.clearTimeout(showToast._t);
-    showToast._t = window.setTimeout(() => setToast(""), 2200);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(""), 2200);
   };
 
   /* ---- Employee form helpers ---- */

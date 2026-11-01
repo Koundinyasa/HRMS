@@ -24,13 +24,6 @@ const ImportPage = lazy(() => import("../Pre-Enrollment/pages/Import"));
 const CandidateTasksPage = lazy(() => import("../Pre-Enrollment/pages/details/CandidateTasksPage"));
 const CandidatePortalInfoPage = lazy(() => import("../Pre-Enrollment/pages/details/CandidatePortalInfoPage"));
 const CandidateFormsPage = lazy(() => import("../Pre-Enrollment/pages/details/CandidateFormsPage"));
-const EmployeePage1 = lazy(() => import("../EmployeeDetails/Pages/EmployeePage1"));
-const EmployeeDetailsPage = lazy(() => import("../EmployeeDetails/Pages/EmployeeDetailsPage"));
-const EmployeeGroupPage = lazy(() => import("../EmployeeDetails/Pages/EmployeeGroupPage"));
-const PendingCandidatePage = lazy(() => import("../EmployeeDetails/Pages/PendingCandidatePage"));
-const OrganizationChartPage = lazy(() => import("../EmployeeDetails/Pages/OrganizationChartPage"));
-const ResetBlockedUserPage = lazy(() => import("../EmployeeDetails/Pages/ResetBlockedUserPage"));
-const EmployeeImportPage = lazy(() => import("../EmployeeDetails/Pages/ImportPage"));
 const BulkUpdateStatutoryPage = lazy(() => import("@/features/admin/Enrollment/bulkUpdate/pages/BulkUpdateStatutoryPage"));
 const BulkUpdateClassificationPage = lazy(() => import("@/features/admin/Enrollment/bulkUpdate/pages/BulkUpdateClassificationPage"));
 const BulkUpdateAuthorityPage = lazy(() => import("@/features/admin/Enrollment/bulkUpdate/pages/BulkUpdateAuthorityPage"));
@@ -41,15 +34,12 @@ const GratuityModulePage = lazy(() => import("../Separation/Pages/GratuityModule
 const FullAndFinalSettlements = lazy(() => import("../Separation/Pages/FullAndFinalSettlements"));
  
  
-import AddEmployeeWizardPage from
-  "../EmployeeDetails/Pages/AddEmployeeWizard";
  
 //BackgroundVerification
  
 //Pre-Enrollment
 import PreEnrollmentLayout from "../Pre-Enrollment/pages/PreEnrollmentLayout";
  
-// ---- Employee Details ----
  
  
 // ---- Bulk Update ----
@@ -91,19 +81,8 @@ export const EnrollmentRoutes = (
     </Route>
  
  
-    {/* EmployeeDetails */}
-    <Route path="EmployeeDetails">
-      <Route index element={<EmployeePage1 />} />
-      <Route path="employee" element={<EmployeePage1 />} />
-      <Route path="employee/:empId" element={<EmployeeDetailsPage />} />
-      <Route path="employee-group" element={<EmployeeGroupPage />} />
-      <Route path="add-employee" element={<AddEmployeeWizardPage />} />
-      <Route path="pending-candidates" element={<PendingCandidatePage />} />
-      <Route path="organization-chart" element={<OrganizationChartPage />} />
-      <Route path="reset-blocked-user" element={<ResetBlockedUserPage />} />
-      <Route path="import" element={<EmployeeImportPage />} />
-    </Route>
- 
+    {/* Employee Details moved to Admin Center: admin-center/employee/list */}
+
     {/* bulkupdate */}
     <Route path="bulk-update">
       <Route index element={<Navigate to="statutory" replace />} />
@@ -122,12 +101,6 @@ export const EnrollmentRoutes = (
       <Route path="full-and-final-settlements" element={<FullAndFinalSettlements />} />
     </Route>
  
- 
-{/*
-    <Route
-  path="add-employee"
-  element={<AddEmployeeWizardPage />}
-/> */}
  
   </Route>
 );

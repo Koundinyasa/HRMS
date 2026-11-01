@@ -1,4 +1,4 @@
-import type { EmployeeFilterType } from "../../Enrollment/EmployeeDetails/api/employeedetailsApi";
+import type { EmployeeFilterType } from "../../admincenter/employeeList/api/employeeListApi";
  
 export interface WelcomeInfo {
   fullName: string;

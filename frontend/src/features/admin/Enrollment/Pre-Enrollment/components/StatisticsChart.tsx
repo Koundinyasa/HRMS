@@ -201,8 +201,8 @@ export default function StatisticsChart() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 fill="url(#orangeTrendGradient)"
-                dot={(props: TrendDotProps) => {
-                  const { cx, cy, payload } = props;
+                dot={(props: unknown) => {
+                  const { cx, cy, payload } = props as TrendDotProps;
 
                   if (
                     payload?.week === "Week 02" ||

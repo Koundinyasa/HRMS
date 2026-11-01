@@ -94,7 +94,7 @@
 // }
 
 import { NavLink, Outlet } from "react-router-dom";
-import type { CompletedCandidateRow } from "../../types/preEnrollment.types";
+import type { CompletedCandidateRow } from "../types/preEnrollment.types";
 
 interface CandidateDetailsTabsProps {
   candidate: CompletedCandidateRow;
@@ -108,9 +108,7 @@ const tabs = [
   { label: "Offboard Candidate", path: "offboard-candidate" },
 ];
 
-export default function CandidateDetailsTabs({
-  candidate,
-}: CandidateDetailsTabsProps) {
+export default function CandidateDetailsTabs(_props: CandidateDetailsTabsProps) {
   return (
     <div className="w-full">
 
