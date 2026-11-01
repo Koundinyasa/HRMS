@@ -338,8 +338,31 @@ export const employeeListApi = baseApi.injectEndpoints({
         ],
       }),
  
+      /* ========================================================
+         REMOVE EMPLOYEE (soft delete: the history is kept and the
+         login is switched off)
+
+         Backend:
+         DELETE /api/admin/employee-details/:employeeId
+      ======================================================== */
+
+      deleteEmployee: builder.mutation<
+        { success: boolean; message: string },
+        string | number
+      >({
+        query: (employeeId) => ({
+          url: `admin/employee-details/${encodeURIComponent(String(employeeId))}`,
+          method: "DELETE",
+        }),
+
+        invalidatesTags: ["Employees"],
+      }),
+
   }),
 });
 
-export const { useGetEmployeesQuery, useGetEmployeeDetailQuery } =
-  employeeListApi;
+export const {
+  useGetEmployeesQuery,
+  useGetEmployeeDetailQuery,
+  useDeleteEmployeeMutation,
+} = employeeListApi;

@@ -20,8 +20,6 @@ import { AdminModule } from './admin/admin.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { ReviewModule } from './review/review.module';
-import { RecruitmentModule } from './recruitment/recruitment.module';
-import { InterviewsModule } from './recruitment/interviews/interviews.module';
 
 
 @Module({
@@ -51,8 +49,6 @@ import { InterviewsModule } from './recruitment/interviews/interviews.module';
 
     // Review Module
     ReviewModule,
-    RecruitmentModule,
-    InterviewsModule,
 
     LoggerModule,
     ReviewModule,
