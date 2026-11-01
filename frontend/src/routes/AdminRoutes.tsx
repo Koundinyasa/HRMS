@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { Route } from "react-router-dom";
 
 import { AdminCenterRoutes } from "@/features/admin/admincenter/routes/AdminCenterRoutes";
+import { ReviewRoutes } from "@/features/admin/admincenter/routes/ReviewRoutes";
 import { EnrollmentRoutes } from "@/features/admin/Enrollment/routes/EnrollmentRoutes";
 import { TalentHubRoutes } from "@/features/admin/Time & Office/routes/TalentHubRoutes";
 import { RecruitmentRoutes } from "@/features/admin/TalentHub/routes/RecruitmentRoutes";
@@ -16,6 +17,7 @@ export const AdminChildRoutes = (
   <>
     <Route path="dashboard" element={<DashboardPage />} />
     {AdminCenterRoutes}
+    {ReviewRoutes}
     {EnrollmentRoutes}
     {RecruitmentRoutes}
     {PayrollRoutes}
