@@ -45,6 +45,14 @@ function AdminLayoutContent() {
 
   return (
     <>
+      {/* Keyboard users can jump past the menus to the page content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-blue-700 focus:shadow-lg focus:ring-2 focus:ring-blue-500"
+      >
+        Skip to main content
+      </a>
+
       {/* Full viewport shell — nothing on this level scrolls */}
       <div className="flex h-screen flex-col overflow-hidden bg-[#F4F8FE]">
         <Navbar />
@@ -61,7 +69,11 @@ function AdminLayoutContent() {
           )}
 
           {/* Only the main content area scrolls */}
-          <main className="min-w-0 flex-1 overflow-y-auto p-4 lg:p-6">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="min-w-0 flex-1 overflow-y-auto p-4 focus:outline-none lg:p-6"
+          >
             <AdminRouteGuard>
               <Suspense fallback={<PageLoader />}>
                 <Outlet />

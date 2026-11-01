@@ -70,6 +70,13 @@ export default function Layout() {
 
   return (
     <div className="h-dvh w-full flex flex-col overflow-hidden">
+      {/* Keyboard users can jump past the menus to the page content */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-blue-700 focus:shadow-lg focus:ring-2 focus:ring-blue-500"
+      >
+        Skip to main content
+      </a>
 
       <Navbar
         isSidebarOpen={isSidebarOpen}
@@ -84,12 +91,14 @@ export default function Layout() {
         />
         <main
           ref={mainRef}
+          id="main-content"
+          tabIndex={-1}
           onScroll={handleMainScroll}
           className={`relative flex-1 min-w-0 min-h-0 ${
             isPunchPage
               ? "punch-scroll-container overflow-y-scroll"
               : "overflow-y-auto"
-          } overflow-x-hidden bg-slate-100 p-3 sm:p-4 lg:p-5`}
+          } overflow-x-hidden bg-slate-100 p-3 focus:outline-none sm:p-4 lg:p-5`}
           style={{ WebkitOverflowScrolling: "touch" }}
         >
           {/* Pages are loaded on demand; show the same skeleton while a page's code downloads. */}
