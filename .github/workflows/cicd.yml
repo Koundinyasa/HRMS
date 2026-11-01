@@ -125,7 +125,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy Backend Scan
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           scan-type: fs
@@ -156,7 +156,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy Frontend Scan
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           scan-type: fs
@@ -187,7 +187,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy Attendance Scan
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           scan-type: fs
@@ -301,7 +301,7 @@ jobs:
 
     steps:
       - name: Scan Backend Image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: ${{ env.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
@@ -310,7 +310,7 @@ jobs:
           exit-code: "0"
 
       - name: Scan Frontend Image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: ${{ env.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
@@ -328,7 +328,7 @@ jobs:
 
     steps:
       - name: Scan Attendance Image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: true
         with:
           image-ref: ${{ env.DOCKER_IMAGE_ATTENDANCE }}:${{ github.sha }}
