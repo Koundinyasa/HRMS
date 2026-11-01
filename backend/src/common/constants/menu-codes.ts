@@ -11,6 +11,8 @@ export const MenuCode = {
   TimeOfficeDashboard: 'HR_TO_Dashboard',
   LeaveDaily: 'HR_TO_LeaveDaily',
   ForceLeaveApproval: 'HR_TO_ForceLeaveApproval',
+  // Pre-Enrollment: proposed code, the TL must create the Mst_Menu row with this exact MenuCode.
+  PreEnrollment: 'HR_PreEnrollment',
 
   // Employee portal: Review (reporting managers only)
   Review: 'Review',

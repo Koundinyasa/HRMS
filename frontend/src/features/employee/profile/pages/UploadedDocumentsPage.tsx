@@ -4,10 +4,9 @@ import type { ProfileSection } from "../types/profile.types";
 
 // Columns that are not shown for now:
 // - "File Path" is the folder on the server where the file is stored.
-// - "Actions" (View / Download) needs an endpoint that checks the document
-//   belongs to the logged-in employee. Until that exists the page shows the
-//   document details only.
-const HIDDEN_DOCUMENT_FIELDS = ["File Path", "Actions"];
+//   The View / Download buttons use the "Actions" link, which the server only
+//   serves for the logged-in employee's own documents.
+const HIDDEN_DOCUMENT_FIELDS = ["File Path"];
 
 export default function UploadedDocumentsPage() {
   const {

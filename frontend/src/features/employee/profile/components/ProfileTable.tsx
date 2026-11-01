@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchWithSession } from "@/app/apiFetch";
+import { apiUrl, fetchWithSession } from "@/app/apiFetch";
 import { fetchFileObjectUrl } from "@/app/fileAccess";
  
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,6 +66,11 @@ action.url || action.filePath;
  filePath.startsWith("https://")
  ) {
  return filePath;
+ }
+ 
+ // Links from this API (/api/...) get the API address in front
+ if (filePath.startsWith("/api/")) {
+ return apiUrl(filePath);
  }
  
  // Keep /documents/... unchanged

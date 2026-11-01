@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import {
   Stamped,
   LeaveDraft,
@@ -8,32 +8,83 @@ import {
   EmployeeDirectoryDraft,
 } from '../types';
 import { DRAFT_TTL_MS, DRAFT_MAX_SIZE } from '../constants/chatbot.constants';
+import { HrmsDbService } from '../../db/hrms-db.service';
 
+/**
+ * A Map that reports every entry added or removed, so DraftService can keep a
+ * copy in the database. Reads stay plain in-memory reads.
+ */
+class WatchedMap<V> extends Map<string, V> {
+  constructor(
+    private readonly onSet: (key: string, value: V) => void,
+    private readonly onDelete: (key: string) => void,
+  ) {
+    super();
+  }
+
+  override set(key: string, value: V): this {
+    super.set(key, value);
+    this.onSet(key, value);
+    return this;
+  }
+
+  override delete(key: string): boolean {
+    const existed = super.delete(key);
+    if (existed) this.onDelete(key);
+    return existed;
+  }
+}
+
+/**
+ * Chatbot conversation state.
+ *
+ * The multi-step flows (apply leave, cancel choices, team and directory
+ * lists) are kept in memory for speed and mirrored to dbo.ChatbotDrafts, so
+ * an open conversation survives a server restart. On start-up the drafts
+ * saved in the last DRAFT_TTL_MS are loaded back. If the table is missing or
+ * the database fails, the chatbot keeps working with memory only (one
+ * warning in the log).
+ *
+ * The one-shot maps (pendingListPreview and the like) live inside a single
+ * request and are not saved.
+ */
 @Injectable()
-export class DraftService {
-  readonly leaveDrafts = new Map<string, Stamped<LeaveDraft>>();
-  readonly partialCancelDrafts = new Map<string, Stamped<PartialCancelDraft>>();
-  readonly cancelChoiceDrafts = new Map<string, Stamped<CancelChoiceDraft>>();
-  readonly teamDrafts = new Map<string, Stamped<TeamDraft>>();
-  readonly employeeDirectoryDrafts = new Map<
-    string,
+export class DraftService implements OnModuleInit {
+  private readonly log = new Logger(DraftService.name);
+  private storeWorking = true;
+  private queue: Promise<void> = Promise.resolve();
+
+  constructor(@Optional() private readonly db?: HrmsDbService) {}
+
+  private watched<V>(kind: string): WatchedMap<V> {
+    return new WatchedMap<V>(
+      (key, value) => this.persist(kind, key, value),
+      (key) => this.forget(kind, key),
+    );
+  }
+
+  readonly leaveDrafts = this.watched<Stamped<LeaveDraft>>('leaveDrafts');
+  readonly partialCancelDrafts =
+    this.watched<Stamped<PartialCancelDraft>>('partialCancelDrafts');
+  readonly cancelChoiceDrafts =
+    this.watched<Stamped<CancelChoiceDraft>>('cancelChoiceDrafts');
+  readonly teamDrafts = this.watched<Stamped<TeamDraft>>('teamDrafts');
+  readonly employeeDirectoryDrafts = this.watched<
     Stamped<EmployeeDirectoryDraft>
-  >();
+  >('employeeDirectoryDrafts');
   readonly pendingEmployeeExport = new Map<string, 'excel' | 'pdf'>();
   // Tracks the numbered leave list shown by "cancel leave" and the pending
   // confirmation target, keyed by employeeId.
-  readonly cancelList = new Map<
-    string,
+  readonly cancelList = this.watched<
     {
       leaveId: number;
       status: string;
       leaveType: string;
     }[]
-  >();
-  readonly cancelTarget = new Map<
-    string,
-    { leaveId: number; actionId: 13 | 38 }
-  >();
+  >('cancelList');
+  readonly cancelTarget = this.watched<{ leaveId: number; actionId: 13 | 38 }>(
+    'cancelTarget',
+  );
 
   // One-shot payload for the generic "long list" preview modal (holidays,
   // employee directory, etc.) — set right before an intent returns its text
@@ -86,6 +137,72 @@ export class DraftService {
   // or cancelled). Read once when the reply is built, so the page can refresh
   // its own copy of the leave data instead of waiting for a reload.
   readonly leaveChanged = new Set<string>();
+
+  // ─── Database copy ──────────────────────────────────────────────────────────
+
+  private mapFor(kind: string): Map<string, unknown> | undefined {
+    const maps: Record<string, Map<string, unknown>> = {
+      leaveDrafts: this.leaveDrafts,
+      partialCancelDrafts: this.partialCancelDrafts,
+      cancelChoiceDrafts: this.cancelChoiceDrafts,
+      teamDrafts: this.teamDrafts,
+      employeeDirectoryDrafts: this.employeeDirectoryDrafts,
+      cancelList: this.cancelList,
+      cancelTarget: this.cancelTarget,
+    };
+    return maps[kind];
+  }
+
+  /** Runs database work one step at a time, so a save never lands after a later delete. */
+  private enqueue(work: () => Promise<void>): void {
+    if (!this.db || !this.storeWorking) return;
+    this.queue = this.queue.then(work).catch((error) => this.storeFailed(error));
+  }
+
+  private storeFailed(error: unknown): void {
+    if (!this.storeWorking) return;
+    this.storeWorking = false;
+    const reason = error instanceof Error ? error.message : String(error);
+    this.log.warn(
+      `Chatbot drafts are kept in memory only (database copy unavailable: ${reason}). Run database/migrations/20261105_create_chatbot_drafts.sql.`,
+    );
+  }
+
+  private persist(kind: string, key: string, value: unknown): void {
+    const savedAt =
+      typeof value === 'object' && value !== null && 'savedAt' in value
+        ? Number((value as { savedAt: number }).savedAt)
+        : Date.now();
+    const payload = JSON.stringify(value);
+    this.enqueue(() =>
+      this.db!.saveChatbotDraft(key, kind, payload, savedAt),
+    );
+  }
+
+  private forget(kind: string, key: string): void {
+    this.enqueue(() => this.db!.deleteChatbotDraft(key, kind));
+  }
+
+  /** Loads the drafts saved in the last DRAFT_TTL_MS back into memory. */
+  async onModuleInit(): Promise<void> {
+    if (!this.db) return;
+    try {
+      const cutoff = Date.now() - DRAFT_TTL_MS;
+      await this.db.deleteExpiredChatbotDrafts(cutoff);
+      const rows = await this.db.loadChatbotDrafts(cutoff);
+      for (const row of rows) {
+        const map = this.mapFor(row.draftType);
+        if (!map) continue;
+        // Plain Map.set: loading must not write the row back.
+        Map.prototype.set.call(map, row.employeeId, JSON.parse(row.payload));
+      }
+      if (rows.length > 0) {
+        this.log.log(`Restored ${rows.length} chatbot draft(s).`);
+      }
+    } catch (error) {
+      this.storeFailed(error);
+    }
+  }
 
   getDraft<T>(map: Map<string, Stamped<T>>, key: string): T | undefined {
     const entry = map.get(key);

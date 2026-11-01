@@ -32,6 +32,71 @@ export class HrmsDbService implements OnModuleDestroy {
     await this.holder.close();
   }
 
+  // ─── Chatbot drafts (table dbo.ChatbotDrafts) ────────────────────────────────
+
+  async saveChatbotDraft(
+    employeeId: string,
+    draftType: string,
+    payload: string,
+    savedAtMs: number,
+  ): Promise<void> {
+    const pool = await this.getPool();
+    await pool
+      .request()
+      .input('EmployeeID', sql.VarChar(100), employeeId)
+      .input('DraftType', sql.VarChar(40), draftType)
+      .input('Payload', sql.NVarChar(sql.MAX), payload)
+      .input('SavedAtMs', sql.BigInt, savedAtMs).query(`
+        MERGE dbo.ChatbotDrafts AS t
+        USING (SELECT @EmployeeID AS EmployeeID, @DraftType AS DraftType) AS s
+          ON t.EmployeeID = s.EmployeeID AND t.DraftType = s.DraftType
+        WHEN MATCHED THEN
+          UPDATE SET Payload = @Payload, SavedAtMs = @SavedAtMs
+        WHEN NOT MATCHED THEN
+          INSERT (EmployeeID, DraftType, Payload, SavedAtMs)
+          VALUES (@EmployeeID, @DraftType, @Payload, @SavedAtMs);
+      `);
+  }
+
+  async deleteChatbotDraft(
+    employeeId: string,
+    draftType: string,
+  ): Promise<void> {
+    const pool = await this.getPool();
+    await pool
+      .request()
+      .input('EmployeeID', sql.VarChar(100), employeeId)
+      .input('DraftType', sql.VarChar(40), draftType)
+      .query(
+        'DELETE FROM dbo.ChatbotDrafts WHERE EmployeeID = @EmployeeID AND DraftType = @DraftType',
+      );
+  }
+
+  async deleteExpiredChatbotDrafts(olderThanMs: number): Promise<void> {
+    const pool = await this.getPool();
+    await pool
+      .request()
+      .input('Cutoff', sql.BigInt, olderThanMs)
+      .query('DELETE FROM dbo.ChatbotDrafts WHERE SavedAtMs < @Cutoff');
+  }
+
+  async loadChatbotDrafts(
+    newerThanMs: number,
+  ): Promise<{ employeeId: string; draftType: string; payload: string }[]> {
+    const pool = await this.getPool();
+    const result = await pool
+      .request()
+      .input('Cutoff', sql.BigInt, newerThanMs)
+      .query(
+        'SELECT EmployeeID, DraftType, Payload FROM dbo.ChatbotDrafts WHERE SavedAtMs >= @Cutoff',
+      );
+    return (result.recordset as any[]).map((row) => ({
+      employeeId: String(row.EmployeeID),
+      draftType: String(row.DraftType),
+      payload: String(row.Payload),
+    }));
+  }
+
   // ─── HRMSDEV: real basic-info via USP_GetUserInfo ────────────────────────────
   // One USP_GetUserInfo run is shared by the calls made for the same employee
   // within a few seconds (a single chat message asks for it more than once).

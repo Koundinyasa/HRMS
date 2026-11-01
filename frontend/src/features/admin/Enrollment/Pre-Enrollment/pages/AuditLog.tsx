@@ -16,48 +16,10 @@ interface AuditLogModalProps {
 }
 
 /*
- * MOCK DATA
- * Backend integration is still in progress.
- * Keep this data until the real audit-log API is available.
+ * The audit-log API is not built yet, so there are no events to show.
+ * When it exists, load the events from it instead of this empty list.
  */
-const auditEvents: AuditEvent[] = [
-  {
-    id: 1,
-    title: "Sanitization Candidate Created",
-    actor: "rakshitha.g@kovind.com",
-    dateTime: "27/May/2026, 04:35 PM",
-  },
-  {
-    id: 2,
-    title: "Verification Email Sent Automatically",
-    actor: "rakshitha.g@kovind.com",
-    dateTime: "27/May/2026, 04:34 PM",
-  },
-  {
-    id: 3,
-    title: "Chandu Candidate Profile Initiated",
-    actor: "rakshitha.g@kovind.com",
-    dateTime: "27/May/2026, 04:32 PM",
-  },
-  {
-    id: 4,
-    title: "Document Upload Alert Triggered",
-    actor: "rakshitha.g@kovind.com",
-    dateTime: "27/May/2026, 04:30 PM",
-  },
-  {
-    id: 5,
-    title: "Background Check Stage 1 Cleared",
-    actor: "rakshitha.g@kovind.com",
-    dateTime: "27/May/2026, 03:56 PM",
-  },
-  {
-    id: 6,
-    title: "Asset Allocation Policy Mapped",
-    actor: "rakshitha.g@kovind.com",
-    dateTime: "27/May/2026, 03:45 PM",
-  },
-];
+const auditEvents: AuditEvent[] = [];
 
 export default function AuditLogModal({
   onClose,
@@ -250,6 +212,12 @@ export default function AuditLogModal({
             font-urbanist
           "
         >
+          {auditEvents.length === 0 && (
+            <div className="flex h-full min-h-[160px] items-center justify-center px-6 text-center text-sm text-slate-500">
+              The audit log is not available yet.
+            </div>
+          )}
+
           {auditEvents.map((event) => (
             <div
               key={event.id}

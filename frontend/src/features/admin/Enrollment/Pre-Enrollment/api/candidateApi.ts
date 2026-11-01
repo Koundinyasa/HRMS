@@ -24,7 +24,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: () => ({
-        url: "/pre-enrollment/dashboard",
+        url: "/admin/pre-enrollment/dashboard",
         method: "GET",
       }),
 
@@ -42,7 +42,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: () => ({
-        url: "/pre-enrollment/candidate",
+        url: "/admin/pre-enrollment/candidate",
         method: "GET",
       }),
 
@@ -60,7 +60,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: (body) => ({
-        url: "/pre-enrollment/candidate",
+        url: "/admin/pre-enrollment/candidate",
         method: "POST",
         body,
       }),
@@ -85,7 +85,7 @@ export const candidateApi = baseApi.injectEndpoints({
         candidateId,
         body,
       }) => ({
-        url: `/pre-enrollment/candidate/${candidateId}`,
+        url: `/admin/pre-enrollment/candidate/${candidateId}`,
         method: "PUT",
         body,
       }),
@@ -104,7 +104,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: () => ({
-        url: "/pre-enrollment/completed-candidate",
+        url: "/admin/pre-enrollment/completed-candidate",
         method: "GET",
       }),
 
@@ -122,7 +122,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: () => ({
-        url: "/pre-enrollment/offboard",
+        url: "/admin/pre-enrollment/offboard",
         method: "GET",
       }),
 
@@ -140,7 +140,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: (body) => ({
-        url: "/pre-enrollment/offboard",
+        url: "/admin/pre-enrollment/offboard",
         method: "POST",
         body,
       }),
@@ -165,7 +165,7 @@ export const candidateApi = baseApi.injectEndpoints({
         candidateId,
         body,
       }) => ({
-        url: `/pre-enrollment/offboard/${candidateId}`,
+        url: `/admin/pre-enrollment/offboard/${candidateId}`,
         method: "PUT",
         body,
       }),
@@ -184,7 +184,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: () => ({
-        url: "/pre-enrollment/settings",
+        url: "/admin/pre-enrollment/settings",
         method: "GET",
       }),
 
@@ -202,7 +202,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: (body) => ({
-        url: "/pre-enrollment/settings",
+        url: "/admin/pre-enrollment/settings",
         method: "PUT",
         body,
       }),
@@ -221,7 +221,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: () => ({
-        url: "/pre-enrollment/import",
+        url: "/admin/pre-enrollment/import",
         method: "GET",
       }),
 
@@ -239,7 +239,7 @@ export const candidateApi = baseApi.injectEndpoints({
     >({
 
       query: (body) => ({
-        url: "/pre-enrollment/import",
+        url: "/admin/pre-enrollment/import",
         method: "POST",
         body,
       }),

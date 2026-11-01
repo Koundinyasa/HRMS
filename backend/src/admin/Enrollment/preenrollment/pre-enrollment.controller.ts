@@ -2,9 +2,12 @@ import { Controller, Get, Post, Put, Param, Body } from '@nestjs/common';
 import { PreEnrollmentService } from './pre-enrollment.service';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../common/constants/roles';
+import { RequiresMenu } from '../../../common/decorators/module-gate.decorator';
+import { MenuCode } from '../../../common/constants/menu-codes';
 
 @Roles(...ADMIN_PORTAL_ROLES)
-@Controller('pre-enrollment')
+@RequiresMenu(MenuCode.PreEnrollment)
+@Controller('admin/pre-enrollment')
 export class PreEnrollmentController {
   constructor(private readonly preEnrollmentService: PreEnrollmentService) {}
 
