@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   Param,
@@ -129,6 +130,31 @@ export class EmployeeDetailsController {
   }
  
  
+  // ==========================================
+  // Remove Employee (soft delete)
+  // ==========================================
+
+  @Delete(':employeeId')
+  async deleteEmployee(
+    @Param('employeeId') employeeId: string,
+    @Req() req: any,
+  ) {
+    const companyId = Number(req.user?.companyId);
+
+    if (!companyId || isNaN(companyId)) {
+      throw new BadRequestException(
+        'CompanyId not found in JWT',
+      );
+    }
+
+    return this.employeeDetailsService.deleteEmployee(
+      employeeId,
+      companyId,
+      Number(req.user?.createdBy),
+      String(req.user?.employeeId ?? ''),
+    );
+  }
+
   @Post("AddEmployee")
   async createEmployee(
     @Body() dto: any,
