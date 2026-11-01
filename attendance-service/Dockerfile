@@ -32,8 +32,9 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
 
 COPY requirements.txt .
 
-RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+RUN grep -v -i '^msvc-runtime==' requirements.txt > requirements-linux.txt \
+    && pip install --upgrade pip \
+    && pip install -r requirements-linux.txt
 
 COPY . .
 
