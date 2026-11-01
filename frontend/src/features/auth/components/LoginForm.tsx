@@ -6,7 +6,6 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import { loginSchema } from "../validation/loginSchema";
 import type { LoginFormData } from "../validation/loginSchema";
@@ -286,23 +285,8 @@ export default function LoginForm() {
           )}
         </div>
 
-        {/* ── Remember me + Forgot password ── */}
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <Checkbox id="rememberMe" className="h-4 w-4 rounded" />
-            <Label
-              htmlFor="rememberMe"
-              className="cursor-pointer"
-              style={{
-                ...urbanist,
-                fontWeight: 400,
-                fontSize: "clamp(11px, 0.85vw, 13px)",
-                color: "#374151",
-              }}
-            >
-              Remember me
-            </Label>
-          </div>
+        {/* ── Forgot password ── */}
+        <div className="flex items-center justify-end w-full">
           <button
             type="button"
             onClick={() => navigate(`/${domain}/forgot-password`)}

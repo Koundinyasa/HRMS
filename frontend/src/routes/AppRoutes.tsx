@@ -9,6 +9,7 @@ import AdminLayout from "@/features/admin/components/AdminLayout";
 
 import ProtectedRoute from "./ProtectedRoute";
 import EmployeeRoutes from "./EmployeeRoutes";
+import Unauthorized from "./Unauthorized";
 import FirstLoginResetPassword from "@/features/auth/pages/FirstLoginResetPassword";
 import {
   ADMIN_PORTAL_ROLES,
@@ -42,6 +43,10 @@ function AppRoutes() {
           <Route path="/employee/*" element={<EmployeeRoutes />} />
           <Route path="/:domain/employee/*" element={<EmployeeRoutes />} />
         </Route>
+
+        {/* Wrong role, and any address that matches nothing */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="*" element={<Unauthorized />} />
       </Routes>
     </BrowserRouter>
   );
