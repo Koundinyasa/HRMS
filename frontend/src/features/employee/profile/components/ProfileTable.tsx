@@ -4,454 +4,485 @@ import { fetchFileObjectUrl } from "@/app/fileAccess";
  
 import { Card, CardContent } from "@/components/ui/card";
  
-import { Eye, Download, X } from "lucide-react";
+import {
+ Eye,
+ Download,
+ X,
+ Maximize2,
+ Minimize2,
+} from "lucide-react";
  
 import {
-  PROFILE_ICONS,
-  HIDDEN_FIELDS,
+ PROFILE_ICONS,
+ HIDDEN_FIELDS,
 } from "../constants/profile.constants";
  
 import type { ProfileSectionProps } from "../types/profile.types";
  
 interface DocumentAction {
-  view?: boolean;
-  download?: boolean;
-  url?: string;
-  filePath?: string;
+ view?: boolean;
+ download?: boolean;
+ url?: string;
+ filePath?: string;
 }
  
 export default function ProfileTable({
-  section,
+ section,
 }: ProfileSectionProps) {
-  const Icon = PROFILE_ICONS[section.icon];
+ const Icon = PROFILE_ICONS[section.icon];
  
-  // =====================================================
-  // PREVIEW STATE
-  // =====================================================
+ // =====================================================
+ // PREVIEW STATE
+ // =====================================================
  
-  const [previewUrl, setPreviewUrl] =
-    useState<string | null>(null);
+ const [previewUrl, setPreviewUrl] =
+ useState<string | null>(null);
  
-  const [previewFileName, setPreviewFileName] =
-    useState<string>("");
+ const [previewFileName, setPreviewFileName] =
+ useState<string>("");
  
-  const [previewError, setPreviewError] =
-    useState<boolean>(false);
+ const [previewError, setPreviewError] =
+ useState<boolean>(false);
  
-  // =====================================================
-  // GET DOCUMENT URL
-  // =====================================================
+ const [isMaximized, setIsMaximized] = useState(false);
  
-  const getDocumentUrl = (
-    action: DocumentAction,
-  ): string | null => {
-    const filePath =
-      action.url || action.filePath;
+ // =====================================================
+ // GET DOCUMENT URL
+ // =====================================================
  
-    if (!filePath) {
-      return null;
-    }
+ const getDocumentUrl = (
+action: DocumentAction,
+ ): string | null => {
+ const filePath =
+action.url || action.filePath;
  
-    // If backend already returns complete URL
-    if (
-      filePath.startsWith("http://") ||
-      filePath.startsWith("https://")
-    ) {
-      return filePath;
-    }
+ if (!filePath) {
+ return null;
+ }
  
-    // Keep /documents/... unchanged
-    // Vite proxy will forward it to backend
-    return filePath.startsWith("/")
-      ? filePath
-      : `/${filePath}`;
-  };
+ // If backend already returns complete URL
+ if (
+ filePath.startsWith("http://") ||
+ filePath.startsWith("https://")
+ ) {
+ return filePath;
+ }
  
-  // =====================================================
-  // VIEW
-  // =====================================================
+ // Keep /documents/... unchanged
+ // Vite proxy will forward it to backend
+ return filePath.startsWith("/")
+ ? filePath
+ : `/${filePath}`;
+ };
  
-  // The file is fetched with the login session (refreshing it if needed) and
-  // shown from a blob address, so an expired access token cannot break it.
-  const handleView = async (
-    action: DocumentAction,
-  ) => {
-    const url = getDocumentUrl(action);
+ // =====================================================
+ // VIEW
+ // =====================================================
  
-    if (!url) {
-      alert("No file available to preview.");
-      return;
-    }
+ // The file is fetched with the login session (refreshing it if needed) and
+ // shown from a blob address, so an expired access token cannot break it.
+ const handleView = async (
+action: DocumentAction,
+ ) => {
+ const url = getDocumentUrl(action);
  
-    const fileName = decodeURIComponent(
-      url.split("/").pop() ||
-        "document.pdf",
-    );
+ if (!url) {
+ alert("No file available to preview.");
+ return;
+ }
  
-    setPreviewFileName(fileName);
-    setPreviewError(false);
-
-    try {
-      setPreviewUrl(await fetchFileObjectUrl(url));
-    } catch (error) {
-      console.error("Document preview error:", error);
-      setPreviewUrl(null);
-      setPreviewError(true);
-    }
-  };
+ const fileName = decodeURIComponent(
+ url.split("/").pop() ||
+ "document.pdf",
+ );
  
-  // =====================================================
-  // DOWNLOAD
-  //
-  // DOWNLOAD FILE
-  // AND OPEN SAME PREVIEW MODEL
-  // =====================================================
+ setPreviewFileName(fileName);
+ setPreviewError(false);
+ 
+ try {
+ setPreviewUrl(await fetchFileObjectUrl(url));
+ } catch (error) {
+ console.error("Document preview error:", error);
+ setPreviewUrl(null);
+ setPreviewError(true);
+ }
+ };
+ 
+ // =====================================================
+ // DOWNLOAD
+ //
+ // DOWNLOAD FILE
+ // AND OPEN SAME PREVIEW MODEL
+ // =====================================================
 const handleDownload = async (
-  action: DocumentAction,
+action: DocumentAction,
 ) => {
-  const url = getDocumentUrl(action);
+ const url = getDocumentUrl(action);
  
-  if (!url) {
-    alert("No file available to download.");
-    return;
-  }
+ if (!url) {
+ alert("No file available to download.");
+ return;
+ }
  
-  try {
-    const response = await fetchWithSession(url);
+ try {
+ const response = await fetchWithSession(url);
  
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+ if (!response.ok) {
+ throw new Error(`HTTP ${response.status}`);
+ }
  
-    const blob = await response.blob();
+ const blob = await response.blob();
  
-    const blobUrl = window.URL.createObjectURL(blob);
+ const blobUrl = window.URL.createObjectURL(blob);
  
-    const fileName = decodeURIComponent(
-      url.split("/").pop() || "document.pdf",
-    );
+ const fileName = decodeURIComponent(
+ url.split("/").pop() || "document.pdf",
+ );
  
-    const link = document.createElement("a");
+ const link = document.createElement("a");
  
-    link.href = blobUrl;
-    link.download = fileName;
+ link.href = blobUrl;
+ link.download = fileName;
  
-    // IMPORTANT:
-    // Do NOT set target="_blank"
-    // Do NOT call handleView()
-    // Do NOT call setPreviewUrl()
+ // IMPORTANT:
+ // Do NOT set target="_blank"
+ // Do NOT call handleView()
+ // Do NOT call setPreviewUrl()
  
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
  
-    // Give Chrome enough time to start the download
-    setTimeout(() => {
-      window.URL.revokeObjectURL(blobUrl);
-    }, 1000);
+ // Give Chrome enough time to start the download
+ setTimeout(() => {
+ window.URL.revokeObjectURL(blobUrl);
+ }, 1000);
  
-  } catch (error) {
-    console.error("Document download error:", error);
-    alert("Failed to download document.");
-  }
+ } catch (error) {
+ console.error("Document download error:", error);
+ alert("Failed to download document.");
+ }
 };
-  // =====================================================
-  // CLOSE PREVIEW
-  // =====================================================
+ // =====================================================
+ // CLOSE PREVIEW
+ // =====================================================
  
-  const handleClosePreview = () => {
-    // If preview uses a blob URL, release it
-    if (
-      previewUrl &&
-      previewUrl.startsWith("blob:")
-    ) {
-      window.URL.revokeObjectURL(
-        previewUrl,
-      );
-    }
+const handleClosePreview = () => {
+ // Release the preview blob URL
+ if (
+ previewUrl &&
+ previewUrl.startsWith("blob:")
+ ) {
+ window.URL.revokeObjectURL(previewUrl);
+ }
  
-    setPreviewUrl(null);
-    setPreviewFileName("");
-    setPreviewError(false);
-  };
+ setPreviewUrl(null);
+ setPreviewFileName("");
+ setPreviewError(false);
+ setIsMaximized(false); // Add this line
+};
  
-  // =====================================================
-  // NO RECORDS
-  // =====================================================
+ // =====================================================
+ // NO RECORDS
+ // =====================================================
  
-  if (!section.records?.length) {
-    return (
-      <div className="w-full rounded-xl border border-[#1F2937] bg-white px-4 py-10 text-center text-slate-500">
-        No records found.
-      </div>
-    );
-  }
+ if (!section.records?.length) {
+ return (
+ <div className="w-full rounded-xl border border-[#1F2937] bg-white px-4 py-10 text-center text-slate-500">
+ No records found.
+ </div>
+ );
+ }
  
-  // =====================================================
-  // TABLE HEADERS
-  // =====================================================
+ // =====================================================
+ // TABLE HEADERS
+ // =====================================================
  
-  const headers =
-    section.records[0].fields.filter(
-      (field) =>
-        !HIDDEN_FIELDS.includes(
-          field.label,
-        ),
-    );
+ const headers =
+section.records[0].fields.filter(
+ (field) =>
+ !HIDDEN_FIELDS.includes(
+field.label,
+ ),
+ );
  
-  return (
-    <>
-      <Card className="w-full max-w-full overflow-hidden border-0 shadow-none">
-        <CardContent className="p-0">
+ return (
+ <>
+ <Card className="w-full max-w-full overflow-hidden border-0 shadow-none">
+ <CardContent className="p-0">
  
-          {/* =================================================
-              SECTION HEADER
-          ================================================= */}
+ {/* =================================================
+ SECTION HEADER
+ ================================================= */}
  
-          <div className="flex items-center gap-3 px-6 py-5">
-            <div className="flex h-8 w-8 items-center justify-center">
-              {Icon && (
-                <Icon className="h-5 w-5 text-blue-600" />
-              )}
-            </div>
+ <div className="flex items-center gap-3 px-6 py-5">
+ <div className="flex h-8 w-8 items-center justify-center">
+ {Icon && (
+ <Icon className="h-5 w-5 text-blue-600" />
+ )}
+ </div>
  
-            <div>
-              <h2 className="text-base font-semibold text-slate-900">
-                {section.title}
-              </h2>
+ <div>
+ <h2 className="text-base font-semibold text-slate-900">
+ {section.title}
+ </h2>
  
-              <p className="text-xs text-slate-500">
-                {section.records.length} Records
-              </p>
-            </div>
-          </div>
+ <p className="text-xs text-slate-500">
+ {section.records.length} Records
+ </p>
+ </div>
+ </div>
  
-          {/* =================================================
-              TABLE
-          ================================================= */}
+ {/* =================================================
+ TABLE
+ ================================================= */}
  
-          <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse">
+ <div className="w-full overflow-x-auto">
+ <table className="w-full min-w-[900px] border-collapse">
  
-              <thead>
-                <tr className="border-y border-slate-300">
+ <thead>
+ <tr className="border-y border-slate-300">
  
-                  {headers.map((field) => (
-                    <th
-                      key={field.label}
-                      className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-slate-700"
-                    >
-                      {field.label}
-                    </th>
-                  ))}
+ {headers.map((field) => (
+ <th
+ key={field.label}
+ className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-slate-700"
+ >
+ {field.label}
+ </th>
+ ))}
  
-                </tr>
-              </thead>
+ </tr>
+ </thead>
  
-              <tbody>
+ <tbody>
  
-                {section.records.map(
-                  (record, recordIndex) => (
+ {section.records.map(
+ (record, recordIndex) => (
  
-                    <tr
-                      key={recordIndex}
-                      className="border-b border-slate-300"
-                    >
+ <tr
+ key={recordIndex}
+ className="border-b border-slate-300"
+ >
  
-                      {headers.map(
-                        (field, fieldIndex) => {
+ {headers.map(
+ (field, fieldIndex) => {
  
-                          const fieldValue =
-                            record.fields.find(
-                              (item) =>
-                                item.label ===
-                                field.label,
-                            )?.value;
+ const fieldValue =
+ record.fields.find(
+ (item) =>
+ item.label ===
+ field.label,
+ )?.value;
  
-                          // =================================================
-                          // ACTIONS
-                          // =================================================
+ // =================================================
+ // ACTIONS
+ // =================================================
  
-                          if (
-                            field.label ===
-                              "Actions" &&
-                            typeof fieldValue ===
-                              "object" &&
-                            fieldValue !== null
-                          ) {
+ if (
+ field.label ===
+ "Actions" &&
+ typeof fieldValue ===
+ "object" &&
+ fieldValue !== null
+ ) {
  
-                            const action =
-                              fieldValue as DocumentAction;
+ const action =
+ fieldValue as DocumentAction;
  
-                            return (
-                              <td
-                                key={fieldIndex}
-                                className="px-4 py-3 text-center"
-                              >
+ return (
+ <td
+ key={fieldIndex}
+ className="px-4 py-3 text-center"
+ >
  
-                                <div className="flex items-center justify-center gap-4">
+ <div className="flex items-center justify-center gap-4">
  
-                                  {/* =========================================
-                                      VIEW ICON
-                                  ========================================= */}
+ {/* =========================================
+ VIEW ICON
+ ========================================= */}
  
-                                  {action.view && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleView(
-                                          action,
-                                        )
-                                      }
-                                      title="View document"
-                                      className="text-slate-600 transition-colors hover:text-blue-600"
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </button>
-                                  )}
+ {action.view && (
+ <button
+ type="button"
+ onClick={() =>
+ handleView(
+ action,
+ )
+ }
+ title="View document"
+ className="text-slate-600 transition-colors hover:text-blue-600"
+ >
+ <Eye className="h-4 w-4" />
+ </button>
+ )}
  
-                                  {/* =========================================
-                                      DOWNLOAD ICON
-                                  ========================================= */}
+ {/* =========================================
+ DOWNLOAD ICON
+ ========================================= */}
  
-                                  {action.download && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleDownload(
-                                          action,
-                                        )
-                                      }
-                                      title="Download document"
-                                      className="text-slate-600 transition-colors hover:text-green-600"
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </button>
-                                  )}
+ {action.download && (
+ <button
+ type="button"
+ onClick={() =>
+ handleDownload(
+ action,
+ )
+ }
+ title="Download document"
+ className="text-slate-600 transition-colors hover:text-green-600"
+ >
+ <Download className="h-4 w-4" />
+ </button>
+ )}
  
-                                </div>
+ </div>
  
-                              </td>
-                            );
-                          }
+ </td>
+ );
+ }
  
-                          // =================================================
-                          // NORMAL FIELD
-                          // =================================================
+ // =================================================
+ // NORMAL FIELD
+ // =================================================
  
-                          return (
-                            <td
-                              key={fieldIndex}
-                              className="px-4 py-3 text-sm text-slate-700"
-                            >
-                              {fieldValue !==
-                                undefined &&
-                              fieldValue !==
-                                null
-                                ? String(
-                                    fieldValue,
-                                  )
-                                : "-"}
-                            </td>
-                          );
-                        },
-                      )}
+ return (
+ <td
+ key={fieldIndex}
+ className="px-4 py-3 text-sm text-slate-700"
+ >
+ {fieldValue !==
+ undefined &&
+ fieldValue !==
+ null
+ ? String(
+ fieldValue,
+ )
+ : "-"}
+ </td>
+ );
+ },
+ )}
  
-                    </tr>
+ </tr>
  
-                  ),
-                )}
+ ),
+ )}
  
-              </tbody>
-            </table>
-          </div>
+ </tbody>
+ </table>
+ </div>
  
-        </CardContent>
-      </Card>
+ </CardContent>
+ </Card>
  
-      {/* =====================================================
-          SAME DOCUMENT PREVIEW MODEL
-          USED FOR BOTH VIEW AND DOWNLOAD
-      ===================================================== */}
+ {/* =====================================================
+ SAME DOCUMENT PREVIEW MODEL
+ USED FOR BOTH VIEW AND DOWNLOAD
+ ===================================================== */}
  
-      {(previewUrl || previewError) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+ {(previewUrl || previewError) && (
+ <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-2 sm:p-4">
+ <div
+ className={`flex flex-col overflow-hidden bg-white shadow-2xl transition-all duration-200 ${
+ isMaximized
+ ? "h-screen w-screen max-h-none max-w-none rounded-none"
+ : "h-[92vh] max-h-[950px] w-[96vw] max-w-6xl rounded-xl"
+ }`}
+ >
  
-          <div className="flex h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-lg bg-white shadow-xl">
+ {/* =================================================
+ HEADER
+ ================================================= */}
  
-            {/* =================================================
-                HEADER
-            ================================================= */}
+ {/* HEADER */}
  
-            <div className="flex items-center justify-between border-b px-4 py-3">
+<div className="flex items-center justify-between border-b px-4 py-3">
+ <div className="min-w-0">
+ <h2 className="text-sm font-semibold text-slate-800">
+ Document Preview
+ </h2>
  
-              <div>
-                <h2 className="text-sm font-semibold text-slate-800">
-                  Document Preview
-                </h2>
+ <p className="truncate text-xs text-slate-500">
+ {previewFileName}
+ </p>
+ </div>
  
-                <p className="text-xs text-slate-500">
-                  {previewFileName}
-                </p>
-              </div>
+ <div className="flex shrink-0 items-center gap-3">
  
-              <button
-                type="button"
-                title="Close"
-                onClick={
-                  handleClosePreview
-                }
-                className="text-slate-500 transition-colors hover:text-slate-800"
-              >
-                <X className="h-5 w-5" />
-              </button>
+ {/* MAXIMIZE / MINIMIZE */}
  
-            </div>
+ <button
+ type="button"
+ title={isMaximized ? "Minimize" : "Maximize"}
+ onClick={() => setIsMaximized((previous) => !previous)}
+ className="rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
+ >
+ {isMaximized ? (
+ <Minimize2 className="h-5 w-5" />
+ ) : (
+ <Maximize2 className="h-5 w-5" />
+ )}
+ </button>
  
-            {/* =================================================
-                PDF PREVIEW
-            ================================================= */}
+ {/* CLOSE */}
  
-            <div className="flex-1 overflow-hidden bg-slate-100">
+ <button
+ type="button"
+ title="Close"
+ onClick={handleClosePreview}
+ className="rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-red-600"
+ >
+ <X className="h-5 w-5" />
+ </button>
  
-              {previewError ? (
-                <div className="flex h-full items-center justify-center text-sm text-red-500">
-                  Unable to preview document.
-                </div>
-              ) : (
-                <iframe
-                  src={previewUrl ?? undefined}
-                  title="Document Preview"
-                  className="h-full w-full border-0"
-                  onError={() =>
-                    setPreviewError(true)
-                  }
-                />
-              )}
+ </div>
+</div>
+ {/* =================================================
+ PDF PREVIEW
+ ================================================= */}
  
-            </div>
+ <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-100">
  
-            {/* =================================================
-                FOOTER
-            ================================================= */}
+ {previewError ? (
+ <div className="flex h-full items-center justify-center text-sm text-red-500">
+ Unable to preview document.
+ </div>
+ ) : (
+ <iframe
+ src={previewUrl ?? undefined}
+ title="Document Preview"
+ className="h-full w-full border-0"
+ onError={() =>
+ setPreviewError(true)
+ }
+ />
+ )}
  
-            <div className="flex justify-end border-t bg-white px-4 py-3">
+ </div>
  
-              <button
-                type="button"
-                onClick={
-                  handleClosePreview
-                }
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
-              >
-                Close
-              </button>
+ {/* =================================================
+ FOOTER
+ ================================================= */}
  
-            </div>
+ <div className="flex justify-end border-t bg-white px-4 py-3">
  
-          </div>
-        </div>
-      )}
-    </>
-  );
+ <button
+ type="button"
+ onClick={
+ handleClosePreview
+ }
+ className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
+ >
+ Close
+ </button>
+ 
+ </div>
+ 
+ </div>
+ </div>
+ )}
+ </>
+ );
 }
+ 
