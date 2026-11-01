@@ -3,11 +3,7 @@ import { Route } from "react-router-dom";
 
 import { AdminCenterRoutes } from "@/features/admin/admincenter/routes/AdminCenterRoutes";
 import { ReviewRoutes } from "@/features/admin/admincenter/routes/ReviewRoutes";
-import { EnrollmentRoutes } from "@/features/admin/Enrollment/routes/EnrollmentRoutes";
 import { TalentHubRoutes } from "@/features/admin/Time & Office/routes/TalentHubRoutes";
-import { RecruitmentRoutes } from "@/features/admin/TalentHub/routes/RecruitmentRoutes";
-import { PayrollRoutes } from "@/features/admin/Payroll/routes/PayrollRoutes";
-import { OrganizationsRoutes } from "@/features/admin/organizations/routes/organizationsRoutes";
 import PageNotAvailable from "./PageNotAvailable";
 
 // Pages are loaded on demand (each one becomes its own file in the build).
@@ -18,12 +14,8 @@ export const AdminChildRoutes = (
     <Route path="dashboard" element={<DashboardPage />} />
     {AdminCenterRoutes}
     {ReviewRoutes}
-    {EnrollmentRoutes}
-    {RecruitmentRoutes}
-    {PayrollRoutes}
     {TalentHubRoutes}
-    {OrganizationsRoutes}
-    {/* Anything else (for example Insights, not in Phase 1) */}
+    {/* Anything else (Enrollment, Recruitment, Payroll, Organizations and the rest are not in Phase 1) */}
     <Route path="*" element={<PageNotAvailable />} />
   </>
 );

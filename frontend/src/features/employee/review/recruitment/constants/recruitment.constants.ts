@@ -1,1 +1,0 @@
-export const DEFAULT_RECRUITMENT_PAGE_SIZE = 10;

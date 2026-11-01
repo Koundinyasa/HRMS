@@ -1,7 +1,10 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
  
  
@@ -10,6 +13,7 @@ import { DatabaseService } from '../../../database/database.service';
  
  
 import { MailService } from '../../../mail/mail.service';
+import { AuthSessionService } from '../../../auth/session/auth-session.service';
 import { OrganizationChartDto } from './dto/organization-chart.dto';
 import { UpdateEmployeeGeneralDetailsDto } from './dto/update-employee-general-details.dto';
 import * as sql from 'mssql';
@@ -23,6 +27,7 @@ export class EmployeeDetailsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly mailService: MailService,
+    private readonly authSessions: AuthSessionService,
   ) { }
  
  
@@ -614,6 +619,84 @@ async createEmployee(
       throw new InternalServerErrorException(
         'Failed to create employee',
       );
+    }
+  }
+
+  // ==========================================
+  // Remove Employee (soft delete)
+  // ==========================================
+
+  /**
+   * Removes an employee from the company: USP_DeleteEmployee marks the row
+   * deleted and switches the login off. Nothing is erased, so attendance,
+   * leave and payroll history stay intact. Every open login of the employee
+   * is ended straight after.
+   */
+  async deleteEmployee(
+    employeeId: string,
+    companyId: number,
+    deletedBy: number,
+    actingEmployeeId: string,
+  ) {
+    const id = (employeeId ?? '').trim();
+
+    if (!/^[A-Za-z0-9._-]{1,100}$/.test(id)) {
+      throw new BadRequestException('Invalid employee id.');
+    }
+
+    if (id.toLowerCase() === actingEmployeeId.trim().toLowerCase()) {
+      throw new ForbiddenException('You cannot remove your own account.');
+    }
+
+    let row: { StatusCode?: number; Message?: string } | undefined;
+
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(100), id)
+        .input('CompanyID', sql.Int, companyId)
+        .input('DeletedBy', sql.Int, Number.isFinite(deletedBy) ? deletedBy : null)
+        .execute('USP_DeleteEmployee');
+
+      row = result.recordset?.[0];
+    } catch (error) {
+      console.error('Error while removing employee:', error);
+
+      throw new InternalServerErrorException(
+        'Unable to remove the employee.',
+      );
+    }
+
+    const statusCode = Number(row?.StatusCode);
+    const message = row?.Message ?? 'Unable to remove the employee.';
+
+    if (statusCode === 200) {
+      try {
+        await this.authSessions.revokeAllForEmployee(id, 'employee_removed');
+      } catch (error) {
+        // The employee is already removed; their login also stops working
+        // because the account is switched off.
+        console.error(`Could not end the sessions of removed employee ${id}:`, error);
+      }
+
+      return { success: true, statusCode: 200, message };
+    }
+
+    switch (statusCode) {
+      case 400:
+        throw new BadRequestException(message);
+      case 403:
+        throw new ForbiddenException(message);
+      case 404:
+        throw new NotFoundException(message);
+      case 409:
+        throw new ConflictException(message);
+      default:
+        throw new InternalServerErrorException(
+          'Unable to remove the employee.',
+        );
     }
   }
 }

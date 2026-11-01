@@ -1,5 +1,5 @@
 
-name: KTS-People360 and Attendance Service CI/CD
+name: KTS-People360 CI/CD pipeline
 
 on:
   push:
