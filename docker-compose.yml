@@ -1,0 +1,40 @@
+services:
+
+  frontend:
+    container_name: kts-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001/api
+    image: bgayathridev/kts-people360-frontend:latest
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    container_name: kts-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: bgayathridev/kts-people360-backend:latest
+    env_file:
+      - path: ./backend/.env
+        format: raw
+    ports:
+      - "3001:3001"
+    depends_on:
+      - attendance-service
+    restart: unless-stopped
+
+  attendance-service:
+    container_name: kts-attendance
+    build:
+      context: ./attendance-service
+      dockerfile: Dockerfile
+    image: bgayathridev/attendance-service:latest
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
