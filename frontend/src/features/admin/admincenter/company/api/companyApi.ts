@@ -168,7 +168,7 @@ function unwrapPayrollDropdownData(response: unknown): {
   salaryRoundOff: unknown[];
   periodType: unknown[];
 } {
-  let data: unknown =
+  const data: unknown =
     response && typeof response === "object" && "data" in response
       ? (response as { data: unknown }).data
       : response;

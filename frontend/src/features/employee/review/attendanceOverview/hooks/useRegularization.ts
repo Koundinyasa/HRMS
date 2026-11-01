@@ -241,6 +241,7 @@ export function useAttendance({
       },
       [
         validRequest,
+        adminMode,
         employeeId,
         getPunchDashboard,
       ],
