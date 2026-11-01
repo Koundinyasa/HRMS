@@ -1,0 +1,3 @@
+# KTS-People360 is a private, signed-in application. Do not index it.
+User-agent: *
+Disallow: /
