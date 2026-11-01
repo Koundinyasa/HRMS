@@ -8,6 +8,8 @@ import { useAdminMenus } from "./adminMenus";
 import AdminRouteGuard from "./AdminRouteGuard";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
 import PageLoader from "@/shared/components/PageLoader";
+import { usePageTitle, titleFromMenus } from "@/hooks/usePageTitle";
+import { useGetDashboardSummaryQuery } from "../dashboard/api/dashboardApi";
 
 export default function AdminLayout() {
   return (
@@ -28,6 +30,14 @@ function AdminLayoutContent() {
   const section = afterAdmin.split("/")[0];
 
   const { sections } = useAdminMenus();
+
+  // Browser tab title: the name of the open menu.
+  const { data: summary } = useGetDashboardSummaryQuery();
+  const pathAfterDomain =
+    domain && location.pathname.startsWith(`/${domain}`)
+      ? location.pathname.slice(domain.length + 1)
+      : location.pathname;
+  usePageTitle(titleFromMenus(pathAfterDomain, summary?.menus ?? []));
 
   // Second-level menu of this section, from the database menus.
   const subNavItems =

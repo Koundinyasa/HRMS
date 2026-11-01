@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import { ArrowUp } from "lucide-react";
 
 import Navbar from "./Navbar";
@@ -9,6 +9,8 @@ import Sidebar from "./Sidebar";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
 import SkeletonLoading from "@/components/ui/SkeletonLoading";
+import { usePageTitle, titleFromMenus } from "@/hooks/usePageTitle";
+import { useGetMenusQuery } from "@/features/employee/dashboard/api/dashboardApi";
 
 export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,7 +21,16 @@ export default function Layout() {
 
   const mainRef = useRef<HTMLElement>(null);
   const location = useLocation();
+  const { domain } = useParams();
   const [settledPath, setSettledPath] = useState("");
+
+  // Browser tab title: the name of the open menu.
+  const { data: menuData } = useGetMenusQuery();
+  const pathAfterDomain =
+    domain && location.pathname.startsWith(`/${domain}`)
+      ? location.pathname.slice(domain.length + 1)
+      : location.pathname;
+  usePageTitle(titleFromMenus(pathAfterDomain, menuData?.data ?? []));
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
