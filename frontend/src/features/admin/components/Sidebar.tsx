@@ -25,7 +25,7 @@ export default function Sidebar() {
         className={`
           z-50 flex shrink-0 flex-col border-r border-white/40
           transition-all duration-300 ease-in-out
-          fixed inset-y-0 left-0 overflow-y-auto
+          fixed inset-y-0 left-0 overflow-x-hidden overflow-y-auto
           lg:static lg:sticky lg:top-0 lg:z-auto lg:h-full lg:self-stretch
           ${
             isOpen
