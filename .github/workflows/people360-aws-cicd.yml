@@ -1,0 +1,348 @@
+
+name: People360 CI/CD
+
+on:
+  push:
+    branches:
+      - suresh
+  pull_request:
+    branches:
+      - suresh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: people360-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  frontend-build:
+    name: Frontend Build and Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+  frontend-security:
+    name: Frontend Security Scan
+    runs-on: ubuntu-latest
+    needs: frontend-build
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: NPM Audit
+        run: npm audit --audit-level=high
+
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: frontend
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  backend-build:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
+  backend-security:
+    name: Backend Security Scan
+    runs-on: ubuntu-latest
+    needs: backend-build
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: NPM Audit
+        run: npm audit --audit-level=high
+
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: backend
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  attendance-build:
+    name: Attendance Service Build and Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: attendance-service/requirements.txt
+
+      - name: Install attendance dependencies
+        working-directory: attendance-service
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m compileall -q attendance-service
+
+  attendance-security:
+    name: Attendance Service Security Scan
+    runs-on: ubuntu-latest
+    needs: attendance-build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: attendance-service
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs:
+      - frontend-security
+      - backend-security
+      - attendance-security
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=/api \
+            -f frontend/Dockerfile \
+            -t people360-frontend:${{ github.sha }} \
+            -t people360-frontend:latest \
+            frontend
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t people360-backend:${{ github.sha }} \
+            -t people360-backend:latest \
+            backend
+
+      - name: Build attendance image
+        run: |
+          docker build \
+            -f attendance-service/Dockerfile \
+            -t people360-attendance:${{ github.sha }} \
+            -t people360-attendance:latest \
+            attendance-service
+
+      - name: Save Docker images
+        run: |
+          docker save \
+            people360-frontend:${{ github.sha }} \
+            people360-backend:${{ github.sha }} \
+            people360-attendance:${{ github.sha }} \
+            -o people360-images.tar
+
+      - name: Upload Docker images
+        uses: actions/upload-artifact@v6
+        with:
+          name: people360-docker-images
+          path: people360-images.tar
+          retention-days: 1
+
+  docker-image-scan:
+    name: Docker Image Security Scan
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+      - name: Download Docker images
+        uses: actions/download-artifact@v6
+        with:
+          name: people360-docker-images
+
+      - name: Load Docker images
+        run: docker load -i people360-images.tar
+
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: people360-frontend:${{ github.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: people360-backend:${{ github.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+      - name: Scan attendance image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: people360-attendance:${{ github.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  docker-push:
+    name: Push Images to Docker Hub
+    runs-on: ubuntu-latest
+    needs: docker-image-scan
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Download Docker images
+        uses: actions/download-artifact@v6
+        with:
+          name: people360-docker-images
+
+      - name: Load Docker images
+        run: docker load -i people360-images.tar
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Tag frontend image
+        run: |
+          docker tag people360-frontend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USER }}/kts-people360-frontend:${{ github.sha }}
+          docker tag people360-frontend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USER }}/kts-people360-frontend:latest
+
+      - name: Tag backend image
+        run: |
+          docker tag people360-backend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USER }}/kts-people360-backend:${{ github.sha }}
+          docker tag people360-backend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USER }}/kts-people360-backend:latest
+
+      - name: Tag attendance image
+        run: |
+          docker tag people360-attendance:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USER }}/kts-people360-attendance:${{ github.sha }}
+          docker tag people360-attendance:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USER }}/kts-people360-attendance:latest
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USER }}/kts-people360-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USER }}/kts-people360-frontend:latest
+
+      - name: Push backend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USER }}/kts-people360-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USER }}/kts-people360-backend:latest
+
+      - name: Push attendance image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USER }}/kts-people360-attendance:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USER }}/kts-people360-attendance:latest

@@ -1,0 +1,28 @@
+
+services:
+  frontend:
+    image: ${DOCKERHUB_USER}/kts-people360-frontend:latest
+    container_name: people360-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    image: ${DOCKERHUB_USER}/kts-people360-backend:latest
+    container_name: people360-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+
+  attendance:
+    image: ${DOCKERHUB_USER}/kts-people360-attendance:latest
+    container_name: people360-attendance
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./attendance-service/.env
+    restart: unless-stopped
