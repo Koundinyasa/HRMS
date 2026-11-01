@@ -1,3 +1,4 @@
+
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -15,9 +16,12 @@ RUN apt-get update && apt-get install -y \
     libxcb1 \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Linux-compatible Python dependencies
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt \
+    && pip install --no-cache-dir -r requirements-linux.txt
+
 RUN pip install --no-cache-dir --no-deps face-recognition==1.3.0
 
 COPY . .
