@@ -1,9 +1,10 @@
 import { Suspense, useState } from "react";
 import { Outlet, useLocation, useParams } from "react-router-dom";
+import { List } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import SubSidebar from "./subSidebar";
-import { SidebarProvider } from "./SidebarContext";
+import { SidebarProvider, useSidebar } from "./SidebarContext";
 import { useAdminMenus } from "./adminMenus";
 import AdminRouteGuard from "./AdminRouteGuard";
 import ChatbotWidget from "@/features/chatbot/components/ChatbotWidget";
@@ -30,6 +31,7 @@ function AdminLayoutContent() {
   const section = afterAdmin.split("/")[0];
 
   const { sections } = useAdminMenus();
+  const { toggleSubSidebar } = useSidebar();
 
   // Browser tab title: the name of the open menu.
   const { data: summary } = useGetDashboardSummaryQuery();
@@ -40,8 +42,10 @@ function AdminLayoutContent() {
   usePageTitle(titleFromMenus(pathAfterDomain, summary?.menus ?? []));
 
   // Second-level menu of this section, from the database menus.
-  const subNavItems =
-    sections.find((s) => s.path.toLowerCase() === section.toLowerCase())?.items ?? [];
+  const currentSection = sections.find(
+    (s) => s.path.toLowerCase() === section.toLowerCase(),
+  );
+  const subNavItems = currentSection?.items ?? [];
 
   return (
     <>
@@ -74,6 +78,18 @@ function AdminLayoutContent() {
             tabIndex={-1}
             className="min-w-0 flex-1 overflow-y-auto p-4 focus:outline-none lg:p-6"
           >
+            {/* Phones: the second-level menu is a drawer; this button opens it */}
+            {subNavItems.length > 0 && (
+              <button
+                type="button"
+                onClick={toggleSubSidebar}
+                aria-label={`Open ${currentSection?.label ?? "section"} menu`}
+                className="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm md:hidden"
+              >
+                <List size={16} aria-hidden="true" />
+                <span>{currentSection?.label ?? "Menu"}</span>
+              </button>
+            )}
             <AdminRouteGuard>
               <Suspense fallback={<PageLoader />}>
                 <Outlet />

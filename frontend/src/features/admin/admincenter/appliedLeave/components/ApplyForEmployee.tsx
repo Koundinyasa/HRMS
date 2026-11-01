@@ -255,7 +255,7 @@ export default function ApplyForEmployee() {
   };
   return (
     <div className="w-full">
-      <div className="grid w-full gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid w-full gap-6 min-[1400px]:grid-cols-[320px_minmax(0,1fr)]">
         {/* LEFT SIDE */}
         <div className="space-y-6">
           <Card className="overflow-visible rounded-2xl border border-slate-200 shadow-sm">
