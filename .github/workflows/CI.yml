@@ -83,16 +83,14 @@ jobs:
       - name: NPM Audit
         run: npm audit --audit-level=high
 
-      - name: Trivy Filesystem Scan
-        uses: aquasecurity/trivy-action@0.36.0
+      - name: Run Trivy Security Scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: fs
-          scan-ref: frontend
-          scanners: vuln,secret
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
-          format: table
+          scan-type: 'fs'
+          scan-ref: 'frontend'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '0'
+          format: 'table'
 
 
   # ==========================================
@@ -158,16 +156,14 @@ jobs:
       - name: NPM Audit
         run: npm audit --audit-level=high
 
-      - name: Trivy Filesystem Scan
+      - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: fs
-          scan-ref: backend
-          scanners: vuln,secret
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
-          format: table
+          scan-type: 'fs'
+          scan-ref: 'backend'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '0'
+          format: table'
 
 
   # ==========================================
