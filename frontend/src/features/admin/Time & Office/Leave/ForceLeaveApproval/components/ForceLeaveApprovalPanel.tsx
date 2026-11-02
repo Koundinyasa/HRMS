@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import * as XLSX from "xlsx";
+import { toast } from "react-toastify";
 import { type FilterOption } from "@/features/admin/components/FilterDropdown";
 import EmptyState from "./EmptyState";
 import ForceLeaveApprovalTabs from "./ForceLeaveApprovalTabs";
@@ -291,17 +292,39 @@ export default function ForceLeaveApprovalPanel() {
     }
 
     try {
-      await Promise.all(
-        Array.from(selectedIds, (approvalId) =>
-          approveLeaves({ approvalId }).unwrap(),
-        ),
-      );
+      const result = await approveLeaves({
+        approvalIds: Array.from(selectedIds),
+      }).unwrap();
+
+      // The message from the stored procedure (first row) wins over the generic one
+      const responseMessage =
+        (result.data?.[0] as { Message?: string } | undefined)?.Message ||
+        result.message;
+
+      if (result.success === false) {
+        toast.error(responseMessage || "Failed to approve leave.");
+        return;
+      }
+
+      if (result.failed > 0) {
+        toast.warning(
+          `${result.succeeded} approved, ${result.failed} could not be approved.`,
+        );
+      } else {
+        toast.success(responseMessage || "Leave approved successfully.");
+      }
 
       setSelectedIds(new Set());
     } catch (error) {
       console.error(
         "Failed to approve leave applications:",
         error,
+      );
+      const serverMessage = (error as { data?: { message?: string | string[] } })
+        ?.data?.message;
+      toast.error(
+        (Array.isArray(serverMessage) ? serverMessage[0] : serverMessage) ||
+          "Unable to approve the selected leave. Please try again.",
       );
     }
   };

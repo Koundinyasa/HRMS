@@ -1,5 +1,6 @@
 import { baseApi } from "@/app/baseApi"; 
 import type {
+  BulkLeaveActionResult,
   CompanyDropdownData,
   HierarchicalLeaveActionRequest,
   LeaveApprovalQuery,
@@ -151,18 +152,18 @@ export const leaveApprovalApi = baseApi.injectEndpoints({
       providesTags: ["ForceLeaveApproval"],
     }),
 
-    approveLeaves: builder.mutation<unknown, HierarchicalLeaveActionRequest>({
+    approveLeaves: builder.mutation<BulkLeaveActionResult, HierarchicalLeaveActionRequest>({
       query: (body) => ({
-        url: "/review/approval",
+        url: "/admin/ta/leave/forceleaveapproval/bulk-hierarchical-action",
         method: "POST",
         body: { ...body, actionStatusId: 4 },
       }),
       invalidatesTags: ["ForceLeaveApproval"],
     }),
 
-    rejectLeaves: builder.mutation<unknown, HierarchicalLeaveActionRequest>({
+    rejectLeaves: builder.mutation<BulkLeaveActionResult, HierarchicalLeaveActionRequest>({
       query: (body) => ({
-        url: "/review/approval",
+        url: "/admin/ta/leave/forceleaveapproval/bulk-hierarchical-action",
         method: "POST",
         body: { ...body, actionStatusId: 5 },
       }),

@@ -1,5 +1,4 @@
 import { Send } from "lucide-react";
-import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
@@ -7,15 +6,7 @@ import {
   PUNCH_METRIC_LABELS,
   PUNCH_TILES_BY_PERIOD,
 } from "../constants/timeoffice.constants";
-import type { PunchMetric, PunchPeriod } from "../types/timeoffice.types";
-
-interface PunchStatTilesProps {
-  period: PunchPeriod;
-  totalEmployees: number;
-  counts: Record<PunchMetric, number>;
-  onOpenMetric: (metric: PunchMetric) => void;
-  header?: ReactNode;
-}
+import type { PunchMetric, PunchStatTilesProps } from "../types/timeoffice.types";
 
 export default function PunchStatTiles({
   period,

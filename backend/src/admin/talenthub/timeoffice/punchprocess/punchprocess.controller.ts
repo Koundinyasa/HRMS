@@ -301,7 +301,7 @@ async getHolidayWeekOffEmployees(
   return this.punchProcessService.getHolidayWeekOffEmployees(
     companyId,
     date,
-    type,
+    type ? Number(type) : undefined,
   );
 }
 

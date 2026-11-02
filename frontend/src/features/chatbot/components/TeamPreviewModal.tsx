@@ -56,7 +56,7 @@ export default function TeamPreviewModal({
         </div>
 
         {/* Body */}
-        <div className="px-[18px] py-1 max-h-[320px] overflow-y-auto">
+        <div className="px-[18px] py-1 max-h-[min(320px,50dvh)] overflow-y-auto">
           {members.length === 0 ? (
             <p className="text-[13px] text-[#8b86a3] py-6 text-center m-0">
               No members found for this team.

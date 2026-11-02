@@ -653,33 +653,62 @@ async getAverageOtWorkHours(companyId: number) {
 async getHolidayWeekOffEmployees(
   companyId: number,
   date?: string,
-  type?: string,
+  type?: number,
 ) {
   const pool = await this.databaseService.connect();
 
   const result = await pool
     .request()
     .input('CompanyID', sql.Int, companyId)
-    .input('Date', sql.Date, date ? new Date(date) : null)
-    .input('Type', sql.VarChar(20), type ?? null)
+    .input('Date', sql.Date, date ?? null)
+    .input('Type', sql.Int, type ?? null)
     .execute('USP_GetHolidayWeekOffEmployees');
 
   const first = result.recordset?.[0];
 
   if (first?.StatusCode === 400) {
-  throw new BadRequestException(
-    first.StatusMessage || 'Invalid request',
-  );
-}
-
-if (first?.StatusCode === 500) {
-  throw new InternalServerErrorException(
-    first.StatusMessage || 'Failed to retrieve holiday/week-off details',
-  );
-
+    throw new BadRequestException(
+      first.StatusMessage || 'Invalid request',
+    );
   }
 
-  return result.recordset ?? [];
+  if (first?.StatusCode === 500) {
+    throw new InternalServerErrorException(
+      first.StatusMessage ||
+        'Failed to retrieve holiday/week-off details',
+    );
+  }
+
+  const records = result.recordset ?? [];
+
+  return records.map((row: any) => {
+    const attendanceDate = row['Date'];
+
+    if (!attendanceDate) {
+      return row;
+    }
+
+    let formattedDate: string;
+
+    if (
+      typeof attendanceDate === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(attendanceDate)
+    ) {
+      formattedDate = attendanceDate;
+    } else {
+      formattedDate = new Date(attendanceDate).toLocaleDateString(
+        'en-CA',
+        {
+          timeZone: 'Asia/Kolkata',
+        },
+      );
+    }
+
+    return {
+      ...row,
+      Date: formattedDate,
+    };
+  });
 }
 
 //=====================================================

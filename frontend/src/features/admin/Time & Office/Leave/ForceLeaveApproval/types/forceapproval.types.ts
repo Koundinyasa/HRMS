@@ -55,8 +55,16 @@ export interface LeaveApprovalQuery {
 }
 
 export interface HierarchicalLeaveActionRequest {
-  approvalId: number;
+  approvalIds: number[];
   remarks?: string;
+}
+
+export interface BulkLeaveActionResult {
+  success: boolean;
+  message: string;
+  succeeded: number;
+  failed: number;
+  data?: unknown[];
 }
 
 export interface CompanyDropdownData {

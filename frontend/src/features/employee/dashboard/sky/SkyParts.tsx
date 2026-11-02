@@ -73,8 +73,15 @@ export function SkyHeader({
   const shadow = { textShadow: "0 1px 3px rgba(0,0,0,0.5)" };
   return (
     <div
-      className="relative flex-shrink-0 overflow-hidden"
-      style={{ height: variant === "tall" ? 190 : 104, background: sky.gradient }}
+      // The slim header grows on narrow phones because its left block
+      // (icon, mode, "Punching out", Change) wraps onto more lines there; the
+      // tall one shrinks on short screens to leave room for the scene cards.
+      className={`relative flex-shrink-0 overflow-hidden ${
+        variant === "tall"
+          ? "h-[190px] [@media(max-height:560px)]:h-[150px]"
+          : "h-[104px] max-[400px]:h-[140px]"
+      }`}
+      style={{ background: sky.gradient }}
     >
       <SkyArc sky={sky} variant={variant} />
       {/* Soft dark fade so the text stays readable even on a bright midday sky */}

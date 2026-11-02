@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
  
@@ -46,9 +47,19 @@ export class EmployeeDetailsController {
   }
  
   // ==========================================
+  // Validate Email
+  // ==========================================
+  // Declared before @Get(':employeeId') so "validate-email" is not read as an employee id.
+
+  @Get('validate-email')
+  async validateEmail(@Query('email') email: string) {
+    return this.employeeDetailsService.validateEmail(email);
+  }
+
+  // ==========================================
   // Get Employee Details
   // ==========================================
- 
+
   @Get(':employeeId')
   async getEmployeeDetails(
     @Param('employeeId') employeeId: string,

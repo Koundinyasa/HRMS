@@ -5,12 +5,6 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "overrides": {
-  "multer": "^2.5.0",
-  "minimatch@3.1.5": {
-    "brace-expansion": "^1.1.20"
-  }
-  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -109,5 +103,17 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "@nestjs/swagger": {
+      "js-yaml": "^5.5.0"
+    },
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "multer": "^2.5.0",
+    "minimatch@3.1.5": {
+      "brace-expansion": "^1.1.20"
+    }
   }
 }

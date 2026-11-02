@@ -15,6 +15,7 @@ import {
   subMonths,
 } from "date-fns";
 import { DatePicker, type DatePickerCell } from "@/components/ui/datepicker";
+import type { DateFieldProps } from "../types/timeoffice.types";
 
 const ISO_FORMAT = "yyyy-MM-dd";
 const TEXT_FORMAT = "dd-MM-yyyy";
@@ -92,19 +93,6 @@ function useDatePicker(value: string, onChange: (iso: string) => void) {
       setOpen(false);
     },
   };
-}
-
-interface DateFieldProps {
-  label?: string;
-  value: string;
-  onChange: (iso: string) => void;
-  className?: string;
-  inputClassName?: string;
-  align?: "left" | "right";
-  /** Called when the calendar opens or closes. */
-  onOpenChange?: (open: boolean) => void;
-  /** Use fixed positioning so the calendar is not clipped by a scrolling parent. */
-  fixedCalendarPosition?: boolean;
 }
 
 /** Wraps the shared DatePicker + useDatePicker so callers just pass an ISO value/onChange, like a native date input. */
