@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import * as sql from 'mssql';
 @Injectable()
 export class LeaveService {
@@ -118,15 +118,44 @@ export class LeaveService {
     }
   }
  
+  /** Plain value of an Excel cell (formula result, rich text, link text). */
+  private excelCellValue(value: ExcelJS.CellValue): unknown {
+    if (value === null || value === undefined || value instanceof Date) {
+      return value ?? null;
+    }
+    if (typeof value === 'object') {
+      if ('result' in value) return value.result ?? null;
+      if ('richText' in value) return value.richText.map((t) => t.text).join('');
+      if ('text' in value) return value.text;
+      return null;
+    }
+    return value;
+  }
+
   // Upload Holiday Excel
   async uploadHolidayFile(file: Express.Multer.File) {
     try {
-      const workbook = XLSX.read(file.buffer, {
-        type: 'buffer',
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(file.buffer as unknown as ExcelJS.Buffer);
+      const sheet = workbook.worksheets[0];
+      if (!sheet) {
+        throw new BadRequestException('The Excel file has no sheets.');
+      }
+      // Row 1 holds the column names; every later non-empty row is a holiday.
+      const headers: string[] = [];
+      sheet.getRow(1).eachCell({ includeEmpty: false }, (cell, col) => {
+        headers[col] = String(cell.text ?? '').trim();
       });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const holidays: any[] = XLSX.utils.sheet_to_json(sheet);
+      const holidays: Record<string, unknown>[] = [];
+      sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const item: Record<string, unknown> = {};
+        row.eachCell({ includeEmpty: false }, (cell, col) => {
+          const name = headers[col];
+          if (name) item[name] = this.excelCellValue(cell.value);
+        });
+        if (Object.keys(item).length > 0) holidays.push(item);
+      });
       const pool = await this.databaseService.connect();
       let insertedCount = 0;
       for (const holiday of holidays) {
