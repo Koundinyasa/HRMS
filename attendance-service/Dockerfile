@@ -9,7 +9,10 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 
 RUN grep -v "^msvc-runtime==" requirements.txt > requirements-linux.txt \
-    && pip install --no-cache-dir -r requirements-linux.txt
+    && pip install --no-cache-dir -r requirements-linux.txt \
+    && python -m pip install --no-cache-dir --upgrade \
+       "jaraco.context>=6.1.0" \
+       "wheel>=0.46.2"
 
 COPY . .
 
