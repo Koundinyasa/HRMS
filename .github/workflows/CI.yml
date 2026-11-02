@@ -82,10 +82,11 @@ jobs:
 
       - name: NPM Audit
         run: npm audit --audit-level=high
-        continue-on-error: true
+        
 
       - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: true
         with:
           scan-type: fs
           scan-ref: frontend
