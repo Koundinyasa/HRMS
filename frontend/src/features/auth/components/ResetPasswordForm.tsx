@@ -53,10 +53,13 @@ export default function ResetPasswordForm() {
           </label>
 
           <div className="relative">
-  <input
+ <input
     type={showPassword ? "text" : "password"}
     value={password}
-    onChange={(e) => setPassword(e.target.value)}
+    onChange={(e) => {
+      setPassword(e.target.value);
+      setError("");
+    }}
     className="w-full h-[48px] px-4 pr-12 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
   />
 
@@ -88,10 +91,14 @@ export default function ResetPasswordForm() {
           </label>
 
           <div className="relative">
-  <input
+
+            <input
     type={showConfirmPassword ? "text" : "password"}
     value={confirmPassword}
-    onChange={(e) => setConfirmPassword(e.target.value)}
+    onChange={(e) => {
+      setConfirmPassword(e.target.value);
+      setError("");
+    }}
     className="w-full h-[48px] px-4 pr-12 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
   />
 

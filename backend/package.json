@@ -60,7 +60,6 @@
     "swagger-ui-express": "^5.0.1",
     "uuid": "^14.0.1",
     "winston": "^3.19.0",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "xlsx-populate": "^1.21.0"
   },
   "devDependencies": {
@@ -110,5 +109,11 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "multer": "^2.5.0",
+    "minimatch@3.1.5": {
+      "brace-expansion": "^1.1.20"
+    }
   }
 }

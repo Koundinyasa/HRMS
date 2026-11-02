@@ -622,7 +622,9 @@ export default function ApplyForEmployee() {
                 {/* ATTACHMENT */}
                 {leaveType === "2" && totalDays > 1 && (
                   <div className="space-y-2">
-                    <Label htmlFor="attachment">Medical Certificate</Label>
+                    <Label htmlFor="attachment">Medical Certificate{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
 
                     <Controller
                       control={control}
