@@ -250,8 +250,8 @@ export class LeaveService {
         .input('EmployeeId', sql.VarChar(25), employeeId)
         .execute('USP_GetLeaveStatus');
  
-      console.log('🔥 Leave Status Recordset:', result.recordset);
-      console.log('🔥 Leave Status Recordsets:', result.recordsets);
+      // //console.log('🔥 Leave Status Recordset:', result.recordset);
+      // //console.log('🔥 Leave Status Recordsets:', result.recordsets);
  
       // SQL FOR JSON result
       const row = result.recordset?.[0];

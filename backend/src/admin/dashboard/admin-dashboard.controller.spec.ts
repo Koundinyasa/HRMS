@@ -4,86 +4,53 @@ import { AdminDashboardController } from './admin-dashboard.controller';
 import { AdminDashboardService } from './admin-dashboard.service';
 import { DashboardSummaryDto } from './dto/dashboard.summary.dto';
 
-const dbResult: DashboardSummaryDto = {
-  totalEmployees: 0,
-  totalEmployeesChange: 0,
-  confirmationPending: 0,
-  confirmationPendingChange: 0,
-  joinedEmployee: 0,
-  joinedEmployeeChange: 0,
-  payrollMonth: 0,
-  payrollMonthChange: 0,
-  leftEmployee: 0,
-  leftEmployeeChange: 0,
-  openPositions: 0,
-  openPositionsChange: 0,
-};
+const dashboard = {
+  welcome: {},
+  menus: [],
+  summary: {},
+} as unknown as DashboardSummaryDto;
 
 describe('AdminDashboardController', () => {
   let controller: AdminDashboardController;
-  let service: AdminDashboardService;
+  let getDashboard: jest.Mock;
 
   beforeEach(async () => {
+    getDashboard = jest.fn();
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminDashboardController],
       providers: [
         {
           provide: AdminDashboardService,
-          useValue: {
-            getSummary: jest.fn(),
-          },
+          useValue: { getDashboard },
         },
       ],
     }).compile();
 
-    controller = module.get<AdminDashboardController>(AdminDashboardController);
-    service = module.get<AdminDashboardService>(AdminDashboardService);
+    controller = module.get(AdminDashboardController);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('GET /api/admin/dashboard/summary', () => {
-    it('should return the summary from the service', async () => {
-      jest.spyOn(service, 'getSummary').mockResolvedValue(dbResult);
-      const result = await controller.getSummary();
-      expect(result).toEqual(dbResult);
-      expect(service.getSummary).toHaveBeenCalledTimes(1);
+  describe('GET /admin/dashboard/summary', () => {
+    it('passes the logged-in employee id to the service and returns its result', async () => {
+      getDashboard.mockResolvedValue(dashboard);
+
+      const result = await controller.getSummary({ employeeId: 'EMP001' });
+
+      expect(result).toBe(dashboard);
+      expect(getDashboard).toHaveBeenCalledTimes(1);
+      expect(getDashboard).toHaveBeenCalledWith('EMP001');
     });
 
-    it('should propagate InternalServerErrorException when service throws', async () => {
-      jest
-        .spyOn(service, 'getSummary')
-        .mockRejectedValue(new InternalServerErrorException('DB error'));
+    it('propagates InternalServerErrorException when the service throws', async () => {
+      getDashboard.mockRejectedValue(new InternalServerErrorException('DB error'));
 
-      await expect(controller.getSummary()).rejects.toThrow(
-        InternalServerErrorException,
-      );
-    });
-
-    it('response should have all required DTO fields', async () => {
-      jest.spyOn(service, 'getSummary').mockResolvedValue(dbResult);
-      const result = await controller.getSummary();
-
-      const requiredKeys: (keyof DashboardSummaryDto)[] = [
-        'totalEmployees',
-        'totalEmployeesChange',
-        'confirmationPending',
-        'confirmationPendingChange',
-        'joinedEmployee',
-        'joinedEmployeeChange',
-        'payrollMonth',
-        'payrollMonthChange',
-        'leftEmployee',
-        'leftEmployeeChange',
-        'openPositions',
-        'openPositionsChange',
-      ];
-
-      requiredKeys.forEach((key) => {
-        expect(result).toHaveProperty(key);
-      });
+      await expect(
+        controller.getSummary({ employeeId: 'EMP001' }),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 });
