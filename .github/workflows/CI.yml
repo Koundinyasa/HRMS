@@ -261,17 +261,13 @@ jobs:
             -t people360-backend:${{ github.sha }} \
             backend
 
-      - name: Build external Attendance image
+      - name: Build Attendance image
         run: |
-          if [ ! -f attendance-external/Dockerfile ]; then
-            echo "ERROR: External Attendance repository Dockerfile not found"
-            exit 1
-          fi
-
           docker build \
-            -f attendance-external/Dockerfile \
+            -f attendance-service/Dockerfile \
             -t people360-attendance:${{ github.sha }} \
-            attendance-external
+            -t people360-attendance:latest \
+            attendance-service
 
       - name: Save Docker images
         run: |
