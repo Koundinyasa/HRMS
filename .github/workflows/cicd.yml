@@ -1,4 +1,4 @@
-name: KTS-People360 Combined CI/CD Pipeline
+name: KTS-People360 Combined CI/CD 
 
 on:
   push:
@@ -140,25 +140,31 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: NPM Audit
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
       - name: Run Trivy Frontend Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: frontend
           scanners: vuln,secret
-          format: sarif
-          output: trivy-frontend-results.sarif
-          severity: CRITICAL,HIGH
+          severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
-
-      - name: Upload Frontend Scan Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-frontend-results
-          path: trivy-frontend-results.sarif
-          if-no-files-found: ignore
+          format: table
 
 
   # --------------------------------------------------
