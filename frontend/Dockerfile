@@ -1,3 +1,4 @@
+
 # Stage 1: Build React/Vite application
 FROM node:24-alpine AS builder
 
@@ -15,6 +16,9 @@ RUN npm run build
 
 # Stage 2: Nginx production server
 FROM nginx:alpine
+
+# Update Alpine OS packages to receive security fixes
+RUN apk update && apk upgrade --no-cache
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
