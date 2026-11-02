@@ -14,6 +14,9 @@ services:
     container_name: people360-backend
     ports:
       - "3001:3001"
+    env_file:
+      - path: ./backend/.env
+        format: raw
     environment:
       NODE_ENV: production
     restart: unless-stopped
@@ -24,5 +27,6 @@ services:
     ports:
       - "5000:5000"
     env_file:
-      - ./attendance-service/.env
+      - path: ./attendance-service/.env
+        format: raw
     restart: unless-stopped

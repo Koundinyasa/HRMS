@@ -18,7 +18,7 @@ RUN npm run build
 
 
 # Production stage
-FROM nginx:1.27-alpine
+FROM nginx:1.29-alpine
 
 RUN apk update && apk upgrade --no-cache
 

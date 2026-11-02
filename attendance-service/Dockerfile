@@ -16,10 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+COPY face_recognition-1.3.0-py2.py3-none-any.whl .
 
 RUN grep -v -i '^msvc-runtime==' requirements.txt > requirements-linux.txt \
     && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && python -m pip install --no-cache-dir --prefix=/install -r requirements-linux.txt
+    && python -m pip install --no-cache-dir --prefix=/install -r requirements-linux.txt \
+    && python -m pip install --no-cache-dir --no-deps --prefix=/install face_recognition-1.3.0-py2.py3-none-any.whl
+    
 
 
 # ==========================================
@@ -55,12 +58,10 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
 # Copy application dependencies from builder
 COPY --from=builder /install/ /usr/local/
 
-# Remove packaging tools and their actual bundled code
+# Remove pip and wheel, but retain setuptools and pkg_resources
 RUN rm -rf \
     /usr/local/lib/python3.11/site-packages/pip \
     /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
-    /usr/local/lib/python3.11/site-packages/setuptools \
-    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
     /usr/local/lib/python3.11/site-packages/wheel \
     /usr/local/lib/python3.11/site-packages/wheel-*.dist-info \
     /usr/local/bin/pip \
@@ -70,6 +71,6 @@ RUN rm -rf \
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 5000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
