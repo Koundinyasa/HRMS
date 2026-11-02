@@ -86,11 +86,11 @@ jobs:
       - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: 'fs'
-          scan-ref: 'frontend'
-          severity: 'HIGH,CRITICAL'
-          exit-code: '1'
-          format: 'table'
+          scan-type: fs
+          scan-ref: frontend
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          format: table
 
 
   # ==========================================
