@@ -115,7 +115,7 @@ export class AttendanceService {
   // which is already always-on regardless of this flag.
   private readonly GEOFENCE_REQUIRED = true;
   private readonly ACCURACY_CHECK_REQUIRED = true;
-  private readonly ACCURACY_THRESHOLD_METERS = 200;
+  private readonly ACCURACY_THRESHOLD_METERS = 300;
   private readonly ESS_DEVICE_ID = 4;
   private readonly ANGLE_LABEL_COLUMN_READY = true;
 
