@@ -1,0 +1,50 @@
+services:
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: kts-people360-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - kts-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kts-people360-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+    env_file:
+      - path: ./backend/.env
+        required: false
+    depends_on:
+      - attendance-service
+    restart: unless-stopped
+    networks:
+      - kts-network
+
+  attendance-service:
+    build:
+      context: ./attendance-service
+      dockerfile: Dockerfile
+    container_name: kts-attendance-service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - kts-network
+
+networks:
+  kts-network:
+    driver: bridge
