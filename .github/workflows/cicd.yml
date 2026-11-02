@@ -1,5 +1,5 @@
 
-name: KTS-People360 CI/CD pipeline
+name: KTS-People360 CI/CD 
 
 on:
   push:

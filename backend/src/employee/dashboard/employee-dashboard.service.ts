@@ -301,17 +301,13 @@ export class DashboardService {
         .input('Month', sql.Int, month ?? null)
         .input('CompanyId', sql.Int, companyId)
         .input('BranchId', sql.Int, null)
-        .input('EmploymentStatusId', sql.Int, null)
-        .input('DesignationId', sql.Int, null)
-        .input('PolicyId', sql.Int, null)
-        .input('LeaveTypeId', sql.Int, null)
-        .input('StructureId', sql.Int, null)
-        .input('AttendanceStatusId', sql.Int, null)
-        .input('EmployeeId', sql.VarChar(50), employeeId)
         .execute('usp_GetMonthlyLeaveCalendar');
- 
-      const rows = result.recordset ?? [];
-      const statusRow = rows[0];
+
+      // The procedure takes only Year, Month, CompanyId and BranchId (same
+      // call as the Review screen) and returns the whole company, so keep
+      // this employee's rows here.
+      const allRows: any[] = result.recordset ?? [];
+      const statusRow = allRows[0];
  
       if (statusRow?.StatusCode !== undefined) {
         const statusCode = Number(statusRow.StatusCode);
@@ -328,6 +324,11 @@ export class DashboardService {
         throw new InternalServerErrorException(message);
       }
  
+      const wanted = employeeId.trim().toLowerCase();
+      const rows = allRows.filter(
+        (r) => String(r?.EmployeeID ?? '').trim().toLowerCase() === wanted,
+      );
+
       return {
         success: true,
         statusCode: 200,
