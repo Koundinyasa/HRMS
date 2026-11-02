@@ -5,16 +5,8 @@ import type {
     PunchProcessTab,
     RegularizationTab,
     TimeOfficeSection,
+    TimeOfficeState,
 } from './types/timeoffice.types';
- 
-interface TimeOfficeState {
-    activeSection: TimeOfficeSection;
-    punchProcessTab: PunchProcessTab;
-    regularizationTab: RegularizationTab;
-    selectedEmployeeIds: string[];
-    punchProcessFilters: PunchFilters;
-    regularizationFilters: PunchFilters;
-}
  
 const initialState: TimeOfficeState = {
     activeSection: 'punch-process',

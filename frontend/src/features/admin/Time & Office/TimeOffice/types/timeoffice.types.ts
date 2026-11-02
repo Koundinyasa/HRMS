@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 /** The dashboard's only period selector. */
 export type PunchPeriod = "today" | "yesterday";
  
@@ -108,10 +110,38 @@ export interface WorkingHoursPoint {
   avgOtMinutes: number;
 }
  
+export interface DateRange {
+  fromDate: string;
+  tillDate: string;
+}
+
+export interface TaInsightsQuery {
+  fromDate: string;
+  toDate: string;
+  insightId?: number;
+}
+
+export interface ShiftMasterBody {
+  shiftName: string;
+  shiftCode?: string;
+  startTime?: string;
+  endTime?: string;
+  remarks?: string;
+}
+
+export interface GeoLocationBody {
+  locationName: string;
+  locationCode?: string;
+  latitude?: string;
+  longitude?: string;
+  radius?: string;
+}
+
 /** Tile counts, keyed by metric. */
 export interface DashboardSummary {
   totalEmployees: number;
   latestPunchIntegratedAt?: string;
+  selectedDate?: string;
   counts: Partial<Record<PunchMetric, number>>;
 }
  
@@ -345,3 +375,88 @@ export type TimeOfficeSection =
   | "masters"
   | "assign"
   | "settings";
+
+export interface TimeOfficeState {
+  activeSection: TimeOfficeSection;
+  punchProcessTab: PunchProcessTab;
+  regularizationTab: RegularizationTab;
+  selectedEmployeeIds: string[];
+  punchProcessFilters: PunchFilters;
+  regularizationFilters: PunchFilters;
+}
+
+export interface PunchStatTilesProps {
+  period: PunchPeriod;
+  totalEmployees: number;
+  counts: Record<PunchMetric, number>;
+  onOpenMetric: (metric: PunchMetric) => void;
+  header?: ReactNode;
+}
+
+export interface ProcessDrilldownListProps {
+  title: string;
+  color: string;
+  rows: ProcessDrilldownRow[];
+  isLoading: boolean;
+  scrollable?: boolean;
+  /** Omit when this table isn't reached via a tile drill-down (e.g. a standalone approval queue). */
+  onBack?: () => void;
+}
+
+export interface PunchMetricListProps {
+  metric: PunchMetric;
+  allRows: PunchRow[];
+  filteredRows: PunchRow[];
+  pagedRows: PunchRow[];
+  filters: PunchFilters;
+  onFiltersChange: (next: PunchFilters) => void;
+  onClearFilters: () => void;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  /** Parent can hide the filter bar (the dashboard has a toggle for it). */
+  showFilters?: boolean;
+  isLoading?: boolean;
+  errorMessage?: string;
+}
+
+export interface ImportPanelProps {
+  title: string;
+  onUpload?: (file: File) => Promise<string | void>;
+  templateHeaders?: string[];
+  templateTypeOptions?: string[];
+}
+
+export interface DateFieldProps {
+  label?: string;
+  value: string;
+  onChange: (iso: string) => void;
+  className?: string;
+  inputClassName?: string;
+  align?: "left" | "right";
+  /** Called when the calendar opens or closes. */
+  onOpenChange?: (open: boolean) => void;
+  /** Use fixed positioning so the calendar is not clipped by a scrolling parent. */
+  fixedCalendarPosition?: boolean;
+}
+
+export interface ProcessStatTilesProps {
+  summary: ProcessSummary;
+  onOpenTile?: (tile: ProcessTile) => void;
+}
+
+export interface PunchFilterBarProps {
+  /** Unfiltered rows — chip options come from the data itself, not a hardcoded list. */
+  rows: PunchRow[];
+  filters: PunchFilters;
+  onChange: (next: PunchFilters) => void;
+  onClear: () => void;
+  onDismiss?: () => void;
+  showChipsInitially?: boolean;
+  showOverflowControls?: boolean;
+  showAddFilter?: boolean;
+  scrollable?: boolean;
+  searchPlaceholder?: string;
+  showSearch?: boolean;
+}

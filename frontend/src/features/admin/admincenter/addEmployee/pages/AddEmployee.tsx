@@ -527,6 +527,8 @@ export interface AddEmployeeProps {
   onSave?: (payload: CreateEmployeePayload, photo: File | null) => Promise<CreateEmployeeResult>;
   /** Return error message if ID invalid/exists; return "" if available. */
   checkEmployeeId?: (employeeId: string) => Promise<string>;
+  /** Return error message if email exists/invalid; return "" if available. */
+  checkEmail?: (email: string) => Promise<string>;
   /** @deprecated use checkEmployeeId */
   checkEmployeeIdExists?: (employeeId: string) => Promise<boolean>;
   checkEmailExists?: (email: string) => Promise<boolean>;
@@ -553,6 +555,7 @@ export default function AddEmployee({
   createdBy = "admin",
   onSave,
   checkEmployeeId,
+  checkEmail,
   checkEmployeeIdExists,
   checkEmailExists,
 }: AddEmployeeProps) {
@@ -744,6 +747,14 @@ export default function AddEmployee({
               return next;
             });
           }
+        } else if (name === "Email" && checkEmail) {
+          const message = await checkEmail(value);
+          setAsyncErrors(prev => {
+            const next = { ...prev };
+            if (message) next.Email = message;
+            else delete next.Email;
+            return next;
+          });
         } else if (name === "Email" && checkEmailExists) {
           const exists = await checkEmailExists(value);
           setAsyncErrors(prev => {
@@ -762,7 +773,7 @@ export default function AddEmployee({
         setChecking(prev => ({ ...prev, [name]: false }));
       }
     },
-    [checkEmployeeId, checkEmployeeIdExists, checkEmailExists],
+    [checkEmployeeId, checkEmail, checkEmployeeIdExists, checkEmailExists],
   );
  
   const handleIdentityBlur = useCallback(

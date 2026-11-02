@@ -699,4 +699,44 @@ async createEmployee(
         );
     }
   }
+
+  async validateEmail(email: string) {
+    try {
+      if (!email?.trim()) {
+        throw new BadRequestException('Email ID is required.');
+      }
+
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('Email', sql.VarChar(100), email.trim())
+        .execute('USP_ValidateEmail');
+
+      const response = result.recordset?.[0];
+
+      if (!response) {
+        throw new InternalServerErrorException(
+          'No response received from email validation procedure.',
+        );
+      }
+
+      return {
+        success: response.StatusCode === 200,
+        statusCode: response.StatusCode,
+        message: response.Message,
+      };
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error;
+      }
+
+      console.error('Email validation error:', error);
+
+      throw new InternalServerErrorException('Failed to validate email ID.');
+    }
+  }
 }

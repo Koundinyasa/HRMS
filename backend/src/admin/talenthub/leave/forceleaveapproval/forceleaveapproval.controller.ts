@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ForceLeaveApprovalService } from './forceleaveapproval.service';
 import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
+import { BulkHierarchicalLeaveActionDto } from './dto/bulk-hierarchical-leave-action.dto';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
 import { RequiresMenu } from '../../../../common/decorators/module-gate.decorator';
@@ -38,6 +39,23 @@ export class ForceLeaveApprovalController {
   @Post('reject')
   async rejectLeave(@Body() dto: ApproveRejectLeaveDto) {
     return this.forceLeaveApprovalService.rejectLeave(dto);
+  }
+
+  // ==========================================
+  // Bulk Hierarchical Leave Action
+  // Bulk and single approve / reject
+  // ==========================================
+
+  @Post('bulk-hierarchical-action')
+  async bulkHierarchicalLeaveAction(
+    @Req() req: any,
+    @Body() dto: BulkHierarchicalLeaveActionDto,
+  ) {
+    return this.forceLeaveApprovalService.bulkHierarchicalLeaveAction(
+      dto,
+      req.user.employeeId,
+      Number(req.user.companyId),
+    );
   }
 
   // Starting from here actual SPs

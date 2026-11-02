@@ -7,6 +7,7 @@ import {
 import * as sql from 'mssql';
 import { DatabaseService } from '../../../../database/database.service';
 import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
+import { BulkHierarchicalLeaveActionDto } from './dto/bulk-hierarchical-leave-action.dto';
 
 @Injectable()
 export class ForceLeaveApprovalService {
@@ -208,4 +209,71 @@ export class ForceLeaveApprovalService {
     );
   }
 }
+
+  // ==========================================
+  // Bulk Hierarchical Leave Action
+  // Bulk and single employee approve (4) or reject (5)
+  // ==========================================
+
+  async bulkHierarchicalLeaveAction(
+    dto: BulkHierarchicalLeaveActionDto,
+    approverEmployeeId: string,
+    companyId: number, // see CHECK 1 below
+  ) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      // Table-valued parameter matching dbo.LeaveApprovalType
+      const approvalTable = new sql.Table('dbo.LeaveApprovalType');
+      approvalTable.columns.add('ApprovalId', sql.Int, { nullable: true });
+      // no duplicates in the table
+      Array.from(new Set(dto.approvalIds)).forEach((id) =>
+        approvalTable.rows.add(id),
+      );
+
+      const result = await pool
+        .request()
+        .input('ApprovalIds', approvalTable)
+        .input('ApproverEmployeeId', sql.VarChar(25), approverEmployeeId)
+        .input('ActionStatusId', sql.Int, dto.actionStatusId)
+        .input('Remarks', sql.NVarChar(500), dto.remarks ?? null)
+        // CHECK 1: add only after the TL adds @CompanyId to the procedure.
+        // An extra parameter gives "too many arguments" (like the calendar
+        // error), so it stays commented until the procedure has it.
+        // .input('CompanyId', sql.Int, companyId)
+        .execute('USP_BulkHierarchicalLeaveAction');
+
+      const recordsets = result.recordsets as any[][];
+      const rows = recordsets.length ? recordsets[recordsets.length - 1] : [];
+
+      // CHECK 2: change these column names to what the procedure really
+      // returns for a failed row.
+      const failedRows = rows.filter(
+        (r) => r?.StatusCode !== undefined && Number(r.StatusCode) >= 400,
+      );
+
+      return {
+        success: failedRows.length === 0,
+        message:
+          failedRows.length === 0
+            ? 'Leave action completed.'
+            : `${rows.length - failedRows.length} done, ${failedRows.length} failed.`,
+        succeeded: rows.length - failedRows.length,
+        failed: failedRows.length,
+        data: rows,
+      };
+    } catch (error: any) {
+      if (error instanceof BadRequestException) throw error;
+
+      console.error('Error processing bulk hierarchical leave action:', error);
+
+      // A rule the procedure refused (THROW 50000 and above): show the reason.
+      if (error instanceof sql.RequestError && Number(error.number) >= 50000) {
+        throw new BadRequestException(error.message);
+      }
+      throw new InternalServerErrorException(
+        'Failed to process bulk hierarchical leave action.',
+      );
+    }
+  }
 }
