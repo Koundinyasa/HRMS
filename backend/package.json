@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "overrides": {
+    "multer": "^2.5.0"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -41,9 +44,9 @@
     "helmet": "^8.1.0",
     "joi": "^18.2.3",
     "mssql": "^12.5.5",
-    "multer": "^2.2.0",
+    "multer": "^2.5.0",
     "nest-winston": "^1.10.2",
-    "nodemailer": "^9.0.0",
+    "nodemailer": "^10.3.1",
     "openai": "^6.45.0",
     "pdfkit": "^0.19.1",
     "reflect-metadata": "^0.2.2",
