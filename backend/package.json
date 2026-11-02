@@ -5,6 +5,12 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "overrides": {
+    "multer": "^2.5.0",
+    "minimatch@3.1.5": {
+      "brace-expansion": "^1.1.20"
+    }
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -54,7 +60,6 @@
     "swagger-ui-express": "^5.0.1",
     "uuid": "^14.0.1",
     "winston": "^3.19.0",
-    "xlsx": "^0.18.5",
     "xlsx-populate": "^1.21.0"
   },
   "devDependencies": {
@@ -104,11 +109,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "overrides": {
-    "multer": "^2.5.0",
-    "minimatch@3.1.5": {
-      "brace-expansion": "^1.1.20"
-    }
   }
+  
 }
