@@ -124,21 +124,10 @@ jobs:
           scan-type: fs
           scan-ref: backend
           scanners: vuln,secret
-          format: sarif
-          output: trivy-backend-results.sarif
-          severity: CRITICAL,HIGH
+          severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
-
-      - name: Upload Backend Scan Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-backend-results
-          path: trivy-backend-results.sarif
-          if-no-files-found: ignore
-
-
+          format: table
   # --------------------------------------------------
   # 5. Frontend Filesystem Security Scan
   # --------------------------------------------------
