@@ -1,377 +1,350 @@
-name: KTS-People360 and Attendance Service CI/CD
+
+name: KTS-People360 CI/CD
 
 on:
   push:
     branches:
       - Devops_D
-
   pull_request:
     branches:
       - Devops_D
-
   workflow_dispatch:
-
-env:
-  NODE_VERSION: '24'
-  PYTHON_VERSION: '3.11'
-
-  DOCKER_IMAGE_BACKEND: kts-people360-backend
-  DOCKER_IMAGE_FRONTEND: kts-people360-frontend
-  DOCKER_IMAGE_ATTENDANCE: attendance-service
 
 permissions:
   contents: read
+  security-events: write
+
+concurrency:
+  group: people360-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  PYTHON_VERSION: "3.11"
 
 jobs:
-
-  # ==========================================
-  # JOB 1: KTS PEOPLE360 BACKEND TEST
-  # ==========================================
-  test-backend:
-    name: Test KTS Backend
+  frontend-build:
+    name: Frontend Build
     runs-on: ubuntu-latest
-    if: github.ref_name == 'Devops_D' || github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
-      - name: Checkout KTS Repository
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install Backend Dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Run Backend Tests
-        working-directory: backend
-        run: npm test
-
-  # ==========================================
-  # JOB 2: KTS PEOPLE360 FRONTEND BUILD
-  # ==========================================
-  build-frontend:
-    name: Build KTS Frontend
-    runs-on: ubuntu-latest
-    if: github.ref_name == 'Devops_D' || github.event_name == 'pull_request'
-
-    steps:
-      - name: Checkout KTS Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Frontend Dependencies
-        working-directory: frontend
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build Frontend
-        working-directory: frontend
+      - name: Build frontend
         run: npm run build
 
-  # ==========================================
-  # JOB 3: ATTENDANCE SERVICE TEST
-  # ==========================================
-  test-attendance:
-    name: Test Attendance Service
+  frontend-security:
+    name: Frontend Security Scan
+    runs-on: ubuntu-latest
+    needs: frontend-build
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: NPM Audit
+        run: npm audit --audit-level=high
+
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: frontend
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  backend-build:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
+  backend-security:
+    name: Backend Security Scan
+    runs-on: ubuntu-latest
+    needs: backend-build
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: NPM Audit
+        run: npm audit --audit-level=high
+
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: fs
+          scan-ref: backend
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  
+  attendance-build:
+    name: Attendance Service Build and Validation
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout KTS Repository
-        uses: actions/checkout@v4
-
-      # Checkout Attendance Repository
-      - name: Checkout Attendance Repository
+      - name: Checkout repository
         uses: actions/checkout@v6
 
-      # Setup Python
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: attendance/requirements.txt
+          cache-dependency-path: attendance-service/requirements.txt
 
-      # Install Dependencies
-      - name: Install Dependencies
-        working-directory: attendance
+      - name: Install Attendance Dependencies
+        working-directory: attendance-service
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      # Validate Python Syntax
-      - name: Validate Python Syntax
-        working-directory: attendance
-        run: python -m compileall -q .
+          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
+          pip install -r requirements-linux.txt
+          pip install face-recognition==1.3.0
 
-      # Check Python Version
-      - name: Check Python Version
+      - name: Validate Python syntax
         run: |
-          python --version
-          echo "Attendance Service validation completed"
-  # ==========================================
-  # JOB 4: KTS BACKEND SECURITY SCAN
-  # ==========================================
-  security-scan-backend:
-    name: KTS Backend Security Scan
+          python -m compileall -q attendance-service
+
+  attendance-security:
+    name: Attendance Service Security Scan
     runs-on: ubuntu-latest
-    needs: test-backend
+    needs: attendance-build
 
     steps:
-      - name: Checkout KTS Repository
-        uses: actions/checkout@v4
-
-      - name: Trivy Backend Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: ./backend
-          format: sarif
-          output: trivy-backend.sarif
-          severity: CRITICAL,HIGH
-        continue-on-error: true
-
-      - name: Upload Backend Scan
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-backend
-          path: trivy-backend.sarif
-          if-no-files-found: warn
-
-  # ==========================================
-  # JOB 5: KTS FRONTEND SECURITY SCAN
-  # ==========================================
-  security-scan-frontend:
-    name: KTS Frontend Security Scan
-    runs-on: ubuntu-latest
-    needs: build-frontend
-
-    steps:
-      - name: Checkout KTS Repository
-        uses: actions/checkout@v4
-
-      - name: Trivy Frontend Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: ./frontend
-          format: sarif
-          output: trivy-frontend.sarif
-          severity: CRITICAL,HIGH
-        continue-on-error: true
-
-      - name: Upload Frontend Scan
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-frontend
-          path: trivy-frontend.sarif
-          if-no-files-found: warn
-
-  # ==========================================
-  # JOB 6: ATTENDANCE SECURITY SCAN
-  # ==========================================
-  security-scan-attendance:
-    name: Attendance Security Scan
-    runs-on: ubuntu-latest
-    needs: test-attendance
-
-    steps:
-      - name: Checkout Attendance Repository
-        uses: actions/checkout@v4
-
-      - name: Trivy Attendance Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: ./attendance
-          format: sarif
-          output: trivy-attendance.sarif
-          severity: CRITICAL,HIGH
-        continue-on-error: true
-
-      - name: Upload Attendance Scan
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-attendance
-          path: trivy-attendance.sarif
-          if-no-files-found: warn
-
-  # ==========================================
-  # JOB 7: BUILD AND PUSH KTS DOCKER IMAGES
-  # ==========================================
-  build-push-kts:
-    name: Build and Push KTS Docker Images
-    runs-on: ubuntu-latest
-    needs:
-      - test-backend
-      - build-frontend
-      - security-scan-backend
-      - security-scan-frontend
-
-    if: github.ref == 'refs/heads/Devops_D' && github.event_name != 'pull_request'
-
-    steps:
-      - name: Checkout KTS Repository
+      - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Trivy Filesystem Scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: attendance-service
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  docker-build:
+    name: Build People360 Docker Images
+    runs-on: ubuntu-latest
+    needs:
+      - frontend-security
+      - backend-security
+      - attendance-security
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v6
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=/api \
+            -f frontend/Dockerfile \
+            -t people360-frontend:${{ github.sha }} \
+            frontend
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t people360-backend:${{ github.sha }} \
+            backend
+
+      - name: Build external Attendance image
+        run: |
+          if [ ! -f attendance-external/Dockerfile ]; then
+            echo "ERROR: External Attendance repository Dockerfile not found"
+            exit 1
+          fi
+
+          docker build \
+            -f attendance-external/Dockerfile \
+            -t people360-attendance:${{ github.sha }} \
+            attendance-external
+
+      - name: Save Docker images
+        run: |
+          docker save \
+            people360-frontend:${{ github.sha }} \
+            people360-backend:${{ github.sha }} \
+            people360-attendance:${{ github.sha }} \
+            -o people360-images.tar
+
+      - name: Upload Docker images
+        uses: actions/upload-artifact@v6
+        with:
+          name: people360-docker-images
+          path: people360-images.tar
+          retention-days: 1
+
+  docker-image-scan:
+    name: Docker Image Security Scan
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+      - name: Download Docker images
+        uses: actions/download-artifact@v6
+        with:
+          name: people360-docker-images
+
+      - name: Load Docker images
+        run: docker load -i people360-images.tar
+
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: people360-frontend:${{ github.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: people360-backend:${{ github.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+      - name: Scan Attendance image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: people360-attendance:${{ github.sha }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+          format: table
+
+  docker-push:
+    name: Push Images to Docker Hub
+    runs-on: ubuntu-latest
+    needs: docker-image-scan
+    if: github.event_name != 'pull_request'
+
+    steps:
+      - name: Download Docker images
+        uses: actions/download-artifact@v6
+        with:
+          name: people360-docker-images
+
+      - name: Load Docker images
+        run: docker load -i people360-images.tar
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Backend Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_BACKEND }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_BACKEND }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and Push Frontend Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_FRONTEND }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # ==========================================
-  # JOB 8: BUILD AND PUSH ATTENDANCE IMAGE
-  # ==========================================
-  build-push-attendance:
-    name: Build and Push Attendance Image
-    runs-on: ubuntu-latest
-    needs:
-      - test-attendance
-      - security-scan-attendance
-
-    if: github.ref == 'refs/heads/Devops_D' && github.event_name != 'pull_request'
-
-    steps:
-      - name: Checkout Attendance Repository
-        uses: actions/checkout@v6
-        with:
-          repository: preethamaz/attendaceservice
-          token: ${{ secrets.ATTENDANCE_REPO_TOKEN }}
-          path: attendance
-
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Attendance Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./attendance
-          file: ./attendance/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_ATTENDANCE }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_ATTENDANCE }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # ==========================================
-  # JOB 9: KTS DOCKER IMAGE SECURITY SCAN
-  # ==========================================
-  image-security-scan-kts:
-    name: KTS Docker Image Security Scan
-    runs-on: ubuntu-latest
-    needs: build-push-kts
-
-    steps:
-      - name: Scan Backend Image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_BACKEND }}:latest
-          format: table
-          severity: CRITICAL,HIGH
-        continue-on-error: true
-
-      - name: Scan Frontend Image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_FRONTEND }}:latest
-          format: table
-          severity: CRITICAL,HIGH
-        continue-on-error: true
-
-  # ==========================================
-  # JOB 10: ATTENDANCE DOCKER IMAGE SCAN
-  # ==========================================
-  image-security-scan-attendance:
-    name: Attendance Docker Image Security Scan
-    runs-on: ubuntu-latest
-    needs: build-push-attendance
-
-    steps:
-      - name: Scan Attendance Image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_ATTENDANCE }}:latest
-          format: table
-          severity: CRITICAL,HIGH
-        continue-on-error: true
-
-  # ==========================================
-  # JOB 11: KTS DEPLOYMENT INFORMATION
-  # ==========================================
-  deploy-kts:
-    name: KTS Deployment Information
-    runs-on: ubuntu-latest
-    needs: image-security-scan-kts
-
-    if: github.ref == 'refs/heads/Devops_D' && github.event_name != 'pull_request'
-
-    steps:
-      - name: Deployment Information
+      - name: Tag frontend image
         run: |
-          echo "KTS-People360 CI/CD pipeline completed"
-          echo "Branch: Devops_D"
-          echo "Target: AWS EKS"
-          echo "Actual AWS deployment is not configured."
-  # ==========================================
-  # JOB 12: ATTENDANCE DEPLOYMENT INFORMATION
-  # ==========================================
-  deploy-attendance:
-    name: Attendance Deployment Information
-    runs-on: ubuntu-latest
-    needs: image-security-scan-attendance
+          docker tag people360-frontend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
+          docker tag people360-frontend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
 
-    if: github.ref == 'refs/heads/Devops_D' && github.event_name != 'pull_request'
-
-    steps:
-      - name: Deployment Information
+      - name: Tag backend image
         run: |
-          echo "Attendance Service CI/CD completed"
-          echo "Pipeline trigger branch: Devops_D (KTS repository)"
-          echo "Python Version: ${{ env.PYTHON_VERSION }}"
-          echo "Docker Image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_ATTENDANCE }}:latest"
-          echo "Target: AWS"
-          echo "Actual AWS deployment is not configured."
+          docker tag people360-backend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
+          docker tag people360-backend:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
+
+      - name: Tag Attendance image
+        run: |
+          docker tag people360-attendance:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:${{ github.sha }}
+          docker tag people360-attendance:${{ github.sha }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:latest
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
+
+      - name: Push backend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
+
+      - name: Push Attendance image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:latest
