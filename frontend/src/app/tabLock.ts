@@ -9,7 +9,12 @@
  *
  * The record holds a random tab id and a timestamp only, no user data.
  */
-export type TabLockStatus = 'checking' | 'active' | 'blocked';
+/**
+ * 'blocked'  : another tab already owns the app when this tab opens.
+ * 'replaced' : this tab owned the app and another tab took it over. The app
+ *              signs this tab out and shows the login page.
+ */
+export type TabLockStatus = 'checking' | 'active' | 'blocked' | 'replaced';
 
 export const TAB_LOCK_KEY = 'hrms_active_tab';
 export const BEAT_MS = 4000;
@@ -154,11 +159,11 @@ export function createTabLock(
       else setStatus('blocked');
 
       // The owner refreshes its record; a lost lock (someone took over while
-      // the message was missed) turns this tab to blocked.
+      // the message was missed) means this tab was replaced.
       timer = deps.setInterval(() => {
         if (status !== 'active' || !deps.storage) return;
         const cur = read();
-        if (cur && cur.id !== id) setStatus('blocked');
+        if (cur && cur.id !== id) setStatus('replaced');
         else write();
       }, BEAT_MS);
 
@@ -167,14 +172,14 @@ export function createTabLock(
         deps.onWindow('storage', (event) => {
           if (event?.key !== TAB_LOCK_KEY || status !== 'active') return;
           const other = parse(event.newValue ?? null);
-          if (other && other.id !== id) setStatus('blocked');
+          if (other && other.id !== id) setStatus('replaced');
         }),
       );
       unsubscribers.push(deps.onWindow('pagehide', release));
 
       deps.channel?.onMessage((message) => {
         if (message?.type === 'takeover' && message.id !== id && status === 'active') {
-          setStatus('blocked');
+          setStatus('replaced');
         }
       });
     },

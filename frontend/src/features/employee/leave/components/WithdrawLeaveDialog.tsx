@@ -169,7 +169,7 @@ export default function WithdrawLeaveDialog({
                 <div className="mt-5">
 
                     <Label htmlFor="remarks">
-                        Remarks
+                        Remarks <span className="text-red-500">*</span>
                     </Label>
 
                     <Textarea

@@ -1,6 +1,11 @@
+import { useEffect } from "react";
 import { Navigate, Outlet, useLocation, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { baseApi } from "@/app/baseApi";
+import { clearSessionTiming } from "@/app/sessionClock";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import { sessionExpired } from "@/features/auth/authSlice";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
 import { useGetSessionQuery } from "@/features/auth/api/authApi";
 import { useSignOut } from "@/features/auth/hooks/useSignOut";
@@ -29,6 +34,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const roleIdNumber = roleId === null ? null : Number(roleId);
 
   const { signOut } = useSignOut();
+  const dispatch = useAppDispatch();
 
   // After a page reload the browser has cookies but the app does not know the
   // user yet. Ask the server once. (After a normal login this is skipped.)
@@ -45,6 +51,21 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   useSilentRefresh(isAuthenticated && tabStatus === "active");
   // Signs out when the 30-minute limit is reached, even if the user is busy.
   useSessionExpiry(isAuthenticated);
+
+  // Another tab took over ("Use HRMS in this tab"): this tab is signed out and
+  // goes to the login page. Only this tab's screen is cleared; the login
+  // cookies are shared with the new tab, so the server session is left alone
+  // and nothing is broadcast (that would sign the new tab out too).
+  useEffect(() => {
+    if (tabStatus !== "replaced") return;
+    dispatch(sessionExpired());
+    clearSessionTiming();
+    dispatch(baseApi.util.resetApiState());
+    toast.info("You were signed out here because HRMS was opened in another tab.", {
+      toastId: "tab-replaced",
+      autoClose: 8000,
+    });
+  }, [tabStatus, dispatch]);
 
   useIdleTimer({
     timeout: IDLE_TIMEOUT_MS,
@@ -112,7 +133,7 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   if (tabStatus === "blocked") {
     return <TabBlockedScreen onUseHere={takeOver} />;
   }
-  if (tabStatus === "checking") {
+  if (tabStatus === "checking" || tabStatus === "replaced") {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-slate-500">
         Loading...

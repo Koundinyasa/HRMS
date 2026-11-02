@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import type {
   ApplyForEmployeeSelectorProps,
 } from "../types/appliedLeave.types";
@@ -32,26 +32,12 @@ export default function ApplyForEmployeeSelector({
     };
   }, []);
 
-  const [search, setSearch] = useState("");
+
 
   const selected = employees.find((employee) => employee.EmployeeID === value);
 
-  const filteredEmployees = useMemo(() => {
-    const searchValue = search.trim().toLowerCase();
 
-    if (!searchValue) {
-      return employees;
-    }
 
-    return employees.filter((employee) => {
-      const name = employee.EmployeeName ?? employee.FullName ?? "";
-
-      return (
-        String(employee.EmployeeID).toLowerCase().includes(searchValue) ||
-        name.toLowerCase().includes(searchValue)
-      );
-    });
-  }, [employees, search]);
 
   return (
     <div ref={dropdownRef} id={id} className="relative">
@@ -73,28 +59,19 @@ export default function ApplyForEmployeeSelector({
 
       {open && (
         <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-          <div className="mb-2 flex items-center gap-2 rounded-lg border border-slate-200 px-3">
-            <Search className="h-4 w-4 text-slate-400" />
-
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search employee..."
-              className="h-10 w-full bg-transparent text-sm outline-none"
-            />
-          </div>
+          
 
           <div className="max-h-60 overflow-y-auto">
             {loading ? (
               <p className="px-3 py-3 text-sm text-slate-500">
                 Loading employees...
               </p>
-            ) : filteredEmployees.length === 0 ? (
+            ) : employees.length === 0 ? (
               <p className="px-3 py-3 text-sm text-slate-500">
                 No employees found
               </p>
             ) : (
-              filteredEmployees.map((employee) => {
+              employees.map((employee) => {
                 const name =
                   employee.EmployeeName ??
                   employee.FullName ??
@@ -108,7 +85,7 @@ export default function ApplyForEmployeeSelector({
                       onChange(employee.EmployeeID);
 
                       setOpen(false);
-                      setSearch("");
+                      
                     }}
                     className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
                   >

@@ -18,6 +18,17 @@ export default function CelebrationsCard() {
     useState<CelebrationEvent | null>(null);
   const [wishMessage, setWishMessage] = useState("");
   const [sendWish, { isLoading: isSendingWish }] = useSendWishMutation();
+
+  const openWishForEvent = (event: CelebrationEvent) => {
+    setSelectedEvent(event);
+    setWishMessage(
+      event.EventName === "Birthday"
+        ? "Wishing you a wonderful birthday filled with happiness, success and good health. Have an amazing year ahead!"
+        : "Congratulations on your Work Anniversary! Thank you for your dedication and commitment. Wishing you continued success and many more milestones ahead!"
+    );
+    setOpenWishModal(true);
+  };
+ 
   const celebrations = useMemo(
     () => profileData?.data?.upcomingEvents ?? [],
     [profileData?.data?.upcomingEvents]
@@ -272,17 +283,19 @@ export default function CelebrationsCard() {
           <Button
             type="button"
             onClick={() => {
-              setSelectedEvent(
-                celebration
-              );
-              setWishMessage(
-                celebration.EventName === "Birthday"
-                  ? "Wishing you a wonderful birthday filled with happiness, success and good health. Have an amazing year ahead!"
-                  : "Congratulations on your Work Anniversary! Thank you for your dedication and commitment. Wishing you continued success and many more milestones ahead!"
-              );
+              openWishForEvent(celebration)}
+            //   setSelectedEvent(
+            //     celebration
+            //   );
+            //   setWishMessage(
+            //     celebration.EventName === "Birthday"
+            //       ? "Wishing you a wonderful birthday filled with happiness, success and good health. Have an amazing year ahead!"
+            //       : "Congratulations on your Work Anniversary! Thank you for your dedication and commitment. Wishing you continued success and many more milestones ahead!"
+            //   );
  
-              setOpenWishModal(true);
-            }}
+            //   setOpenWishModal(true);
+            // }
+            }
             className=" mt-5 w-full h-11 text-white rounded-xl"
             style={{
               background:
@@ -695,9 +708,9 @@ export default function CelebrationsCard() {
  
                       <Button
                         onClick={() => {
-                          setSelectedEvent(item);
+                          
                           setOpenAllCelebrations(false);
-                          setOpenWishModal(true);
+                          openWishForEvent(item);
                         }}
                         style={{
                           background:

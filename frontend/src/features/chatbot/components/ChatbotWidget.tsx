@@ -924,7 +924,7 @@ export default function ChatbotWidget({
 
       {isOpen && (
         <div
-          className={`fixed bottom-[105px] right-[30px] bg-white rounded-[24px] shadow-[0_24px_70px_rgba(43,30,120,0.22)] flex flex-col overflow-hidden z-[999] animate-[cbSlideUp_0.3s_ease] transition-[width,height] duration-200 max-[600px]:w-[calc(100%-24px)] max-[600px]:h-[72vh] max-[600px]:bottom-[90px] max-[600px]:right-3 ${
+          className={`fixed bottom-[105px] right-[30px] bg-white rounded-[24px] shadow-[0_24px_70px_rgba(43,30,120,0.22)] flex flex-col overflow-hidden z-[999] animate-[cbSlideUp_0.3s_ease] transition-[width,height] duration-200 max-[600px]:w-[calc(100%-24px)] max-[600px]:h-[72dvh] max-[600px]:max-h-[calc(100dvh-170px)] max-[600px]:bottom-[90px] max-[600px]:right-3 ${
             isExpanded ? "w-[600px] h-[85vh]" : "w-[400px] h-[620px]"
           }`}
         >
@@ -1383,7 +1383,7 @@ export default function ChatbotWidget({
           {/* Input Form */}
           <form
             onSubmit={sendMessage}
-            className="flex gap-2 px-3.5 py-3 bg-white border-t border-[#eceef5] items-center"
+            className="flex gap-2 px-3.5 py-3 max-[420px]:gap-1.5 max-[420px]:px-2.5 bg-white border-t border-[#eceef5] items-center"
           >
             <IconTooltip label="Main menu" position="top">
               <button
@@ -1403,7 +1403,7 @@ export default function ChatbotWidget({
               placeholder="Ask a question, or use the menu..."
               disabled={loading}
               spellCheck="true"
-              className="flex-1 px-[15px] py-3 border border-[#eceef5] rounded-xl text-[13px] font-inherit outline-none bg-[#f7f7fc] transition-colors focus:border-[var(--primary-color)] focus:bg-white placeholder:text-[#a7adbd]"
+              className="flex-1 min-w-0 px-[15px] py-3 border border-[#eceef5] rounded-xl text-[13px] font-inherit outline-none bg-[#f7f7fc] transition-colors focus:border-[var(--primary-color)] focus:bg-white placeholder:text-[#a7adbd]"
             />
             {SpeechRecognitionAPI ? (
               <IconTooltip
@@ -1930,7 +1930,7 @@ function ChatWidgetRenderer({
             <Calendar size={16} />
           </button>
           {showCalendar && !disabled && (
-            <div className="absolute bottom-full left-0 z-30 mb-1 w-[296px] rounded-xl border border-[#eceef5] bg-white p-3 shadow-[0_8px_24px_rgba(43,30,120,0.16)]">
+            <div className="absolute bottom-full left-0 max-[600px]:-left-[44px] z-30 mb-1 w-[296px] max-[600px]:w-[min(296px,calc(100vw-3rem))] rounded-xl border border-[#eceef5] bg-white p-3 shadow-[0_8px_24px_rgba(43,30,120,0.16)]">
               <div className="mb-2 flex items-center justify-between">
                 <button
                   type="button"
@@ -2219,28 +2219,41 @@ function ChatWidgetRenderer({
               {widget.cardTitle}
             </p>
             {widget.cardSubtitle && (
-              <p className="text-[12px] text-[#8a90a5] m-0 mt-0.5 truncate">
+              <p className="text-[12px] text-[#8a90a5] m-0 mt-0.5 break-words">
                 {widget.cardSubtitle}
               </p>
             )}
           </div>
         </div>
         <div className="border-t border-[#eceef5] pt-2.5 flex flex-col gap-1.5">
-          {fields.map((f, i) => (
+          {fields.map((f, i) => {
+            // A value is never cut off. A list of e-mail addresses
+            // ("a@x.com,b@x.com") shows one address per line; any other long
+            // value wraps inside the card.
+            const parts = String(f.value ?? "")
+              .split(/\s*[,;]\s*/)
+              .filter(Boolean);
+            const lines =
+              parts.length > 1 && parts.every((p) => /\S+@\S+/.test(p))
+                ? parts
+                : [String(f.value ?? "")];
+            return (
             <div
               key={i}
-              className="flex items-center justify-between gap-3 text-[12.5px]"
+              className="flex items-start justify-between gap-3 text-[12.5px]"
             >
-              <span className="text-[#8a90a5]">{f.label}</span>
-              <span className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[#1f2430] font-semibold text-right truncate">
-                  {f.value}
+              <span className="shrink-0 text-[#8a90a5]">{f.label}</span>
+              <span className="flex items-start gap-1.5 min-w-0">
+                <span className="flex min-w-0 flex-col items-end gap-0.5 text-[#1f2430] font-semibold text-right [overflow-wrap:anywhere]">
+                  {lines.map((line, j) => (
+                    <span key={j}>{line}</span>
+                  ))}
                 </span>
                 <button
                   type="button"
                   onClick={() => copyValue(f.value, i)}
                   aria-label={`Copy ${f.label}`}
-                  className="shrink-0 w-5 h-5 flex items-center justify-center rounded text-[#a7adbd] hover:text-[var(--primary-color)] hover:bg-[var(--primary-light)] transition-colors"
+                  className="mt-0.5 shrink-0 w-5 h-5 flex items-center justify-center rounded text-[#a7adbd] hover:text-[var(--primary-color)] hover:bg-[var(--primary-light)] transition-colors"
                 >
                   {copiedField === i ? (
                     <svg
@@ -2275,7 +2288,8 @@ function ChatWidgetRenderer({
                 </button>
               </span>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -2293,7 +2307,7 @@ function ChatWidgetRenderer({
             onClick={() => onSubmit(`type:${opt.code}`)}
             className="flex justify-between items-center gap-2.5 px-[15px] py-3.5 border border-[#eceef5] bg-white rounded-2xl cursor-pointer shadow-[0_2px_8px_rgba(43,30,120,0.04)] transition-all duration-150 text-left hover:border-[var(--primary-color)] hover:bg-[var(--primary-light)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="font-semibold text-[#1f2430] text-[13px]">
+            <span className="min-w-0 font-semibold text-[#1f2430] text-[13px] [overflow-wrap:anywhere]">
               {opt.name} ({opt.code})
             </span>
             <span
@@ -2342,7 +2356,7 @@ function ChatWidgetRenderer({
             setDownloaded(true);
           }}
           style={GRADIENT_STYLE}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
+          className={`inline-flex max-w-full items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline [overflow-wrap:anywhere] shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
             downloaded
               ? "opacity-45 cursor-not-allowed"
               : "cursor-pointer hover:-translate-y-0.5"
@@ -2440,7 +2454,7 @@ function ChatWidgetRenderer({
               >
                 {i + 1}
               </span>
-              <span className="text-[12.5px] text-[#3a3f4d] leading-snug pt-0.5">
+              <span className="min-w-0 text-[12.5px] text-[#3a3f4d] leading-snug pt-0.5 [overflow-wrap:anywhere]">
                 {item}
               </span>
             </div>

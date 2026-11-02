@@ -305,7 +305,7 @@ export default function FacePunchModal({
       : Home;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 px-4">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4">
       {isCheckingStatus ? (
         <div className="w-full max-w-sm rounded-2xl bg-[#0f1420] border border-[#1f2a3d] shadow-2xl p-8">
           <p className="text-slate-400 text-sm text-center">
@@ -351,7 +351,8 @@ export default function FacePunchModal({
             style={{
               position: "relative",
               width: "100%",
-              height: CARD_HEIGHT,
+              // Never taller than the screen (short phones, landscape).
+              height: `min(${CARD_HEIGHT}px, calc(100dvh - 32px))`,
               transformStyle: "preserve-3d",
               transition: "transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)",
               transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
@@ -440,7 +441,7 @@ export default function FacePunchModal({
                     <button
                       type="button"
                       onClick={() => setPunchMode("OFFICE")}
-                      className="relative h-[240px] overflow-hidden rounded-2xl border border-white/10 text-left transition duration-200 hover:-translate-y-0.5 hover:border-white/35"
+                      className="relative h-[clamp(150px,34dvh,240px)] overflow-hidden rounded-2xl border border-white/10 text-left transition duration-200 hover:-translate-y-0.5 hover:border-white/35"
                       style={{ background: sky.gradient }}
                     >
                       <OfficeScene sky={sky} />
@@ -462,7 +463,7 @@ export default function FacePunchModal({
                     <button
                       type="button"
                       onClick={() => setPunchMode("WFH")}
-                      className="relative h-[240px] overflow-hidden rounded-2xl border border-white/10 text-left transition duration-200 hover:-translate-y-0.5 hover:border-white/35"
+                      className="relative h-[clamp(150px,34dvh,240px)] overflow-hidden rounded-2xl border border-white/10 text-left transition duration-200 hover:-translate-y-0.5 hover:border-white/35"
                       style={{ background: sky.gradient }}
                     >
                       <HomeScene sky={sky} />
@@ -633,7 +634,7 @@ export default function FacePunchModal({
 
                       <div
                         onClick={backgroundTapEnabled ? toggleFlip : undefined}
-                        className={`relative w-full aspect-square rounded-xl overflow-hidden bg-black border border-[#1f2a3d] flex items-center justify-center ${
+                        className={`relative w-full aspect-square max-h-[42dvh] rounded-xl overflow-hidden bg-black border border-[#1f2a3d] flex items-center justify-center ${
                           backgroundTapEnabled ? "cursor-pointer" : ""
                         }`}
                       >
