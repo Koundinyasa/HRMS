@@ -13,6 +13,7 @@ const PunchProcessAttendanceOverviewPage = lazy(() => import("../TimeOffice/page
 const PunchProcessImportPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessImportPage"));
 const PunchProcessTaInsightsPage = lazy(() => import("../TimeOffice/pages/punchprocess/PunchProcessTaInsightsPage"));
 const ShiftUnassignedPage = lazy(() => import("../TimeOffice/pages/punchprocess/ShiftUnassignedPage"));
+const MissedPunchPage = lazy(() => import("@/features/employee/review/timeOffice/missedPunch/pages/MissedPunchPage"));
 
 // Menu rows in the database sometimes point at the Punch Process address for
 // the leave pages; send those addresses to the real screens.
@@ -50,6 +51,11 @@ export const TalentHubRoutes = (
         <Route path="leave" element={<TimeOfficeRedirect to="leave/daily/apply-leave" />} />
         <Route path="forceleaveapproval" element={<TimeOfficeRedirect to="leave/forceleaveapproval" />} />
       </Route>
+
+      <Route
+        path="regularization/missed-punch"
+        element={<MissedPunchPage adminMode />}
+      />
 
       <Route path="shift-unassigned">
         <Route index element={<Navigate to="shift-pattern" replace />} />

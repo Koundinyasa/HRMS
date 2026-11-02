@@ -3,22 +3,7 @@ import { MoreVertical, Plus, Search, X } from "lucide-react";
 import DropdownSelect from "../../../components/DropdownSelect";
 import { PUNCH_FILTER_FIELDS } from "../constants/timeoffice.constants";
 import { optionsFor } from "../hooks/punchMetrics";
-import type { PunchFilters, PunchRow } from "../types/timeoffice.types";
-
-interface PunchFilterBarProps {
-  /** Unfiltered rows — chip options come from the data itself, not a hardcoded list. */
-  rows: PunchRow[];
-  filters: PunchFilters;
-  onChange: (next: PunchFilters) => void;
-  onClear: () => void;
-  onDismiss?: () => void;
-  showChipsInitially?: boolean;
-  showOverflowControls?: boolean;
-  showAddFilter?: boolean;
-  scrollable?: boolean;
-  searchPlaceholder?: string;
-  showSearch?: boolean;
-}
+import type { PunchFilterBarProps, PunchFilters } from "../types/timeoffice.types";
 
 export default function PunchFilterBar({ rows, filters, onChange, onClear, onDismiss, showChipsInitially = false, showOverflowControls = false, showAddFilter = true, scrollable = false, searchPlaceholder = "Start Typing...", showSearch = true }: PunchFilterBarProps) {
   // "+ Add Filter" reveals the chips; active ones stay visible once chosen.

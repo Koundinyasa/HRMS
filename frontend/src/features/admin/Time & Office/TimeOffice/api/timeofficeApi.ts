@@ -1,18 +1,26 @@
 import { baseApi } from "@/app/baseApi";
 import type {
   AttendanceOverviewPoint,
+  DashboardSummary,
+  DateRange,
   EmployeeRawPunch,
   EmployeeRawPunchesRequest,
+  GeoLocationBody,
+  HoursPoint,
   IrregularityClassification,
   IrregularityPoint,
+  PendingRequest,
   PolicySummary,
   ProcessDrilldownRow,
   ProcessHistoryEntry,
   ProcessSummary,
   PunchMetric,
+  PunchModeSlice,
   PunchPeriod,
   PunchRecord,
   PunchRequestsSummary,
+  ShiftMasterBody,
+  TaInsightsQuery,
   ShiftMasterRow,
   TimeOfficeEmployee,
   WorkingHoursPoint,
@@ -39,59 +47,8 @@ const timeOfficeAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : undefined;
 };
 
-interface DateRange {
-  fromDate: string;
-  tillDate: string;
-}
-
-interface TaInsightsQuery {
-  fromDate: string;
-  toDate: string;
-  insightId?: number;
-}
-
 /** Backend hasn't published field names for these policy/settings DTOs yet, so they pass through as-is. */
 type PolicyDto = Record<string, unknown>;
-
-interface ShiftMasterBody {
-  shiftName: string;
-  shiftCode?: string;
-  startTime?: string;
-  endTime?: string;
-  remarks?: string;
-}
-
-interface GeoLocationBody {
-  locationName: string;
-  locationCode?: string;
-  latitude?: string;
-  longitude?: string;
-  radius?: string;
-}
-
-/** Tile counts, keyed by metric. */
-export interface DashboardSummary {
-  totalEmployees: number;
-  latestPunchIntegratedAt?: string;
-  selectedDate?: string;
-  counts: Partial<Record<PunchMetric, number>>;
-}
-
-export interface PunchModeSlice {
-  mode: string;
-  count: number;
-}
-
-export interface PendingRequest {
-  id: string;
-  label: string;
-}
-
-/** Avg work and avg OT are separate endpoints, so each returns a single series. */
-export interface HoursPoint {
-  date: string;
-  minutes: number;
-}
 
 const normalizeFieldName = (field: string) => field.replace(/[^a-z0-9]/gi, "").toLowerCase();
 
@@ -141,6 +98,16 @@ const toRows = (value: unknown): Record<string, unknown>[] => {
   }
   return [];
 };
+
+const toProcessDrilldownRows = (value: unknown): ProcessDrilldownRow[] =>
+  toRows(value).map((row) =>
+    Object.fromEntries(
+      Object.entries(row).filter(
+        ([, fieldValue]) =>
+          typeof fieldValue === "string" || typeof fieldValue === "number",
+      ),
+    ) as ProcessDrilldownRow,
+  );
 
 const mapDashboardCounts = (
   response: unknown,
@@ -337,8 +304,8 @@ export const timeofficeApi = baseApi.injectEndpoints({
           url: route.path,
           params: {
             [route.dateParam ?? "attendanceDate"]: attendanceDate,
-            ...(metric === "week-off" ? { type: "weekoff" } : {}),
-            ...(metric === "holiday" ? { type: "holiday" } : {}),
+            ...(metric === "week-off" ? { type: 4 } : {}),
+            ...(metric === "holiday" ? { type: 5 } : {}),
           },
         };
       },
@@ -491,7 +458,11 @@ export const timeofficeApi = baseApi.injectEndpoints({
     }),
 
     getMissedPunch: builder.query<ProcessDrilldownRow[], DateRange>({
-      query: ({ fromDate, tillDate }) => ({ url: `${PROCESS_BASE}/missedpunch`, params: { fromDate, tillDate } }),
+      query: ({ fromDate, tillDate }) => ({
+        url: `${PROCESS_BASE}/missed-punch-employees`,
+        params: { fromDate, toDate: tillDate },
+      }),
+      transformResponse: toProcessDrilldownRows,
       providesTags: [{ type: "TimeOffice", id: "MISSED_PUNCH" }],
     }),
 

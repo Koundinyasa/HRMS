@@ -11,6 +11,7 @@ import {
  Maximize2,
  Minimize2,
 } from "lucide-react";
+import { toast } from "react-toastify";
  
 import {
  PROFILE_ICONS,
@@ -92,7 +93,7 @@ action: DocumentAction,
  const url = getDocumentUrl(action);
  
  if (!url) {
- alert("No file available to preview.");
+ toast.error("No file available to preview.");
  return;
  }
  
@@ -125,7 +126,7 @@ action: DocumentAction,
  const url = getDocumentUrl(action);
  
  if (!url) {
- alert("No file available to download.");
+  toast.error("No file available to download.");
  return;
  }
  

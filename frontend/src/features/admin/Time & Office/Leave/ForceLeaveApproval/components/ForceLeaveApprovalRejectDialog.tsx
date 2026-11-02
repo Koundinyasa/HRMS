@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { X as XIcon } from "lucide-react";
+import { toast } from "react-toastify";
 import type { ForceLeaveApprovalRejectDialogProps } from "../types/forceapproval.types";
 import { useRejectForceLeaveApprovals } from "../hooks/useForceLeaveApprovalApi";
 
@@ -28,12 +29,40 @@ export default function ForceLeaveApprovalRejectDialog({
     setIsSubmitting(true);
     onSubmittingChange(true);
     try {
-      await Promise.all(rows.map((row) => rejectLeaves({ approvalId: row.id, remarks: trimmedRemarks }).unwrap()));
+      const result = await rejectLeaves({
+        approvalIds: rows.map((row) => row.id),
+        remarks: trimmedRemarks,
+      }).unwrap();
+
+      // The message from the stored procedure (first row) wins over the generic one
+      const responseMessage =
+        (result.data?.[0] as { Message?: string } | undefined)?.Message ||
+        result.message;
+
+      if (result.success === false) {
+        toast.error(responseMessage || "Failed to reject leave.");
+        setError(responseMessage || "Failed to reject leave.");
+        return;
+      }
+
+      if (result.failed > 0) {
+        toast.warning(
+          `${result.succeeded} rejected, ${result.failed} could not be rejected.`,
+        );
+      } else {
+        toast.error(responseMessage || "Leave rejected successfully.");
+      }
       onRejected();
       onClose();
     } catch (submitError) {
       console.error("Failed to reject leave applications:", submitError);
-      setError("Unable to reject the selected leave. Please try again.");
+      const serverMessage = (submitError as { data?: { message?: string | string[] } })
+        ?.data?.message;
+      const message =
+        (Array.isArray(serverMessage) ? serverMessage[0] : serverMessage) ||
+        "Unable to reject the selected leave. Please try again.";
+      toast.error(message);
+      setError(message);
     } finally {
       setIsSubmitting(false);
       onSubmittingChange(false);
