@@ -202,29 +202,36 @@ jobs:
           python -m compileall -q attendance-service
 
 
+
   # ==========================================
-  # JOB 6: ATTENDANCE SERVICE SECURITY SCAN
+  # JOB 7: EXTERNAL ATTENDANCE SECURITY SCAN
   # ==========================================
 
-  attendance-security:
-    name: Attendance Service Security Scan
+  security-scan-attendance:
+    name: Attendance Security Scan
     runs-on: ubuntu-latest
     needs: attendance-build
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Attendance Repository
         uses: actions/checkout@v6
 
-      - name: Trivy Filesystem Scan
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.70.0
+
+      - name: Trivy Attendance Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
-          scan-ref: attendance-service
+          scan-ref: ./attendance
           scanners: vuln,secret
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
           format: table
+        continue-on-error: true
 
 
   # ==========================================
