@@ -182,6 +182,7 @@ export default function LoginForm() {
               className="pl-9 pr-10 h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
               style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
               {...register("password")}
+              onPaste={(event) => event.preventDefault()}
             />
             <button
               type="button"

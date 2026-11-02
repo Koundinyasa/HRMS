@@ -435,7 +435,9 @@ export default function LeaveApply() {
  
               {leaveType === "2" && totalDays > 1 && (
                 <div className="space-y-2">
-                  <Label htmlFor="attachment">Medical Certificate</Label>
+                  <Label htmlFor="attachment">Medical Certificate{""}
+                    <span className="text-red-500">*</span>
+                  </Label>
  
                   <Controller
                     control={control}
@@ -466,13 +468,13 @@ export default function LeaveApply() {
               )}
  
               {/* Buttons */}
-              <div className="flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-4">
+              <div className="flex flex-nowrap justify-end gap-3 border-t border-slate-100 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={() => reset(DEFAULT_VALUES)}
-                  className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                  className="shrink-0 border-indigo-300 text-indigo-600 hover:bg-indigo-50"
                 >
                   Reset
                 </Button>
@@ -480,7 +482,7 @@ export default function LeaveApply() {
                 <Button
                   type="submit"
                   disabled={isSubmitting || leaveTypesLoading}
-                  className="min-w-[150px] rounded-xl shadow-md"
+                  className="min-w-0 flex-1 rounded-xl shadow-md sm:min-w-[150px] sm:flex-none"
                   style={{
                     backgroundColor: "#7c3aed",
                     color: "#fff",
