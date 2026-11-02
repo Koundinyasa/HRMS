@@ -1,4 +1,5 @@
-name: KTS-People360 Combined CI/CD 
+
+name: KTS-People360 Combined CI/CD pipeline
 
 on:
   push:
@@ -9,43 +10,11 @@ on:
 env:
   NODE_VERSION: "24"
   PYTHON_VERSION: "3.11"
-
   DOCKER_IMAGE_BACKEND: bgayathridev/kts-people360-backend
   DOCKER_IMAGE_FRONTEND: bgayathridev/kts-people360-frontend
   DOCKER_IMAGE_ATTENDANCE: bgayathridev/attendance-service
 
 jobs:
-
-  # --------------------------------------------------
-  # 1. Backend Build and Test
-  # --------------------------------------------------
-  test-backend:
-    name: Backend Build and Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install Backend Dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Build Backend
-        working-directory: backend
-        run: npm run build
-
-      - name: Run Backend Tests
-        working-directory: backend
-        run: npm test -- --passWithNoTests --runInBand
-
 
   # --------------------------------------------------
   # 2. Frontend Build
@@ -73,61 +42,6 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-
-  # --------------------------------------------------
-  # 3. Attendance Service Build and Test
-  # --------------------------------------------------
-  test-attendance:
-    name: Attendance Service Build and Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install Attendance Dependencies
-        working-directory: attendance-service
-        run: |
-          python -m pip install --upgrade pip
-          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
-          pip install -r requirements-linux.txt
-          pip install face-recognition==1.3.0
-
-      - name: Check Python Files
-        working-directory: attendance-service
-        run: python -m compileall .
-
-      - name: Verify Face Recognition
-        run: python -c "import face_recognition; print('Face recognition installed successfully')"
-
-
-  # --------------------------------------------------
-  # 4. Backend Filesystem Security Scan
-  # --------------------------------------------------
-  security-scan-backend:
-    name: Backend Filesystem Security Scan
-    runs-on: ubuntu-latest
-    needs: test-backend
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Run Trivy Backend Scan
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: backend
-          scanners: vuln,secret
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: "1"
-          format: table
   # --------------------------------------------------
   # 5. Frontend Filesystem Security Scan
   # --------------------------------------------------
@@ -166,6 +80,89 @@ jobs:
           exit-code: "1"
           format: table
 
+  # --------------------------------------------------
+  # 1. Backend Build and Test
+  # --------------------------------------------------
+  test-backend:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build Backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Run Backend Tests
+        working-directory: backend
+        run: npm test -- --passWithNoTests --runInBand
+
+  # --------------------------------------------------
+  # 4. Backend Filesystem Security Scan
+  # --------------------------------------------------
+  security-scan-backend:
+    name: Backend Filesystem Security Scan
+    runs-on: ubuntu-latest
+    needs: test-backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Backend Scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: backend
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+
+  # --------------------------------------------------
+  # 3. Attendance Service Build and Test
+  # --------------------------------------------------
+  test-attendance:
+    name: Attendance Service Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Attendance Dependencies
+        working-directory: attendance-service
+        run: |
+          python -m pip install --upgrade pip
+          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
+          pip install -r requirements-linux.txt
+          pip install face-recognition==1.3.0
+
+      - name: Check Python Files
+        working-directory: attendance-service
+        run: python -m compileall .
+
+      - name: Verify Face Recognition
+        run: python -c "import face_recognition; print('Face recognition installed successfully')"
 
   # --------------------------------------------------
   # 6. Attendance Filesystem Security Scan
@@ -198,7 +195,6 @@ jobs:
           name: trivy-attendance-results
           path: trivy-attendance-results.sarif
           if-no-files-found: ignore
-
 
   # --------------------------------------------------
   # 7. Build and Push Backend and Frontend Images
@@ -246,7 +242,6 @@ jobs:
             ${{ env.DOCKER_IMAGE_FRONTEND }}:latest
             ${{ env.DOCKER_IMAGE_FRONTEND }}:${{ github.sha }}
 
-
   # --------------------------------------------------
   # 8. Build and Push Attendance Image
   # --------------------------------------------------
@@ -280,7 +275,6 @@ jobs:
             ${{ env.DOCKER_IMAGE_ATTENDANCE }}:latest
             ${{ env.DOCKER_IMAGE_ATTENDANCE }}:${{ github.sha }}
 
-
   # --------------------------------------------------
   # 9. Backend and Frontend Image Security Scan
   # --------------------------------------------------
@@ -312,7 +306,6 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
 
-
   # --------------------------------------------------
   # 10. Attendance Image Security Scan
   # --------------------------------------------------
@@ -332,39 +325,3 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
-
-
-  # --------------------------------------------------
-  # 11. KTS Application Deployment
-  # --------------------------------------------------
-  deploy-kts:
-    name: KTS Application Deployment
-    runs-on: ubuntu-latest
-
-    needs:
-      - image-security-scan-kts
-
-    steps:
-      - name: Deployment Status
-        run: |
-          echo "Backend and Frontend Docker images built successfully."
-          echo "Docker images are available in Docker Hub."
-          echo "Actual application deployment is not configured in this workflow."
-
-
-  # --------------------------------------------------
-  # 12. Attendance Service Deployment
-  # --------------------------------------------------
-  deploy-attendance:
-    name: Attendance Service Deployment
-    runs-on: ubuntu-latest
-
-    needs:
-      - image-security-scan-attendance
-
-    steps:
-      - name: Deployment Status
-        run: |
-          echo "Attendance Docker image built successfully."
-          echo "Attendance image is available in Docker Hub."
-          echo "Actual attendance deployment is not configured in this workflow."
