@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     curl \
+    gnupg \
     unixodbc \
     unixodbc-dev \
     libgl1 \
