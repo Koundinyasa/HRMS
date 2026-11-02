@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { RefreshCw } from "lucide-react";
+import { ArrowLeft, ClockFading, Filter, RefreshCw } from "lucide-react";
+import { NavLink, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import DatePicker, {
@@ -588,6 +589,7 @@ function MissedPunchDatePicker({
         }}
         open={open}
         onOpenChange={handleOpenChange}
+        fixedPosition
         monthLabel={monthLabel}
         weekdayLabels={WEEKDAY_LABELS}
         cells={cells}
@@ -604,11 +606,13 @@ function MissedPunchDatePicker({
 }
 
 export default function MissedPunchNavbar({
+  adminMode = false,
   filters,
   onFromDateChange,
   onToDateChange,
   onRefresh,
 }: MissedPunchNavbarProps) {
+  const { domain } = useParams();
   const scrollRef = useRef<HTMLDivElement>(null);
   const pickerOpenRef = useRef(false);
 
@@ -630,6 +634,74 @@ export default function MissedPunchNavbar({
       scrollRef.current.scrollLeft = offset;
     }
   }, [pickerOpen, offset]);
+
+  if (adminMode) {
+    const processBasePath = `/${domain}/admin/time-office/timeoffice/punch-process`;
+    const tabs = [
+      { label: "Missed Punch", path: `/${domain}/admin/time-office/timeoffice/regularization/missed-punch` },
+    ];
+
+    return (
+      <div className="mb-3 w-full min-w-0 overflow-visible rounded-xl border border-[#e0e5ec] bg-white px-3 py-2 shadow-sm">
+        <div
+          ref={scrollRef}
+          className={`punch-horizontal-scroll max-w-full pb-1 ${
+            pickerOpen ? "overflow-visible" : "overflow-x-auto"
+          }`}
+        >
+          <div className="flex w-max min-w-full items-center justify-between gap-3">
+            <nav aria-label="Regularization navigation" className="flex shrink-0 items-center gap-4">
+              {tabs.map((tab) => (
+                <NavLink
+                  key={tab.label}
+                  to={tab.path}
+                  className={({ isActive }) =>
+                    `shrink-0 whitespace-nowrap border-b-2 px-1 py-2 text-sm font-semibold ${
+                      isActive ? "border-sky-500 text-sky-500" : "border-transparent text-slate-600"
+                    }`
+                  }
+                >
+                  {tab.label}
+                </NavLink>
+              ))}
+            </nav>
+            <div className="flex shrink-0 items-center gap-2">
+              <NavLink
+                to={`${processBasePath}/process`}
+                className="flex h-9 shrink-0 items-center gap-1 rounded-lg border border-slate-300 px-3 text-sm text-slate-600"
+              >
+                <ArrowLeft size={16} /> Back
+              </NavLink>
+              <label className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm text-slate-700">
+                From
+                <MissedPunchDatePicker
+                  value={filters.fromDate}
+                  onChange={onFromDateChange}
+                  align="left"
+                  onOpenStateChange={handlePickerOpen}
+                />
+              </label>
+              <label className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm text-slate-700">
+                To
+                <MissedPunchDatePicker
+                  value={filters.toDate}
+                  onChange={onToDateChange}
+                  align="right"
+                  onOpenStateChange={handlePickerOpen}
+                />
+              </label>
+              <Button type="button" variant="ghost" size="icon" title="Filter" aria-label="Filter" className="shrink-0 text-slate-400">
+                <Filter size={19} />
+              </Button>
+              <Button type="button" variant="ghost" size="icon" title="History" aria-label="History" className="shrink-0 text-slate-400">
+                <ClockFading size={19} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TimeOfficeNavbar allowVerticalOverflow className="mb-3">

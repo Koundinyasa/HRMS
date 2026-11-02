@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 
 import { PROCESS_TILES } from "../constants/timeoffice.constants";
 import type {
-  ProcessSummary,
+  ProcessStatTilesProps,
   ProcessTile,
 } from "../types/timeoffice.types";
 
@@ -29,11 +29,6 @@ const TILE_ICONS: Record<ProcessTile, LucideIcon> = {
   reProcessEffectiveDate: RefreshCcw,
   allReProcess: TrendingUp,
 };
-
-interface ProcessStatTilesProps {
-  summary: ProcessSummary;
-  onOpenTile?: (tile: ProcessTile) => void;
-}
 
 export default function ProcessStatTiles({
   summary,

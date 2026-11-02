@@ -3,17 +3,11 @@ import { CheckCircle2, MoreVertical, Plus, UploadCloud, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import DropdownSelect from "../../../components/DropdownSelect";
+import type { ImportPanelProps } from "../types/timeoffice.types";
 
 const IMPORT_FILTERS = ["Query", "Branch", "Salary Structure", "Leave", "Attendance", "Designation", "Emp Status"];
 
 /** Drag-and-drop import shell shared by Masters > Import and Assign > Import. */
-interface ImportPanelProps {
-  title: string;
-  onUpload?: (file: File) => Promise<string | void>;
-  templateHeaders?: string[];
-  templateTypeOptions?: string[];
-}
-
 export default function ImportPanel({ title, onUpload, templateHeaders = [], templateTypeOptions = [] }: ImportPanelProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);

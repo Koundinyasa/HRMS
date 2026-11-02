@@ -1,15 +1,5 @@
 import { ChevronLeft, FileSpreadsheet } from "lucide-react";
-import type { ProcessDrilldownRow } from "../types/timeoffice.types";
-
-interface ProcessDrilldownListProps {
-  title: string;
-  color: string;
-  rows: ProcessDrilldownRow[];
-  isLoading: boolean;
-  scrollable?: boolean;
-  /** Omit when this table isn't reached via a tile drill-down (e.g. a standalone approval queue). */
-  onBack?: () => void;
-}
+import type { ProcessDrilldownListProps, ProcessDrilldownRow } from "../types/timeoffice.types";
 
 /** Column labels the backend hasn't confirmed yet -- humanised from whatever keys come back. */
 const toLabel = (key: string) =>

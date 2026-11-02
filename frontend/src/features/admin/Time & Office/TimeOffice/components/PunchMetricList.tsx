@@ -8,25 +8,7 @@ import {
   PUNCH_METRIC_LABELS,
   ROWS_PER_PAGE_OPTIONS,
 } from "../constants/timeoffice.constants";
-import type { PunchFilters, PunchMetric, PunchRow } from "../types/timeoffice.types";
-
-interface PunchMetricListProps {
-  metric: PunchMetric;
-  allRows: PunchRow[];
-  filteredRows: PunchRow[];
-  pagedRows: PunchRow[];
-  filters: PunchFilters;
-  onFiltersChange: (next: PunchFilters) => void;
-  onClearFilters: () => void;
-  page: number;
-  pageSize: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
-  /** Parent can hide the filter bar (the dashboard has a toggle for it). */
-  showFilters?: boolean;
-  isLoading?: boolean;
-  errorMessage?: string;
-}
+import type { PunchMetricListProps } from "../types/timeoffice.types";
 
 export default function PunchMetricList({
   metric,
@@ -69,6 +51,7 @@ export default function PunchMetricList({
             showChipsInitially
             showOverflowControls
             showAddFilter={false}
+            scrollable
           />
         </div>
       )}

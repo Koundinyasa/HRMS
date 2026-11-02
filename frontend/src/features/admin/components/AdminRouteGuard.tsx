@@ -32,17 +32,26 @@ export function isAdminPathAllowed(path: string, menus: readonly MenuInfo[]): bo
 
   if (current === "/admin" || current === "/admin/dashboard") return true;
 
-  return menus.some((menu) => {
-    const route = clean(menu.routeUrl ?? "");
-    if (!route) return false;
-    if (current === route) return true;
-    const groupsPagesBelowItself = menus.some(
-      (child) =>
-        child.parentId === menu.menuId &&
-        clean(child.routeUrl ?? "").startsWith(`${route}/`),
-    );
-    return !groupsPagesBelowItself && current.startsWith(`${route}/`);
-  });
+  const isAllowedByMenu = (candidate: string) =>
+    menus.some((menu) => {
+      const route = clean(menu.routeUrl ?? "");
+      if (!route) return false;
+      if (candidate === route) return true;
+      const groupsPagesBelowItself = menus.some(
+        (child) =>
+          child.parentId === menu.menuId &&
+          clean(child.routeUrl ?? "").startsWith(`${route}/`),
+      );
+      return !groupsPagesBelowItself && candidate.startsWith(`${route}/`);
+    });
+
+  if (isAllowedByMenu(current)) return true;
+
+  // Missed Punch (Regularization) has no menu row of its own; it is allowed
+  // for anyone who can open Punch Process > Process.
+  const missedPunchPath = "/admin/time-office/timeoffice/regularization/missed-punch";
+  const processPath = "/admin/time-office/timeoffice/punch-process/process";
+  return current === missedPunchPath && isAllowedByMenu(processPath);
 }
 
 export default function AdminRouteGuard({ children }: { children: ReactNode }) {

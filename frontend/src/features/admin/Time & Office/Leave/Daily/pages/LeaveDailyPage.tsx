@@ -4,6 +4,7 @@ import {
   Check,
   ClipboardClock,
   Eye,
+  EyeOff,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
@@ -202,21 +203,52 @@ const getMonthDays = (value: string): LeaveDailyDay[] => {
 
 /* ======================= Excel export ======================= */
 
-/** Exports the day grid of the Leave Daily page (month, range, weekdays). */
+/** Exports all currently visible employee attendance data for the selected month. */
 function exportDailyAttendanceExcel(
   month: string,
-  dateRange: number,
   days: LeaveDailyDay[],
+  employees: Record<string, unknown>[],
 ) {
   const pad = (value: number) => String(value).padStart(2, "0");
+  const headers = [
+    "Employee Name",
+    "Employee ID",
+    "Present",
+    "Pay Days",
+    "Holidays",
+    "Weekly Offs",
+    ...days.map(({ day, weekday }) => `${pad(day)} ${weekday}`),
+  ];
 
-  const worksheet = XLSX.utils.aoa_to_sheet([
+  const rows: unknown[][] = [
     ["Daily Attendance", month],
-    ["Date Range", `01-${pad(dateRange)}`],
-    ["Field", ...days.map(({ day }) => pad(day))],
-    ["Weekday", ...days.map(({ weekday }) => weekday)],
-    ["Selected", ...days.map(({ day }) => (day <= dateRange ? "Yes" : "No"))],
-  ]);
+    [],
+    headers,
+    ...employees.map((employee) => {
+      let holidayCount = 0;
+      let weekOffCount = 0;
+      const attendance = days.map(({ day }) => getDayCodeFromRow(employee, day));
+      for (const code of attendance) {
+        const normalizedCode = code.toUpperCase();
+        if (normalizedCode === "H") holidayCount += 1;
+        else if (normalizedCode === "W" || normalizedCode === "WO") weekOffCount += 1;
+      }
+
+      return [
+        employee.FullName ?? employee.fullName ?? "—",
+        employee.EmployeeID ?? employee.employeeId ?? "",
+        employee.NDP ?? employee.ndp ?? "-",
+        employee.NOD ?? employee.nod ?? "-",
+        employee.Holidays ?? employee.holidays ?? employee.H ?? holidayCount,
+        employee.WeeklyOffs ?? employee.weeklyOffs ?? employee.WO ?? weekOffCount,
+        ...attendance,
+      ];
+    }),
+  ];
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  worksheet["!cols"] = headers.map((header, index) => ({
+    wch: index < 2 ? Math.max(14, header.length + 2) : index < 6 ? 14 : 12,
+  }));
   const workbook = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(workbook, worksheet, "Daily Attendance");
@@ -968,6 +1000,7 @@ const ReprocessConfirmModal = ({
   );
 };
 
+
 /* ======================= Reprocess result window ======================= */
 
 interface ReprocessResultModalProps {
@@ -1309,8 +1342,12 @@ interface LeaveDailyDateGridProps {
   days: LeaveDailyDay[];
   /** Day-of-month of today when the selected month is the current month */
   todayDay?: number;
-  dateRange: number;
-  onDateRangeChange: (value: number) => void;
+  startDay: number;
+  endDay: number;
+  selectedDays: ReadonlySet<number>;
+  onDateRangeChange: (startDay: number, endDay: number) => void;
+  onDateToggle: (day: number) => void;
+  onSelectAllDates: () => void;
   attendanceCode: string;
   attendanceOptions: SelectOption[];
   onAttendanceCodeChange: (value: string) => void;
@@ -1367,6 +1404,17 @@ function getLeaveBalances(row: Record<string, unknown>): LeaveBalanceRow[] {
     });
   }
   return DEFAULT_LEAVE_TYPES.map((leaveType) => ({ leaveType }));
+}
+
+/**
+ * Is leave balance set up for this employee? The calendar sends
+ * IsLeaveBalanceConfigured (1 / 0). When the backend does not send the column
+ * at all, treat it as configured so the eye icon keeps working.
+ */
+function isLeaveBalanceConfigured(row: Record<string, unknown>): boolean {
+  const flag = row.IsLeaveBalanceConfigured ?? row.isLeaveBalanceConfigured;
+  if (flag === undefined || flag === null || flag === "") return true;
+  return flag === true || Number(flag) === 1;
 }
 
 /** Hover info for each day code (names match the leave types in the database) */
@@ -1437,10 +1485,10 @@ const SCROLL_X =
 const THUMB = 18; // px - must match the thumb size in SLIDER
 
 const SLIDER =
-  "absolute top-[8px] z-10 h-5 cursor-pointer appearance-none bg-transparent outline-none " +
+  "absolute top-[8px] z-10 h-5 cursor-pointer appearance-none bg-transparent outline-none pointer-events-none " +
   "[&::-webkit-slider-runnable-track]:h-5 [&::-webkit-slider-runnable-track]:bg-transparent " +
-  "[&::-webkit-slider-thumb]:mt-[1px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#914f3f] [&::-webkit-slider-thumb]:shadow-[0_1px_5px_rgba(145,79,63,0.55)] " +
-  "[&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#914f3f] " +
+  "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:mt-[1px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#914f3f] [&::-webkit-slider-thumb]:shadow-[0_1px_5px_rgba(145,79,63,0.55)] " +
+  "[&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#914f3f] " +
   "focus-visible:[&::-webkit-slider-thumb]:ring-4 focus-visible:[&::-webkit-slider-thumb]:ring-[#f6dcd5]";
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -1458,8 +1506,12 @@ const LeaveDailyDateGrid = ({
   month,
   days,
   todayDay,
-  dateRange,
+  startDay,
+  endDay,
+  selectedDays,
   onDateRangeChange,
+  onDateToggle,
+  onSelectAllDates,
   attendanceCode,
   attendanceOptions,
   onAttendanceCodeChange,
@@ -1471,6 +1523,17 @@ const LeaveDailyDateGrid = ({
   onSelectedEmpIdsChange: setSelectedEmpIds,
 }: LeaveDailyDateGridProps) => {
   const count = days.length;
+  const selectedDayList = Array.from(selectedDays).sort((a, b) => a - b);
+  const selectedDayRuns = selectedDayList.reduce<number[][]>((runs, day) => {
+    const lastRun = runs[runs.length - 1];
+    if (lastRun && lastRun[lastRun.length - 1] === day - 1) lastRun.push(day);
+    else runs.push([day]);
+    return runs;
+  }, []);
+  const hasContinuousDateSelection =
+    selectedDayList.length === endDay - startDay + 1 &&
+    selectedDayList[0] === startDay &&
+    selectedDayList[selectedDayList.length - 1] === endDay;
   const [formTarget, setFormTarget] = useState<LeaveFormTarget | null>(null);
   const [summaryTarget, setSummaryTarget] = useState<LeaveSummaryTarget | null>(null);
   // which employee's summary icon is active (open) right now
@@ -1518,6 +1581,8 @@ const LeaveDailyDateGrid = ({
     x: number;
     y: number;
   } | null>(null);
+  const [leaveBalanceTip, setLeaveBalanceTip] = useState<{ x: number; y: number } | null>(null);
+  const { year: formYear, monthIndex: formMonthIndex } = parseMonthValue(month);
   const showTip = (
     event: ReactMouseEvent<HTMLElement>,
     code: string,
@@ -1616,8 +1681,6 @@ const LeaveDailyDateGrid = ({
     });
   };
   // ===== END CHANGED =====
-  // ===== END CHANGED =====
-  const { year: formYear, monthIndex: formMonthIndex } = parseMonthValue(month);
 
   // ----- Sort by employee name: null = API order, "asc" = A→Z, "desc" = Z→A -----
   const [nameSort, setNameSort] = useState<"asc" | "desc" | null>(null);
@@ -1717,10 +1780,7 @@ const LeaveDailyDateGrid = ({
   // ===== CHANGED: skip weekly offs / holidays when applying leave =====
   const OFF_DAY_CODES = ["W", "WO", "H"];
 
-  /**
-   * For one employee: day numbers (1..dateRange) that are NOT a weekly off or
-   * holiday, grouped into runs of consecutive days.  e.g. [[1,2],[5]]
-   */
+  /** Selected working days, grouped into consecutive runs for the leave API. */
   const getWorkingDayRuns = (empId: string): number[][] => {
     const row = employees.find(
       (r) => String(r.EmployeeID ?? r.employeeId ?? "") === empId,
@@ -1728,12 +1788,16 @@ const LeaveDailyDateGrid = ({
     const runs: number[][] = [];
     let current: number[] = [];
     for (const d of days) {
-      if (d.day > dateRange) break;
+      if (!selectedDays.has(d.day)) continue;
       const code = row ? getDayCodeFromRow(row, d.day).toUpperCase() : "-";
       if (OFF_DAY_CODES.includes(code)) {
         if (current.length) runs.push(current);
         current = [];
       } else {
+        if (current.length && current[current.length - 1] !== d.day - 1) {
+          runs.push(current);
+          current = [];
+        }
         current.push(d.day);
       }
     }
@@ -1766,7 +1830,7 @@ const LeaveDailyDateGrid = ({
       return;
     }
     const dates = days
-      .filter((d) => d.day <= dateRange)
+      .filter((d) => selectedDays.has(d.day))
       .map((d) => `${formYear}-${pad(formMonthIndex + 1)}-${pad(d.day)}`);
     if (dates.length === 0) {
       showToast("Please select at least one date", "error");
@@ -1903,6 +1967,7 @@ const LeaveDailyDateGrid = ({
   const renderRow = (row: (typeof employees)[number], index: number) => {
     const empId = String(row.EmployeeID ?? row.employeeId ?? "");
     const fullName = String(row.FullName ?? row.fullName ?? "");
+    const leaveBalanceConfigured = isLeaveBalanceConfigured(row);
     const isOpen = expanded.has(empId);
     // NOD / NDP come from monthly-leave-calendar (row.NOD, row.NDP)
     const nod = row.NOD ?? row.nod ?? "-";
@@ -1951,23 +2016,52 @@ const LeaveDailyDateGrid = ({
               <div className="flex shrink-0 items-center justify-center gap-3">
                 <button
                   type="button"
-                  title={isOpen ? "Hide leave balance" : "View leave balance"}
-                  aria-label="View leave balance"
+                  title={
+                    leaveBalanceConfigured
+                      ? isOpen
+                        ? "Hide leave balance"
+                        : "View leave balance"
+                      : undefined
+                  }
+                  aria-label={
+                    leaveBalanceConfigured
+                      ? "View leave balance"
+                      : "Leave balance is not configured"
+                  }
                   aria-expanded={isOpen}
+                  aria-disabled={!leaveBalanceConfigured}
+                  onMouseEnter={(event) => {
+                    if (leaveBalanceConfigured) return;
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    setLeaveBalanceTip({
+                      x: Math.min(Math.max(rect.left + rect.width / 2, 140), window.innerWidth - 140),
+                      y: rect.top,
+                    });
+                  }}
+                  onMouseLeave={() => setLeaveBalanceTip(null)}
                   onClick={() => {
+                    if (!leaveBalanceConfigured) return;
                     // ===== CHANGED: open panel + fetch employee-leave-balance =====
                     toggleExpanded(empId);
                     setBalanceEmpId((current) =>
                       current === empId && expanded.has(empId) ? undefined : empId,
                     );
                   }}
-                  className={`rounded-md p-1 transition ${
-                    isOpen
+                  className={`group rounded-md p-1 transition ${
+                    !leaveBalanceConfigured
+                      ? "cursor-help text-[#914f3f] hover:text-[#c7cbd3]"
+                      : isOpen
                       ? "bg-[#914f3f] text-white shadow-sm ring-2 ring-[#f6dcd5]"
                       : "text-[#914f3f] hover:bg-[#fff1ed] hover:text-[#7f4234]"
                   }`}
                 >
-                  <Eye size={20} />
+                  <Eye
+                    size={20}
+                    className={!leaveBalanceConfigured ? "group-hover:hidden" : undefined}
+                  />
+                  {!leaveBalanceConfigured && (
+                    <EyeOff size={20} className="hidden group-hover:block" />
+                  )}
                 </button>
                 <button
                   type="button"
@@ -1999,7 +2093,7 @@ const LeaveDailyDateGrid = ({
         <div className="flex shrink-0" style={{ width: `calc(var(--dw) * ${count})` }}>
           {days.map(({ day, isWeekend }) => {
             const code = getDayCodeFromRow(row, day);
-            const selected = day <= dateRange;
+            const selected = selectedDays.has(day);
             // Leave Form opens for every cell except weekly off (W, WO), holiday (H) and pending (PN).
             // The cell's own code decides (not the calendar), so an employee who works on a
             // Sunday can still be edited, and a weekly off is never opened.
@@ -2048,7 +2142,7 @@ const LeaveDailyDateGrid = ({
           })}
         </div>
       </div>
-      {isOpen && (
+      {isOpen && leaveBalanceConfigured && (
         <div className="border-b border-[#f0d4cc] bg-[#fffaf8]">
           <div className="sticky left-0 px-3 py-3 sm:px-4" style={{ width: "100cqw" }}>
             <div className="overflow-x-auto rounded-md bg-white">
@@ -2124,9 +2218,11 @@ const LeaveDailyDateGrid = ({
               <button
                 key={preset.label}
                 type="button"
-                onClick={() => onDateRangeChange(preset.value)}
+                onClick={() => onDateRangeChange(1, preset.value)}
                 className={`h-8 whitespace-nowrap rounded-md px-3 text-[13px] font-semibold transition ${
-                  dateRange === preset.value
+                  startDay === 1 &&
+                  endDay === preset.value &&
+                  selectedDays.size === preset.value
                     ? "bg-white text-[#914f3f] shadow-[0_1px_3px_rgba(16,24,40,0.12)]"
                     : "text-[#626874] hover:text-[#914f3f]"
                 }`}
@@ -2179,24 +2275,46 @@ const LeaveDailyDateGrid = ({
             >
               <span className="text-[14px] font-bold text-[#182237]">Date Range</span>
               <span className="whitespace-nowrap rounded-full bg-[#fff1ed] px-2.5 py-1 text-[12px] font-bold text-[#914f3f]">
-                {pad(1)}–{pad(dateRange)}
-                <span className="hidden font-semibold sm:inline"> · {dateRange}d</span>
+                {pad(startDay)}–{pad(endDay)}
+                <span className="hidden font-semibold sm:inline"> · {selectedDays.size}d</span>
               </span>
             </div>
 
-            <div className="relative h-9 shrink-0" style={daysWidth}>
-              {/* track + fill, from first to last day centre */}
+            <div
+              className="relative h-9 shrink-0 cursor-pointer"
+              style={daysWidth}
+              onClick={(event) => {
+                if (event.target instanceof HTMLInputElement) return;
+                const bounds = event.currentTarget.getBoundingClientRect();
+                const dayWidth = bounds.width / count;
+                const day = Math.min(
+                  count,
+                  Math.max(1, Math.round((event.clientX - bounds.left - dayWidth / 2) / dayWidth) + 1),
+                );
+                const startDistance = Math.abs(day - startDay);
+                const endDistance = Math.abs(day - endDay);
+                if (day <= startDay || (day < endDay && startDistance < endDistance)) {
+                  onDateRangeChange(day, endDay);
+                } else {
+                  onDateRangeChange(startDay, day);
+                }
+              }}
+            >
+              {/* Track with separate fill segments for contiguous selected dates */}
               <div
                 className="absolute top-[16px] h-1 rounded-full bg-[#eadbd6]"
                 style={{ left: "calc(var(--dw) / 2)", right: "calc(var(--dw) / 2)" }}
               />
-              <div
-                className="absolute top-[16px] h-1 rounded-full bg-[#914f3f]"
-                style={{
-                  left: "calc(var(--dw) / 2)",
-                  width: `calc(var(--dw) * ${dateRange - 1})`,
-                }}
-              />
+              {hasContinuousDateSelection && selectedDayRuns.map((run) => (
+                <div
+                  key={run[0]}
+                  className="absolute top-[16px] h-1 bg-[#914f3f]"
+                  style={{
+                    left: `calc(var(--dw) * ${run[0] - 0.5})`,
+                    width: `calc(var(--dw) * ${run.length - 1})`,
+                  }}
+                />
+              ))}
               {/* one tick per day */}
               <div className="pointer-events-none absolute inset-x-0 top-[16px] flex h-1">
                 {days.map(({ day }) => (
@@ -2206,21 +2324,39 @@ const LeaveDailyDateGrid = ({
                     style={{ width: "var(--dw)" }}
                   >
                     <span
-                      className={`h-[3px] w-[3px] rounded-full ${day <= dateRange ? "bg-white/80" : "bg-[#cdb3ac]"}`}
+                      className={`h-[3px] w-[3px] rounded-full ${selectedDays.has(day) ? "bg-white/80" : "bg-[#cdb3ac]"}`}
                     />
                   </span>
                 ))}
               </div>
-              {/* thumb travels exactly from day 1 centre to last day centre */}
+              {/* Independent handles set the start and end of the selected range */}
               <input
                 type="range"
                 min={1}
                 max={count}
                 step={1}
-                value={dateRange}
-                onChange={(event) => onDateRangeChange(Number(event.target.value))}
-                aria-label="Date range"
-                className={SLIDER}
+                value={startDay}
+                onChange={(event) =>
+                  onDateRangeChange(Math.min(Number(event.target.value), endDay), endDay)
+                }
+                aria-label="Start date"
+                className={`${SLIDER} focus:z-20`}
+                style={{
+                  left: `calc(var(--dw) / 2 - ${THUMB / 2}px)`,
+                  width: `calc(var(--dw) * ${count - 1} + ${THUMB}px)`,
+                }}
+              />
+              <input
+                type="range"
+                min={1}
+                max={count}
+                step={1}
+                value={endDay}
+                onChange={(event) =>
+                  onDateRangeChange(startDay, Math.max(Number(event.target.value), startDay))
+                }
+                aria-label="End date"
+                className={`${SLIDER} focus:z-20`}
                 style={{
                   left: `calc(var(--dw) / 2 - ${THUMB / 2}px)`,
                   width: `calc(var(--dw) * ${count - 1} + ${THUMB}px)`,
@@ -2240,7 +2376,13 @@ const LeaveDailyDateGrid = ({
                 style={{ width: "var(--c1)" }}
               >
                 <label className="flex cursor-pointer items-center gap-2 sm:gap-3">
-                  <input type="checkbox" className="h-[18px] w-[18px] shrink-0 accent-[#914f3f]" />
+                  <input
+                    type="checkbox"
+                    aria-label="Select all dates"
+                    checked={selectedDays.size === count}
+                    onChange={onSelectAllDates}
+                    className="h-[18px] w-[18px] shrink-0 accent-[#914f3f]"
+                  />
                   Dates
                 </label>
                 <div className="flex items-center gap-2 sm:gap-3">
@@ -2290,7 +2432,7 @@ const LeaveDailyDateGrid = ({
 
             <div className="flex shrink-0" style={daysWidth}>
               {days.map(({ day, weekday, isWeekend }) => {
-                const selected = day <= dateRange;
+                const selected = selectedDays.has(day);
                 return (
                   <div
                     key={day}
@@ -2308,8 +2450,8 @@ const LeaveDailyDateGrid = ({
                     <input
                       type="checkbox"
                       checked={selected}
-                      onChange={() => onDateRangeChange(day)}
-                      aria-label={`Select up to day ${day}`}
+                      onChange={() => onDateToggle(day)}
+                      aria-label={`Select day ${day}`}
                       className="h-[16px] w-[16px] cursor-pointer accent-[#914f3f]"
                     />
                     <span
@@ -2425,6 +2567,29 @@ const LeaveDailyDateGrid = ({
           </div>,
           document.body,
         )}
+      {leaveBalanceTip &&
+        createPortal(
+          <div
+            role="tooltip"
+            className="pointer-events-none fixed z-[3000] font-[Urbanist]"
+            style={{
+              left: leaveBalanceTip.x,
+              top: leaveBalanceTip.y - 10,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            <div className="relative flex w-max max-w-[260px] items-center gap-2 rounded-xl border border-[#f0cbc1] bg-white px-3 py-2 shadow-[0_8px_24px_rgba(145,79,63,0.2)]">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#fff1ed] text-[#914f3f]">
+                <EyeOff size={15} />
+              </span>
+              <span className="text-[12px] font-semibold leading-snug text-[#303746]">
+                Leave balance is not configured
+              </span>
+              <span className="absolute left-1/2 top-full -mt-1 h-2.5 w-2.5 -translate-x-1/2 rotate-45 border-b border-r border-[#f0cbc1] bg-white" />
+            </div>
+          </div>,
+          document.body,
+        )}
       {/* ===== CHANGED: Apply leave confirmation ===== */}
       {confirmOpen &&
         createPortal(
@@ -2470,7 +2635,9 @@ const LeaveDailyDateGrid = ({
                 <div className="mt-1.5 flex justify-between gap-3">
                   <span className="font-medium text-[#8a94ad]">Period</span>
                   <span className="font-bold text-[#182237]">
-                    Day 1 – {dateRange} · {month}
+                    {selectedDayList.length
+                      ? `Day ${pad(selectedDayList[0])}–${pad(selectedDayList[selectedDayList.length - 1])} (${selectedDayList.length} dates) · ${month}`
+                      : `No dates selected · ${month}`}
                   </span>
                 </div>
               </div>
@@ -2572,7 +2739,11 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
       setAttendanceCode(applyOptions[0]?.value ?? "");
     }
   }, [applyOptions, attendanceCode]);
-  const [dateRange, setDateRange] = useState(DEFAULT_RANGE_END);
+  const [startDay, setStartDay] = useState(1);
+  const [endDay, setEndDay] = useState(DEFAULT_RANGE_END);
+  const [selectedDays, setSelectedDays] = useState<Set<number>>(
+    () => new Set(Array.from({ length: DEFAULT_RANGE_END }, (_, index) => index + 1)),
+  );
 
   const [search, setSearch] = useState("");
   const [selectedFilters, setSelectedFilters] = useState(EMPTY_FILTER_SELECTION);
@@ -2606,6 +2777,43 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
     );
   }, [apiMonths, month]);
   const days = useMemo(() => getMonthDays(month), [month]);
+
+  const handleDateRangeChange = (nextStart: number, nextEnd: number) => {
+    const boundedEnd = Math.min(days.length, Math.max(1, nextEnd));
+    const boundedStart = Math.min(boundedEnd, Math.max(1, nextStart));
+    setStartDay(boundedStart);
+    setEndDay(boundedEnd);
+    setSelectedDays(
+      new Set(
+        Array.from(
+          { length: boundedEnd - boundedStart + 1 },
+          (_, index) => boundedStart + index,
+        ),
+      ),
+    );
+  };
+
+  const handleDateToggle = (day: number) => {
+    const next = new Set(selectedDays);
+    if (next.has(day)) next.delete(day);
+    else next.add(day);
+    setSelectedDays(next);
+    if (next.size > 0) {
+      const sorted = Array.from(next).sort((a, b) => a - b);
+      setStartDay(sorted[0]);
+      setEndDay(sorted[sorted.length - 1]);
+    }
+  };
+
+  const handleSelectAllDates = () => {
+    if (selectedDays.size === days.length) {
+      setSelectedDays(new Set());
+      return;
+    }
+    setStartDay(1);
+    setEndDay(days.length);
+    setSelectedDays(new Set(days.map(({ day }) => day)));
+  };
 
   // ----- Backend: filter dropdowns + monthly leave calendar -----
   // Existing parseMonthValue returns { year, monthIndex: 0-11 }; API needs month 1-12
@@ -2643,8 +2851,12 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
 
   const handleMonthChange = (next: string) => {
     setMonth(next);
-    // e.g. 30 -> Feb (28/29 days): keep the range inside the month
-    setDateRange((current) => Math.min(current, getDaysInMonth(next)));
+    const nextMonthDays = getDaysInMonth(next);
+    setStartDay((current) => Math.min(current, nextMonthDays));
+    setEndDay((current) => Math.min(current, nextMonthDays));
+    setSelectedDays(
+      (current) => new Set(Array.from(current, (day) => Math.min(day, nextMonthDays))),
+    );
   };
 
   const handleFilterChange = (key: LeaveDailyFilterKey, values: string[]) =>
@@ -2664,13 +2876,15 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
   const pad2 = (value: number) => String(value).padStart(2, "0");
   const { year: monthYearNumber, monthIndex: monthIndexNumber } = parseMonthValue(month);
 
-  // Selected dates = day 1 .. the date range chosen above the table (no future days in the current month)
+  // Reprocess uses selected dates, excluding future days in the current month.
   const selectedDates = useMemo(() => {
-    const lastDay = Math.min(dateRange, todayDay ?? days.length);
     return days
-      .filter(({ day }) => day <= lastDay)
+      .filter(({ day }) => selectedDays.has(day) && day <= (todayDay ?? days.length))
       .map(({ day }) => `${monthYearNumber}-${pad2(monthIndexNumber + 1)}-${pad2(day)}`);
-  }, [days, dateRange, todayDay, monthYearNumber, monthIndexNumber]);
+  }, [days, selectedDays, todayDay, monthYearNumber, monthIndexNumber]);
+  const reprocessRangeLabel = selectedDates.length
+    ? `${selectedDates[0].slice(8)}–${selectedDates[selectedDates.length - 1].slice(8)} (${selectedDates.length} dates) ${MONTH_LABELS[monthIndexNumber]} ${monthYearNumber}`
+    : `No dates selected ${MONTH_LABELS[monthIndexNumber]} ${monthYearNumber}`;
 
   // Employees selected in the table -> every selected employee x every selected date.
   // Nobody selected -> the days saved after earlier leave.
@@ -2770,7 +2984,19 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
         month={month}
         monthOptions={monthOptions}
         onMonthChange={handleMonthChange}
-        onExport={() => exportDailyAttendanceExcel(month, dateRange, days)}
+        onExport={() =>
+          exportDailyAttendanceExcel(
+            month,
+            days,
+            (calendarRows as Record<string, unknown>[]).filter((row) => {
+              const query = search.trim().toLowerCase();
+              if (!query) return true;
+              const id = String(row.EmployeeID ?? row.employeeId ?? "").toLowerCase();
+              const name = String(row.FullName ?? row.fullName ?? "").toLowerCase();
+              return id.includes(query) || name.includes(query);
+            }),
+          )
+        }
         onReprocess={handleReprocessClick}
         reprocessing={reprocessRunning}
         reprocessCount={reprocessItems.length}
@@ -2805,8 +3031,12 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
         month={month}
         days={days}
         todayDay={todayDay}
-        dateRange={dateRange}
-        onDateRangeChange={setDateRange}
+        startDay={startDay}
+        endDay={endDay}
+        selectedDays={selectedDays}
+        onDateRangeChange={handleDateRangeChange}
+        onDateToggle={handleDateToggle}
+        onSelectAllDates={handleSelectAllDates}
         attendanceCode={attendanceCode}
         attendanceOptions={applyOptions}
         onAttendanceCodeChange={setAttendanceCode}
@@ -2823,7 +3053,7 @@ const LeaveDailyPage = ({ filterOptions }: LeaveDailyPageProps) => {
         itemCount={reprocessItems.length}
         employeeCount={reprocessEmployeeCount}
         dayCount={reprocessDayCount}
-        rangeLabel={`${pad2(1)}–${pad2(selectedDates.length)} ${MONTH_LABELS[monthIndexNumber]} ${monthYearNumber}`}
+        rangeLabel={reprocessRangeLabel}
         skippedSavedCount={reprocessQueue.length}
         loading={reprocessRunning}
         progress={reprocessProgress}
