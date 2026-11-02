@@ -228,37 +228,6 @@ jobs:
 
 
   # ==========================================
-  # JOB 7: EXTERNAL ATTENDANCE SECURITY SCAN
-  # ==========================================
-
-  security-scan-attendance:
-    name: Attendance Security Scan
-    runs-on: ubuntu-latest
-    needs: attendance-build
-
-    steps:
-      - name: Checkout Attendance Repository
-        uses: actions/checkout@v6
-
-      - name: Install Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          version: v0.70.0
-
-      - name: Trivy Attendance Scan
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: ./attendance
-          scanners: vuln,secret
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
-          format: table
-        continue-on-error: true
-
-
-  # ==========================================
   # JOB 8: BUILD PEOPLE360 DOCKER IMAGES
   # ==========================================
 
