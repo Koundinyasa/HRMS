@@ -89,7 +89,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: 'frontend'
           severity: 'HIGH,CRITICAL'
-          exit-code: '0'
+          exit-code: '1'
           format: 'table'
 
 
@@ -162,7 +162,7 @@ jobs:
           scan-type: 'fs'
           scan-ref: 'backend'
           severity: 'HIGH,CRITICAL'
-          exit-code: '0'
+          exit-code: '1'
           format: table'
 
 
