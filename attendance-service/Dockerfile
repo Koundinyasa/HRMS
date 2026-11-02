@@ -1,4 +1,3 @@
-
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -22,8 +21,20 @@ COPY requirements.txt .
 RUN grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt \
     && pip install --no-cache-dir -r requirements-linux.txt
 
+# Upgrade vulnerable Python packages
+RUN pip install --no-cache-dir --upgrade \
+    jaraco.context==6.1.0 \
+    wheel==0.46.2
+
+# Install face recognition
 RUN pip install --no-cache-dir --no-deps face-recognition==1.3.0
 
+# Remove setuptools and its bundled vulnerable package copies
+RUN rm -rf \
+    /usr/local/lib/python3.11/site-packages/setuptools \
+    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info
+
+# Copy application files
 COPY . .
 
 EXPOSE 5000

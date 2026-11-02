@@ -1,4 +1,5 @@
-FROM node:22 
+# Build stage
+FROM node:24-bookworm-slim AS build
 
 WORKDIR /app
 
@@ -9,6 +10,26 @@ RUN npm ci
 COPY . .
 
 RUN npm run build
+
+
+# Production stage
+FROM node:24-bookworm-slim AS production
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci --omit=dev \
+    && npm cache clean --force \
+    && rm -rf /usr/local/lib/node_modules/npm \
+              /usr/local/bin/npm \
+              /usr/local/bin/npx
+
+COPY --from=build /app/dist ./dist
+
+RUN mkdir -p uploads
 
 EXPOSE 3001
 
