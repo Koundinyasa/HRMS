@@ -1,10 +1,14 @@
-
 services:
   frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
     image: ${DOCKERHUB_USER}/kts-people360-frontend:latest
     container_name: people360-frontend
     ports:
-      - "80:80"
+      - "5173:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -19,6 +23,7 @@ services:
         format: raw
     environment:
       NODE_ENV: production
+      SWAGGER_ENABLED: "true"
     restart: unless-stopped
 
   attendance:

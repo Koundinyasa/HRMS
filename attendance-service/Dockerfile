@@ -35,19 +35,23 @@ RUN grep -v -i '^msvc-runtime==' requirements.txt > requirements-linux.txt \
 FROM python:3.11-slim-bookworm AS production
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    TZ=Asia/Kolkata
 
 WORKDIR /app
 
-# Runtime system dependencies
+# Runtime system dependencies and India timezone
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     curl \
     gnupg \
+    tzdata \
     unixodbc \
     libgl1 \
     libglib2.0-0 \
     libgomp1 \
     libgtk-3-0 \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # Microsoft ODBC Driver 18

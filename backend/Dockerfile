@@ -18,6 +18,9 @@ FROM node:24-bookworm-slim AS production
 
 ENV NODE_ENV=production
 
+ENV TZ=Asia/Kolkata
+RUN apt-get update && apt-get install -y tzdata
+
 WORKDIR /app
 
 COPY package*.json ./
