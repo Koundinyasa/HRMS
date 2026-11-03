@@ -1,6 +1,4 @@
-
 services:
-
   frontend:
     container_name: kts-frontend
     build:
@@ -24,8 +22,6 @@ services:
     env_file:
       - path: ./backend/.env
         format: raw
-    environment:
-      TZ: Asia/Kolkata
     ports:
       - "3001:3001"
     depends_on:
@@ -43,7 +39,7 @@ services:
         format: raw
     environment:
       DB_DRIVER: "ODBC Driver 18 for SQL Server"
-      TZ: Asia/Kolkata
+      TZ: "Asia/Kolkata"
     ports:
       - "5000:5000"
     restart: unless-stopped

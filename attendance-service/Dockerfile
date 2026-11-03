@@ -44,12 +44,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime dependencies and ODBC prerequisites
+# Install timezone data, runtime dependencies and ODBC prerequisites
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
     ca-certificates \
     curl \
     gnupg \
-    tzdata \
     unixodbc \
     libgl1 \
     libglib2.0-0 \
@@ -58,14 +58,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     libxcb1 \
     libgomp1 \
-    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Microsoft ODBC Driver 18
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
        | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
     && curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list \
        > /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
-    && ln -snf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime \
-    && echo "Asia/Kolkata" > /etc/timezone \
     && apt-get purge -y --auto-remove curl gnupg \
     && rm -rf /var/lib/apt/lists/*
 
