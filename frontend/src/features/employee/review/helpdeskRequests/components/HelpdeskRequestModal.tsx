@@ -8,7 +8,7 @@ interface HelpdeskRequestModalProps {
   request: HelpdeskRequest;
   action: "approve" | "reject";
   onClose: () => void;
-  onConfirm: (remarks?: string) => void;
+  onConfirm: (remarks: string) => void;
   loading?: boolean;
 }
 
@@ -57,13 +57,12 @@ const HelpdeskRequestModal = ({
               className="mb-2 block text-sm font-medium text-slate-600"
             >
               Remarks
-              {action === "reject" && (
-                <span className="text-red-500"> *</span>
-              )}
+              <span className="text-red-500"> *</span>
             </label>
 
             <textarea
               id="helpdesk-remarks"
+              required
               value={remarks}
               onChange={(event) =>
                 setRemarks(event.target.value)
@@ -71,8 +70,8 @@ const HelpdeskRequestModal = ({
               rows={4}
               placeholder={
                 action === "reject"
-                  ? "Enter reason for rejection"
-                  : "Enter remarks (optional)"
+                  ? "Enter your reason for rejecting..."
+                  : "Enter approval remarks..."
               }
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
@@ -96,7 +95,7 @@ const HelpdeskRequestModal = ({
           <button
             type="button"
             onClick={() => onConfirm(remarks)}
-            disabled={loading}
+            disabled={loading || !remarks.trim()}
             className={`rounded-md px-5 py-2 text-sm font-medium text-white disabled:opacity-50 ${
               action === "approve"
                 ? "bg-green-600 hover:bg-green-700"

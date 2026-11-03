@@ -13,7 +13,7 @@ export default function ForceLeaveApprovalRejectDialog({
   onSubmittingChange,
 }: ForceLeaveApprovalRejectDialogProps) {
   const [rejectLeaves] = useRejectForceLeaveApprovals();
-  const [remarks, setRemarks] = useState(rows.length === 1 ? rows[0].reason : "");
+  const [remarks, setRemarks] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 

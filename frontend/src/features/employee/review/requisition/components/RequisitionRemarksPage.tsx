@@ -15,17 +15,18 @@ export default function RequisitionRemarksPage({
 }: RequisitionRemarksPageProps) {
   const requisition = requisitions[0];
 
-  const [remarks, setRemarks] = useState<Record<string, string>>({});
-
-  const updateRemarks = (id: string, value: string) => {
-    setRemarks((previous) => ({
-      ...previous,
-      [id]: value,
-    }));
-  };
+  const [remarks, setRemarks] = useState("");
 
   const submitRemarks = () => {
-    void onSubmit(remarks);
+    const trimmedRemarks = remarks.trim();
+    if (!trimmedRemarks) return;
+
+    void onSubmit(
+      requisitions.reduce<Record<string, string>>((allRemarks, item) => {
+        allRemarks[item.id] = trimmedRemarks;
+        return allRemarks;
+      }, {}),
+    );
   };
 
   return createPortal(
@@ -99,16 +100,15 @@ export default function RequisitionRemarksPage({
           htmlFor="rejection-remarks"
           className="mt-5 block text-sm font-medium text-slate-800 font-[Urbanist]"
         >
-          Remarks
+          Remarks <span className="text-red-600">*</span>
         </label>
         <textarea
           id="rejection-remarks"
-          value={remarks[requisition.id] ?? requisition.reason ?? ""}
-          onChange={(event) =>
-            updateRemarks(requisition.id, event.target.value)
-          }
+          required
+          value={remarks}
+          onChange={(event) => setRemarks(event.target.value)}
           rows={5}
-          placeholder="Enter rejection remarks..."
+          placeholder="Enter your reason for rejecting..."
           className="mt-1 w-full resize-none rounded-md border border-slate-900/80 px-3 py-2 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 sm:py-3"
         />
 
@@ -123,7 +123,8 @@ export default function RequisitionRemarksPage({
           <button
             type="button"
             onClick={submitRemarks}
-            className="rounded-md bg-violet-400 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500 font-[Urbanist]"
+            disabled={!remarks.trim()}
+            className="rounded-md bg-violet-400 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 font-[Urbanist]"
           >
             Submit
           </button>

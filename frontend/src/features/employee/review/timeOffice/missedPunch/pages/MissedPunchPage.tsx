@@ -5,6 +5,7 @@ import {
 
 import {
   useNavigate,
+  useSearchParams,
 } from "react-router-dom";
 
 import MissedPunchFilters from "../components/MissedPunchFilters";
@@ -19,6 +20,8 @@ import type { ProcessDrilldownRow } from "@/features/admin/Time & Office/TimeOff
 import {
   getMonthStartDate,
   getTodayDate,
+  isValidDate,
+  validateDateRange,
 } from "../validations/missedPunch.validation";
 import type { MissedPunchFilters as MissedPunchFilterState } from "../types/missedPunch.types";
 
@@ -150,20 +153,37 @@ function EmployeeMissedPunchPage() {
 }
 
 function AdminMissedPunchPage() {
-  const [filters, setFilters] = useState<MissedPunchFilterState>(() => ({
-    fromDate: getMonthStartDate(),
-    toDate: getTodayDate(),
-    searchText: "",
-  }));
+  const [searchParams] = useSearchParams();
+  // The Process dashboard opens this page with ?fromDate=&toDate=.
+  const [filters, setFilters] = useState<MissedPunchFilterState>(() => {
+    const fromDate = searchParams.get("fromDate");
+    const toDate = searchParams.get("toDate");
+    const isDate = (value: string | null): value is string =>
+      Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && isValidDate(value));
+
+    const validRange =
+      isDate(fromDate) &&
+      isDate(toDate) &&
+      validateDateRange(fromDate, toDate) === null;
+
+    return {
+      fromDate: validRange ? fromDate : getMonthStartDate(),
+      toDate: validRange ? toDate : getTodayDate(),
+      searchText: "",
+    };
+  });
+
+  const dateRangeError = validateDateRange(filters.fromDate, filters.toDate);
+
   const {
     data: rows = [],
     isFetching,
     isError,
     refetch,
-  } = useGetMissedPunchQuery({
-    fromDate: filters.fromDate,
-    tillDate: filters.toDate,
-  });
+  } = useGetMissedPunchQuery(
+    { fromDate: filters.fromDate, tillDate: filters.toDate },
+    { skip: Boolean(dateRangeError) },
+  );
 
   const employees = useMemo(
     () => rows.map(toMissedPunchEmployee),
@@ -198,13 +218,18 @@ function AdminMissedPunchPage() {
         filters={filters}
         onSearchChange={(value) => updateFilter("searchText", value)}
       />
-      {isError && (
+      {dateRangeError && (
+        <div role="alert" className="mt-4 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
+          {dateRangeError}
+        </div>
+      )}
+      {isError && !dateRangeError && (
         <div role="alert" className="mt-4 rounded-lg border border-black bg-red-50 px-4 py-3 text-sm text-red-600 font-[Urbanist]">
           Unable to load missed punch employees. Please try again.
         </div>
       )}
       <MissedPunchTable
-        employees={filteredEmployees}
+        employees={dateRangeError ? [] : filteredEmployees}
         isLoading={isFetching}
         onAction={() => undefined}
       />

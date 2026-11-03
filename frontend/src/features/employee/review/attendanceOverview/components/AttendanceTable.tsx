@@ -326,7 +326,7 @@ export default function AttendanceTable({
   // ==========================================================
 
   return (
-    <div className="w-full max-w-full overflow-x-auto rounded-xl border border-[#dbe3ee] bg-white shadow-sm font-[Urbanist]">
+    <div className="punch-horizontal-scroll w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-[#dbe3ee] bg-white shadow-sm font-[Urbanist] [touch-action:pan-x]">
       <table className="w-full min-w-max border-separate border-spacing-0 text-center font-[Urbanist]">
         {/* ====================================================
             HEADER

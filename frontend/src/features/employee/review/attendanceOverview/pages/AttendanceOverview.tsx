@@ -115,14 +115,14 @@ export default function AttendanceOverview({
         <div
           className={
             adminMode
-              ? "flex w-full min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-500 bg-emerald-50 px-2 py-1.5 font-[Urbanist]"
+              ? "punch-horizontal-scroll flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 overflow-x-auto overscroll-x-contain rounded-xl border border-emerald-500 bg-emerald-50 px-2 py-1.5 font-[Urbanist] [touch-action:pan-x]"
               : "flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4 font-[Urbanist]"
           }
         >
           {adminMode ? (
             <nav
               aria-label="Punch process"
-              className="flex min-w-0 flex-wrap items-center gap-1"
+              className="flex min-w-max shrink-0 flex-nowrap items-center gap-1"
             >
               {PUNCH_PROCESS_TABS.map((tab) => (
                 <NavLink

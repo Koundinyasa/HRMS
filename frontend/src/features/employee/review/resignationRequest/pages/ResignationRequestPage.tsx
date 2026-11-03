@@ -36,36 +36,38 @@ const ResignationRequestPage = () => {
   const [actionRequest, setActionRequest] =
     useState<ResignationRequest | null>(null);
 
-  const [actionType, setActionType] = useState<
-    "approve" | "reject" | null
-  >(null);
+  const handleApprove = async () => {
+    try {
+      await approveSelected();
+      toast.success(RESIGNATION_REQUEST_MESSAGES.APPROVE_SUCCESS);
+    } catch (error) {
+      console.error("Resignation approval failed:", error);
+      toast.error(RESIGNATION_REQUEST_MESSAGES.APPROVE_ERROR);
+    }
+  };
 
-  const handleActionConfirm = async (remarks?: string) => {
-    if (!actionRequest || !actionType) {
+  const handleRejectConfirm = async (remarks?: string) => {
+    if (!actionRequest) {
+      return;
+    }
+
+    if (!remarks?.trim()) {
+      toast.error("Please enter your reason for rejecting this request.");
       return;
     }
 
     try {
-      if (actionType === "approve") {
-        await approveSelected();
-      } else {
-        await rejectSelected(remarks);
-      }
-
-      if (actionType === "approve") {
-        toast.success(RESIGNATION_REQUEST_MESSAGES.APPROVE_SUCCESS);
-      } else {
-        toast.error(RESIGNATION_REQUEST_MESSAGES.REJECT_SUCCESS);
-      }
+      await rejectSelected(remarks);
+      toast.success(RESIGNATION_REQUEST_MESSAGES.REJECT_SUCCESS);
 
       setActionRequest(null);
-      setActionType(null);
     } catch (error) {
-      console.error("Resignation action failed:", error);
+      console.error("Resignation rejection failed:", error);
+      toast.error(RESIGNATION_REQUEST_MESSAGES.REJECT_ERROR);
     }
   };
 
-  const openActionModal = (action: "approve" | "reject") => {
+  const openRejectModal = () => {
     if (selectedIds.length !== 1) {
       return;
     }
@@ -79,7 +81,6 @@ const ResignationRequestPage = () => {
     }
 
     setActionRequest(selected);
-    setActionType(action);
   };
 
   return (
@@ -101,8 +102,8 @@ const ResignationRequestPage = () => {
         <ResignationRequestFilters
           search={search}
           onSearchChange={setSearch}
-          onApprove={() => openActionModal("approve")}
-          onReject={() => openActionModal("reject")}
+          onApprove={() => void handleApprove()}
+          onReject={openRejectModal}
           onRefresh={refetch}
           disableActions={selectedIds.length === 0 || isActionLoading}
         />
@@ -146,16 +147,15 @@ const ResignationRequestPage = () => {
       )}
 
       {/* Approve / Reject modal */}
-      {actionRequest && actionType && (
+      {actionRequest && (
         <ResignationRequestModal
           request={actionRequest}
-          action={actionType}
+          action="reject"
           loading={isActionLoading}
           onClose={() => {
             setActionRequest(null);
-            setActionType(null);
           }}
-          onConfirm={handleActionConfirm}
+          onConfirm={handleRejectConfirm}
         />
       )}
     </div>
