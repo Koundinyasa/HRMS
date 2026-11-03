@@ -1,3 +1,4 @@
+
 services:
 
   frontend:
@@ -35,6 +36,11 @@ services:
       context: ./attendance-service
       dockerfile: Dockerfile
     image: bgayathridev/attendance-service:latest
+    env_file:
+      - path: ./attendance-service/.env
+        format: raw
+    environment:
+      DB_DRIVER: "ODBC Driver 18 for SQL Server"
     ports:
       - "5000:5000"
     restart: unless-stopped

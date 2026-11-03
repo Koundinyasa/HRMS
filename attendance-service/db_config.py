@@ -19,6 +19,8 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 
 DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+DB_DRIVER = os.getenv("DB_DRIVER", "SQL Server")
  
  
 def get_db_connection():
@@ -43,7 +45,7 @@ def get_db_connection():
 
             # long-term standard.
 
-            r'DRIVER={SQL Server};'
+            f'DRIVER={{{DB_DRIVER}}};'
 
             f'SERVER={DB_HOST},{DB_PORT};'
 
