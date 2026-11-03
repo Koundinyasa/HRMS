@@ -6,6 +6,7 @@ import { CalendarDays, ChevronDown, PenLine, Tags } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useGetSessionQuery } from "@/features/auth/api/authApi";
 import ApplyForEmployeeSelector from "./ApplyForEmployeeSelector";
 import EmployeeInfoCard from "./EmployeeInfoCard";
 import LeaveBalanceCard from "./LeaveBalanceCard";
@@ -43,8 +44,47 @@ export default function ApplyForEmployee() {
 
   const leaveTypeRef = useRef<HTMLDivElement>(null);
 
-  const { data: employees = [], isLoading: employeesLoading } =
-    useGetReportingEmployeesForAppliedLeaveQuery();
+  const { data: session, isLoading: sessionLoading, isError: sessionError } =
+    useGetSessionQuery();
+  const companyId = Number(session?.data.companyId);
+  const hasCompanyId = Number.isInteger(companyId) && companyId > 0;
+  const {
+    data: employees = [],
+    isLoading: employeesLoading,
+    isError: employeesError,
+    error: employeesQueryError,
+  } = useGetReportingEmployeesForAppliedLeaveQuery(companyId, {
+    skip: !hasCompanyId,
+  });
+  const employeeLoadError = (() => {
+    if (sessionError) return "Unable to load your company session.";
+    if (!employeesError) {
+      return !sessionLoading && !hasCompanyId
+        ? "Company information is unavailable."
+        : undefined;
+    }
+
+    if (employeesQueryError && typeof employeesQueryError === "object") {
+      const queryError = employeesQueryError as {
+        message?: string;
+        error?: string;
+        data?: unknown;
+      };
+      if (queryError.message) return queryError.message;
+      if (queryError.error) return queryError.error;
+      if (queryError.data && typeof queryError.data === "object") {
+        const response = queryError.data as {
+          message?: unknown;
+          StatusMessage?: unknown;
+          Message?: unknown;
+        };
+        const message =
+          response.message ?? response.StatusMessage ?? response.Message;
+        if (typeof message === "string" && message.trim()) return message;
+      }
+    }
+    return "Unable to load employees. Please try again.";
+  })();
 
   const {
     leaveTypes,
@@ -268,7 +308,8 @@ export default function ApplyForEmployee() {
                   setSelectedEmployeeId(employeeId);
                   setActiveTab("apply");
                 }}
-                loading={employeesLoading}
+                loading={sessionLoading || (hasCompanyId && employeesLoading)}
+                error={employeeLoadError}
                 placeholder="Search employee..."
               />
             </CardContent>

@@ -83,8 +83,12 @@ export const useHelpdeskRequests = () => {
     action: "approve" | "reject",
     remarks?: string,
   ): Promise<boolean> => {
-    if (action === "reject" && !remarks?.trim()) {
-      toast.error("Please provide a reason for rejection.");
+    if (!remarks?.trim()) {
+      toast.error(
+        action === "approve"
+          ? "Please provide approval remarks."
+          : "Please provide a reason for rejection.",
+      );
       return false;
     }
 
@@ -100,7 +104,7 @@ export const useHelpdeskRequests = () => {
           action === "approve"
             ? ACTION_STATUS.APPROVED
             : ACTION_STATUS.REJECTED,
-        remarks: remarks?.trim() || undefined,
+        remarks: remarks.trim(),
       }).unwrap();
       if (action === "approve") {
         toast.success("Ticket approved.");

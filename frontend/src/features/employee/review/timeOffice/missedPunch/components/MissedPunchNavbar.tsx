@@ -9,6 +9,7 @@ import DatePicker, {
 } from "@/components/ui/datepicker";
 
 import TimeOfficeNavbar from "../../components/TimeOfficeNavbar";
+import DateField from "@/features/admin/Time & Office/TimeOffice/components/DateField";
 import { isWeekendIso } from "@/features/employee/leave/constants/leave.constants";
 import { useBlockedHolidays } from "@/features/employee/leave/hooks/useBlockedHolidays";
 
@@ -605,6 +606,35 @@ function MissedPunchDatePicker({
   );
 }
 
+interface MissedPunchAdminDatePickerProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  align?: "left" | "right";
+  onOpenStateChange?: (open: boolean) => void;
+}
+
+// Admin Missed Punch uses the same date field as the other Time & Office pages.
+function MissedPunchAdminDatePicker({
+  label,
+  value,
+  onChange,
+  align = "left",
+  onOpenStateChange,
+}: MissedPunchAdminDatePickerProps) {
+  return (
+    <DateField
+      label={label}
+      value={value}
+      onChange={onChange}
+      align={align}
+      onOpenChange={onOpenStateChange}
+      fixedCalendarPosition
+      className="flex w-[170px] shrink-0 items-center gap-2 whitespace-nowrap text-sm text-slate-700 sm:w-[200px] [&>div]:min-w-0 [&>div]:flex-1"
+    />
+  );
+}
+
 export default function MissedPunchNavbar({
   adminMode = false,
   filters,
@@ -645,7 +675,7 @@ export default function MissedPunchNavbar({
       <div className="mb-3 w-full min-w-0 overflow-visible rounded-xl border border-[#e0e5ec] bg-white px-3 py-2 shadow-sm">
         <div
           ref={scrollRef}
-          className={`punch-horizontal-scroll max-w-full pb-1 ${
+          className={`punch-horizontal-scroll w-full min-w-0 max-w-full overscroll-x-contain pb-1 [touch-action:pan-x] ${
             pickerOpen ? "overflow-visible" : "overflow-x-auto"
           }`}
         >
@@ -672,24 +702,20 @@ export default function MissedPunchNavbar({
               >
                 <ArrowLeft size={16} /> Back
               </NavLink>
-              <label className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm text-slate-700">
-                From
-                <MissedPunchDatePicker
-                  value={filters.fromDate}
-                  onChange={onFromDateChange}
-                  align="left"
-                  onOpenStateChange={handlePickerOpen}
-                />
-              </label>
-              <label className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm text-slate-700">
-                To
-                <MissedPunchDatePicker
-                  value={filters.toDate}
-                  onChange={onToDateChange}
-                  align="right"
-                  onOpenStateChange={handlePickerOpen}
-                />
-              </label>
+              <MissedPunchAdminDatePicker
+                label="From"
+                value={filters.fromDate}
+                onChange={onFromDateChange}
+                align="left"
+                onOpenStateChange={handlePickerOpen}
+              />
+              <MissedPunchAdminDatePicker
+                label="To"
+                value={filters.toDate}
+                onChange={onToDateChange}
+                align="right"
+                onOpenStateChange={handlePickerOpen}
+              />
               <Button type="button" variant="ghost" size="icon" title="Filter" aria-label="Filter" className="shrink-0 text-slate-400">
                 <Filter size={19} />
               </Button>

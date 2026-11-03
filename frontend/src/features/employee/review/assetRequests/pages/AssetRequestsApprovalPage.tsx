@@ -84,7 +84,7 @@ export default function AssetRequestsApprovalPage() {
 
       openReject(getRequestId(request));
       setRejectionRequest(request);
-      setRejectionRemarks(String(getFieldValue(request, "Remarks") ?? ""));
+      setRejectionRemarks("");
       return;
     }
 
@@ -232,14 +232,15 @@ export default function AssetRequestsApprovalPage() {
               htmlFor="asset-rejection-remarks"
               className="mt-5 block text-sm font-medium text-slate-800"
             >
-              Remarks
+              Remarks <span className="text-red-600">*</span>
             </label>
             <textarea
               id="asset-rejection-remarks"
+              required
               value={rejectionRemarks}
               onChange={(event) => setRejectionRemarks(event.target.value)}
               rows={5}
-              placeholder="Enter rejection remarks..."
+              placeholder="Enter your reason for rejecting..."
               className="mt-1 w-full resize-none rounded-md border border-slate-900/80 px-3 py-3 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
             />
 
@@ -254,7 +255,7 @@ export default function AssetRequestsApprovalPage() {
               <button
                 type="button"
                 onClick={() => void submitRejection()}
-                disabled={isRejecting}
+                disabled={isRejecting || !rejectionRemarks.trim()}
                 className="rounded-md bg-violet-400 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isRejecting ? "Submitting..." : "Submit"}

@@ -10,7 +10,7 @@ export default function MissedPunchTable({
   onAction,
 }: MissedPunchTableProps) {
   return (
-    <div className="punch-horizontal-scroll mt-3 w-full min-w-0 overflow-x-auto">
+    <div className="punch-horizontal-scroll mt-3 w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain [touch-action:pan-x]">
       <div className="w-full min-w-[760px] space-y-3">
         <div className="grid w-full grid-cols-[90px_300px_110px_minmax(50px,1fr)] items-center gap-3 rounded-lg bg-[#d8edf9] px-3 py-4 text-sm font-semibold text-[#172554]">
           <div>Employee ID</div>

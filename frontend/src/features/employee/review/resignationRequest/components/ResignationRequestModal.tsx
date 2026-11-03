@@ -49,10 +49,11 @@ const ResignationRequestModal = ({
 
               <textarea
                 id="remarks"
+                required
                 value={remarks}
                 onChange={(event) => setRemarks(event.target.value)}
                 rows={4}
-                placeholder="Enter remarks"
+                placeholder="Enter your reason for rejecting..."
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -80,7 +81,7 @@ const ResignationRequestModal = ({
           <button
             type="button"
             onClick={() => onConfirm(remarks)}
-            disabled={loading}
+            disabled={loading || (!isApprove && !remarks.trim())}
             className={`rounded-md px-5 py-2 text-sm font-medium text-white ${
               isApprove
                 ? "bg-blue-600 hover:bg-blue-700"

@@ -52,14 +52,15 @@ function RejectModal({
             htmlFor="reject-remarks"
             className="text-sm font-medium"
           >
-            Reason for rejection
+            Reason for rejection <span className="text-red-600">*</span>
           </label>
           <textarea
             id="reject-remarks"
+            required
             rows={4}
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
-            placeholder="Explain why this request is being rejected"
+            placeholder="Enter your reason for rejecting this request"
             className="w-full resize-none rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
           />
         </CardContent>
@@ -71,7 +72,7 @@ function RejectModal({
             Cancel
           </Button>
           <Button
-            disabled={isSubmitting}
+            disabled={isSubmitting || !remarks.trim()}
             className="bg-red-600 text-white hover:bg-red-700"
             onClick={() => onConfirm(remarks)}
           >
