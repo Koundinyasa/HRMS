@@ -1,3 +1,4 @@
+
 services:
   frontend:
     build:
@@ -5,7 +6,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
-    image: ${DOCKERHUB_USER}/kts-people360-frontend:latest
+    image: ssuresh333/kts-people360-frontend:latest
     container_name: people360-frontend
     ports:
       - "5173:80"
@@ -14,7 +15,10 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ${DOCKERHUB_USER}/kts-people360-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ssuresh333/kts-people360-backend:latest
     container_name: people360-backend
     ports:
       - "3001:3001"
@@ -27,7 +31,10 @@ services:
     restart: unless-stopped
 
   attendance:
-    image: ${DOCKERHUB_USER}/kts-people360-attendance:latest
+    build:
+      context: ./attendance-service
+      dockerfile: Dockerfile
+    image: ssuresh333/kts-people360-attendance:latest
     container_name: people360-attendance
     ports:
       - "5000:5000"
