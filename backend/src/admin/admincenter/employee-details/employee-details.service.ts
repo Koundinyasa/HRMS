@@ -380,7 +380,7 @@ async createEmployee(
       // =====================================================
       // CREATED BY FROM JWT
       // =====================================================
-      const createdBy = String(user?.employeeId || '');
+      const createdBy = String(user?.createdBy || '');
  
       if (!createdBy) {
         throw new BadRequestException(

@@ -7,6 +7,8 @@ import {
   Query,
   Get,
   Req,
+  Param,
+  ForbiddenException,
 } from '@nestjs/common';
 
 import { ReviewService } from './review.service';
@@ -174,5 +176,26 @@ export class ReviewController {
   @Get('attendance-statuses')
   async getAttendanceStatuses(@Req() req: any) {
     return this.reviewService.getAttendanceStatuses(req.user.companyId);
+  }
+
+  // ==========================================
+  // Employees With Reporting Authority
+  // ==========================================
+
+  // Used by Admin Center > Apply for Employee (HR) and by reporting managers,
+  // so it is allowed for the Applied Leave menu as well as Review.
+  @RequiresMenu(MenuCode.AppliedLeave, MenuCode.Review)
+  @Get('employees/:companyId')
+  async getEmployeesWithAuthority(
+    @Req() req: any,
+    @Param('companyId') companyId: string,
+  ) {
+    // The company always comes from the signed-in user's token; the value in
+    // the URL must match it, so nobody can read another company's employees.
+    const ownCompanyId = Number(req.user.companyId);
+    if (Number(companyId) !== ownCompanyId) {
+      throw new ForbiddenException('You cannot access another company.');
+    }
+    return this.reviewService.getEmployeesWithAuthority(ownCompanyId);
   }
 }

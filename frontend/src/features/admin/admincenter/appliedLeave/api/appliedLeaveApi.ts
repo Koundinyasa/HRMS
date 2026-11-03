@@ -12,23 +12,70 @@ export const appliedLeaveApi = baseApi.injectEndpoints({
 
   endpoints: (builder) => ({
     // =========================================
-    // Reporting Employees
+    // Employees with reporting authority for the authenticated company
     // =========================================
 
     getReportingEmployeesForAppliedLeave: builder.query<
       ReportingEmployee[],
-      void
+      number
     >({
-      query: () => ({
-        url: "/employee/leave/reporting-employees",
+      query: (companyId) => ({
+        url: `/review/employees/${companyId}`,
       }),
 
-      transformResponse: (response: ReportingEmployee[]) => {
-        if (!Array.isArray(response)) {
-          return [];
+      transformResponse: (response: unknown): ReportingEmployee[] => {
+        const root =
+          response && typeof response === "object"
+            ? (response as Record<string, unknown>)
+            : {};
+        const data =
+          root.data && typeof root.data === "object"
+            ? (root.data as Record<string, unknown>)
+            : {};
+
+        if (root.success === false) {
+          throw new Error(
+            String(root.message ?? "Unable to load employees with reporting authority."),
+          );
         }
 
-        return response.filter((employee) => Boolean(employee.EmployeeID));
+        const employees =
+          data.reportingAuthorities ??
+          data.ReportingAuthorities ??
+          root.reportingAuthorities ??
+          root.ReportingAuthorities;
+        if (!Array.isArray(employees)) return [];
+
+        return employees.filter(
+          (employee): employee is ReportingEmployee =>
+            Boolean(
+              employee &&
+                typeof employee === "object" &&
+                ((employee as ReportingEmployee).EmployeeID ??
+                  (employee as Record<string, unknown>).EmployeeId ??
+                  (employee as Record<string, unknown>).employeeId),
+            ),
+        ).map((employee) => {
+          const record = employee as ReportingEmployee & {
+            EmployeeId?: string;
+            employeeId?: string;
+            EmployeeName?: string;
+            employeeName?: string;
+            FullName?: string;
+            fullName?: string;
+          };
+          return {
+            ...record,
+            EmployeeID: String(
+              record.EmployeeID ?? record.EmployeeId ?? record.employeeId,
+            ),
+            EmployeeName:
+              record.EmployeeName ??
+              record.employeeName ??
+              record.FullName ??
+              record.fullName,
+          };
+        });
       },
 
       providesTags: ["Leave"],

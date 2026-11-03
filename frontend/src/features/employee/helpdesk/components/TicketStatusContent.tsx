@@ -12,6 +12,7 @@ export default function TicketStatusContent() {
   const {
     myTickets,
     ticketsLoading,
+    ticketsFetching,
     isError,
     refetchMyTickets,
   } = useHelpDesk();
@@ -54,7 +55,7 @@ export default function TicketStatusContent() {
           LOADING
       ================================================== */}
 
-      {ticketsLoading && (
+      {(ticketsLoading || (ticketsFetching && myTickets.length === 0)) && (
         <div className="flex min-h-[250px] items-center justify-center">
 
           <p className="text-sm text-slate-500">
@@ -95,6 +96,7 @@ export default function TicketStatusContent() {
       ================================================== */}
 
       {!ticketsLoading &&
+        !ticketsFetching &&
         !isError &&
         myTickets.length === 0 && (
           <EmptyState />

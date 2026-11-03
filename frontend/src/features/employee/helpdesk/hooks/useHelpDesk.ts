@@ -89,9 +89,12 @@ const isAssetNumberRequired =
   const {
     data: ticketResponse,
     isLoading: ticketsLoading,
+    isFetching: ticketsFetching,
     isError,
     refetch: refetchMyTickets,
-  } = useGetMyTicketsQuery();
+  } = useGetMyTicketsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const myTickets = ticketResponse ?? [];
 
@@ -333,6 +336,7 @@ const isAssetNumberRequired =
     categoriesLoading,
     subCategoriesLoading,
     ticketsLoading,
+    ticketsFetching,
     isSubmitting,
     isReplying,
     isReopening,

@@ -35,7 +35,7 @@ export default function AttendanceFilters({
   onExport,
 }: AttendanceFiltersProps) {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-[#dbe3ee] bg-white shadow-sm font-[Urbanist]">
+    <div className="punch-horizontal-scroll w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-[#dbe3ee] bg-white shadow-sm font-[Urbanist] [touch-action:pan-x]">
       <div className="flex w-full min-w-max items-stretch divide-x divide-[#dbe3ee] font-[Urbanist]">
         <AttendanceDropdown
           widthClass="w-64"

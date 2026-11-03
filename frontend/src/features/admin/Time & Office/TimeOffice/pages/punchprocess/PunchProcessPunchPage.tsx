@@ -98,12 +98,13 @@ export default function PunchProcessPunchPage() {
     <div className="min-h-screen w-full min-w-0 bg-[#F3F7FE] px-3 pb-3 pt-0 sm:px-5 sm:pb-5">
       {/* Punch process tabs and date actions */}
 <div className="w-full min-w-0 rounded-xl border border-emerald-400 bg-emerald-50 shadow-sm">
-  <header className="flex min-w-0 flex-wrap items-center gap-3 px-3 py-2">
+<div className="punch-horizontal-scroll w-full min-w-0 overflow-x-auto overscroll-x-contain [touch-action:pan-x]">
+  <header className="flex w-max min-w-full flex-nowrap items-center gap-3 px-3 py-2">
 
     {/* Navigation tabs */}
     <nav
       aria-label="Punch process"
-      className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto"
+      className="flex shrink-0 items-center gap-2 whitespace-nowrap"
     >
       {PUNCH_PROCESS_TABS.map((tab) => (
         <NavLink
@@ -128,6 +129,7 @@ export default function PunchProcessPunchPage() {
         label="Date"
         value={date}
         onChange={setDate}
+        fixedCalendarPosition
         className="flex h-9 w-[190px] shrink-0 items-center gap-2 whitespace-nowrap text-sm text-slate-700 [&>div]:w-[145px] [&_input]:h-9 [&_input]:rounded-lg [&_input]:border-slate-200 [&_input]:px-2 [&_input]:text-sm [&_input]:text-slate-700"
       />
 
@@ -151,6 +153,7 @@ export default function PunchProcessPunchPage() {
     </div>
 
   </header>
+</div>
 </div>
 
       {/* Employee list and punch content */}
@@ -228,7 +231,7 @@ export default function PunchProcessPunchPage() {
         </aside>
 
         <section className="min-h-[420px] min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:min-h-[560px]">
-          <div className="overflow-x-auto">
+          <div className="punch-horizontal-scroll overflow-x-auto overscroll-x-contain [touch-action:pan-x]">
             <table className="w-full min-w-[700px] text-sm">
               <thead className="bg-[#EAF1FE]">
                 <tr className="text-left">
