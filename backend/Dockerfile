@@ -1,4 +1,7 @@
+
+# ==========================================
 # Build stage
+# ==========================================
 FROM node:24-bookworm-slim AS build
 
 WORKDIR /app
@@ -12,12 +15,20 @@ COPY . .
 RUN npm run build
 
 
+# ==========================================
 # Production stage
+# ==========================================
 FROM node:24-bookworm-slim AS production
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    TZ=Asia/Kolkata
 
 WORKDIR /app
+
+# Install timezone data
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 

@@ -1,4 +1,3 @@
-
 # ==========================================
 # Builder stage
 # ==========================================
@@ -40,12 +39,14 @@ RUN rm -rf \
 FROM python:3.11-slim-bookworm AS production
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    TZ=Asia/Kolkata
 
 WORKDIR /app
 
-# Install runtime dependencies and ODBC prerequisites
+# Install timezone data, runtime dependencies and ODBC prerequisites
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
     ca-certificates \
     curl \
     gnupg \
@@ -57,7 +58,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     libxcb1 \
     libgomp1 \
-    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Microsoft ODBC Driver 18
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
        | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
     && curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list \
        > /etc/apt/sources.list.d/mssql-release.list \
