@@ -138,9 +138,10 @@ export default function PunchProcessTaInsightsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      <div className={`punch-horizontal-scroll min-w-0 max-w-full overscroll-x-contain [touch-action:pan-x] xl:overflow-x-visible ${isDatePickerOpen ? "overflow-visible" : "overflow-x-auto"}`}>
-        <div className="flex w-max min-w-full flex-nowrap items-center justify-between gap-4 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 xl:w-full xl:gap-2">
-          <nav aria-label="Time Office navigation" className="flex shrink-0 items-center gap-2 xl:gap-1">
+      <div className="w-full min-w-0 max-w-full rounded-xl border border-emerald-500 bg-emerald-50">
+      <div className={`punch-horizontal-scroll w-full min-w-0 overscroll-x-contain [touch-action:pan-x] xl:overflow-visible ${isDatePickerOpen ? "overflow-visible" : "overflow-x-auto overflow-y-hidden"}`}>
+        <div className="flex w-max min-w-full flex-nowrap items-center justify-between gap-3 px-3 py-2 xl:w-full xl:gap-2">
+          <nav aria-label="Time Office navigation" className="flex shrink-0 items-center gap-2 whitespace-nowrap">
             {PUNCH_PROCESS_TABS.map((tab) => (
               <NavLink
                 key={tab.path}
@@ -156,12 +157,13 @@ export default function PunchProcessTaInsightsPage() {
             ))}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3 xl:ml-auto xl:flex-nowrap xl:gap-2">
+          <div className="flex shrink-0 items-center gap-2 xl:ml-auto">
             <DateField
               label="From"
               value={from}
               onChange={setFrom}
               onOpenChange={setIsDatePickerOpen}
+              fixedCalendarPosition
               className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm text-slate-700 [&>div]:w-[140px] sm:[&>div]:w-[150px] [&>div>input]:h-9 [&>div>input]:rounded-lg [&>div>input]:px-3 [&>div>input]:pr-9 [&>div>button]:h-8 [&>div>button]:w-8"
             />
             <DateField
@@ -170,6 +172,7 @@ export default function PunchProcessTaInsightsPage() {
               onChange={setTo}
               onOpenChange={setIsDatePickerOpen}
               align="right"
+              fixedCalendarPosition
               className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm text-slate-700 [&>div]:w-[140px] sm:[&>div]:w-[150px] [&>div>input]:h-9 [&>div>input]:rounded-lg [&>div>input]:px-3 [&>div>input]:pr-9 [&>div>button]:h-8 [&>div>button]:w-8"
             />
             <Button type="button" variant="ghost" aria-label="Download TA Insights Excel" title="Download Excel" onClick={downloadExcel} className="h-auto w-auto shrink-0 p-0 text-emerald-600 hover:text-emerald-700">
@@ -179,6 +182,7 @@ export default function PunchProcessTaInsightsPage() {
             <Button type="button" variant="ghost" aria-label="History" className="h-auto w-auto shrink-0 p-0 text-slate-400 hover:text-slate-600"><ClockFading size={21} /></Button>
           </div>
         </div>
+      </div>
       </div>
 
       <PunchFilterBar

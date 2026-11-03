@@ -19,7 +19,10 @@ import type { ProcessDrilldownTile } from "../types/timeoffice.types";
 
 /** One query hook per drill-down tile, gated by `skip` so only the open tile fetches. */
 const useDrilldownQuery = (tile: ProcessDrilldownTile | null, range: { fromDate: string; tillDate: string }) => {
-  const missedPunch = useGetMissedPunchQuery(range, { skip: tile !== "missedPunch" });
+  const missedPunch = useGetMissedPunchQuery(range, {
+    skip: tile !== "missedPunch",
+    refetchOnMountOrArgChange: true,
+  });
   const shiftUnassigned = useGetShiftUnassignedQuery(range, { skip: tile !== "shiftUnassigned" });
   const yetToProcess = useGetYetToProcessQuery(range, { skip: tile !== "yetToProcess" });
   const processed = useGetProcessedQuery(range, { skip: tile !== "processed" });
@@ -85,7 +88,9 @@ export const useProcessTab = () => {
     dateTo,
     setDateTo,
     summary,
-    isSummaryLoading: summaryQuery.isFetching,
+    // Keep date changes from inserting/removing a loading line and shifting
+    // the Process page while the summary refetches in the background.
+    isSummaryLoading: summaryQuery.isLoading,
     isSummaryError: summaryQuery.isError,
     history,
     isHistoryError: historyQuery.isError,

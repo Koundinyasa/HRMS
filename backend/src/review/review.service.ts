@@ -223,7 +223,7 @@ export class ReviewService {
       }
       const pool =
         await this.databaseService.connect();
-   
+
       const result = await pool
         .request()
         .input(
@@ -234,7 +234,7 @@ export class ReviewService {
         .execute(
           'USP_GetReportingManagerEmployeeList',
         );
-   
+
       return result.recordset;
     } catch (error) {
       console.error('Error in getReportingManagerEmployeeList:', error);
@@ -267,20 +267,20 @@ export class ReviewService {
   async getAttendanceStatuses(companyId: number) {
     try {
       const pool = await this.databaseService.connect();
- 
+
       const result = await pool
         .request()
         .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetCompanyDropdownData');
- 
+
       const sets = result.recordsets as Record<string, any>[][];
- 
+
       if (sets.length !== 10) {
         throw new Error(
           `USP_GetCompanyDropdownData returned ${sets.length} result sets, expected 10.`,
         );
       }
- 
+
       return {
         success: true,
         message: 'Attendance statuses retrieved successfully.',
@@ -288,9 +288,63 @@ export class ReviewService {
       };
     } catch (error) {
       console.error('Attendance statuses error:', error);
- 
+
       throw new InternalServerErrorException(
         'Failed to retrieve attendance statuses.',
+      );
+    }
+
+
+  }
+  async getEmployeesWithAuthority(
+    companyId: number,
+  ) {
+    try {
+      const pool =
+        await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input(
+          'CompanyId',
+          companyId,
+        )
+        .execute(
+          'USP_GetEmployeesWithAuthority',
+        );
+
+      const firstRecordset =
+        result.recordsets[0];
+
+      if (
+        firstRecordset &&
+        firstRecordset.length > 0 &&
+        firstRecordset[0].StatusCode
+      ) {
+        return {
+          success: false,
+          statusCode:
+            firstRecordset[0].StatusCode,
+          message:
+            firstRecordset[0].StatusMessage,
+        };
+      }
+      return {
+        success: true,
+        data: {
+          reportingAuthorities:
+            result.recordsets[0] ?? [],
+
+        },
+      };
+    } catch (error) {
+      console.error(
+        'Error while fetching employees with authority:',
+        error,
+      );
+
+      throw new InternalServerErrorException(
+        'Unable to fetch employees with authority.',
       );
     }
   }

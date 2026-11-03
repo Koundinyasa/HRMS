@@ -260,6 +260,14 @@ export const useRequisition = () => {
       (item) => selectedIds.includes(item.id)
     );
 
+    if (
+      action === "rejected" &&
+      selectedRequests.some((item) => !rejectionRemarks[item.id]?.trim())
+    ) {
+      setActionError("Please enter your reason for rejecting the selected leave.");
+      return [];
+    }
+
     const invalidRequest = selectedRequests.find(
       (item) => item.approvalId <= 0
     );
@@ -278,11 +286,7 @@ export const useRequisition = () => {
         const payload = {
           approvalId: item.approvalId,
           ...(action === "rejected"
-            ? {
-                remarks:
-                  rejectionRemarks[item.id]?.trim() ||
-                  item.reason,
-              }
+            ? { remarks: rejectionRemarks[item.id].trim() }
             : {}),
         };
 
@@ -295,11 +299,11 @@ export const useRequisition = () => {
 
       setSelectedIds([]);
 
-      const message =
+      toast.success(
         action === "approved"
-          ? "Leave request approved ."
-          : "Leave request rejected.";
-      (action === "approved" ? toast.success : toast.error)(message);
+          ? "Leave request approved."
+          : "Leave request rejected.",
+      );
 
       try {
         await refetch().unwrap();

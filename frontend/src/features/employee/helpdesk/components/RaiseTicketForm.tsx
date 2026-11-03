@@ -26,7 +26,6 @@ import {
   Tag,
   LayoutGrid,
   Hash,
-  MapPin,
   Phone,
   MessageSquare,
   AlignLeft,
@@ -46,7 +45,6 @@ export default function RaiseTicketForm() {
 
     assetNumber,
     isAssetNumberRequired,
-    location,
     contactNo,
     subject,
     description,
@@ -274,24 +272,9 @@ export default function RaiseTicketForm() {
           </div>
         </div>
 
-        {/* Location / Contact */}
+        {/* Contact */}
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5 text-sm">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-              Location
-              <span className="ml-1 text-red-600">*</span>
-            </Label>
-
-            <Input
-              className="h-9 border-black focus-visible:!ring-0 focus-visible:!border-black"
-              value={location}
-              onChange={(event) => setLocation(event.target.value)}
-              placeholder="Enter location"
-            />
-          </div>
-
+        <div >
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-sm">
               <Phone className="h-3.5 w-3.5 text-muted-foreground" />

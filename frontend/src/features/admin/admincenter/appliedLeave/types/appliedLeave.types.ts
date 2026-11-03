@@ -73,6 +73,7 @@ export interface ApplyForEmployeeSelectorProps {
   value: string;
   onChange: (employeeId: string) => void;
   loading?: boolean;
+  error?: string;
   placeholder?: string;
 }
 

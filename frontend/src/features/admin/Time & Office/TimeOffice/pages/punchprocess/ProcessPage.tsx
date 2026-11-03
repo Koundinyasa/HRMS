@@ -64,16 +64,16 @@ export default function ProcessPage() {
       {/* Top navigation */}
       <nav
         aria-label="Time Office navigation"
-        className="punch-horizontal-scroll w-full min-w-0 overflow-x-auto pb-1"
+        className="w-full min-w-0 max-w-full overflow-x-auto rounded-xl border border-emerald-500 bg-[#effbf6]"
       >
-        <div className="flex w-max min-w-full items-center justify-between gap-4 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2">
-          <div className="flex items-center gap-2">
+        <div className="flex w-max min-w-full flex-row flex-nowrap items-center gap-3 whitespace-nowrap px-3 py-2">
+          <div className="flex shrink-0 flex-row flex-nowrap items-center gap-2 whitespace-nowrap">
             {PUNCH_PROCESS_TABS.map((tab) => (
               <NavLink
                 key={tab.path}
                 to={`${basePath}/${tab.path}`}
                 className={({ isActive }) =>
-                  `rounded-lg border bg-white px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                  `flex h-[38px] shrink-0 items-center whitespace-nowrap rounded-lg border bg-white px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-500 ${
                     isActive
                       ? "border-emerald-500 text-emerald-600"
                       : "border-slate-200 text-slate-500 hover:border-slate-300"
@@ -84,7 +84,7 @@ export default function ProcessPage() {
               </NavLink>
             ))}
           </div>
-          <div className="ml-auto flex shrink-0 items-center gap-3">
+          <div className="ml-auto flex shrink-0 flex-row flex-nowrap items-center gap-2 whitespace-nowrap">
             {isReprocessView && (
               <>
               <Button type="button" variant="outline" onClick={process.closeProcessTile} className="flex h-10 items-center gap-2 rounded-lg border-slate-300 bg-white px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50">
@@ -100,9 +100,9 @@ export default function ProcessPage() {
               variant="ghost"
               aria-label="Process history"
               title="Process history"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-white hover:text-slate-800"
             >
-              <ClockFading size={20} />
+              <ClockFading size={32} />
             </Button>
           </div>
         </div>
@@ -129,8 +129,8 @@ export default function ProcessPage() {
             Time &amp; Attendance Process
           </h2>
 
-          <div className="w-full min-w-0 xl:w-auto">
-            <div className="flex min-w-0 flex-wrap items-center gap-3 py-1">
+          <div className="punch-horizontal-scroll w-full min-w-0 overflow-x-auto overscroll-x-contain xl:w-auto">
+            <div className="flex w-max min-w-full flex-nowrap items-center gap-2 py-0">
             <DateField
               label="From"
               value={process.dateFrom}
@@ -191,9 +191,9 @@ export default function ProcessPage() {
               variant="ghost"
               title="Filter"
               aria-label="Filter"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-800"
             >
-              <Filter size={18} />
+              <Filter size={32} />
             </Button>
 
             {/* Existing Process action, hidden per request. */}
@@ -221,7 +221,11 @@ export default function ProcessPage() {
                 }
 
                 if (tile === "missedPunch") {
-                  navigate(`${regularizationBasePath}/missed-punch`);
+                  const dateRange = new URLSearchParams({
+                    fromDate: process.dateFrom,
+                    toDate: process.dateTo,
+                  });
+                  navigate(`${regularizationBasePath}/missed-punch?${dateRange}`);
                   return;
                 }
 
