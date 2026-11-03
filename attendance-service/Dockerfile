@@ -18,12 +18,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 COPY face_recognition-1.3.0-py2.py3-none-any.whl .
 
+# Install application dependencies and patched packaging tools
 RUN grep -v -i '^msvc-runtime==' requirements.txt > requirements-linux.txt \
-    && python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
     && python -m pip install --no-cache-dir --prefix=/install -r requirements-linux.txt \
-    && python -m pip install --no-cache-dir --no-deps --prefix=/install face_recognition-1.3.0-py2.py3-none-any.whl
-    
-
+    && python -m pip install --no-cache-dir --no-deps --prefix=/install face_recognition-1.3.0-py2.py3-none-any.whl \
+    && rm -rf \
+        /install/lib/python3.11/site-packages/setuptools \
+        /install/lib/python3.11/site-packages/setuptools-*.dist-info \
+        /install/lib/python3.11/site-packages/wheel \
+        /install/lib/python3.11/site-packages/wheel-*.dist-info \
+    && python -m pip install --no-cache-dir --prefix=/install --no-deps setuptools==82.0.0 wheel==0.46.3
 
 # ==========================================
 # Production stage
@@ -36,7 +40,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Runtime system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     curl \
     gnupg \
     unixodbc \
@@ -55,15 +59,20 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application dependencies from builder
+# Remove vulnerable packaging tools inherited from the base image
+RUN rm -rf \
+    /usr/local/lib/python3.11/site-packages/setuptools \
+    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/wheel \
+    /usr/local/lib/python3.11/site-packages/wheel-*.dist-info
+
+# Copy patched application dependencies from builder
 COPY --from=builder /install/ /usr/local/
 
-# Remove pip and wheel, but retain setuptools and pkg_resources
+# Remove pip but retain patched setuptools and wheel
 RUN rm -rf \
     /usr/local/lib/python3.11/site-packages/pip \
     /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
-    /usr/local/lib/python3.11/site-packages/wheel \
-    /usr/local/lib/python3.11/site-packages/wheel-*.dist-info \
     /usr/local/bin/pip \
     /usr/local/bin/pip3 \
     /usr/local/bin/pip3.11 \
