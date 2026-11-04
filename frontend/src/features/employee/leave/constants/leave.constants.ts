@@ -1,16 +1,16 @@
 
 
- 
- 
- 
+  
+  
+  
 export const MAX_REASON_LENGTH = 500;
- 
- 
+  
+  
 
- 
- 
+  
+  
 export const BACKDATE_ALLOWED_DAYS = 7;
- 
+  
  export const MIN_LEAVE_DATE_ISO = "2026-01-01";
 export const toIsoDate = (date: Date) => {
   const year = date.getFullYear();
@@ -86,6 +86,33 @@ export const countWeekdays = (fromIso: string, toIso: string) => {
     cursor.setDate(cursor.getDate() + 1);
   }
  
+  return count;
+};
+
+// Counts calendar days in the inclusive range, excluding dates in holidayIsos.
+// Weekends are included; the schema validates the selected start and end dates separately.
+export const countDaysExcludingHolidays = (
+  fromIso: string,
+  toIso: string,
+  holidayIsos: Set<string>,
+) => {
+  if (!fromIso || !toIso) return 0;
+
+  const start = new Date(`${fromIso}T00:00:00`);
+  const end = new Date(`${toIso}T00:00:00`);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+    return 0;
+  }
+
+  let count = 0;
+  const cursor = new Date(start);
+
+  while (cursor <= end) {
+    if (!holidayIsos.has(toIsoDate(cursor))) count++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
   return count;
 };
  
