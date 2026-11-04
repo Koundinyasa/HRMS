@@ -7,7 +7,6 @@ export const MAX_REASON_LENGTH = 500;
  
  
 
- export const MAX_REASON_LENGTH = 500;
  
  
 export const BACKDATE_ALLOWED_DAYS = 7;
