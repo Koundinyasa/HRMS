@@ -1,33 +1,51 @@
-FROM node:24-bookworm-slim
+# ==========================================
+# Build stage
+# ==========================================
+FROM node:24-trixie-slim AS build
 
 WORKDIR /app
 
-ENV TZ=Asia/Kolkata
+COPY package*.json ./
 
-# Install timezone data
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata \
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+
+# ==========================================
+# Production stage
+# ==========================================
+FROM node:24-trixie-slim AS production
+
+ENV NODE_ENV=production \
+    TZ=Asia/Kolkata
+
+WORKDIR /app
+
+# Update system packages and install timezone data
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends tzdata \
     && ln -snf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime \
     && echo Asia/Kolkata > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
+# Install production dependencies only
 COPY package*.json ./
 
-# Install all dependencies, including NestJS CLI
-RUN npm ci --include=dev
+RUN npm ci --omit=dev \
+    && npm cache clean --force \
+    && rm -rf /usr/local/lib/node_modules/npm \
+              /usr/local/bin/npm \
+              /usr/local/bin/npx
 
-# Copy application source
-COPY . .
+# Copy compiled application
+COPY --from=build /app/dist ./dist
 
-# Build NestJS application
-RUN npm run build
-
-# Remove development dependencies
-RUN npm prune --omit=dev
-
-# Set production environment
-ENV NODE_ENV=production
+# Create uploads directory
+RUN mkdir -p uploads
 
 EXPOSE 3001
 

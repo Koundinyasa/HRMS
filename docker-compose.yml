@@ -30,7 +30,6 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
-      FRONTEND_URL: http://localhost:5173
       SWAGGER_ENABLED: "true"
       PYTHON_ATTENDANCE_URL: http://attendance:5000
     depends_on:
