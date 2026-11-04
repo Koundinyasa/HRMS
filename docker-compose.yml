@@ -1,5 +1,4 @@
 services:
-
   frontend:
     build:
       context: ./frontend
@@ -8,7 +7,7 @@ services:
         VITE_API_URL: /api
     container_name: kts-people360-frontend
     ports:
-      - "8080:80"
+      - "5174:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -25,6 +24,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
+      FRONTEND_URL: http://localhost:5174
+      SWAGGER_ENABLED: "true"
     env_file:
       - path: ./backend/.env
         required: false
@@ -40,7 +41,10 @@ services:
       dockerfile: Dockerfile
     container_name: kts-attendance-service
     ports:
-      - "8000:8000"
+      - "5000:5000"
+    env_file:
+      - path: ./attendance-service/.env
+        required: false
     restart: unless-stopped
     networks:
       - kts-network

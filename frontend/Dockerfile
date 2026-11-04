@@ -10,6 +10,8 @@ RUN npm ci
 COPY . .
 
 ARG VITE_API_URL=/api
+ENV TZ=Asia/Kolkata
+RUN apk add --no-cache tzdata
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
