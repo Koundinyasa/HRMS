@@ -39,7 +39,7 @@ RUN grep -v -E "^(msvc-runtime|face-recognition)==" requirements.txt > requireme
     && pip install --no-cache-dir --default-timeout=300 --retries=10 -r requirements-linux.txt \
     && pip install --no-cache-dir --default-timeout=300 --retries=10 --no-deps "face-recognition==1.3.0" \
     && python -m pip install --no-cache-dir \
-       "setuptools==80.9.0" \
+       "setuptools==80.10.2" \
        "wheel>=0.46.2"
 
 # Verify timezone, face-recognition dependencies and SQL Server ODBC driver
@@ -49,6 +49,9 @@ RUN python -c "import time, datetime; print('Timezone:', time.tzname); print('Lo
 
 # Copy application
 COPY . .
+
+# Remove local Windows virtual environments copied into the image
+RUN rm -rf /app/venv /app/.venv
 
 EXPOSE 5000
 

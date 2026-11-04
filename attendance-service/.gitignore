@@ -1,12 +1,14 @@
-# Node
-node_modules/
-npm-debug.log*
-package-lock.json
-
-
-# Python
+@"
+venv/
+.venv/
+**/venv/
+**/.venv/
 __pycache__/
 *.py[cod]
-.venv/
-venv/
 .env
+.env.*
+.git/
+.pytest_cache/
+.mypy_cache/
+*.log
+"@ | Out-File -LiteralPath .\.dockerignore -Encoding ascii -Force
