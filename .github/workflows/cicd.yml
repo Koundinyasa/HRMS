@@ -1,4 +1,4 @@
-name: KTS-People360 Combined CI/CD
+name: KTS-People360 Combined CI/CD pipeline 
 
 on:
   push:
