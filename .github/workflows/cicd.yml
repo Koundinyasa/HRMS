@@ -1,4 +1,4 @@
-name: KTS-People360 Combined CI/CD
+name: KTS-People360 Combined CI/CD Pipeline
 
 on:
   push:
@@ -122,6 +122,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      # Temporary Trivy Docker test
+      - name: Test Trivy Docker Image
+        run: |
+          docker pull aquasec/trivy:0.70.0
+          docker run --rm aquasec/trivy:0.70.0 --version
 
       - name: Run Trivy Backend Scan
         uses: aquasecurity/trivy-action@v0.36.0
