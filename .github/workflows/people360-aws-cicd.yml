@@ -1,5 +1,5 @@
 
-name: People360 CI/CD pipeline
+name: People360 CI/CD 
 
 on:
   push:
