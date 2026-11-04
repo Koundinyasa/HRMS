@@ -216,13 +216,13 @@ jobs:
 
       - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@v0.36.0
-        continue-on-error: true
         with:
           scan-type: 'fs'
           scan-ref: 'attendance-service'
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
+        continue-on-error: true
 
 
 
