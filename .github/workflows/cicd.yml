@@ -114,7 +114,7 @@ jobs:
   # JOB 4: BACKEND FILESYSTEM SECURITY SCAN
   # ==========================================
 
-  security-scan-backend:
+    security-scan-backend:
     name: Backend Security Scan
     runs-on: ubuntu-latest
     needs: test-backend
@@ -122,6 +122,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      # Temporary diagnostic test
       - name: Test Trivy Docker Image
         run: |
           docker pull aquasec/trivy:0.70.0
