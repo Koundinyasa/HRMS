@@ -122,6 +122,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      - name: Check Trivy Download Connectivity
+        run: |
+          echo "Checking Trivy download server"
+          curl -IL --retry 3 https://get.trivy.dev/trivy
+
+          echo "Checking GitHub release"
+          curl -IL --retry 3 https://github.com/aquasecurity/trivy/releases/tag/v0.70.0
 
       - name: Run Trivy Backend Scan
         uses: aquasecurity/trivy-action@v0.36.0
