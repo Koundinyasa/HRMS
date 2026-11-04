@@ -50,7 +50,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:3001/api
+        VITE_API_URL: /api
     image: bgayathridev/kts-people360-frontend:latest
     ports:
       - "5173:80"
@@ -67,7 +67,6 @@ services:
     env_file:
       - path: ./backend/.env
         format: raw
-    
     environment:
       PYTHON_ATTENDANCE_URL: http://attendance-service:5000
     ports:
@@ -89,9 +88,5 @@ services:
       DB_DRIVER: "ODBC Driver 18 for SQL Server"
       TZ: "Asia/Kolkata"
     ports:
-      - "5000:5000"  
-    # REMOVED the published port (5000:5000). The attendance service has no
-    # login, so it must not be reachable from outside. The backend reaches it
-    # over the Compose network at http://attendance-service:5000.
-    # To test it from this PC only, use:  - "127.0.0.1:5000:5000"
+      - "5000:5000"
     restart: unless-stopped
