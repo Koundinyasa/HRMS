@@ -1,3 +1,4 @@
+
 # ==========================================
 # Build stage
 # ==========================================
@@ -21,14 +22,15 @@ FROM node:24-bookworm-slim AS production
 
 ENV NODE_ENV=production \
     TZ=Asia/Kolkata
-
+    
 WORKDIR /app
 
 # Install timezone data
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tzdata \
     && rm -rf /var/lib/apt/lists/*
 
+# Install production dependencies only
 COPY package*.json ./
 
 RUN npm ci --omit=dev \
@@ -37,8 +39,10 @@ RUN npm ci --omit=dev \
               /usr/local/bin/npm \
               /usr/local/bin/npx
 
+# Copy compiled application
 COPY --from=build /app/dist ./dist
 
+# Create uploads directory
 RUN mkdir -p uploads
 
 EXPOSE 3001
