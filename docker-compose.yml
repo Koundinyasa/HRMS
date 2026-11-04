@@ -5,9 +5,10 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
-    container_name: kts-people360-frontend
+    image: teluguvenkata33/kts-people360-frontend
+    container_name: people360-frontend
     ports:
-      - "5174:80"
+      - "5173:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -18,32 +19,37 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kts-people360-backend
+    image: teluguvenkata33/kts-people360-backend
+    container_name: people360-backend
     ports:
       - "3001:3001"
-    environment:
-      NODE_ENV: production
-      PORT: 3001
-      FRONTEND_URL: http://localhost:5174
-      SWAGGER_ENABLED: "true"
     env_file:
       - path: ./backend/.env
+        format: raw
         required: false
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      FRONTEND_URL: http://localhost:5173
+      SWAGGER_ENABLED: "true"
+      PYTHON_ATTENDANCE_URL: http://attendance:5000
     depends_on:
-      - attendance-service
+      - attendance
     restart: unless-stopped
     networks:
       - kts-network
 
-  attendance-service:
+  attendance:
     build:
       context: ./attendance-service
       dockerfile: Dockerfile
-    container_name: kts-attendance-service
+    image: teluguvenkata33/kts-people360-attendance
+    container_name: people360-attendance
     ports:
       - "5000:5000"
     env_file:
       - path: ./attendance-service/.env
+        format: raw
         required: false
     restart: unless-stopped
     networks:
