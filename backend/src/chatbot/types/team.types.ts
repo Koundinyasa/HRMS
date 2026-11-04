@@ -25,4 +25,5 @@ export interface TeamDraft {
   action: 'view' | 'download' | '';
   format: 'pdf' | 'excel' | '';
   members: TeamMember[]; // populated when 'view' fetches data, reused by the preview widget
+  viewWidgetEmitted?: Boolean;
 }

@@ -5,7 +5,7 @@ import { LeaveService } from './leave.service';
 import { ActionButton, ResponseWidget } from '../types';
 import { MENUS } from '../constants/menu.constants';
 import { formatLeaveRange, formatDayCount } from '../utils/date.util';
-
+ 
 @Injectable()
 export class ResponseService {
   constructor(
@@ -13,7 +13,7 @@ export class ResponseService {
     private readonly draftService: DraftService,
     private readonly leaveService: LeaveService,
   ) {}
-
+ 
   // AFTER:
   async buildResponseExtras(
     employeeId: string,
@@ -32,19 +32,19 @@ export class ResponseService {
         return { actions, widget: null };
       }
     }
-
+ 
     // Employee export download
     const employeeExport =
       this.draftService.pendingSuggestedActions.get(employeeId);
-
+ 
     if (
       employeeExport?.length === 1 &&
       employeeExport[0].send.startsWith('employee-export:')
     ) {
       const format = employeeExport[0].send.split(':')[1];
-
+ 
       this.draftService.pendingSuggestedActions.delete(employeeId);
-
+ 
       if (format === 'excel') {
         return {
           actions: [],
@@ -55,7 +55,7 @@ export class ResponseService {
           },
         };
       }
-
+ 
       if (format === 'pdf') {
         return {
           actions: [],
@@ -67,7 +67,7 @@ export class ResponseService {
         };
       }
     }
-
+ 
     const listPreview = this.draftService.pendingListPreview.get(employeeId);
     if (listPreview) {
       this.draftService.pendingListPreview.delete(employeeId);
@@ -83,7 +83,7 @@ export class ResponseService {
         },
       };
     }
-
+ 
     const dataCard = this.draftService.pendingDataCard.get(employeeId);
     if (dataCard) {
       this.draftService.pendingDataCard.delete(employeeId);
@@ -100,7 +100,7 @@ export class ResponseService {
         },
       };
     }
-
+ 
     const notice = this.draftService.pendingNotice.get(employeeId);
     if (notice) {
       this.draftService.pendingNotice.delete(employeeId);
@@ -112,7 +112,7 @@ export class ResponseService {
         widget: { type: 'notice', noticeTone: notice.tone },
       };
     }
-
+ 
     const steps = this.draftService.pendingSteps.get(employeeId);
     if (steps) {
       this.draftService.pendingSteps.delete(employeeId);
@@ -129,7 +129,7 @@ export class ResponseService {
         },
       };
     }
-
+ 
     if (this.draftService.cancelTarget.has(employeeId)) {
       return {
         actions: [
@@ -139,7 +139,7 @@ export class ResponseService {
         widget: null,
       };
     }
-
+ 
     const teamDraft = this.draftService.getDraft(
       this.draftService.teamDrafts,
       employeeId,
@@ -164,17 +164,26 @@ export class ResponseService {
         };
       }
       if (teamDraft.step === 'viewed') {
-        return {
-          actions: [
-            { label: 'Download', send: 'download' },
-            { label: 'Cancel', send: 'cancel team' },
-          ],
-          widget: {
-            type: 'teamPreview',
-            teamName: teamDraft.teamName,
-            members: teamDraft.members,
-          },
-        };
+        if (!teamDraft.viewWidgetEmitted) {
+          teamDraft.viewWidgetEmitted = true;
+          this.draftService.setDraft(
+            this.draftService.teamDrafts,
+            employeeId,
+            teamDraft,
+          );
+          return {
+            actions: [
+              { label: 'Download', send: 'download' },
+              { label: 'Cancel', send: 'cancel team' },
+            ],
+            widget: {
+              type: 'teamPreview',
+              teamName: teamDraft.teamName,
+              members: teamDraft.members,
+            },
+          };
+        }
+        return { actions: [], widget: null };
       }
       if (teamDraft.step === 'awaiting_format') {
         return {
@@ -198,7 +207,7 @@ export class ResponseService {
         };
       }
     }
-
+ 
     const employeeDirectoryDraft = this.draftService.getDraft(
       this.draftService.employeeDirectoryDrafts,
       employeeId,
@@ -214,21 +223,30 @@ export class ResponseService {
         };
       }
       if (employeeDirectoryDraft.step === 'viewed') {
-        return {
-          actions: [
-            { label: 'Download', send: 'download employees' },
-            { label: 'Cancel', send: 'employees cancel' },
-          ],
-          widget: {
-            type: 'listPreview',
-            listTitle: `All Employees (${employeeDirectoryDraft.directory.length} active)`,
-            listRows: employeeDirectoryDraft.directory.map((e) => ({
-              primary: e.name,
-              meta: e.designation || undefined,
-              secondary: e.id,
-            })),
-          },
-        };
+        if (!employeeDirectoryDraft.viewWidgetEmitted) {
+          employeeDirectoryDraft.viewWidgetEmitted = true;
+          this.draftService.setDraft(
+            this.draftService.employeeDirectoryDrafts,
+            employeeId,
+            employeeDirectoryDraft,
+          );
+          return {
+            actions: [
+              { label: 'Download', send: 'download employees' },
+              { label: 'Cancel', send: 'employees cancel' },
+            ],
+            widget: {
+              type: 'listPreview',
+              listTitle: `All Employees (${employeeDirectoryDraft.directory.length} active)`,
+              listRows: employeeDirectoryDraft.directory.map((e) => ({
+                primary: e.name,
+                meta: e.designation || undefined,
+                secondary: e.id,
+              })),
+            },
+          };
+        }
+        return { actions: [], widget: null };
       }
       if (employeeDirectoryDraft.step === 'awaiting_format') {
         return {
@@ -259,7 +277,7 @@ export class ResponseService {
         };
       }
     }
-
+ 
     const draft = this.draftService.getDraft(
       this.draftService.leaveDrafts,
       employeeId,
@@ -270,7 +288,7 @@ export class ResponseService {
       this.draftService.pendingSuggestedActions.delete(employeeId);
       return { actions: suggested, widget: null };
     }
-
+ 
     if (draft.step === 'awaiting_start') {
       return {
         actions: [],

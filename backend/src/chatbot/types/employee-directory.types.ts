@@ -12,4 +12,5 @@ export interface EmployeeDirectoryDraft {
   // 'viewed' step (built later in response.service.ts, which has no
   // access to ctx) can still render the roster without re-fetching it.
   directory: { id: string; name: string; designation: string }[];
+  viewWidgetEmitted?: Boolean;
 }

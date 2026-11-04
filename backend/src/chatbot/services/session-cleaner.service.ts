@@ -35,6 +35,8 @@ export class ChatbotSessionCleaner implements OnModuleInit, OnModuleDestroy {
     this.drafts.deleteDraft(this.drafts.leaveDrafts, employeeId);
     this.drafts.deleteDraft(this.drafts.partialCancelDrafts, employeeId);
     this.drafts.deleteDraft(this.drafts.cancelChoiceDrafts, employeeId);
+    this.drafts.deleteDraft(this.drafts.employeeDirectoryDrafts, employeeId);
+    this.drafts.deleteDraft(this.drafts.teamDrafts, employeeId);
     this.drafts.cancelList.delete(employeeId);
     this.drafts.cancelTarget.delete(employeeId);
   }
