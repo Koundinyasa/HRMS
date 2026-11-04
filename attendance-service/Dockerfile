@@ -30,7 +30,7 @@ RUN rm -rf \
     /install/lib/python3.11/site-packages/wheel \
     /install/lib/python3.11/site-packages/wheel-*.dist-info \
     && python -m pip install --no-cache-dir --prefix=/install --no-deps \
-    setuptools==82.0.0 wheel==0.46.3
+    setuptools==80.10.2 wheel==0.46.3
 
 
 # ==========================================
