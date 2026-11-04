@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus, X, MoreVertical } from "lucide-react";
 import FilterDropdown, { type FilterOption } from "./FilterDropdown";
-import { FILTER_FIELD_DEFS, type FilterFieldKey } from "./filterFields.constants";
+import { FILTER_FIELD_DEFS, type FilterFieldKey } from "./Filterfields.constants";
 
 export type FilterValues = Partial<Record<FilterFieldKey, string[] | string>>;
 
@@ -33,13 +33,7 @@ export default function FilterBar({
   variant = "chip",
   showMenu = false,
 }: FilterBarProps) {
-  const [activeFields, setActiveFields] = useState<FilterFieldKey[]>(fields);
-
-  const toggleField = (key: FilterFieldKey) => {
-    setActiveFields((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
-  };
+  const [activeFields] = useState<FilterFieldKey[]>(fields);
 
   const addFilterButtonClass =
     variant === "chip"

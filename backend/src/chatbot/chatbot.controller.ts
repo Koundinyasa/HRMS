@@ -9,22 +9,19 @@ import {
   Query,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-
 import { ChatbotService } from './chatbot.service';
 import { ChatRequestDto } from './dto/chat-request.dto';
 import { HrmsDbService } from '../db/hrms-db.service';
 import { ReportService } from './services/report.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { DraftService } from './services/draft.service';
 
 const isPrivileged = (role: string) => role === 'admin' || role === 'hr';
 
 // Only accept a clean 6-digit hex value (with or without a leading #).
 const HEX_COLOR_RE = /^#?([0-9a-fA-F]{6})$/;
-
+ 
 function sanitizeThemeColor(raw: string | undefined): string | undefined {
   if (!raw) return undefined;
 
@@ -32,7 +29,7 @@ function sanitizeThemeColor(raw: string | undefined): string | undefined {
 
   return match ? `#${match[1]}` : undefined;
 }
-
+ 
 @Controller('chatbot')
 export class ChatbotController {
   constructor(
@@ -46,7 +43,6 @@ export class ChatbotController {
   // CHAT
   // ============================================================
 
-  @UseGuards(JwtAuthGuard)
   @Post('chat')
   async chat(@Body() body: ChatRequestDto, @Req() req: any): Promise<any> {
     return this.chatbotService.chat(body.message, req.user);
@@ -56,7 +52,6 @@ export class ChatbotController {
   // RESET CONVERSATION
   // ============================================================
 
-  @UseGuards(JwtAuthGuard)
   @Post('reset')
   resetConversation(@Req() req: any): any {
     const employeeId = req.user.employeeId;
@@ -68,13 +63,10 @@ export class ChatbotController {
       message: 'Conversation reset successfully',
     };
   }
-
   // ============================================================
   // TEAM EXPORT
   // Existing functionality - DO NOT CHANGE
   // ============================================================
-
-  @UseGuards(JwtAuthGuard)
   @Get('teams/:teamId/export')
   async exportTeam(
     @Param('teamId') teamId: string,
@@ -84,11 +76,10 @@ export class ChatbotController {
     @Res() res: Response,
   ): Promise<void> {
     const role = req.user?.role as string;
-
     if (!isPrivileged(role)) {
       throw new ForbiddenException('Only HR/Admin can export team data.');
     }
-
+ 
     const id = Number(teamId);
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -115,12 +106,10 @@ export class ChatbotController {
         members,
         themeColor,
       );
-
       res.setHeader(
         'Content-Type',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       );
-
       res.setHeader(
         'Content-Disposition',
         `attachment; filename="${teamName.replace(/\s+/g, '_')}-roster.xlsx"`,
@@ -167,7 +156,6 @@ export class ChatbotController {
   // Admin / HR only
   // ============================================================
 
-  @UseGuards(JwtAuthGuard)
   @Get('employees/export')
   async exportAllEmployees(
     @Query('format') format: string,

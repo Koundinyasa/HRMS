@@ -21,28 +21,81 @@ import {
   TenureBucketDto,
 } from './dto/dashboard.summary.dto';
 import { ClassificationWiseCountDto } from './dto/Classification.dto';
-
+ 
+interface AdminDashboardResultRow {
+  FullName: string;
+  ShortName: string;
+  Code: string;
+  ProfilePhoto: string | null;
+  CompanyID: number;
+  CompanyCode: string;
+  CompanyName: string;
+  BranchName: string;
+  BranchCode: string;
+  RoutingUrl: string;
+  DeptID: number;
+  Department: string;
+  RoleID: number;
+  DefaultRole: string;
+  DesignationID: number;
+  Designation: string;
+  WelcomeMessage: string;
+  LastLoginDateTime: string | null;
+  LastLogoutDateTime: string | null;
+  LoginFailedCount: number;
+  Isaccountlocked: boolean;
+  Accountlockedtime: string | null;
+  EmployeeID: string;
+  Email: string;
+  Mobileno: string | null;
+  MenuId: number;
+  ParentId: number | null;
+  MenuName: string;
+  RouteUrl: string;
+  DisplayOrder: number;
+  totalEmployees: number;
+  joinedEmployee: number;
+  confirmationPending: number;
+  leftEmployee: number;
+  openPositions: number;
+  Count: number;
+  Gender: string;
+  Percentage: number;
+  AgeBetween: string;
+  Female: number;
+  Male: number;
+  AvgTenure: string;
+  LeadName: string;
+  Team: string;
+  Badgecolor: string;
+  ID: number;
+  Name: string;
+  EventName: 'Birthday' | 'Work Anniversary';
+  EventDate: string;
+  Label: string;
+}
+ 
 @Injectable()
 export class AdminDashboardService {
   private readonly logger = new Logger(AdminDashboardService.name);
-
+ 
   constructor(private readonly db: DatabaseService) {}
-
+ 
   async getDashboard(employeeId: string): Promise<DashboardSummaryDto> {
     try {
       this.logger.log(`[1] getDashboard called with employeeId: ${employeeId}`);
-
+ 
       const pool = await this.db.connect();
       // this.logger.log(`[2] DB pool connected`);
-
+ 
       const result = await pool
         .request()
         .input('EmployeeID', employeeId)
-        .execute('Usp_AdminDashboard');
-
+        .execute<AdminDashboardResultRow>('Usp_AdminDashboard');
+ 
       // this.logger.log(`[3] SP executed. recordsets count: ${result.recordsets.length}`);
       // this.logger.log(`[4] recordsets lengths: ${result.recordsets.map((r: any[]) => r.length).join(', ')}`);
-
+ 
       const [
         welcomeRows,
         menuRows,
@@ -56,10 +109,10 @@ export class AdminDashboardService {
         eventRows,
         tenureBucketRows,
       ] = result.recordsets;
-
+ 
       // this.logger.log(`[5] welcomeRows[0]: ${JSON.stringify(welcomeRows?.[0])}`);
       // this.logger.log(`[6] summaryRows[0]: ${JSON.stringify(summaryRows?.[0])}`);
-
+ 
       // ── Result Set 0 : Welcome ──────────────────────────────
       const w = welcomeRows[0];
       const welcome: WelcomeDto = {
@@ -90,7 +143,7 @@ export class AdminDashboardService {
         mobileNo: w.Mobileno ?? null,
       };
       // this.logger.log(`[7] welcome mapped`);
-
+ 
       // ── Result Set 1 : Menus ────────────────────────────────
       const menus: MenuDto[] = menuRows.map((m: any) => ({
         menuId: Number(m.MenuId),
@@ -100,7 +153,7 @@ export class AdminDashboardService {
         displayOrder: Number(m.DisplayOrder),
       }));
       // this.logger.log(`[8] menus mapped: ${menus.length} items`);
-
+ 
       // ── Result Set 2 : KPI Summary ──────────────────────────
       const s = summaryRows[0];
       const summary: KpiSummaryDto = {
@@ -111,7 +164,7 @@ export class AdminDashboardService {
         openPositions: Number(s.openPositions),
       };
       // this.logger.log(`[9] summary mapped`);
-
+ 
       // ── Result Set 3 : Department Wise Count ────────────────
       const departmentWiseCount: DepartmentCountDto[] = departmentRows.map(
         (d: any) => ({
@@ -120,7 +173,7 @@ export class AdminDashboardService {
         }),
       );
       // this.logger.log(`[10] departmentWiseCount mapped: ${departmentWiseCount.length} items`);
-
+ 
       // ── Result Set 4 : Gender Wise Count ────────────────────
       const genderWiseCount: GenderCountDto[] = genderRows.map((g: any) => ({
         gender: g.Gender,
@@ -128,7 +181,7 @@ export class AdminDashboardService {
         percentage: Number(g.Percentage),
       }));
       // this.logger.log(`[11] genderWiseCount mapped: ${genderWiseCount.length} items`);
-
+ 
       // ── Result Set 5 : Age Group Wise Count ─────────────────
       const ageGroupWiseCount: AgeGroupCountDto[] = ageGroupRows.map(
         (a: any) => ({
@@ -138,11 +191,11 @@ export class AdminDashboardService {
         }),
       );
       // this.logger.log(`[12] ageGroupWiseCount mapped: ${ageGroupWiseCount.length} items`);
-
+ 
       // ── Result Set 6 : Avg Tenure ────────────────────────────
       const avgTenure: string = avgTenureRows?.[0]?.AvgTenure ?? '—';
       this.logger.log(`[15] avgTenure: ${avgTenure}`);
-
+ 
       // ── Result Set 7 : Team ──────────────────────────────────
       const team: TeamMemberDto[] = (teamRows ?? []).map((t: any) => ({
         leadName: t.LeadName,
@@ -152,7 +205,7 @@ export class AdminDashboardService {
         email: t.Email,
       }));
       // this.logger.log(`[14] team mapped: ${team.length} items`);
-
+ 
       // ── Result Set 8 : Classification master ────────────────
       const classifications: ClassificationMetaDto[] = (
         classificationRows ?? []
@@ -164,7 +217,7 @@ export class AdminDashboardService {
       this.logger.log(
         `[16] classifications mapped: ${classifications.length} items`,
       );
-
+ 
       // ── Result Set 9 : Upcoming Events (Birthday / Work Anniversary) ───
       const upcomingEvents: UpcomingEventDto[] = (eventRows ?? []).map(
         (e: any) => ({
@@ -177,7 +230,7 @@ export class AdminDashboardService {
       this.logger.log(
         `[13] upcomingEvents mapped: ${upcomingEvents.length} items`,
       );
-
+ 
       const TenureDatum: TenureBucketDto[] = (tenureBucketRows ?? []).map(
         (t: any) => ({
           label: t.Label,
@@ -185,7 +238,7 @@ export class AdminDashboardService {
         }),
       );
       this.logger.log(`[17] TenureDatum mapped: ${TenureDatum.length} items`);
-
+ 
       return {
         welcome,
         menus,
@@ -206,47 +259,153 @@ export class AdminDashboardService {
       throw new InternalServerErrorException('Could not load admin dashboard');
     }
   }
-
-  async getClassificationWiseCount(
+ 
+   async getClassificationWiseCount(
     classificationId: number,
+    companyId: number,
   ): Promise<ClassificationWiseCountDto> {
     if (!classificationId || classificationId < 1) {
       throw new BadRequestException('Invalid classificationId');
     }
-
+ 
+    if (!companyId || companyId < 1) {
+      throw new BadRequestException('Invalid companyId');
+    }
+ 
     try {
       const pool = await this.db.connect();
-
+ 
       const result = await pool
         .request()
         .input('ClassificationID', sql.Int, classificationId)
+        .input('CompanyID', sql.Int, companyId)
         .execute('USP_GetClassificationWiseCount');
-
-      const rows = result.recordset;
-
-      // SP returns an ErrorMessage row for invalid/inactive ClassificationID
+ 
+      const rows = result.recordset ?? [];
+ 
       if (rows?.[0]?.ErrorMessage) {
         throw new BadRequestException(rows[0].ErrorMessage);
       }
-
+ 
       const data = rows.map((row: any) => ({
         label: row.Label,
         employeeCount: Number(row.EmployeeCount),
         colorHex: row.ColorHex,
         colorHexLight: row.ColorHexLight,
       }));
-
+ 
       return { classificationId, data };
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+ 
       this.logger.error(
         `USP_GetClassificationWiseCount failed for ID ${classificationId}`,
         error,
       );
+ 
       throw new InternalServerErrorException(
         'Could not load classification wise count',
       );
     }
   }
+ 
+ 
+ 
+  async getTeamEmployeeDetails(
+    companyId: number,
+    flag: number,
+    leadEmployeeId?: string,
+  ) {
+    try {
+      const pool = await this.db.connect();
+ 
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('Flag', sql.Int, flag)
+        .input('LeadEmployeeID', sql.VarChar(25), leadEmployeeId ?? null)
+        .execute('USP_GetTeamEmployeeDetails');
+ 
+      const data = result.recordset ?? [];
+ 
+      if (data.length > 0 && data[0].StatusCode) {
+        const statusCode = Number(data[0].StatusCode);
+        const errorMessage = data[0].ErrorMessage;
+ 
+        if (statusCode === 400) {
+          throw new BadRequestException(errorMessage);
+        }
+ 
+        throw new InternalServerErrorException(errorMessage);
+      }
+ 
+      return {
+        success: true,
+        message:
+          flag === 1
+            ? 'Team leads retrieved successfully.'
+            : 'Team employees retrieved successfully.',
+        data,
+      };
+    } catch (error: unknown) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error;
+      }
+ 
+      const message = error instanceof Error ? error.message : 'Unknown error';
+ 
+      this.logger.error(`USP_GetTeamEmployeeDetails failed: ${message}`);
+ 
+      throw new InternalServerErrorException(
+        'Failed to retrieve team employee details.',
+      );
+    }
+  }
+ 
+ 
+ 
+  async getClassificationDropdown() {
+    try {
+      const pool = await this.db.connect();
+ 
+      const result = await pool
+        .request()
+        .execute('USP_GetClassificationDropdown');
+ 
+      const rows = result.recordset ?? [];
+ 
+      const data = rows.map((row: any) => ({
+        classificationId: Number(row.ClassificationID),
+        classificationName: row.ClassificationName,
+        code: row.Code,
+      }));
+ 
+      return {
+        success: true,
+        message: 'Classifications retrieved successfully.',
+        data,
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+ 
+      this.logger.error(`USP_GetClassificationDropdown failed: ${message}`);
+ 
+      throw new InternalServerErrorException(
+        'Failed to retrieve classifications.',
+      );
+    }
+  }
+ 
+ 
+ 
+ 
+ 
+ 
 }
+ 
+ 

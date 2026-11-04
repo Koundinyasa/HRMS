@@ -1,7 +1,7 @@
 import Header from "./Header";
-import ThemePreset from "./ThemePreset";
 import NotificationCard from "./NotificationCard";
 import ProfileMenu from "./ProfileMenu";
+import SessionCountdown from "@/features/auth/components/SessionCountdown";
 import type { NavbarProps } from "../dashboard/types/dashboard.types";
  
 export default function Navbar({
@@ -47,10 +47,12 @@ export default function Navbar({
       >
         {/* <ThemePreset /> */}
  
+        <SessionCountdown />
+
         <NotificationCard />
  
         <ProfileMenu />
       </div>
     </header>
   );
-}
+}

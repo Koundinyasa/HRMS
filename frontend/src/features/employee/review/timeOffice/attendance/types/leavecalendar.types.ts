@@ -45,8 +45,7 @@ export interface LeaveCalendarEmployee {
 // Attendance Count
 // ===============================
 
-export interface AttendanceCountEmployee
-  extends Record<string, unknown> {}
+export type AttendanceCountEmployee = Record<string, unknown>;
 
 export interface EmployeeAttendanceCountResponse {
   success: boolean;
@@ -102,6 +101,7 @@ export interface LeaveCalendarHeaderProps {
 
 export interface LeaveCalendarSearchProps {
   searchTerm: string;
+  compact?: boolean;
   setSearchTerm: Dispatch<
     SetStateAction<string>
   >;
@@ -114,6 +114,7 @@ export interface LeaveCalendarSearchProps {
 export interface LeaveCalendarTableProps {
   employees: LeaveCalendarEmployee[];
   days: LeaveCalendarDay[];
+  statusFilter?: string;
   onAttendanceClick: AttendanceClickHandler;
 }
 
@@ -124,6 +125,7 @@ export interface LeaveCalendarTableProps {
 export interface EmployeeRowProps {
   employee: LeaveCalendarEmployee;
   days: LeaveCalendarDay[];
+  statusFilter?: string;
   onAttendanceClick: AttendanceClickHandler;
 }
 

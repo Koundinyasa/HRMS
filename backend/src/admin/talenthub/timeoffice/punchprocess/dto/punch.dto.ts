@@ -1,4 +1,8 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class PunchDto {
   @IsDateString()

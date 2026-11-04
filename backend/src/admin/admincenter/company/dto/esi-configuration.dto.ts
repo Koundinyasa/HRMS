@@ -9,6 +9,9 @@ export class ESIDefaultConfigurationDto {
   @IsInt()
   esiGroupId!: number;
 
+  @IsInt()
+id!: number;
+
   @IsDateString()
   effectiveFrom!: string;
 

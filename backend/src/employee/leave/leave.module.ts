@@ -7,5 +7,7 @@ import { DatabaseModule } from '../../database/database.module';
   imports: [DatabaseModule],
   controllers: [LeaveController],
   providers: [LeaveService],
+  // The chatbot calls this service directly instead of going through HTTP.
+  exports: [LeaveService],
 })
 export class LeaveModule {}

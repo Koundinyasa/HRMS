@@ -40,13 +40,6 @@ export const validateHelpDeskTicket = (
     };
   }
 
-  if (!values.location.trim()) {
-    return {
-      valid: false,
-      error: "Location is required.",
-    };
-  }
-
   if (!values.contactNo.trim()) {
     return {
       valid: false,

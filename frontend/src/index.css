@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/urbanist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -13,7 +14,7 @@
   --primary-gradient: linear-gradient(90deg,#2563EB,#00C2FF);
   --card-bg: #FFFFFF;
   --dashboard-heading: #0F172A;
-  --dashboard-subheading: #1F2A37;
+  --dashboard-subheading: var(--primary-color);
   --dashboard-label: #475569;
   --dashboard-muted: #64748B;
 }
@@ -115,10 +116,78 @@ ol {
   border-radius: 0;
 }
 
+.punch-scroll-container {
+  scrollbar-color: #94a3b8 #e2e8f0;
+  scrollbar-width: thin;
+}
+
+.punch-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.punch-scroll-container::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.punch-scroll-container::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #94a3b8;
+}
+
+.punch-horizontal-scroll {
+  scrollbar-color: #94a3b8 #e2e8f0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.punch-horizontal-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.punch-horizontal-scroll::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.punch-horizontal-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #94a3b8;
+}
+
 .module-content-shell {
   background: #f8fbff;
   border: 0;
   border-radius: 14px;
+}
+
+.recruitment-font-scale [class~="text-xs"],
+.recruitment-font-scale [class~="text-[10px]"],
+.recruitment-font-scale [class~="text-[11px]"] {
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.recruitment-font-scale [class~="text-sm"] {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.classification-typography {
+  font-family: "Urbanist", "Segoe UI", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.classification-typography h1,
+.classification-typography h2,
+.classification-typography h3,
+.classification-typography p,
+.classification-typography span,
+.classification-typography button,
+.classification-typography input,
+.classification-typography select,
+.classification-typography label,
+.classification-typography th,
+.classification-typography td {
+  font-family: inherit;
 }
 
 @keyframes bubble1 {
@@ -239,4 +308,86 @@ ol {
 
 .animate-circle3 {
   animation: circle3 10s ease-in-out infinite;
+}
+
+/* Reports typography used by the TDS Report and Pre-Enrollment modules. */
+.pre-enrollment-typography {
+  font-family: "Urbanist Variable", Urbanist, sans-serif;
+}
+
+.pre-enrollment-typography h1 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  line-height: 28px !important;
+}
+
+.pre-enrollment-typography h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 24px !important;
+}
+
+.pre-enrollment-typography h3 {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 22px !important;
+}
+
+.pre-enrollment-typography h4 {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 20px !important;
+}
+
+.pre-enrollment-typography p {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.pre-enrollment-typography button,
+.pre-enrollment-typography nav,
+.pre-enrollment-typography label {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.pre-enrollment-typography input,
+.pre-enrollment-typography select,
+.pre-enrollment-typography textarea {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.pre-enrollment-typography table th {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 16px !important;
+}
+
+.pre-enrollment-typography table td {
+  font-family: "Urbanist Variable", Urbanist, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+/* Touch screens: icon-only buttons and links get at least a 44 x 44 px hit area. */
+@media (pointer: coarse) {
+  button[aria-label],
+  a[aria-label],
+  [role="button"][aria-label] {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }

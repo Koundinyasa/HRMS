@@ -5,8 +5,7 @@ import { AdminService } from './admin.service';
 import { AdminDashboardModule } from './dashboard/admin-dashboard.module';
 import { DatabaseModule } from '../database/database.module';
 import { AdmincenterModule } from './admincenter/admincenter.module';
-// import { TalentHubModule } from './talenthub/talenthub.module';
-import { EnrollmentModule } from './Enrollment/enrollment.module';
+import { TalenthubModule } from './talenthub/talenthub.module';
 
 @Module({
   controllers: [AdminController],
@@ -15,11 +14,7 @@ import { EnrollmentModule } from './Enrollment/enrollment.module';
     DatabaseModule,
     AdminDashboardModule,
     AdmincenterModule,
-    EnrollmentModule,
-    // TalentHubModule,
-    // BlockedUsersModule,
-    // TemplateModule,
-    // UserManagementModule,
+    TalenthubModule,
   ],
 })
 export class AdminModule {}

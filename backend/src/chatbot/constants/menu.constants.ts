@@ -28,7 +28,7 @@ export const MENUS: Record<string, Menu> = {
     buttons: [
       { label: 'Holidays', send: 'holiday list' },
       { label: 'Departments', send: 'department', hrOnly: true },
-      { label: 'Designations', send: 'designation' },
+      { label: 'Designation', send: 'designation' },
       { label: 'Office Location', send: 'office location' },
       { label: 'Company Details', send: 'company info' },
       { label: '← Main Menu', send: 'menu:main' },

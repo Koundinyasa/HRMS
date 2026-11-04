@@ -1,18 +1,23 @@
+import { GetLeaveApprovalDto } from './dto/get-leave-approval.dto';
 import {
   Controller,
   Get,
   Query,
   Post,
   Body,
-  UseGuards,
   Req,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
 import { ForceLeaveApprovalService } from './forceleaveapproval.service';
 import { ApproveRejectLeaveDto } from './dto/approve-reject-leave.dto';
+import { BulkHierarchicalLeaveActionDto } from './dto/bulk-hierarchical-leave-action.dto';
+import { Roles } from '../../../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../../../common/constants/roles';
+import { RequiresMenu } from '../../../../common/decorators/module-gate.decorator';
+import { MenuCode } from '../../../../common/constants/menu-codes';
 
+@Roles(...ADMIN_PORTAL_ROLES)
+@RequiresMenu(MenuCode.ForceLeaveApproval)
 @Controller('admin/ta/leave/forceleaveapproval')
-@UseGuards(JwtAuthGuard)
 export class ForceLeaveApprovalController {
   constructor(
     private readonly forceLeaveApprovalService: ForceLeaveApprovalService,
@@ -36,29 +41,63 @@ export class ForceLeaveApprovalController {
     return this.forceLeaveApprovalService.rejectLeave(dto);
   }
 
-  // Starting from here actual SPs
+  // ==========================================
+  // Bulk Hierarchical Leave Action
+  // Bulk and single approve / reject
+  // ==========================================
 
-  @Get()
-  async getLeaveApproval(
+  @Post('bulk-hierarchical-action')
+  async bulkHierarchicalLeaveAction(
     @Req() req: any,
-    @Body()
-    body: {
-      approverId?: string;
-      fromDate?: string;
-      toDate?: string;
-      isCurrentMonth?: boolean;
-    },
+    @Body() dto: BulkHierarchicalLeaveActionDto,
   ) {
-    console.log('JWT User:', req.user);
-    console.log('Company ID:', req.user?.companyId);
-    console.log('Request Body:', body);
-
-    return this.forceLeaveApprovalService.getLeaveApproval(
+    return this.forceLeaveApprovalService.bulkHierarchicalLeaveAction(
+      dto,
+      req.user.employeeId,
       Number(req.user.companyId),
-      body.approverId,
-      body.fromDate,
-      body.toDate,
-      body.isCurrentMonth ?? true,
     );
   }
+
+  // Starting from here actual SPs
+
+  // @Get()
+  // async getLeaveApproval(
+  //   @Req() req: any,
+  //   @Query() query: {
+  //     approverId?: string;
+  //     fromDate?: string;
+  //     toDate?: string;
+  //     isCurrentMonth?: string;
+  //   },
+  // ) {
+  //   return this.forceLeaveApprovalService.getLeaveApproval(
+  //     Number(req.user.companyId),
+  //     query.approverId,
+  //     query.fromDate,
+  //     query.toDate,
+  //     query.isCurrentMonth === undefined
+  //       ? true
+  //       : query.isCurrentMonth.toLowerCase() === 'true',
+  //   );
+  // }
+
+ 
+@Post()
+async getLeaveApproval(
+  @Req() req: any,
+  @Body() dto: GetLeaveApprovalDto,
+) {
+  return this.forceLeaveApprovalService.getLeaveApproval(
+    dto,
+    req.user.companyId,
+  );
+}
+ 
+ // Company dropdown (filters: branch, salary structure, leave, attendance, designation, emp status)
+// Actual SP is used here
+ 
+@Get('company-dropdown')
+async getCompanyDropdownData(@Req() req: any) {
+  return this.forceLeaveApprovalService.getCompanyDropdownData(req.user.companyId);
+}
 }

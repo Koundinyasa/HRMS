@@ -30,7 +30,7 @@ export interface LeaveCalendarEmployee {
 // Employee Attendance Count - raw API record
 // ===============================
 
-export interface AttendanceCountEmployee extends Record<string, unknown> {}
+export type AttendanceCountEmployee = Record<string, unknown>;
 
 export interface EmployeeAttendanceCountResponse {
   success: boolean;

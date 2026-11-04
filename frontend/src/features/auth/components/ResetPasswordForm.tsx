@@ -53,10 +53,13 @@ export default function ResetPasswordForm() {
           </label>
 
           <div className="relative">
-  <input
+ <input
     type={showPassword ? "text" : "password"}
     value={password}
-    onChange={(e) => setPassword(e.target.value)}
+    onChange={(e) => {
+      setPassword(e.target.value);
+      setError("");
+    }}
     className="w-full h-[48px] px-4 pr-12 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
   />
 
@@ -74,8 +77,8 @@ export default function ResetPasswordForm() {
 </div>
 
           <p className="text-sm text-gray-500 mt-2">
-            Must be at least
-            8 characters
+            At least 8 characters, with an uppercase letter, a lowercase
+            letter, a number and a special character (@ $ ! % * ? &)
           </p>
         </div>
 
@@ -88,10 +91,14 @@ export default function ResetPasswordForm() {
           </label>
 
           <div className="relative">
-  <input
+
+            <input
     type={showConfirmPassword ? "text" : "password"}
     value={confirmPassword}
-    onChange={(e) => setConfirmPassword(e.target.value)}
+    onChange={(e) => {
+      setConfirmPassword(e.target.value);
+      setError("");
+    }}
     className="w-full h-[48px] px-4 pr-12 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB]"
   />
 

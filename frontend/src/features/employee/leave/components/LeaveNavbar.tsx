@@ -1,5 +1,5 @@
 import { NavLink, useParams } from "react-router-dom";
-import { Plus, Clock, PieChart, History, XCircle,CalendarDays} from "lucide-react";
+import { Plus, Clock, PieChart, History, CalendarDays } from "lucide-react";
 
 import { useDashboard } from "../../dashboard/hooks/useDashboard";
 
@@ -46,49 +46,30 @@ export default function LeaveNavbar() {
         items-center
         
         overflow-x-auto
-<<<<<<< HEAD
         rounded-2xl
         border-2
         border-[#D9CCFB]
         p-2
-=======
-        rounded-lg
-        border
-        border-[#b9a5ff]
-        p-[0.3320625rem]
->>>>>>> 3a23add3d72c2312ae9a5b995a6881f59795189f
       "
       // style={{
       //   borderColor: "var(--primary-border)",
       // }}
 
       style={{
-        backgroundColor: "#f7f5ff",
+        backgroundColor: "#F5F3FF",
       }}
     >
       <div className="flex w-full min-w-0 justify-between">
 
         {tabs.map((tab: MenuItem) => {
-          // // Get route dynamically from API
-          // const route =
-          //   tab.routeUrl?.replace(
-          //     "/Employee",
-          //     `/${domain}/employee`
-          //   ) ?? "";
 
-          let route = "";
-
-          
-          if (tab.menuName === "Holiday List") {
-            route = `/${domain}/employee/leave/holidaylist`;
-          } else {
-            // Existing dynamic route logic for other tabs
-            route =
-              tab.routeUrl?.replace(
-                "/Employee",
-                `/${domain}/employee`
-              ) ?? "";
-          }
+          const route =
+            tab.menuName === "Holiday List"
+              ? `/${domain}/employee/leave/holidaylist`
+              : tab.routeUrl?.replace(
+                  "/Employee",
+                  `/${domain}/employee`
+                ) ?? "";
 
           return (
             <NavLink
@@ -106,7 +87,7 @@ export default function LeaveNavbar() {
                 rounded-md
                 border
                 bg-white
-                border-[#c5b0ff]
+                border-[#D9CCFB]
                 h-[2.3244375rem]
                 px-[0.9961875rem]
                 py-0
@@ -117,7 +98,7 @@ export default function LeaveNavbar() {
                 duration-300
 
                 ${isActive
-                  ? "text-[#7c3aed]"
+                  ? "text-[#7A5BED]"
                   : "text-black hover:text-slate-700"
                 }
                 `
@@ -125,8 +106,8 @@ export default function LeaveNavbar() {
               style={({ isActive }) =>
                 isActive
                   ? {
-                    color: "#7c3aed",
-                    borderColor: "#7c3aed",
+                    color: "#7A5BED",
+                    borderColor: "#7A5BED",
                   }
                   : {}
               }

@@ -1,14 +1,9 @@
-// import { Module } from '@nestjs/common';
-// import { TalenthubattendanceModule } from './attendance/talenthub.attendance.module';
-// import { TalenthubleaveModule } from './leave/talenthub.leave.module';
-// import { TalenthubtimeofficeModule } from './timeoffice/talenthub.timeoffice.module';
+import { Module } from '@nestjs/common';
+import { DailyModule } from './leave/daily/daily.module';
+import { ForceLeaveApprovalModule } from './leave/forceleaveapproval/forceleaveapproval.module';
+import { PunchProcessModule } from './timeoffice/punchprocess/punchprocess.module';
 
-// @Module({
-//     imports: [
-//         TalenthubattendanceModule,
-//         TalenthubleaveModule,
-//         TalenthubtimeofficeModule
-//     ],
-// })
-
-// export class TalenthubModule {}
+@Module({
+	imports: [DailyModule, ForceLeaveApprovalModule, PunchProcessModule],
+})
+export class TalenthubModule {}

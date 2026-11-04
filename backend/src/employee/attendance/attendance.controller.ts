@@ -4,15 +4,22 @@ import {
   Get,
   Req,
   Body,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
-  UseGuards,
   BadRequestException,
+  NotFoundException,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import {
+  AnyFilesInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { AttendanceService } from './attendance.service';
+import type { Response } from 'express';
 
 // Sent alongside the frame files as ordinary multipart text fields (not
 // JSON) — the frontend appends these to the same FormData as the frames.
@@ -24,17 +31,18 @@ import { AttendanceService } from './attendance.service';
 // request-body input — the actual enforcement lives in the service, not
 // the type system.
 //
-// accuracy (NEW) is the browser's own confidence radius, in meters, for
-// the geolocation fix it returned. Optional/best-effort: older frontend
-// builds won't send it, and it's only used for a logged warning right
-// now (see ACCURACY_CHECK_REQUIRED in attendance.service.ts), not to
-// block anything yet.
+// accuracy is the browser's own confidence radius, in meters, for the
+// geolocation fix it returned. The service rejects a punch when it is
+// missing or worse than ACCURACY_THRESHOLD_METERS (see
+// attendance.service.ts).
 interface PunchLocationBody {
   latitude?: string;
   longitude?: string;
   accuracy?: string;
-  punchMode?: string; // NEW — sent as a stringified Mst_Status.ID (69/70/71/72),
-                       // not a text label — see PUNCH_MODE_ID in useAttendance.ts
+  // The numeric Mst_Status.ID (69=Office, 70=WFH, 71=Remote, 72=ClientSite),
+  // sent as text like everything else in this multipart body — see
+  // PUNCH_MODE_ID in useAttendance.ts.
+  punchMode?: string;
 }
 
 // Small, dependency-free parse — just enough to produce a friendly
@@ -55,10 +63,9 @@ function parseDeviceLabel(userAgent: string | undefined): string {
 
   let os = 'Unknown OS';
   if (userAgent.includes('Windows')) os = 'Windows';
+  else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) os = 'iOS';
   else if (userAgent.includes('Mac OS X')) os = 'macOS';
   else if (userAgent.includes('Android')) os = 'Android';
-  else if (userAgent.includes('iPhone') || userAgent.includes('iPad'))
-    os = 'iOS';
   else if (userAgent.includes('Linux')) os = 'Linux';
 
   return `${browser}, ${os}`;
@@ -72,7 +79,6 @@ export class AttendanceController {
   // the dashboard whether the logged-in employee has an active face vector
   // at all, so it can offer "Register your face" instead of a camera flow
   // that's guaranteed to fail.
-  @UseGuards(JwtAuthGuard)
   @Get('face-status')
   async faceStatus(@Req() req: any) {
     const employeeId = req.user.employeeId;
@@ -81,7 +87,6 @@ export class AttendanceController {
 
   // 1-to-1 check against the LOGGED-IN employee's own vector — employeeId
   // comes from the JWT, never guessed from the photo itself.
-  @UseGuards(JwtAuthGuard)
   @Post('punch')
   @UseInterceptors(FilesInterceptor('frames', 30))
   async punch(
@@ -113,23 +118,20 @@ export class AttendanceController {
       !Number.isNaN(latitude) &&
       !Number.isNaN(longitude);
 
-    // NEW — accuracy (meters). Same defensive parse as lat/long: malformed
-    // or absent just becomes undefined, never blocks the request at this
-    // layer. attendance.service.ts's punch() only logs a warning on a poor
-    // fix right now (ACCURACY_CHECK_REQUIRED is still false), so there's
-    // nothing to enforce here either — this is pure pass-through.
+    // accuracy (meters). Same defensive parse as lat/long: malformed or
+    // absent just becomes undefined. attendance.service.ts's punch()
+    // rejects a punch without a good enough accuracy, so this layer only
+    // passes the value through.
     const accuracy =
       body.accuracy !== undefined ? Number(body.accuracy) : undefined;
     const hasValidAccuracy = accuracy !== undefined && !Number.isNaN(accuracy);
 
-
-
-    // NEW — punchMode is the numeric Mst_Status.ID, same defensive
-    // parse pattern as everything else in this body: malformed/absent
+    // punchMode — same defensive parse as the rest: malformed or absent
     // just becomes undefined, never throws at this layer.
-    const punchMode = body.punchMode !== undefined ? Number(body.punchMode) : undefined;
-    const hasValidPunchMode = punchMode !== undefined && !Number.isNaN(punchMode);
-
+    const punchMode =
+      body.punchMode !== undefined ? Number(body.punchMode) : undefined;
+    const hasValidPunchMode =
+      punchMode !== undefined && !Number.isNaN(punchMode);
 
     const device = parseDeviceLabel(req.headers['user-agent']);
 
@@ -147,24 +149,62 @@ export class AttendanceController {
   // Read-only history for the "Recent Punches" slide — most recent first,
   // capped at a sane count since this is a quick-glance UI list, not a
   // full attendance report.
-  @UseGuards(JwtAuthGuard)
   @Get('recent')
-  async recentPunches(@Req() req: any) {
+async recentPunches(@Req() req: any) {
     const employeeId = req.user.employeeId;
     return this.attendanceService.getRecentPunches(employeeId);
   }
 
   // Backs the "Manage Face Registration" view — which angles are
   // actually on file, and when they were last updated.
-  @UseGuards(JwtAuthGuard)
   @Get('registration-status')
   async registrationStatus(@Req() req: any) {
     const employeeId = req.user.employeeId;
     return this.attendanceService.getRegistrationStatus(employeeId);
   }
 
+  // PHOTO — the logged-in employee's own enrollment photo. The employee id
+  // comes from the token, so nobody can request someone else's photo here.
+  // It is served only through this guarded route, never as a public file.
+  @Get('face-photo')
+  async facePhoto(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const photo = await this.attendanceService.getFacePhoto(
+      req.user.employeeId,
+    );
+    if (!photo) {
+      throw new NotFoundException('No profile photo on file.');
+    }
+    res.set({
+      'Content-Type': 'image/jpeg',
+      'Cache-Control': 'private, no-store',
+    });
+    return new StreamableFile(photo);
+  }
+
+  // Development aid: powers the coordinates/distance panel in the punch
+  // modal. Read-only. See LOCATION_DEBUG_ENABLED in attendance.service.ts.
+  @Get('location-check')
+  async locationCheck(
+    @Req() req: any,
+    @Query('latitude') latitude?: string,
+    @Query('longitude') longitude?: string,
+  ) {
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    if (!latitude || !longitude || Number.isNaN(lat) || Number.isNaN(lon)) {
+      throw new BadRequestException('latitude and longitude are required.');
+    }
+    return this.attendanceService.getLocationCheck(
+      req.user.employeeId,
+      lat,
+      lon,
+    );
+  }
+
   // REMOVED — today-summary endpoint. That data now comes from the
-  // dashboard's GET /employee/dashboard/profile instead (USP_GetUserInfo
   // merges it in directly) — see employee-dashboard.service.ts.
 
   // Live, per-step quality feedback during enrollment — fires once per
@@ -172,7 +212,6 @@ export class AttendanceController {
   // the source of truth (see attendance.service.ts) — purely so the
   // employee finds out immediately if one angle came out blurry, instead
   // of only after finishing all 5 steps.
-  @UseGuards(JwtAuthGuard)
   @Post('enroll/check-frame')
   @UseInterceptors(FileInterceptor('frame'))
   async checkEnrollmentFrame(@UploadedFile() frame: Express.Multer.File) {
@@ -184,19 +223,27 @@ export class AttendanceController {
 
   // Self-service enrollment — always enrolls whoever is currently logged
   // in. There is no "enroll someone else" path; HR is never involved.
-  @UseGuards(JwtAuthGuard)
   @Post('enroll')
-  @UseInterceptors(FilesInterceptor('frames', 30))
+  // PHOTO — the request now carries the face-angle frames (field
+  // "frames") AND, optionally, the step-6 profile photo (field "photo").
+  // AnyFilesInterceptor is used so both fields arrive in one array; the
+  // photo is split out by field name below. An older client that sends
+  // only "frames" keeps working exactly as before.
+  @UseInterceptors(AnyFilesInterceptor({ limits: { files: 31 } }))
   async enroll(
     @Req() req: any,
-    @UploadedFiles() frames: Express.Multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
+    const photo = files?.find((f) => f.fieldname === 'photo');
+    const frames = files?.filter((f) => f.fieldname !== 'photo');
     if (!frames || frames.length === 0) {
       throw new BadRequestException(
         'At least one photo is required to register your face.',
       );
     }
     const employeeId = req.user.employeeId;
-    return this.attendanceService.enrollFace(employeeId, frames);
+    return photo
+      ? this.attendanceService.enrollFace(employeeId, frames, photo)
+      : this.attendanceService.enrollFace(employeeId, frames);
   }
 }

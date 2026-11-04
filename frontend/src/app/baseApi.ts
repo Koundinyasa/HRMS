@@ -1,14 +1,9 @@
-import {
-  createApi,
-  fetchBaseQuery,
-} from '@reduxjs/toolkit/query/react';
-
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { baseQueryWithReauth } from './baseQueryWithReauth';
+ 
 export const baseApi = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_URL,
-    credentials: 'include',
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: [
     "Leave",
     "AssetRequests",
@@ -16,19 +11,14 @@ export const baseApi = createApi({
     "Separation",
     "HelpDesk",
     "Employees",
-    "HolidayMaster",
     "Holiday",
     "WeeklyOff",
     "ForceLeaveApproval",
     "Punch",
-    "TAInsights",
-    "ClassificationSummary",
-    "Branches",
-    "Designations",
-    "Banks",
-    "AdditionalClassifications",
-    "BankFieldMapping",
-    "SalaryComponents",
+    "TimeOffice",
+    "ApprovalSummary",
+    "Candidate",
+    "Payroll",
   ],
   endpoints: () => ({}),
 });

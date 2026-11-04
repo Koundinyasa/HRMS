@@ -18,16 +18,41 @@ export interface LoginRequest {
   captchaAnswer: string;
 }
 
+/** Seconds left on the login, as the server reports them (see app/sessionClock.ts). */
+export interface SessionTiming {
+  expiresInSeconds: number;
+  idleExpiresInSeconds: number;
+}
+
 export interface LoginResponse {
   success: boolean;
   message: string;
-  accessToken: string;
-  isFirstLogin: boolean;
+  session?: SessionTiming;
+  /** The server must change the password before anything else. */
+  mustChangePassword?: boolean;
 
   data: {
     employeeId: string;
     userId: string;
+    roleId?: number | string | null;
   };
+}
+
+// What GET /auth/me returns inside `data`.
+export interface SessionUser {
+  employeeId: string;
+  userId: string;
+  roleId: number | string | null;
+  companyId?: number | string | null;
+  name?: string | null;
+  role?: string | null;
+  mustChangePassword: boolean;
+}
+
+export interface SessionResponse {
+  success: boolean;
+  session?: SessionTiming;
+  data: SessionUser;
 }
 
 // =========================
@@ -44,10 +69,9 @@ export interface LogoutResponse {
 // =========================
 
 export interface AuthState {
-  accessToken: string | null;
   employeeId: string | null;
   userId: string | null;
-  isFirstLogin: boolean;
+  mustChangePassword: boolean;
   isAuthenticated: boolean;
 }
 
@@ -66,13 +90,14 @@ export interface User {
 // =========================
 
 export interface ForgotPasswordRequest {
-  email: string;
-  mobile: string;
+  userId: string;
 }
 
 export interface ForgotPasswordResponse {
   success: boolean;
   message: string;
+  remainingSeconds: number;
+  remainingMinutes: number;
 }
 
 // =========================
@@ -98,4 +123,4 @@ export interface ChangePasswordRequest {
 export interface ChangePasswordResponse {
   success: boolean;
   message: string;
-}
+}

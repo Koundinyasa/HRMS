@@ -2,10 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { toast } from "react-toastify";
-// import {
-//   CalendarDays,
-//   HelpCircle,
-// } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, HelpCircle } from "lucide-react";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -23,45 +20,79 @@ import SeparationNavbar from "../components/SeparationNavbar";
 import SubmitDialog from "../components/SubmitDialog";
 
 import DateField from "../../leave/components/DateField";
-import { MIN_LEAVE_DATE_ISO } from "../../leave/constants/leave.constants";
 
 import { useSeparationManagement } from "../hooks/useSeparationManagement";
 import { validateResignation } from "../validations/resignationvalidation";
 
+
 export default function ResignationPage() {
   const navigate = useNavigate();
-  const { domain } = useParams();
 
-  const { submitRequest, isSubmitting } = useSeparationManagement();
+  const { domain } = useParams<{
+    domain: string;
+  }>();
 
-  const [requestedLastWorkingDate, setRequestedLastWorkingDate] = useState("");
-  const [dateInvalid, setDateInvalid] = useState(false);
+  const { submitRequest, isSubmitting } =
+    useSeparationManagement();
+
+  const [requestedLastWorkingDate, setRequestedLastWorkingDate] =
+    useState("");
 
   const [reason, setReason] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // DateField passes the picked date as an ISO "YYYY-MM-DD" string.
+  const handleDateChange = (value: string) => {
+    if (!value) {
+      setRequestedLastWorkingDate("");
+      return;
+    }
+
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!datePattern.test(value)) {
+      return;
+    }
+
+    const year = value.substring(0, 4);
+
+    if (year.length !== 4) {
+      return;
+    }
+
+    setRequestedLastWorkingDate(value);
+  };
+
   /**
-   * Validate before opening dialog
+   * Validate before opening confirmation dialog
    */
   const handleSubmit = () => {
     if (requestedLastWorkingDate) {
       const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
       if (!datePattern.test(requestedLastWorkingDate)) {
-        toast.error("Please enter a valid date with a 4-digit year.");
+        toast.error(
+          "Please enter a valid date with a 4-digit year."
+        );
         return;
       }
 
-      const year = Number(requestedLastWorkingDate.substring(0, 4));
+      const year = Number(
+        requestedLastWorkingDate.substring(0, 4)
+      );
 
       if (year < 1000 || year > 9999) {
-        toast.error("Year must contain exactly 4 digits.");
+        toast.error(
+          "Year must contain exactly 4 digits."
+        );
         return;
       }
     }
+
     const error = validateResignation({
-      requestedLastWorkingDate: requestedLastWorkingDate || null,
+      requestedLastWorkingDate:
+        requestedLastWorkingDate || null,
       reason,
     });
 
@@ -79,7 +110,8 @@ export default function ResignationPage() {
   const handleConfirm = async () => {
     try {
       await submitRequest({
-        requestedLastWorkingDate: requestedLastWorkingDate || null,
+        requestedLastWorkingDate:
+          requestedLastWorkingDate || null,
         reason,
       });
 
@@ -88,7 +120,9 @@ export default function ResignationPage() {
       setRequestedLastWorkingDate("");
       setReason("");
 
-      navigate(`/${domain}/employee/separation/status`);
+      navigate(
+        `/${domain}/employee/separation/status`
+      );
     } catch {
       setDialogOpen(false);
     }
@@ -105,7 +139,6 @@ export default function ResignationPage() {
         overflow-x-hidden
         bg-slate-100
       "
-      style={{ fontFamily: "Urbanist Variable, Urbanist, sans-serif" }}
     >
       <SeparationNavbar />
 
@@ -124,10 +157,7 @@ export default function ResignationPage() {
           <CardContent className="w-full min-w-0 space-y-6 px-4 pb-6 sm:space-y-8 sm:px-6 sm:pb-8 lg:px-8">
             {/* Requested Last Working Date */}
             <div className="w-full min-w-0 space-y-2">
-              <Label
-                htmlFor="lastWorkingDate"
-                className="flex items-center gap-1.5 text-sm sm:text-base"
-              >
+              <Label className="flex w-fit items-center gap-1.5 text-sm sm:text-base">
                 <Calendar className="h-4 w-4 text-slate-500" />
                 Requested Last Working Date
               </Label>
@@ -136,53 +166,48 @@ export default function ResignationPage() {
               <DateField
                 id="lastWorkingDate"
                 value={requestedLastWorkingDate}
-                onChange={(value) => {
-                  setRequestedLastWorkingDate(value);
-                  setDateInvalid(false);
-                }}
-                onInvalid={() => setDateInvalid(true)}
-                isInvalid={dateInvalid}
-                min={MIN_LEAVE_DATE_ISO}
+                onChange={handleDateChange}
                 inputClassName="h-11 w-full min-w-0 max-w-full rounded-lg text-sm sm:text-base border border-slate-300 focus-visible:border-slate-400 focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none"
+                showLeaveMessage={false}
               />
-
-              {dateInvalid && (
-                <p className="text-xs font-medium text-red-500">
-                  Invalid Date
-                </p>
-              )}
             </div>
 
             {/* Reason */}
             <div className="space-y-2">
-              <Label htmlFor="reason" className="flex items-center gap-1.5">
+              <Label
+                htmlFor="reason"
+                className="flex items-center gap-1.5"
+              >
                 <HelpCircle className="h-4 w-4 text-slate-500" />
-                Reason <span className="text-red-600">*</span>
+                Reason{" "}
+                <span className="text-red-600">*</span>
               </Label>
 
               <Textarea
                 id="reason"
                 rows={8}
                 value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                onChange={(e) =>
+                  setReason(e.target.value)
+                }
                 placeholder="Enter your reason for resignation..."
                 className="
-  min-h-[150px]
-  resize-none
-  rounded-lg
-  border
-  border-slate-300
-  bg-background
-  px-4
-  py-3
-  text-sm
-  outline-none
-  placeholder:text-muted-foreground
-  focus-visible:border-slate-400
-  focus-visible:outline-none
-  focus-visible:ring-0
-  focus-visible:shadow-none
-"
+                  min-h-[150px]
+                  resize-none
+                  rounded-lg
+                  border
+                  border-slate-300
+                  bg-background
+                  px-4
+                  py-3
+                  text-sm
+                  outline-none
+                  placeholder:text-muted-foreground
+                  focus-visible:border-slate-400
+                  focus-visible:outline-none
+                  focus-visible:ring-0
+                  focus-visible:shadow-none
+                "
               />
             </div>
 
@@ -192,7 +217,9 @@ export default function ResignationPage() {
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Submitting..." : "Submit Request"}
+              {isSubmitting
+                ? "Submitting..."
+                : "Submit Request"}
             </Button>
           </CardContent>
         </Card>
@@ -207,3 +234,5 @@ export default function ResignationPage() {
     </div>
   );
 }
+ 
+

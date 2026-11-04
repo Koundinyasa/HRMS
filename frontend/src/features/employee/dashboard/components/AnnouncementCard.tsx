@@ -8,7 +8,7 @@ import {
 export default function AnnouncementCard() {
   const announcements = [
     {
-      title: "Welcome a new member, Alya...",
+      title: "Let’s welcome our new team members and wish them a successful journey with us",
       time: "8:15 AM",
       icon: UserPlus,
       bg: "#F3F4F6",
@@ -22,28 +22,28 @@ export default function AnnouncementCard() {
       color: "#22C55E",
     },
     {
-      title: "You have not fulfilled your mission...",
+      title: "Join the upcoming company-wide meeting to discuss business updates and upcoming initiatives",
       time: "8 hours ago",
       icon: AlertCircle,
       bg: "#FFF7ED",
       color: "#F97316",
     },
     {
-      title: "Cast your vote in the poll. This...",
+      title: "Employees are reminded to follow company security practices and protect company systems and accounts",
       time: "8 hours ago",
       icon: Vote,
       bg: "#EEF2FF",
       color: "#4F46E5",
     },
     {
-      title: "Let's celebrate the upcoming...",
+      title: "Employees are encouraged to participate in technical training and continuously develop skills",
       time: "15 hours ago",
       icon: PartyPopper,
       bg: "#FAF5FF",
       color: "#A855F7",
     },
     {
-      title: "Welcome a new member, Alva...",
+      title: "Koundinyasa continues to focus on modern technology, digital transformation and AI",
       time: "15 hours ago",
       icon: UserPlus,
       bg: "#F3F4F6",

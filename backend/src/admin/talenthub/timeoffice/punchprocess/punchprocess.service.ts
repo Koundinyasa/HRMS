@@ -1,651 +1,945 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException,BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../../../database/database.service';
 
-import { ProcessDto } from './dto/process.dto';
+import { GetAttendanceDashboardDto } from './dto/get-attendance-dashboard.dto';
+import { GetYesterdayPresentCountDto } from './dto/get-yesterday-present-count.dto';
+import { GetYesterdayAbsentEmployeesDto } from './dto/get-yesterday-absent-employees.dto';
+import { GetOnLeaveEmployeesDto } from './dto/get-on-leave-employees.dto';
+import { GetLateInEmployeesDto } from './dto/get-late-in-employees.dto';
+import { GetEarlyInEmployeesDto } from './dto/get-early-in-employees.dto';
+import { GetEarlyOutEmployeesDto } from './dto/get-early-out-employees.dto';
+import { GetYetToLoginEmployeesDto } from './dto/get-yet-to-login-employees.dto';
+import { GetLoggedInEmployeesDto } from './dto/get-logged-in-employees.dto';
+import { GetAverageOtWorkHoursDto } from './dto/get-average-ot-work-hours.dto';
+import { GetAttendanceDashboardOverviewDto } from './dto/get-attendance-dashboard-overview.dto';
+import { GetLateInEarlyOutGraphDto } from './dto/get-late-in-early-out-graph.dto';
+import { GetMissedPunchEmployeesDto } from './dto/get-missed-punch-employees.dto';
+import { ProcessHistoryDto } from './dto/process-history.dto';
+import { AttendanceProcessingDashboardDto } from './dto/attendance-processing-dashboard.dto';
+import * as sql from 'mssql';
+import { EmployeeMonthlyAttendanceDetailsDto } from './dto/employee-monthly-attendance-details.dto';
 
-import { PunchDto } from './dto/punch.dto';
-
-import { AttendanceOverviewDto } from './dto/attendance-overview.dto';
-import { AttendanceMonthlySummaryDto } from './dto/attendance-monthly-summary.dto';
-import { AttendancePunchDetailsDto } from './dto/attendance-punch-details.dto';
-import { AttendanceRequestStatusDto } from './dto/attendance-request-status.dto';
-import { TaInsightsDto } from './dto/ta-insights.dto';
-import { TaInsightsDetailsDto } from './dto/ta-insights-details.dto';
 @Injectable()
 export class PunchProcessService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  // =====================================================
-  // DASHBOARD
-  // =====================================================
-
-  // Dashboard Summary
-
-  async getDashboardSummary() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_DashboardSummary'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching dashboard summary:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch dashboard summary.',
-      );
-    }
+  /** SQL DATE → YYYY-MM-DD in IST (fixes 18:30Z looking like previous day). */
+  private toDateOnlyIST(value: unknown): string | null {
+    if (value == null || value === '') return null;
+    const d = value instanceof Date ? value : new Date(value as string);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   }
 
-  // =====================================================
-  // Employees by Status
-  // ON_LEAVE / EARLY_IN / ABSENT / EARLY_OUT
-  // =====================================================
+  //==========================================================
+  // Attendance Dashboard Counts
+  //==========================================================
 
-  async getDashboardEmployees(status: string) {
-    try {
-      const pool = await this.databaseService.connect();
+  async getAttendanceDashboardCounts(companyId: number) {
+  try {
+    const pool = await this.databaseService.connect();
 
-      const result = await pool
-        .request()
-        .input('Status', status)
-        .execute('USP_PunchProcess_DashboardEmployees'); // Placeholder SP
+    const todayResult = await pool
+      .request()
+      .input('CompanyID', companyId)
+      .input('Date', null)
+      .execute('usp_GetAttendanceDashboardCounts');
 
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching dashboard employees:', error);
+    const yesterdayResult = await pool
+      .request()
+      .input('CompanyID', companyId)
+      .input('Date', new Date(Date.now() - 24 * 60 * 60 * 1000))
+      .execute('usp_GetAttendanceDashboardCounts');
 
-      throw new InternalServerErrorException(
-        'Unable to fetch dashboard employees.',
-      );
-    }
+    const latestPunchResult = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId)
+      .query(`
+        SELECT MAX(RP.PunchTimestamp) AS LatestPunchIntegratedAt
+        FROM dbo.RawPunches RP WITH (NOLOCK)
+        INNER JOIN dbo.Employee E WITH (NOLOCK)
+          ON LTRIM(RTRIM(E.EmployeeID)) = LTRIM(RTRIM(RP.EmployeeID))
+        WHERE E.CompanyID = @CompanyID
+          AND ISNULL(E.Deleted, 0) = 0
+      `);
+
+    const today = todayResult.recordset?.[0] ?? {};
+    const yesterday = yesterdayResult.recordset?.[0] ?? {};
+    const latestPunchIntegratedAt = latestPunchResult.recordset?.[0]?.LatestPunchIntegratedAt ?? null;
+    
+
+    return {
+      today: {
+        ...today,
+        LatestPunchIntegratedAt: latestPunchIntegratedAt,
+        SelectedDate:
+          this.toDateOnlyIST(today.SelectedDate) ??
+          today.SelectedDate,
+      },
+      yesterday: {
+        ...yesterday,
+        LatestPunchIntegratedAt: latestPunchIntegratedAt,
+        SelectedDate:
+          this.toDateOnlyIST(yesterday.SelectedDate) ??
+          yesterday.SelectedDate,
+      },
+    };
+  } catch (error) {
+    console.error(
+      'Error while fetching attendance dashboard counts:',
+      error,
+    );
+
+    throw new InternalServerErrorException(
+      'Unable to fetch attendance dashboard counts.',
+    );
   }
-
+}
   // =====================================================
-  // Attendance Overview Chart
-  // =====================================================
-
-  async getAttendanceOverviewChart() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_AttendanceOverview'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance overview:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance overview.',
-      );
-    }
-  }
-
-  // =====================================================
-  // Punch Mode Distribution
-  // =====================================================
-
-  async getPunchModeDistribution() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_PunchModeDistribution'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching punch mode distribution:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch punch mode distribution.',
-      );
-    }
-  }
-
-  // =====================================================
-  // Attendance Irregularities
+  // YESTERDAY PRESENT COUNT
   // =====================================================
 
-  async getAttendanceIrregularities() {
-    try {
-      const pool = await this.databaseService.connect();
+  async getYesterdayPresentCount(companyId: number, dto: GetYesterdayPresentCountDto) {
+  try {
+    const pool = await this.databaseService.connect();
 
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_Irregularities'); // Placeholder SP
+    const result = await pool
+      .request()
+      .input('CompanyID', companyId)
+      .input('Date', dto.date ?? null)
+      .execute('USP_GetYesterdayPresentEmployees');
 
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance irregularities:', error);
+    const record = result.recordset?.[0] ?? {};
 
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance irregularities.',
-      );
-    }
+    return {
+      ...record,
+      AttendanceDate:
+        this.toDateOnlyIST(record.AttendanceDate) ??
+        record.AttendanceDate,
+    };
+  } catch (error) {
+    console.error('Error while fetching yesterday present count:', error);
+
+    throw new InternalServerErrorException(
+      'Unable to fetch yesterday present count.',
+    );
   }
+}
+
+async getYesterdayPresentEmployees(companyId: number, dto: GetYesterdayPresentCountDto) {
+  try {
+    const pool = await this.databaseService.connect();
+    const result = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId)
+      .input('Date', sql.Date, dto.date ? new Date(`${dto.date}T00:00:00`) : null)
+      .execute('USP_GetYesterdayPresentEmployees');
+
+    return (result.recordset ?? []).map((record) => ({
+      ...record,
+      AttendanceDate: this.toDateOnlyIST(record.AttendanceDate) ?? record.AttendanceDate,
+    }));
+  } catch (error) {
+    console.error('Error while fetching yesterday present employees:', error);
+    throw new InternalServerErrorException('Unable to fetch yesterday present employees.');
+  }
+}
 
   // =====================================================
-  // Average Working Hours
+  // YESTERDAY ABSENT EMPLOYEES
   // =====================================================
 
-  async getAverageWorkingHours() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_AverageWorkingHours'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching average working hours:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch average working hours.',
-      );
-    }
-  }
-
-  // =====================================================
-  // Average OT Hours
-  // =====================================================
-
-  async getAverageOtHours() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_AverageOTHours'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching average OT hours:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch average OT hours.',
-      );
-    }
-  }
-
-  // =====================================================
-  // Policies / Shifts
-  // =====================================================
-
-  async getDashboardPolicies() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool.request().execute('USP_PunchProcess_Policies'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching policies:', error);
-
-      throw new InternalServerErrorException('Unable to fetch policies.');
-    }
-  }
-
-  // =====================================================
-  // Pending Requests
-  // =====================================================
-
-  async getPendingRequests() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_PendingRequests'); // Placeholder SP
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching pending requests:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch pending requests.',
-      );
-    }
-  }
-
-  // =====================================================
-  // PROCESS
-  // =====================================================
-
-  // Process Summary
-
-  async getProcessSummary(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_Summary');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching process summary:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch process summary.',
-      );
-    }
-  }
-
-  // Process button
-
-  async processAttendance(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_Process');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while processing attendance:', error);
-
-      throw new InternalServerErrorException('Unable to process attendance.');
-    }
-  }
-
-  // Missed Punch
-
-  async getMissedPunch(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_MissedPunch');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching missed punch:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch missed punch records.',
-      );
-    }
-  }
-
-  // Shift Unassigned
-
-  async getShiftUnassigned(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_ShiftUnassigned');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching unassigned shifts:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch unassigned shifts.',
-      );
-    }
-  }
-
-  // Yet To Process
-
-  async getYetToProcess(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_YetToProcess');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching yet to process:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch yet to process records.',
-      );
-    }
-  }
-
-  // Processed
-
-  async getProcessed(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_Processed');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching processed records:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch processed records.',
-      );
-    }
-  }
-
-  // Re-Process Effective Date
-
-  async getReprocessEffectiveDate(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_ReprocessEffectiveDate');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching re-process effective dates:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch re-process effective dates.',
-      );
-    }
-  }
-
-  // All Re-Process
-
-  async getAllReprocess(dto: ProcessDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('FromDate', dto.fromDate)
-        .input('TillDate', dto.tillDate)
-        .execute('USP_PunchProcess_AllReprocess');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching all re-process records:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch all re-process records.',
-      );
-    }
-  }
-
-  // Punch Requests
-
-  async getPunchRequests() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .execute('USP_PunchProcess_PunchRequests');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching punch requests:', error);
-
-      throw new InternalServerErrorException('Unable to fetch punch requests.');
-    }
-  }
-
-  // Process History
-
-  async getProcessHistory() {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool.request().execute('USP_PunchProcess_History');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching process history:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch process history.',
-      );
-    }
-  }
-
-  // =====================================================
-  // PUNCH
-  // =====================================================
-
-  async getPunchDetails(dto: PunchDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('PunchDate', dto.date)
-        .input('Search', dto.search || null)
-        .execute('USP_PunchProcess_PunchDetails');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching punch details:', error);
-
-      throw new InternalServerErrorException('Unable to fetch punch details.');
-    }
-  }
-
-  // =====================================================
-  // ATTENDANCE OVERVIEW
-  // =====================================================
-
-  // Employee search
-
-  async getAttendanceEmployees(search?: string) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('Search', search || null)
-        .execute('USP_PunchProcess_AttendanceEmployees');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance employees:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance employees.',
-      );
-    }
-  }
-
-  // Daily Attendance Grid
-
-  async getAttendanceOverview(dto: AttendanceOverviewDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('Month', dto.month)
-        .input('EmployeeId', dto.employeeId)
-        .execute('USP_PunchProcess_AttendanceOverview');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance overview:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance overview.',
-      );
-    }
-  }
-  // Monthly Attendance Summary
-
-  async getAttendanceMonthlySummary(dto: AttendanceMonthlySummaryDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('Month', dto.month)
-        .input('EmployeeId', dto.employeeId)
-        .execute('USP_PunchProcess_AttendanceMonthlySummary');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance monthly summary:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance monthly summary.',
-      );
-    }
-  }
-  // Punch Details
-
-  async getAttendancePunchDetails(dto: AttendancePunchDetailsDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('PunchDate', dto.date)
-        .input('EmployeeId', dto.employeeId)
-        .execute('USP_PunchProcess_AttendancePunchDetails');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance punch details:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance punch details.',
-      );
-    }
-  }
-  // Request Status
-
-  async getAttendanceRequestStatus(dto: AttendanceRequestStatusDto) {
-    try {
-      const pool = await this.databaseService.connect();
-
-      const result = await pool
-        .request()
-        .input('EmployeeId', dto.employeeId)
-        .execute('USP_PunchProcess_AttendanceRequestStatus');
-
-      return result.recordset;
-    } catch (error) {
-      console.error('Error while fetching attendance request status:', error);
-
-      throw new InternalServerErrorException(
-        'Unable to fetch attendance request status.',
-      );
-    }
-  }
-  // =====================================================
-  // TA INSIGHTS
-  // =====================================================
-
-  async getTaInsights(dto: TaInsightsDto) {
+  async getYesterdayAbsentEmployees(companyId: number, dto: GetYesterdayAbsentEmployeesDto) {
     try {
       const pool = await this.databaseService.connect();
 
       const request = pool.request();
 
-      request.input('FromDate', dto.fromDate);
-      request.input('ToDate', dto.toDate);
-      request.input('Query', dto.query ?? null);
-      request.input('TAPolicy', dto.taPolicy ?? null);
-      request.input('Pattern', dto.pattern ?? null);
-      request.input('TASupervisor', dto.taSupervisor ?? null);
-      request.input('Attendance', dto.attendance ?? null);
-      request.input('Leave', dto.leave ?? null);
+      request.input('CompanyId', sql.Int, companyId);
+      request.input('AttendanceDate', sql.Date, dto.attendanceDate || null);
 
-      const result = await request.execute('USP_PunchProcess_TAInsights');
+      const result = await request.execute('usp_GetYesterdayAbsentEmployees');
 
       return {
         success: true,
+        message: 'Absent employees retrieved successfully',
         data: result.recordset,
-      };
+      }; 
     } catch (error) {
-      console.error('TA Insights Error:', error);
+      console.error('Error fetching yesterday absent employees:', error);
 
-      throw new InternalServerErrorException('Unable to fetch TA insights.');
+      throw new InternalServerErrorException(
+        'Failed to retrieve yesterday absent employees',
+      );
     }
   }
 
-  async getTaInsightsDetails(dto: TaInsightsDetailsDto) {
+  // =====================================================
+  // ON LEAVE EMPLOYEES
+  // =====================================================
+
+  async getOnLeaveEmployees(companyId: number, dto: GetOnLeaveEmployeesDto) {
     try {
       const pool = await this.databaseService.connect();
 
       const request = pool.request();
 
-      request.input('Type', dto.type);
-      request.input('FromDate', dto.fromDate);
-      request.input('ToDate', dto.toDate);
-      request.input('Query', dto.query ?? null);
-      request.input('TAPolicy', dto.taPolicy ?? null);
-      request.input('Pattern', dto.pattern ?? null);
-      request.input('TASupervisor', dto.taSupervisor ?? null);
-      request.input('Attendance', dto.attendance ?? null);
-      request.input('Leave', dto.leave ?? null);
+      request.input('CompanyId', sql.Int, companyId);
+      request.input('FromDate', sql.Date, dto.fromDate || null);
 
-      const result = await request.execute(
-        'USP_PunchProcess_TAInsights_Details',
-      );
+      const result = await request.execute('USP_GetOnLeaveEmployees');
 
       return {
         success: true,
+        message: 'On leave employees retrieved successfully',
         data: result.recordset,
       };
     } catch (error) {
-      console.error('TA Insights Details Error:', error);
+      console.error('Error fetching on leave employees:', error);
 
       throw new InternalServerErrorException(
-        'Unable to fetch TA insights details.',
+        'Failed to retrieve on leave employees',
       );
     }
   }
+
   // =====================================================
-  // IMPORT
+  // LATE IN EMPLOYEES
   // =====================================================
 
-  // Upload Punch File
-
-  async uploadPunchFile(file: any) {
+  async getLateInEmployees(companyId: number, dto: GetLateInEmployeesDto) {
     try {
-      if (!file) {
-        throw new InternalServerErrorException('Punch file is required.');
+      const pool = await this.databaseService.connect();
+
+      const request = pool.request();
+
+      request.input('CompanyID', sql.Int, companyId);
+      request.input(
+        'Date',
+        sql.Date,
+        dto.date ? new Date(`${dto.date}T00:00:00`) : null,
+      );
+
+      const result = await request.execute('USP_GetLateInEmployees');
+      console.log('LATE IN PARAMS:', dto, 'ROWS:', result.recordset?.length);
+      return {
+        success: true,
+        message: 'Late in employees retrieved successfully',
+        data: result.recordset,
+      };
+      
+    } catch (error) {
+      console.error('Error fetching late in employees:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve late in employees',
+      );
+    }
+  }
+
+  // =====================================================
+  // EARLY IN EMPLOYEES
+  // =====================================================
+
+  async getEarlyInEmployees(companyId: number, dto: GetEarlyInEmployeesDto) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const request = pool.request();
+
+      request.input('CompanyID', sql.Int, companyId);
+      request.input('Date', sql.Date, dto.date || null);
+
+      const result = await request.execute('usp_GetEarlyInEmployees');
+
+      return {
+        success: true,
+        message: 'Early in employees retrieved successfully',
+        data: result.recordset,
+      };
+    } catch (error) {
+      console.error('Error fetching early in employees:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve early in employees',
+      );
+    }
+  }
+
+  // =====================================================
+  // EARLY OUT EMPLOYEES
+  // =====================================================
+
+  async getEarlyOutEmployees(companyId: number, dto: GetEarlyOutEmployeesDto) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const request = pool.request();
+
+      request.input('CompanyId', sql.Int, companyId);
+      request.input(
+        'FromDate',
+        sql.Date,
+        dto.date ? new Date(`${dto.date}T00:00:00`) : null,
+      );
+
+      const result = await request.execute('USP_GetEarlyOutEmployees');
+
+      return {
+        success: true,
+        message: 'Early out employees retrieved successfully',
+        data: result.recordset,
+      };
+    } catch (error) {
+      console.error('Error fetching early out employees:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve early out employees',
+      );
+    }
+  }
+
+  // =====================================================
+  // YET TO LOGIN EMPLOYEES
+  // =====================================================
+
+  async getYetToLoginEmployees(
+
+  companyId: number,
+
+  dto: GetYetToLoginEmployeesDto,
+
+) {
+
+  try {
+
+    const pool = await this.databaseService.connect();
+ 
+    const request = pool.request();
+ 
+    request.input('CompanyID', sql.Int, companyId);
+
+    request.input(
+
+      'AttendanceDate',
+
+      sql.Date,
+
+      dto.attendanceDate || null,
+
+    );
+ 
+    const result = await request.execute(
+
+      'USP_GetYetToLoginEmployees',
+
+    );
+ 
+    console.log(
+
+      'Result-set row counts:',
+
+      Array.isArray(result.recordsets)
+
+        ? result.recordsets.map((rs) => rs.length)
+
+        : [],
+
+    );
+ 
+    return {
+
+      success: true,
+
+      message: 'Yet to login employees retrieved successfully',
+
+      data: result.recordset,
+
+    };
+
+  } catch (error) {
+
+    console.error('Error fetching yet to login employees:', error);
+ 
+    throw new InternalServerErrorException(
+
+      'Failed to retrieve yet to login employees',
+
+    );
+
+  }
+
+}
+ 
+  // =====================================================
+  // LOGGED IN EMPLOYEES
+  // =====================================================
+
+  async getLoggedInEmployees(companyId: number, dto: GetLoggedInEmployeesDto) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const request = pool.request();
+
+      request.input('CompanyID', sql.Int, companyId);
+      request.input(
+        'AttendanceDate',
+        sql.Date,
+        dto.attendanceDate
+          ? new Date(`${dto.attendanceDate}T00:00:00`)
+          : null,
+      );
+
+      const result = await request.execute('USP_GetLoggedInEmployees');
+
+      return {
+        success: true,
+        message: 'Logged in employees retrieved successfully',
+        data: result.recordset,
+      };
+    } catch (error) {
+      console.error('Error fetching logged in employees:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve logged in employees',
+      );
+    }
+  }
+
+  // =====================================================
+  // AVERAGE OT WORK HOURS
+  // =====================================================
+async getAverageOtWorkHours(companyId: number) {
+  try {
+    const pool = await this.databaseService.connect();
+
+    const result = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId)
+      .execute('USP_GetAverageOtWorkHours');
+
+    const workHours = (result.recordsets?.[0] || []).map(
+      (row: Record<string, unknown>) => ({
+        ...row,
+        Date: this.toDateOnlyIST(row.Date) ?? row.Date,
+      }),
+    );
+
+    const otHours = (result.recordsets?.[1] || []).map(
+      (row: Record<string, unknown>) => ({
+        ...row,
+        Date: this.toDateOnlyIST(row.Date) ?? row.Date,
+      }),
+    );
+
+    return {
+      success: true,
+      message: 'Average OT work hours retrieved successfully',
+      data: [workHours, otHours],
+    };
+  } catch (error) {
+    console.error('AVERAGE OT WORK HOURS ERROR:', error);
+
+    throw new InternalServerErrorException(
+      'Unable to fetch average OT work hours.',
+    );
+  }
+}
+  // =====================================================
+  // LATE IN / EARLY OUT GRAPH
+  // =====================================================
+
+  async getLateInEarlyOutGraph(companyId: number) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('Date', sql.Date, null)
+        .execute('USP_GetLateInEarlyOutGraph');
+
+      return {
+        success: true,
+        message: 'Late in and early out graph retrieved successfully',
+        data: {
+          lateIn: result.recordsets?.[0] || [],
+          earlyOut: result.recordsets?.[1] || [],
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching late in and early out graph:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve late in and early out graph',
+      );
+    }
+  }
+
+  // =====================================================
+  // MISSED PUNCH EMPLOYEES
+  // =====================================================
+
+  async getMissedPunchEmployees(companyId: number, dto: GetMissedPunchEmployeesDto) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('FromDate', sql.Date, dto.fromDate)
+        .input('ToDate', sql.Date, dto.toDate)
+        .input('CompanyId', sql.Int, companyId)
+        .execute('usp_GetMissedPunchEmployees');
+
+      return {
+  success: true,
+  message: 'Missed punch employees retrieved successfully',
+  data: (result.recordset || []).map((row: any) => ({
+    ...row,
+    'Punch Date': this.toDateOnlyIST(row['Punch Date']) ?? row['Punch Date'],
+  })),
+};
+    } catch (error) {
+      console.error('Error fetching missed punch employees:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve missed punch employees',
+      );
+    }
+  }
+
+  // =====================================================
+  // PROCESS HISTORY
+  // =====================================================
+
+   async getProcessHistory(companyId: number, dto: ProcessHistoryDto) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input(
+          'FromDate',
+          sql.Date,
+          dto.fromDate ? new Date(dto.fromDate) : null,
+        )
+        .input(
+          'ToDate',
+          sql.Date,
+          dto.toDate ? new Date(dto.toDate) : null,
+        )
+        .execute('USP_GetProcessHistory');
+
+      // The SP returns an error row instead of throwing, so catch it here
+      const first = result.recordset?.[0];
+      if (first?.StatusCode === 500) {
+        throw new InternalServerErrorException(
+          first.StatusMessage || 'Failed to fetch process history',
+        );
       }
 
+      return (result.recordset ?? []).map((record) => ({
+        ...record,
+        FromDate: this.toDateOnlyIST(record.FromDate) ?? record.FromDate,
+        ToDate: this.toDateOnlyIST(record.ToDate) ?? record.ToDate,
+      }));
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch process history',
+      );
+    }
+  }
+  // =====================================================
+  // ATTENDANCE PROCESSING DASHBOARD
+  // =====================================================
+
+  async getAttendanceProcessingDashboard(
+    companyId: number,
+    dto: AttendanceProcessingDashboardDto,
+  ) {
+    try {
       const pool = await this.databaseService.connect();
 
       const result = await pool
         .request()
-        .input('FileName', file.originalname)
-        .execute('USP_PunchProcess_UploadPunchFile');
+        .input('CompanyID', sql.Int, companyId)
+        .input('FromDate', sql.Date, dto.fromDate || null)
+        .input('ToDate', sql.Date, dto.toDate || null)
+        .execute('USP_GetAttendanceProcessingDashboard');
 
-      return result.recordset;
+      return result.recordset ?? [];
     } catch (error) {
-      console.error('Error while uploading punch file:', error);
-
-      throw new InternalServerErrorException('Unable to upload punch file.');
+      throw new InternalServerErrorException(
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch attendance processing dashboard',
+      );
     }
   }
+
+  // =====================================================
+  // ATTENDANCE DASHBOARD OVERVIEW  (FIXED DATE FORMAT)
+  // =====================================================
+
+  async getAttendanceDashboardOverview(companyId: number) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .input('ToDate', sql.Date, null)
+        .execute('USP_GetAttendanceDashboardOverview');
+
+      const attendanceOverview = (result.recordsets?.[0] || []).map(
+        (row: Record<string, unknown>) => ({
+          ...row,
+          Date: this.toDateOnlyIST(row.Date ?? row.date) ?? row.Date,
+        }),
+      );
+
+      return {
+        success: true,
+        message: 'Attendance dashboard overview retrieved successfully',
+        data: {
+          attendanceOverview,
+          punchModeDistribution: result.recordsets?.[1] || [],
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching attendance dashboard overview:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve attendance dashboard overview',
+      );
+    }
+  }
+//===================================
+// employeerawpunches 
+//===================================
+
+  async getEmployeeRawPunches(
+    employeeId: string,
+    date?: string,
+  ) {
+    const pool = await this.databaseService.connect();
+ 
+    const result = await pool
+      .request()
+      .input(
+        'EmployeeID',
+        sql.VarChar(25),
+        employeeId,
+      )
+      .input(
+        'Date',
+        sql.Date,
+        date
+          ? new Date(date)
+          : null,
+      )
+      .execute('USP_GetEmployeeRawPunches');
+ 
+    return result.recordset;
+  }
+ 
+//=============================================
+//holiday and week off 
+//============================================
+async getHolidayWeekOffEmployees(
+  companyId: number,
+  date?: string,
+  type?: number,
+) {
+  const pool = await this.databaseService.connect();
+
+  const result = await pool
+    .request()
+    .input('CompanyID', sql.Int, companyId)
+    .input('Date', sql.Date, date ?? null)
+    .input('Type', sql.Int, type ?? null)
+    .execute('USP_GetHolidayWeekOffEmployees');
+
+  const first = result.recordset?.[0];
+
+  if (first?.StatusCode === 400) {
+    throw new BadRequestException(
+      first.StatusMessage || 'Invalid request',
+    );
+  }
+
+  if (first?.StatusCode === 500) {
+    throw new InternalServerErrorException(
+      first.StatusMessage ||
+        'Failed to retrieve holiday/week-off details',
+    );
+  }
+
+  const records = result.recordset ?? [];
+
+  return records.map((row: any) => {
+    const attendanceDate = row['Date'];
+
+    if (!attendanceDate) {
+      return row;
+    }
+
+    let formattedDate: string;
+
+    if (
+      typeof attendanceDate === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(attendanceDate)
+    ) {
+      formattedDate = attendanceDate;
+    } else {
+      formattedDate = new Date(attendanceDate).toLocaleDateString(
+        'en-CA',
+        {
+          timeZone: 'Asia/Kolkata',
+        },
+      );
+    }
+
+    return {
+      ...row,
+      Date: formattedDate,
+    };
+  });
+}
+
+//=====================================================
+// Employee dashboard
+//=====================================================
+
+
+async getEmployeeDashboardCounts(
+  companyId: number,
+  fromDate?: string,
+  toDate?: string,
+) {
+  const pool = await this.databaseService.connect();
+
+  const result = await pool
+    .request()
+    .input('CompanyID', sql.Int, companyId)
+    .input(
+      'FromDate',
+      sql.Date,
+      fromDate ? new Date(`${fromDate}T00:00:00`) : null,
+    )
+    .input(
+      'ToDate',
+      sql.Date,
+      toDate ? new Date(`${toDate}T00:00:00`) : null,
+    )
+    .execute('USP_GetEmployeeDashboardCounts');
+
+  const first = result.recordset?.[0];
+
+  if (first?.ErrorMessage) {
+    throw new InternalServerErrorException(first.ErrorMessage);
+  }
+
+  return first ?? {};
+}
+
+//=================================================
+// Employee dashbaord details
+//================================================
+
+async getEmployeeDashboardDetails(
+  insightId: number,
+  companyId: number,
+  fromDate?: string,
+  toDate?: string,
+) {
+  const pool = await this.databaseService.connect();
+
+  const result = await pool
+    .request()
+    .input('InsightID', sql.Int, insightId)
+    .input('CompanyID', sql.Int, companyId)
+    .input(
+      'FromDate',
+      sql.Date,
+      fromDate ? new Date(`${fromDate}T00:00:00`) : null,
+    )
+    .input(
+      'ToDate',
+      sql.Date,
+      toDate ? new Date(`${toDate}T00:00:00`) : null,
+    )
+    .execute('USP_GetEmployeeDashboardDetails');
+
+  const first = result.recordset?.[0];
+
+  if (first?.StatusCode === 400) {
+    throw new BadRequestException(
+      first.StatusMessage || 'Invalid insight ID',
+    );
+  }
+
+  if (first?.StatusCode === 500) {
+    throw new InternalServerErrorException(
+      first.StatusMessage || 'Failed to retrieve employee dashboard details',
+    );
+  }
+
+  return result.recordset ?? [];
+}
+
+//=================================================
+// Attendace overview 
+//===============================================
+async getEmployeeAttendanceOverview(
+  employeeId: string,
+  companyId: number,
+  year: number,
+  month: number,
+) {
+  try {
+    const pool = await this.databaseService.connect();
+
+    const result = await pool
+      .request()
+      .input('EmployeeID', sql.VarChar(50), employeeId)
+      .input('CompanyID', sql.Int, companyId)
+      .input('Year', sql.Int, year)
+      .input('Month', sql.Int, month)
+      .execute('dbo.usp_GetEmployeeAttendanceOverview');
+
+    return {
+      success: true,
+      message: 'Employee attendance overview retrieved successfully',
+      data: result.recordset ?? [],
+    };
+  } catch (error) {
+    console.error('Error fetching employee attendance overview:', error);
+
+    throw new InternalServerErrorException(
+      'Failed to retrieve employee attendance overview',
+    );
+  }
+}
+
+//==================================================
+// Attendance overview Drop down
+//================================================
+async getEmployeesByCompany(
+  companyId: number,
+  branchId?: number,
+) {
+  const pool = await this.databaseService.connect();
+ 
+  const request = pool
+    .request()
+    .input('CompanyId', sql.Int, companyId)
+    .input(
+      'BranchId',
+      sql.Int,
+      branchId ?? null,
+    );
+ 
+  const result = await request.execute(
+    'dbo.USP_GetEmployeesByCompany',
+  );
+ 
+  const firstResultSet = result.recordsets?.[0] ?? [];
+  const secondResultSet = result.recordsets?.[1] ?? [];
+ 
+  // The SP returns validation errors in its first result set.
+  const status = firstResultSet[0] as
+    | { StatusCode?: number; Message?: string }
+    | undefined;
+ 
+  if (status?.StatusCode) {
+    if (status.StatusCode === 400) {
+      throw new BadRequestException(status.Message);
+    }
+ 
+    if (status.StatusCode === 404) {
+      throw new NotFoundException(status.Message);
+    }
+ 
+    throw new InternalServerErrorException(
+      status.Message ?? 'Failed to fetch employees.',
+    );
+  }
+ 
+  return {
+    employees: firstResultSet,
+    salaryStructures: secondResultSet,
+  };
+}
+//====================================================
+//monthly overview
+//===================================================
+async getEmployeeMonthlyAttendanceDetails(
+  companyId: number,
+  dto: EmployeeMonthlyAttendanceDetailsDto,
+) {
+  try {
+    const pool = await this.databaseService.connect();
+    const request = pool.request();
+ 
+    request.input('EmployeeID', sql.VarChar(25), dto.employeeId);
+    request.input('CompanyID', sql.Int, companyId);
+    request.input('Month', sql.Int, dto.month ?? null);
+    request.input('Year', sql.Int, dto.year ?? null);
+    request.input('ClassificationID', sql.Int, null);
+ 
+    const result = await request.execute(
+      'dbo.USP_EmployeeMonthlyAttendanceDetails',
+    );
+ 
+    return {
+      success: true,
+      message: 'Employee monthly attendance summary retrieved successfully',
+      data: result.recordset ?? [],
+    };
+  } catch (error) {
+    console.error(
+      'Error fetching employee monthly attendance summary:',
+      error,
+    );
+ 
+    throw new InternalServerErrorException(
+      'Failed to retrieve employee monthly attendance summary',
+    );
+  }
+}
+//=====================================================
+// Attendance Policy and Shift Dropdown
+//=====================================================
+ 
+async getAttendancePolicyAndShift(companyId: number) {
+  try {
+    const pool = await this.databaseService.connect();
+ 
+    const result = await pool
+      .request()
+      .input('CompanyId', sql.Int, companyId)
+      .execute('USP_GetAttendancePolicyAndShift');
+ 
+    return {
+      success: true,
+      message: 'Attendance policies and shifts retrieved successfully',
+      data: {
+        attendancePolicies: result.recordsets?.[0] ?? [],
+        shifts: result.recordsets?.[1] ?? [],
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching attendance policies and shifts:', error);
+ 
+    throw new InternalServerErrorException(
+      'Failed to retrieve attendance policies and shifts',
+    );
+  }
+}
+ 
 }

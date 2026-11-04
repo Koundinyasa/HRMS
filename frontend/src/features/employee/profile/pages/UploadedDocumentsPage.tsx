@@ -1,5 +1,12 @@
 import ProfileTable from "../components/ProfileTable";
 import { useProfile } from "../hooks/useProfile";
+import type { ProfileSection } from "../types/profile.types";
+
+// Columns that are not shown for now:
+// - "File Path" is the folder on the server where the file is stored.
+//   The View / Download buttons use the "Actions" link, which the server only
+//   serves for the logged-in employee's own documents.
+const HIDDEN_DOCUMENT_FIELDS = ["File Path"];
 
 export default function UploadedDocumentsPage() {
   const {
@@ -36,51 +43,19 @@ export default function UploadedDocumentsPage() {
     );
   }
 
-  const updatedDocumentsSection = {
+  const visibleDocumentsSection: ProfileSection = {
     ...documentsSection,
-
-    records: documentsSection.records.map((record, index) => {
-      let filePath = "/documents/dummy_pan.pdf";
-
-      if (index === 1) {
-        filePath = "/documents/dummy_aadhaar.pdf";
-      } else if (index === 2) {
-        filePath = "/documents/dummy_certificate.pdf";
-      }
-
-      return {
-        ...record,
-
-        fields: record.fields.map((field) => {
-          // Replace File Path
-          if (field.label === "File Path") {
-            return {
-              ...field,
-              value: filePath,
-            };
-          }
-
-          // Replace Actions
-          if (field.label === "Actions") {
-            return {
-              ...field,
-              value: {
-                view: true,
-                download: true,
-                filePath: filePath,
-              },
-            };
-          }
-
-          return field;
-        }),
-      };
-    }),
+    records: (documentsSection.records ?? []).map((record) => ({
+      ...record,
+      fields: record.fields.filter(
+        (field) => !HIDDEN_DOCUMENT_FIELDS.includes(field.label)
+      ),
+    })),
   };
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden">
-      <ProfileTable section={updatedDocumentsSection} />
+      <ProfileTable section={visibleDocumentsSection} />
     </div>
   );
 }

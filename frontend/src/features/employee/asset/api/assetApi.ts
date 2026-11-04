@@ -8,18 +8,18 @@ import type {
   CreateAssetRequestResponse,
   PendingAssetResponse,
 } from "../types/assetTypes";
-
-
+ 
+ 
 function throwIfApiError<T extends { StatusCode?: number; Message?: string }>(response: T): T {
   if (response.StatusCode && response.StatusCode >= 400) {
     throw { status: response.StatusCode, data: response };
   }
   return response;
 }
-
+ 
 export const assetApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    
+   
     createAssetRequest: builder.mutation<
       CreateAssetRequestResponse,
       { assetId: number; remarks: string }
@@ -29,11 +29,11 @@ export const assetApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: throwIfApiError<CreateAssetRequestResponse>,
-      invalidatesTags: ["AssetRequests"],
+     
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
-
-    
+ 
+   
     getAssetHistory: builder.query<AssetHistoryResponse, void>({
       query: () => ({
         url: "/asset/history",
@@ -42,8 +42,8 @@ export const assetApi = baseApi.injectEndpoints({
       }),
       providesTags: ["AssetRequests"],
     }),
-
-    
+ 
+   
     getPendingAssetRequests: builder.query<PendingAssetResponse, void>({
       query: () => ({
         url: "/asset/pendingrequests",
@@ -52,8 +52,8 @@ export const assetApi = baseApi.injectEndpoints({
       }),
       providesTags: ["AssetRequests"],
     }),
-
-    
+ 
+   
     getMyAssetRequestStatus: builder.query<AssetRequestStatusResponse,void>({
       query: () => ({
         url: "/asset/return",
@@ -62,7 +62,7 @@ export const assetApi = baseApi.injectEndpoints({
       }),
       providesTags: ["AssetRequests"],
     }),
-
+ 
    
     approveAssetStage: builder.mutation<
       ApiMessageResponse,
@@ -74,10 +74,10 @@ export const assetApi = baseApi.injectEndpoints({
         body,
       }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
-      invalidatesTags: ["AssetRequests"],
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
-
-    
+ 
+   
     allocateAsset: builder.mutation<
       ApiMessageResponse,
       {
@@ -95,10 +95,10 @@ export const assetApi = baseApi.injectEndpoints({
         body,
       }),
       transformResponse: throwIfApiError<ApiMessageResponse>,
-      invalidatesTags: ["AssetRequests"],
+      invalidatesTags: ["AssetRequests", "ApprovalSummary"],
     }),
-
-    
+ 
+   
     createAssetType: builder.mutation<ApiMessageResponse, { assetName: string }>({
       query: (body) => ({
         url: "/asset/type",
@@ -108,8 +108,8 @@ export const assetApi = baseApi.injectEndpoints({
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["AssetTypes"],
     }),
-
-    
+ 
+   
     updateAssetType: builder.mutation<
       ApiMessageResponse,
       { assetName: string; newAssetName: string }
@@ -122,8 +122,8 @@ export const assetApi = baseApi.injectEndpoints({
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["AssetTypes"],
     }),
-
-    
+ 
+   
     updateAssetTypeStatus: builder.mutation<
       ApiMessageResponse,
       { assetName: string; isActive: 0 | 1 }
@@ -136,43 +136,43 @@ export const assetApi = baseApi.injectEndpoints({
       transformResponse: throwIfApiError<ApiMessageResponse>,
       invalidatesTags: ["AssetTypes"],
     }),
-
-    
+ 
+   
     getAssetTypes: builder.query<AssetTypeItem[], void>({
   query: () => ({
     url: "/asset/types",
     method: "GET",
     cache: "no-store" as RequestCache,
   }),
-
+ 
   transformResponse: (response: AssetTypesResponse) => {
     const section = response.sections.find(
       (section) => section.title === "Asset Types"
     );
-
+ 
     if (!section) return [];
-
+ 
     return section.records.map((record) => {
       const assetId = record.fields.find(
         (field) => field.label === "AssetID"
       )?.value;
-
+ 
       const assetName = record.fields.find(
         (field) => field.label === "AssetName"
       )?.value;
-
+ 
       return {
         AssetID: Number(assetId),
         AssetName: String(assetName),
       };
     });
   },
-
+ 
   providesTags: ["AssetTypes"],
 }),
   }),
 });
-
+ 
 export const {
   useCreateAssetRequestMutation,
   useGetAssetHistoryQuery,
@@ -185,3 +185,5 @@ export const {
   useUpdateAssetTypeStatusMutation,
   useGetAssetTypesQuery,
 } = assetApi;
+ 
+ 

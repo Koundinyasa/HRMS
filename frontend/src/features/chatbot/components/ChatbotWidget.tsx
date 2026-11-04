@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import React from "react";
 
 // Chrome/Edge ship SpeechRecognition natively; Firefox/Safari don't support it
@@ -163,7 +163,11 @@ function pruneOtherWidgetStorage(employeeId?: string): void {
 
   for (let i = 0; i < window.localStorage.length; i++) {
     const key = window.localStorage.key(i);
-    if (key && key.startsWith("hrmsChatbotWidgetMessages-") && key !== currentKey) {
+    if (
+      key &&
+      key.startsWith("hrmsChatbotWidgetMessages-") &&
+      key !== currentKey
+    ) {
       keysToRemove.push(key);
     }
   }
@@ -475,11 +479,31 @@ export default function ChatbotWidget({
 
   const employeeName = employee?.FullName;
 
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+  const [messageState, setMessageState] = useState(() => {
     const saved = loadWidgetMessages(employeeId);
-
-    return saved ?? [];
+    return { employeeId, messages: saved ?? [] };
   });
+  const messages = useMemo(
+    () =>
+      messageState.employeeId === employeeId
+        ? messageState.messages
+        : (loadWidgetMessages(employeeId) ?? []),
+    [employeeId, messageState]
+  );
+  const setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>> =
+    useCallback((update) => {
+      setMessageState((previous) => {
+        const current =
+          previous.employeeId === employeeId
+            ? previous.messages
+            : (loadWidgetMessages(employeeId) ?? []);
+        return {
+          employeeId,
+          messages:
+            typeof update === "function" ? update(current) : update,
+        };
+      });
+    }, [employeeId]);
 
   const [inputValue, setInputValue] = useState("");
 
@@ -529,7 +553,9 @@ export default function ChatbotWidget({
   useEffect(() => {
     return () => {
       if (employeeIdRef.current) {
-        window.localStorage.removeItem(getWidgetStorageKey(employeeIdRef.current));
+        window.localStorage.removeItem(
+          getWidgetStorageKey(employeeIdRef.current),
+        );
       }
     };
   }, []);
@@ -554,19 +580,13 @@ export default function ChatbotWidget({
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
       });
-    } else {
-      setNewMessageCount((c) => c + 1);
     }
-  }, [messages]);
+  }, [messages, isNearBottom]);
   useEffect(() => {
-  pruneOtherWidgetStorage(employeeId);
+    pruneOtherWidgetStorage(employeeId);
 
-  const saved = loadWidgetMessages(employeeId);
-
-  setMessages(saved ?? []);
-
-  menuShownRef.current = false;
-}, [employeeId, employeeName]);
+    menuShownRef.current = false;
+  }, [employeeId, employeeName]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -587,23 +607,12 @@ export default function ChatbotWidget({
     };
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setHasUnread(false);
-    }
-  }, [isOpen]);
+  const handleToggle = () => {
+    if (!isOpen) setHasUnread(false);
+    onToggle();
+  };
 
-  useEffect(() => {
-    if (isOpen && !menuShownRef.current && messages.length === 0) {
-      menuShownRef.current = true;
-
-      void sendText("menu:main", {
-        silent: true,
-      });
-    }
-  }, [isOpen, messages.length]);
-
-  const sendText = async (
+  const sendText = useCallback(async (
     text: string,
     options?: {
       silent?: boolean;
@@ -618,6 +627,7 @@ export default function ChatbotWidget({
 
     // Add user message unless silent
     if (!options?.silent) {
+      if (!isNearBottom) setNewMessageCount((count) => count + 1);
       const userMessage: ChatMessage = {
         id: Date.now(),
         text: trimmed,
@@ -678,6 +688,7 @@ export default function ChatbotWidget({
       if (!isOpen) {
         setHasUnread(true);
       }
+      if (!isNearBottom) setNewMessageCount((count) => count + 1);
 
       setMessages((prev) => {
         const updated = [...prev, botMessage];
@@ -704,6 +715,7 @@ export default function ChatbotWidget({
         widget: { type: "notice", noticeTone: "danger" },
         retryText: trimmed,
       };
+      if (!isNearBottom) setNewMessageCount((count) => count + 1);
 
       setMessages((prev) => {
         const updated = [...prev, errorMessage];
@@ -720,7 +732,25 @@ export default function ChatbotWidget({
         setLoading(false);
       }
     }
-  };
+  }, [
+    employeeId,
+    employeeName,
+    isNearBottom,
+    isOpen,
+    messages.length,
+    sendChat,
+    setMessages,
+  ]);
+
+  useEffect(() => {
+    if (isOpen && !menuShownRef.current && messages.length === 0) {
+      menuShownRef.current = true;
+
+      void sendText("menu:main", {
+        silent: true,
+      });
+    }
+  }, [isOpen, messages.length, sendText]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -746,7 +776,7 @@ export default function ChatbotWidget({
     recognition.continuous = false;
     recognition.interimResults = true;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionResultEvent) => {
       let transcript = "";
       for (let i = 0; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript;
@@ -826,7 +856,7 @@ export default function ChatbotWidget({
             `}</style>
       {/* Toggle Button */}
       <button
-        onClick={onToggle}
+        onClick={handleToggle}
         title="Chat with us"
         style={GRADIENT_STYLE}
         className={`fixed bottom-[30px] right-[30px] w-[62px] h-[62px] rounded-full text-white border-none cursor-pointer text-[26px] flex items-center justify-center shadow-[0_10px_26px_rgba(109,94,252,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:shadow-[0_14px_34px_rgba(109,94,252,0.62)] z-[999]`}
@@ -894,7 +924,7 @@ export default function ChatbotWidget({
 
       {isOpen && (
         <div
-          className={`fixed bottom-[105px] right-[30px] bg-white rounded-[24px] shadow-[0_24px_70px_rgba(43,30,120,0.22)] flex flex-col overflow-hidden z-[999] animate-[cbSlideUp_0.3s_ease] transition-[width,height] duration-200 max-[600px]:w-[calc(100%-24px)] max-[600px]:h-[72vh] max-[600px]:bottom-[90px] max-[600px]:right-3 ${
+          className={`fixed bottom-[105px] right-[30px] bg-white rounded-[24px] shadow-[0_24px_70px_rgba(43,30,120,0.22)] flex flex-col overflow-hidden z-[999] animate-[cbSlideUp_0.3s_ease] transition-[width,height] duration-200 max-[600px]:w-[calc(100%-24px)] max-[600px]:h-[72dvh] max-[600px]:max-h-[calc(100dvh-170px)] max-[600px]:bottom-[90px] max-[600px]:right-3 ${
             isExpanded ? "w-[600px] h-[85vh]" : "w-[400px] h-[620px]"
           }`}
         >
@@ -959,7 +989,7 @@ export default function ChatbotWidget({
             </div>
 
             <div className="flex flex-col leading-tight z-10">
-              <h3 className="m-0 text-[15.5px] font-bold">NYRA</h3>
+              <h3 className="m-0 text-[15.5px] font-bold">VEDA</h3>
               <span className="text-[11.5px] opacity-90">Online</span>
             </div>
 
@@ -1028,7 +1058,7 @@ export default function ChatbotWidget({
               </IconTooltip>
               <IconTooltip label="Close chat" position="bottom">
                 <button
-                  onClick={onToggle}
+                  onClick={handleToggle}
                   aria-label="Close chat"
                   className="text-white text-2xl w-[30px] h-[30px] flex items-center justify-center rounded-lg hover:bg-white/20 transition-colors"
                 >
@@ -1353,7 +1383,7 @@ export default function ChatbotWidget({
           {/* Input Form */}
           <form
             onSubmit={sendMessage}
-            className="flex gap-2 px-3.5 py-3 bg-white border-t border-[#eceef5] items-center"
+            className="flex gap-2 px-3.5 py-3 max-[420px]:gap-1.5 max-[420px]:px-2.5 bg-white border-t border-[#eceef5] items-center"
           >
             <IconTooltip label="Main menu" position="top">
               <button
@@ -1373,7 +1403,7 @@ export default function ChatbotWidget({
               placeholder="Ask a question, or use the menu..."
               disabled={loading}
               spellCheck="true"
-              className="flex-1 px-[15px] py-3 border border-[#eceef5] rounded-xl text-[13px] font-inherit outline-none bg-[#f7f7fc] transition-colors focus:border-[var(--primary-color)] focus:bg-white placeholder:text-[#a7adbd]"
+              className="flex-1 min-w-0 px-[15px] py-3 border border-[#eceef5] rounded-xl text-[13px] font-inherit outline-none bg-[#f7f7fc] transition-colors focus:border-[var(--primary-color)] focus:bg-white placeholder:text-[#a7adbd]"
             />
             {SpeechRecognitionAPI ? (
               <IconTooltip
@@ -1618,40 +1648,53 @@ function formatIsoDateLabel(iso: string): string {
 }
 
 type CalendarLeave = NonNullable<ChatWidget["leaveDates"]>[number];
+type LeaveHalf = "first" | "second" | "unknown" | null;
 
 const LEAVE_COLOR_CLASSES = {
   orange: {
     marker: "bg-orange-500",
     background: "bg-orange-200",
-    text: "text-orange-800",
+    text: "text-white-800",
   },
   green: {
     marker: "bg-emerald-500",
     background: "bg-emerald-200",
-    text: "text-emerald-800",
+    text: "text-white-800",
   },
   red: {
-    marker: "bg-red-500",
-    background: "bg-red-200",
-    text: "text-red-800",
+    marker: "bg-red-700",
+    background: "bg-red-300",
+    text: "text-white-800",
   },
   gray: {
     marker: "bg-gray-500",
     background: "bg-gray-200",
-    text: "text-gray-700",
+    text: "text-white-800",
+  },
+  slate: {
+    marker: "bg-violet-500",
+    background: "bg-violet-400",
+    text: "text-white-800",
   },
 } as const;
 
 type LeaveColor = keyof typeof LEAVE_COLOR_CLASSES;
 
-type LeaveStatus = "pending" | "approved" | "withdrawn" | "rejected" | "other";
+type LeaveStatus = "pending" | "approved" | "rejected" | "withdrawn" | "other";
 
 function getLeaveStatus(status: string): LeaveStatus {
   const normalized = status.trim().toLowerCase();
+  if (normalized.includes("reject")) return "rejected";
+  if (normalized.includes("approve") || normalized.includes("scheduled")) {
+    return "approved";
+  }
+  // Selected and Interviewing are HRMS in-progress states; cancelled and
+  // withdrawn are retained as raw statuses but use the existing Other color.
   if (normalized.includes("pending")) return "pending";
-  if (normalized.includes("approved")) return "approved";
   if (normalized.includes("withdrawn")) return "withdrawn";
-  if (normalized.includes("rejected")) return "rejected";
+  if (normalized.includes("selected") || normalized.includes("interview")) {
+    return "pending";
+  }
   return "other";
 }
 
@@ -1663,10 +1706,33 @@ function getLeaveStatusColor(status: string): LeaveColor {
       return "green";
     case "rejected":
       return "red";
-    case "withdrawn":
     case "other":
       return "gray";
+    case "withdrawn":
+      return "slate";
   }
+}
+
+function getLeaveHalf(leave: CalendarLeave): LeaveHalf {
+  const sessions = [leave.sessionFrom, leave.sessionTo]
+    .filter((session): session is string => Boolean(session))
+    .map((session) => session.replace(/\s+/g, "").toLowerCase());
+  const hasFirst = sessions.some((session) => session.includes("first"));
+  const hasSecond = sessions.some((session) => session.includes("second"));
+
+  if (hasFirst && hasSecond) return null;
+  if (hasFirst) return "first";
+  if (hasSecond) return "second";
+  if (leave.isHalfDay) return "unknown";
+  return null;
+}
+
+function getSessionLabel(leave: CalendarLeave): string {
+  const half = getLeaveHalf(leave);
+  if (half === "first") return "First Half";
+  if (half === "second") return "Second Half";
+  if (half === "unknown") return "Half Day";
+  return "Full Day";
 }
 
 function ChatWidgetRenderer({
@@ -1678,10 +1744,15 @@ function ChatWidgetRenderer({
   onOpenTeamPreview,
 }: ChatWidgetRendererProps) {
   const [dateValue, setDateValue] = useState("");
-  const [selectedLeave, setSelectedLeave] = useState<CalendarLeave | null>(null);
+  const [selectedLeaves, setSelectedLeaves] = useState<CalendarLeave[]>([]);
   const [dateError, setDateError] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(
+    () => widget.type === "date" && !disabled,
+  );
   const [calendarMonth, setCalendarMonth] = useState(() => {
+    if (widget.type === "date" && widget.minDate) {
+      return isoToMonthStart(widget.minDate);
+    }
     const month = new Date();
     month.setDate(1);
     return month;
@@ -1690,23 +1761,10 @@ function ChatWidgetRenderer({
   const [downloaded, setDownloaded] = useState(false);
   const widgetRowRef = useRef<HTMLDivElement>(null);
 
-  // The leave-date step should open straight into the calendar instead of
-  // making the person click the calendar icon first — this fires once when
-  // this widget message first mounts (each date-widget message gets a fresh
-  // instance via its `key` in the parent, so this reliably re-fires every
-  // time a new "pick your leave date" step appears).
   useEffect(() => {
-    if (widget.type === "date" && !disabled) {
-      setShowCalendar(true);
-      if (widget.minDate) {
-        setCalendarMonth(isoToMonthStart(widget.minDate));
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (resetConfirmOpen) setShowCalendar(false);
+    if (!resetConfirmOpen) return;
+    const frame = requestAnimationFrame(() => setShowCalendar(false));
+    return () => cancelAnimationFrame(frame);
   }, [resetConfirmOpen]);
 
   // The calendar pops open ABOVE the date field (it needs to, since that
@@ -1723,7 +1781,10 @@ function ChatWidgetRenderer({
   // keeps the relevant part on-screen either way.
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
-      widgetRowRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      widgetRowRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     });
     return () => cancelAnimationFrame(raf);
   }, [showCalendar, dateValue]);
@@ -1744,15 +1805,21 @@ function ChatWidgetRenderer({
         holiday.name ?? "Holiday",
       ]),
     );
+    const visibleLeaveDates = (widget.leaveDates ?? []).filter((leave) => {
+      const status = getLeaveStatus(leave.status);
+      return status === "approved" || status === "withdrawn";
+    });
     const leaveDates = new Map<string, CalendarLeave[]>();
-    for (const leave of widget.leaveDates ?? []) {
+    for (const leave of visibleLeaveDates) {
       const date = leave.date.slice(0, 10);
       const dateLeaves = leaveDates.get(date) ?? [];
       dateLeaves.push(leave);
       leaveDates.set(date, dateLeaves);
     }
     const leaveStatuses = Array.from(
-      new Set((widget.leaveDates ?? []).map((leave) => getLeaveStatus(leave.status))),
+      new Set(
+        visibleLeaveDates.map((leave) => getLeaveStatus(leave.status)),
+      ),
     );
     const isWeekend = (iso: string) => {
       const day = new Date(`${iso}T00:00:00Z`).getUTCDay();
@@ -1777,6 +1844,7 @@ function ChatWidgetRenderer({
       day.setDate(calendarStart.getDate() + index);
       return day;
     });
+    const todayIso = getLocalIsoDate();
     const monthLabel = calendarMonth.toLocaleDateString([], {
       month: "long",
       year: "numeric",
@@ -1833,7 +1901,10 @@ function ChatWidgetRenderer({
     };
 
     return (
-      <div ref={widgetRowRef} className="flex flex-wrap gap-2 mt-2.5 items-center">
+      <div
+        ref={widgetRowRef}
+        className="flex flex-wrap gap-2 mt-2.5 items-center"
+      >
         <div className="relative flex items-center">
           <input
             type="text"
@@ -1859,7 +1930,7 @@ function ChatWidgetRenderer({
             <Calendar size={16} />
           </button>
           {showCalendar && !disabled && (
-            <div className="absolute bottom-full left-0 z-30 mb-1 w-[296px] rounded-xl border border-[#eceef5] bg-white p-3 shadow-[0_8px_24px_rgba(43,30,120,0.16)]">
+            <div className="absolute bottom-full left-0 max-[600px]:-left-[44px] z-30 mb-1 w-[296px] max-[600px]:w-[min(296px,calc(100vw-3rem))] rounded-xl border border-[#eceef5] bg-white p-3 shadow-[0_8px_24px_rgba(43,30,120,0.16)]">
               <div className="mb-2 flex items-center justify-between">
                 <button
                   type="button"
@@ -1889,15 +1960,34 @@ function ChatWidgetRenderer({
                 )}
                 {calendarDays.map((day) => {
                   const iso = localDateToIso(day);
+                  const isToday = iso === todayIso;
                   const outsideMonth =
                     day.getMonth() !== calendarMonth.getMonth();
                   const weekend = isWeekend(iso);
                   const holiday = isHoliday(iso);
                   const leaves = leaveDates.get(iso) ?? [];
-                  const leave = leaves[0];
-                  const leaveColors = leaves.map((item) =>
-                    LEAVE_COLOR_CLASSES[getLeaveStatusColor(item.status)],
+                  const fullDayLeave = leaves.find(
+                    (item) => getLeaveHalf(item) === null,
                   );
+                  const unknownSessionLeave = leaves.find(
+                    (item) => getLeaveHalf(item) === "unknown",
+                  );
+                  const firstHalfLeave = leaves.find(
+                    (item) => getLeaveHalf(item) === "first",
+                  );
+                  const secondHalfLeave = leaves.find(
+                    (item) => getLeaveHalf(item) === "second",
+                  );
+                  const markerLeave =
+                    fullDayLeave ??
+                    unknownSessionLeave ??
+                    firstHalfLeave ??
+                    secondHalfLeave;
+                  const markerColor = markerLeave
+                    ? LEAVE_COLOR_CLASSES[
+                        getLeaveStatusColor(markerLeave.status)
+                      ]
+                    : undefined;
                   const selected =
                     iso === dateValue.split("-").reverse().join("-");
                   const startDateReference = widget.minDate === iso;
@@ -1908,8 +1998,15 @@ function ChatWidgetRenderer({
                       type="button"
                       disabled={!selectable}
                       title={
-                        leave
-                          ? `${leaves.map((item) => `${item.leaveType} (${item.status})`).join("\n")}\n${formatIsoDateLabel(iso)}`
+                        leaves.length
+                          ? `${leaves
+                              .map(
+                                (item) =>
+                                  `${item.leaveType} (${
+                                    item.status
+                                  }; ${getSessionLabel(item)})`,
+                              )
+                              .join("\n")}\n${formatIsoDateLabel(iso)}`
                           : holiday
                           ? holidayDates.get(iso)
                           : weekend
@@ -1918,79 +2015,122 @@ function ChatWidgetRenderer({
                       }
                       onClick={() => {
                         handleDateChange(isoToDisplayDate(iso));
-                        setSelectedLeave(leave ?? null);
+                        setSelectedLeaves(leaves);
                         setShowCalendar(leaves.length > 0);
                       }}
-                      className={`mx-auto my-0.5 flex h-7 w-7 items-center justify-center rounded-full border-none text-[12px] ${
+                      className={`relative mx-auto my-0.5 flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-none text-[12px] ${
                         outsideMonth ? "text-[#b7bdc9]" : "text-[#1f2430]"
-                      } ${weekend ? "bg-[#ffe0e3] text-[#e33b49]" : ""} ${
+                      } ${weekend ? "bg-rose-100 text-rose-500" : ""} ${
                         holiday ? "bg-[#2f68df] text-white" : ""
                       } ${
                         startDateReference && !holiday && !weekend
                           ? "bg-[#dbeafe] text-[#1d4ed8]"
                           : ""
                       } ${
-                        leave && !holiday && !weekend
-                          ? `${leaveColors[0].background} ${leaveColors[0].text}`
+                        isToday
+                          ? "ring-2 ring-blue-500 ring-offset-2"
+                          : selected
+                          ? "ring-2 ring-[#1f5bd8] ring-offset-1"
                           : ""
-                      } ${
-                        selected ? "ring-2 ring-[#1f5bd8] ring-offset-1" : ""
                       } ${
                         selectable
                           ? "cursor-pointer hover:bg-[var(--primary-light)]"
                           : "cursor-not-allowed opacity-75"
                       }`}
                     >
-                      <span className="relative">
-                        {day.getDate()}
-                      </span>
+                      {!weekend && !holiday && markerColor && (
+                        <span className="pointer-events-none absolute inset-0">
+                          {fullDayLeave || unknownSessionLeave ? (
+                            <span
+                              className={`absolute inset-0 ${markerColor.background}`}
+                            />
+                          ) : (
+                            <>
+                              {firstHalfLeave && (
+                                <span
+                                  className={`absolute inset-0 ${
+                                    LEAVE_COLOR_CLASSES[
+                                      getLeaveStatusColor(firstHalfLeave.status)
+                                    ].background
+                                  }`}
+                                  style={{ clipPath: "inset(0 50% 0 0)" }}
+                                />
+                              )}
+                              {secondHalfLeave && (
+                                <span
+                                  className={`absolute inset-0 ${
+                                    LEAVE_COLOR_CLASSES[
+                                      getLeaveStatusColor(
+                                        secondHalfLeave.status,
+                                      )
+                                    ].background
+                                  }`}
+                                  style={{ clipPath: "inset(0 0 0 50%)" }}
+                                />
+                              )}
+                            </>
+                          )}
+                        </span>
+                      )}
+                      <span className="relative z-10">{day.getDate()}</span>
                     </button>
                   );
                 })}
               </div>
-              {selectedLeave && (
+              {selectedLeaves.length > 0 && (
                 <div className="mt-2 rounded-lg border border-[#f6d08a] bg-[#fffaf0] px-3 py-2 text-[11px] text-[#526079]">
                   <div className="font-semibold text-[#b45309]">My Leave</div>
                   <div className="mt-1 font-medium text-[#1f2430]">
-                    {formatIsoDateLabel(selectedLeave.date)}
+                    {formatIsoDateLabel(selectedLeaves[0].date)}
                   </div>
-                  <div className="mt-1">
-                    Leave Type: <span className="font-medium text-[#1f2430]">{selectedLeave.leaveType}</span>
-                  </div>
-                  <div>
-                    Status: <span className="font-medium text-[#1f2430]">{selectedLeave.status}</span>
-                  </div>
+                  {selectedLeaves.map((leave, index) => (
+                    <div
+                      key={`${leave.leaveId ?? leave.leaveType}-${index}`}
+                      className="mt-2 border-t border-[#f6d08a] pt-2"
+                    >
+                      <div className="font-medium text-[#1f2430]">
+                        {leave.leaveType}
+                      </div>
+                      <div>Status: {leave.status}</div>
+                      <div>Session: {getSessionLabel(leave)}</div>
+                    </div>
+                  ))}
                 </div>
               )}
               <div className="mt-2 grid grid-cols-3 items-start gap-x-2 gap-y-2 border-t border-[#eceef5] pt-2 text-[10px] leading-[1.15] text-[#526079]">
                 <span className="flex min-w-0 flex-col items-center text-center">
-                  <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-[#e33b49]" />
-                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">Weekend</span>
+                  <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-rose-300" />
+                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
+                    Weekend
+                  </span>
                 </span>
                 <span className="flex min-w-0 flex-col items-center text-center">
                   <i className="mb-1 h-2 w-2 shrink-0 rounded-full bg-[#2f68df]" />
-                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">Holiday</span>
+                  <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
+                    Holiday
+                  </span>
                 </span>
                 {leaveStatuses.map((status) => {
-                  const statusColors = LEAVE_COLOR_CLASSES[
-                    getLeaveStatusColor(status)
-                  ];
+                  const statusColors =
+                    LEAVE_COLOR_CLASSES[getLeaveStatusColor(status)];
                   const label =
                     status === "pending"
                       ? "Pending Leave"
                       : status === "approved"
                       ? "Approved Leave"
-                      : status === "withdrawn"
-                      ? "Withdrawn Leave"
                       : status === "rejected"
                       ? "Rejected Leave"
+                      : status === "withdrawn"
+                      ? "Withdrawn Leave"
                       : "Other Leave";
                   return (
                     <span
                       key={status}
                       className="flex min-w-0 flex-col items-center text-center"
                     >
-                      <i className={`mb-1 h-2 w-2 shrink-0 rounded-full ${statusColors.marker}`} />
+                      <i
+                        className={`mb-1 h-2 w-2 shrink-0 rounded-full ${statusColors.marker}`}
+                      />
                       <span className="line-clamp-2 whitespace-normal break-normal [overflow-wrap:normal]">
                         {label}
                       </span>
@@ -2004,7 +2144,7 @@ function ChatWidgetRenderer({
                   onClick={() => {
                     setDateValue("");
                     setDateError(false);
-                    setSelectedLeave(null);
+                    setSelectedLeaves([]);
                     setShowCalendar(false);
                   }}
                   className="border-none bg-transparent px-1 text-[12px] font-medium text-[#1677d2] cursor-pointer hover:text-[#125eaa]"
@@ -2017,7 +2157,7 @@ function ChatWidgetRenderer({
                   onClick={() => {
                     const today = getLocalIsoDate();
                     handleDateChange(isoToDisplayDate(today));
-                    setSelectedLeave(leaveDates.get(today)?.[0] ?? null);
+                    setSelectedLeaves(leaveDates.get(today) ?? []);
                     setCalendarMonth(isoToMonthStart(today));
                     setShowCalendar(false);
                   }}
@@ -2079,28 +2219,41 @@ function ChatWidgetRenderer({
               {widget.cardTitle}
             </p>
             {widget.cardSubtitle && (
-              <p className="text-[12px] text-[#8a90a5] m-0 mt-0.5 truncate">
+              <p className="text-[12px] text-[#8a90a5] m-0 mt-0.5 break-words">
                 {widget.cardSubtitle}
               </p>
             )}
           </div>
         </div>
         <div className="border-t border-[#eceef5] pt-2.5 flex flex-col gap-1.5">
-          {fields.map((f, i) => (
+          {fields.map((f, i) => {
+            // A value is never cut off. A list of e-mail addresses
+            // ("a@x.com,b@x.com") shows one address per line; any other long
+            // value wraps inside the card.
+            const parts = String(f.value ?? "")
+              .split(/\s*[,;]\s*/)
+              .filter(Boolean);
+            const lines =
+              parts.length > 1 && parts.every((p) => /\S+@\S+/.test(p))
+                ? parts
+                : [String(f.value ?? "")];
+            return (
             <div
               key={i}
-              className="flex items-center justify-between gap-3 text-[12.5px]"
+              className="flex items-start justify-between gap-3 text-[12.5px]"
             >
-              <span className="text-[#8a90a5]">{f.label}</span>
-              <span className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[#1f2430] font-semibold text-right truncate">
-                  {f.value}
+              <span className="shrink-0 text-[#8a90a5]">{f.label}</span>
+              <span className="flex items-start gap-1.5 min-w-0">
+                <span className="flex min-w-0 flex-col items-end gap-0.5 text-[#1f2430] font-semibold text-right [overflow-wrap:anywhere]">
+                  {lines.map((line, j) => (
+                    <span key={j}>{line}</span>
+                  ))}
                 </span>
                 <button
                   type="button"
                   onClick={() => copyValue(f.value, i)}
                   aria-label={`Copy ${f.label}`}
-                  className="shrink-0 w-5 h-5 flex items-center justify-center rounded text-[#a7adbd] hover:text-[var(--primary-color)] hover:bg-[var(--primary-light)] transition-colors"
+                  className="mt-0.5 shrink-0 w-5 h-5 flex items-center justify-center rounded text-[#a7adbd] hover:text-[var(--primary-color)] hover:bg-[var(--primary-light)] transition-colors"
                 >
                   {copiedField === i ? (
                     <svg
@@ -2135,7 +2288,8 @@ function ChatWidgetRenderer({
                 </button>
               </span>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -2153,7 +2307,7 @@ function ChatWidgetRenderer({
             onClick={() => onSubmit(`type:${opt.code}`)}
             className="flex justify-between items-center gap-2.5 px-[15px] py-3.5 border border-[#eceef5] bg-white rounded-2xl cursor-pointer shadow-[0_2px_8px_rgba(43,30,120,0.04)] transition-all duration-150 text-left hover:border-[var(--primary-color)] hover:bg-[var(--primary-light)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="font-semibold text-[#1f2430] text-[13px]">
+            <span className="min-w-0 font-semibold text-[#1f2430] text-[13px] [overflow-wrap:anywhere]">
               {opt.name} ({opt.code})
             </span>
             <span
@@ -2202,7 +2356,7 @@ function ChatWidgetRenderer({
             setDownloaded(true);
           }}
           style={GRADIENT_STYLE}
-          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
+          className={`inline-flex max-w-full items-center gap-2 px-4 py-2.5 rounded-[11px] text-[13px] font-semibold text-white border-none no-underline [overflow-wrap:anywhere] shadow-[0_5px_14px_rgba(109,94,252,0.3)] transition-all duration-150 ${
             downloaded
               ? "opacity-45 cursor-not-allowed"
               : "cursor-pointer hover:-translate-y-0.5"
@@ -2300,7 +2454,7 @@ function ChatWidgetRenderer({
               >
                 {i + 1}
               </span>
-              <span className="text-[12.5px] text-[#3a3f4d] leading-snug pt-0.5">
+              <span className="min-w-0 text-[12.5px] text-[#3a3f4d] leading-snug pt-0.5 [overflow-wrap:anywhere]">
                 {item}
               </span>
             </div>

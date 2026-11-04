@@ -1,4 +1,7 @@
-import { IsDateString, IsOptional } from 'class-validator';
+import {
+  IsDateString,
+  IsOptional,
+} from 'class-validator';
 
 export class MissedPunchEmployeesDto {
   @IsOptional()

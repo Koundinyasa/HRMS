@@ -52,7 +52,7 @@ export class PTSlabDto {
 
 export class PTConfigurationDto {
   @IsInt()
-  ptGroupId!: number;
+  Id!: number;
 
   @IsInt()
   stateId!: number;

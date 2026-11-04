@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+*.zip
+
+# Database diagnostics output (exports and timings from a real database)
+backend/database/diagnostics/output/

@@ -5,7 +5,6 @@ import {
   Post,
   Put,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 
 import { AssetService } from './asset.service';
@@ -17,10 +16,10 @@ import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { UpdateAssetTypeDto } from './dto/update-asset-type.dto';
 import { UpdateAssetTypeStatusDto } from './dto/update-asset-type-status.dto';
 
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { ADMIN_PORTAL_ROLES } from '../../common/constants/roles';
 
 @Controller('asset')
-@UseGuards(JwtAuthGuard)
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 
@@ -55,6 +54,7 @@ export class AssetController {
   // =====================================================
 
   // Allocate Asset
+  @Roles(...ADMIN_PORTAL_ROLES)
   @Post('allocation')
   async allocateAsset(
     @Req() req,
@@ -91,6 +91,7 @@ export class AssetController {
   // =====================================================
 
   // Create Asset Type
+  @Roles(...ADMIN_PORTAL_ROLES)
   @Post('type')
   async createAssetType(
     @Req() req,
@@ -107,6 +108,7 @@ export class AssetController {
   // =====================================================
 
   // Update Asset Type
+  @Roles(...ADMIN_PORTAL_ROLES)
   @Put('type/update')
   async updateAssetType(
     @Req() req,
@@ -123,6 +125,7 @@ export class AssetController {
   // =====================================================
 
   // Activate / Deactivate Asset Type
+  @Roles(...ADMIN_PORTAL_ROLES)
   @Put('type/status')
   async updateAssetTypeStatus(
     @Req() req,

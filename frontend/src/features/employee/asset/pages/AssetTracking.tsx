@@ -1,5 +1,4 @@
-import { Menu, UserCircle2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import AssetStatusTimeline from "../components/AssetStatusTimeline";
 import { useAssetManagement } from "../hooks/useAssetManagement";
 import AssetNavbar from "../components/AssetNavbar";

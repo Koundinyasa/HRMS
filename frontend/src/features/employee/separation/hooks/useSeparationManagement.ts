@@ -7,9 +7,21 @@ import {
 } from "../api/separationApi";
 
 import type {
+  ApiResponse,
   ResignationRequest,
   WithdrawRequest,
 } from "../types/separation.types";
+
+const isErrorResult = (result: unknown): result is ApiResponse => {
+  if (!result || typeof result !== "object") return false;
+
+  const response = result as Record<string, unknown>;
+  const code = Number(response.ErrorCode ?? response.StatusCode);
+  if (!Number.isNaN(code) && code >= 400) return true;
+
+  const message = String(response.Message ?? response.message ?? "");
+  return /^\s*(validation\s*error|error)\b/i.test(message);
+};
 
 export const useSeparationManagement = () => {
   /**
@@ -29,10 +41,7 @@ export const useSeparationManagement = () => {
    */
   const [
     submitResignation,
-    {
-      isLoading: isSubmitting,
-      reset: resetSubmitState,
-    },
+    { isLoading: isSubmitting, reset: resetSubmitState },
   ] = useSubmitResignationMutation();
 
   /**
@@ -40,79 +49,93 @@ export const useSeparationManagement = () => {
    */
   const [
     withdrawResignation,
-    {
-      isLoading: isWithdrawing,
-      reset: resetWithdrawState,
-    },
+    { isLoading: isWithdrawing, reset: resetWithdrawState },
   ] = useWithdrawResignationMutation();
 
   /**
    * Submit Resignation Request
    */
-  const submitRequest = async (
-    request: ResignationRequest
-  ) => {
+  const submitRequest = async (request: ResignationRequest) => {
     try {
       const response = await submitResignation(request).unwrap();
 
       // Backend returns an array
-      const result = Array.isArray(response)
-        ? response[0]
-        : response;
+      const result = Array.isArray(response) ? response[0] : response;
 
-      if (result.ErrorCode === "400") {
+      if (isErrorResult(result)) {
         throw {
           data: {
             Message: result.Message,
           },
         };
       }
-      toast.success(
-        result.Message ||
-        "Resignation submitted successfully."
-      );
+      toast.success(result.Message || "Resignation submitted successfully.");
 
       await refetch();
 
       return result;
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
+      const message = data.Message ?? errorRecord.message;
       toast.error(
-        err?.data?.Message ||
-        err?.message ||
-        "Unable to submit resignation."
+        typeof message === "string" && message
+          ? message
+          : "Unable to submit resignation.",
       );
 
-      throw err;
+      throw error;
     }
   };
 
   /**
    * Withdraw Resignation Request
    */
-  const withdrawRequest = async (
-    request: WithdrawRequest
-  ) => {
+  const withdrawRequest = async (request: WithdrawRequest) => {
     try {
-      const response = await withdrawResignation(
-        request
-      ).unwrap();
+      const response = await withdrawResignation(request).unwrap();
+
+      // Backend may return an array, like the submit call.
+      const result = Array.isArray(response) ? response[0] : response;
+
+      if (isErrorResult(result)) {
+        throw {
+          data: {
+            Message: result.Message,
+          },
+        };
+      }
 
       toast.success(
-        response.Message ||
-        "Withdrawal request submitted successfully."
+        result.Message || "Withdrawal request submitted successfully.",
       );
 
       await refetch();
 
       return response;
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
+      const message = data.Message ?? data.message ?? errorRecord.message;
       toast.error(
-        err?.data?.Message ||
-        err?.data?.message ||
-        "Unable to withdraw resignation."
+        typeof message === "string" && message
+          ? message
+          : "Unable to withdraw resignation.",
       );
 
-      throw err;
+      throw error;
     }
   };
 

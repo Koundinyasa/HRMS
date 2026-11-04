@@ -21,6 +21,9 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 });
 
+// The hook shares its context module with the provider; keep this exception local
+// because only the provider component is intended to participate in Fast Refresh.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => useContext(ThemeContext);
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {

@@ -4,16 +4,15 @@ import { useVerifyOtpMutation } from "../api/authApi";
 export const useVerifyOtp = () => {
   const [verifyOtp] = useVerifyOtpMutation();
 
-  const handleVerifyOtp = async (employeeId: string, otp: string) => {
-    console.log("Sending:", { employeeId, otp }); // 👈
+  const handleVerifyOtp = async (userId: string, otp: string) => {
     try {
-      const res = await verifyOtp({ employeeId, otp }).unwrap();
-      console.log("Success response:", res); // 👈
+      await verifyOtp({ userId, otp }).unwrap();
       toast.success("OTP verified successfully");
       return true;
-    } catch (err) {
-      console.error("Verify OTP error:", err); // 👈
-      toast.error("Invalid OTP");
+    } catch (error: unknown) {
+      // 400 "Invalid or expired OTP." / 429 "Too many incorrect OTP attempts..."
+      const data = (error as { data?: { message?: unknown } } | null)?.data;
+      toast.error(typeof data?.message === "string" ? data.message : "Invalid OTP");
       return false;
     }
   };

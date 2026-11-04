@@ -3,9 +3,10 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import FormData from 'form-data';
 import * as sql from 'mssql';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 import { DatabaseService } from '../../database/database.service';
-
-const PYTHON_ATTENDANCE_URL = 'http://127.0.0.1:8000';
 
 export interface PunchResult {
   success: boolean;
@@ -37,6 +38,8 @@ export interface RegistrationStatusResult {
   registeredAngles: string[];
   missingAngles: string[];
   lastUpdated: string | null;
+  // PHOTO — true when the active enrollment has a saved profile photo.
+  hasPhoto?: boolean;
 }
 
 export interface FaceStatusResult {
@@ -71,6 +74,36 @@ interface EmployeeLocationInfo {
   branchId: number | null;
 }
 
+// What the location card under the camera shows. Purely informational —
+// nothing here changes whether a punch is accepted or rejected.
+export interface LocationCheckResult {
+  enabled: boolean;
+  // Closest approved office geofence: how far the employee is from its
+  // centre, and its radius. Outside by (distanceMeters - radiusMeters).
+  // bearingDegrees: the direction of the employee from the fence centre
+  // (0 = north, 90 = east), so the on-screen radar can put the dot in the
+  // right place.
+  office: {
+    fenceId: number;
+    distanceMeters: number;
+    radiusMeters: number;
+    bearingDegrees: number;
+  } | null;
+  // WFH's 300m reference: today's first punch-in. null unless
+  // EXPOSE_WFH_COMPARISON is on — employees must not see this.
+  wfh:
+    | {
+        status: 'compared';
+        distanceMeters: number;
+        thresholdMeters: number;
+        bearingDegrees: number;
+      }
+    | { status: 'no-punch-in-today' }
+    | { status: 'first-punch-in-not-wfh' }
+    | { status: 'no-coordinates' }
+    | null;
+}
+
 @Injectable()
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
@@ -82,15 +115,52 @@ export class AttendanceService {
   // which is already always-on regardless of this flag.
   private readonly GEOFENCE_REQUIRED = true;
   private readonly ACCURACY_CHECK_REQUIRED = true;
-  private readonly ACCURACY_THRESHOLD_METERS = 200;
+  private readonly ACCURACY_THRESHOLD_METERS = 300;
   private readonly ESS_DEVICE_ID = 4;
   private readonly ANGLE_LABEL_COLUMN_READY = true;
+
+  // Address of the Python face service (attendance-service). It has no login
+  // of its own, so it must only listen on the local machine (start uvicorn
+  // with --host 127.0.0.1). Set PYTHON_ATTENDANCE_URL in the backend .env only
+  // if it runs somewhere else.
+  private readonly PYTHON_ATTENDANCE_URL =
+    process.env.PYTHON_ATTENDANCE_URL ?? 'http://127.0.0.1:8000';
+
+  // Street address for each punch, looked up from the public OpenStreetMap
+  // service (nominatim.openstreetmap.org) while the punch is being saved
+  // (waits at most 3 seconds, then the coordinates text is used). This sends
+  // the punch coordinates outside the company. It is on by default; set
+  // PUNCH_ADDRESS_LOOKUP=false in the backend .env to switch it off.
+  private readonly ADDRESS_LOOKUP_ENABLED =
+    process.env.PUNCH_ADDRESS_LOOKUP !== 'false';
+
+  // PHOTO — step-6 profile photo saved at enrollment. The image file goes
+  // in FACE_PHOTO_DIR and only its RELATIVE path (<EmployeeID>/<guid>.jpg)
+  // is stored, in EmployeeFaceVectors.ImagePath. Run the ImagePath
+  // migration first; until then the photo is skipped (and logged) but
+  // enrollment itself still succeeds. Override the folder with the
+  // FACE_PHOTO_DIR env var if the photos should live elsewhere.
+  private readonly IMAGE_PATH_COLUMN_READY = true;
+  private readonly FACE_PHOTO_DIR =
+    process.env.FACE_PHOTO_DIR ??
+    path.join(process.cwd(), 'src', 'employee', 'attendance', 'photos');
+  private readonly FACE_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
   // NEW — WFH's punch-out-vs-punch-in self-check. Flag only, never
   // blocks, same philosophy as GEOFENCE_REQUIRED/ACCURACY_CHECK_REQUIRED
   // (both currently true and DO block — this one is deliberately kept
   // flag-only per an explicit decision, not an oversight).
   private readonly WFH_SELF_DISTANCE_THRESHOLD_METERS = 300;
+
+  // The location card under the camera (GET /employee/attendance/location-check)
+  // is a permanent feature: it shows the employee where they are and, for
+  // Office, how far they are from the approved location.
+  //
+  // The WFH comparison (distance from that day's first punch-in) must stay
+  // invisible to employees, so the server does NOT send it unless this is
+  // switched on. Turn it on only while you test the 300m check yourself;
+  // leave it false in production.
+  private readonly EXPOSE_WFH_COMPARISON = false;
 
   // Mst_Status IDs, confirmed against the real DB schema (2026-09-24).
   // Only WFH has real logic below right now — Remote and ClientSite
@@ -188,7 +258,7 @@ export class AttendanceService {
       const result = await pool
         .request()
         .input('EmployeeID', sql.VarChar(25), employeeId).query(`
-          SELECT AngleLabel, EnrolledDateTime
+          SELECT AngleLabel, EnrolledDateTime${this.IMAGE_PATH_COLUMN_READY ? ', ImagePath' : ''}
           FROM EmployeeFaceVectors
           WHERE EmployeeID = @EmployeeID AND IsActive = 1
           ORDER BY EnrolledDateTime DESC
@@ -219,6 +289,7 @@ export class AttendanceService {
         lastUpdated: rows[0]?.EnrolledDateTime
           ? new Date(rows[0].EnrolledDateTime).toISOString()
           : null,
+        hasPhoto: rows.some((r) => !!r.ImagePath),
       };
     } catch (err) {
       this.logger.error(
@@ -241,12 +312,10 @@ export class AttendanceService {
     const crossesMidnight = await this.employeeShiftCrossesMidnight(employeeId);
     if (crossesMidnight) return true;
 
-    const now = new Date();
-    const isSameCalendarDay =
-      last.timestamp.getFullYear() === now.getFullYear() &&
-      last.timestamp.getMonth() === now.getMonth() &&
-      last.timestamp.getDate() === now.getDate();
-    return isSameCalendarDay;
+    // "Today" is decided by the database's own clock (the same clock that
+    // stamps RawPunches), not this server's, so it stays correct no matter
+    // which timezone the backend is deployed in.
+    return last.isToday;
   }
 
   private async employeeShiftCrossesMidnight(
@@ -285,6 +354,9 @@ export class AttendanceService {
     punchMode?: number,
   ): Promise<PunchResult> {
     if (latitude === undefined || longitude === undefined) {
+      this.logger.warn(
+        `Punch rejected (no location sent) for ${employeeId} - mode: ${punchMode ?? 'not sent'}`,
+      );
       return {
         success: false,
         message:
@@ -292,9 +364,13 @@ export class AttendanceService {
       };
     }
 
-    if (accuracy !== undefined && accuracy > this.ACCURACY_THRESHOLD_METERS) {
+    if (
+      accuracy === undefined ||
+      Number.isNaN(accuracy) ||
+      accuracy > this.ACCURACY_THRESHOLD_METERS
+    ) {
       this.logger.warn(
-        `Low-confidence location on punch for ${employeeId} - accuracy: ${accuracy}m (threshold: ${this.ACCURACY_THRESHOLD_METERS}m), lat: ${latitude}, lon: ${longitude}`,
+        `Punch rejected (location accuracy) for ${employeeId} - accuracy: ${accuracy === undefined ? 'not sent' : accuracy + 'm'} (threshold: ${this.ACCURACY_THRESHOLD_METERS}m), lat: ${latitude}, lon: ${longitude}`,
       );
       if (this.ACCURACY_CHECK_REQUIRED) {
         return {
@@ -321,6 +397,7 @@ export class AttendanceService {
     }
 
     if (verify.noVectorOnFile) {
+      this.logger.warn(`Punch rejected (no face registered) for ${employeeId}`);
       return {
         success: false,
         message:
@@ -330,13 +407,11 @@ export class AttendanceService {
 
     const locationInfo = await this.resolveEmployeeLocation(employeeId);
 
-    // NEW — Office keeps the existing real-geofence check, unchanged.
-    // WFH skips it entirely — comparing a home address to the office's
-    // GeoFences would never make sense — and gets its own check further
-    // below instead (self-referential, against that session's own
-    // punch-in location, not the office).
     const geoFenceId =
-      !isWfhPunch && latitude !== undefined && longitude !== undefined && locationInfo
+      !isWfhPunch &&
+      latitude !== undefined &&
+      longitude !== undefined &&
+      locationInfo
         ? await this.findMatchingGeoFence(
             locationInfo.companyId,
             latitude,
@@ -345,6 +420,9 @@ export class AttendanceService {
         : null;
 
     if (this.GEOFENCE_REQUIRED && !isWfhPunch && geoFenceId === null) {
+      this.logger.warn(
+        `Punch rejected (outside approved location) for ${employeeId} - lat: ${latitude}, lon: ${longitude}, accuracy: ${accuracy}m, mode: ${punchMode ?? 'not sent'}`,
+      );
       await this.recordVerificationAttempt(
         employeeId,
         verify,
@@ -375,6 +453,21 @@ export class AttendanceService {
       await this.checkWfhSelfDistance(employeeId, latitude, longitude);
     }
 
+    // Location text saved with the punch. Normally the street address; when
+    // the lookup is off, slow or fails, the coordinates text instead. It is
+    // worked out BEFORE the punch is saved, so the punch row is written once
+    // and never updated afterwards.
+    let punchLocation = AttendanceService.describePunchLocation(
+      latitude,
+      longitude,
+      geoFenceId,
+      isWfhPunch,
+    );
+    if (this.ADDRESS_LOOKUP_ENABLED && verify.verified) {
+      const address = await this.reverseGeocode(latitude, longitude);
+      if (address) punchLocation = address;
+    }
+
     const recorded = await this.recordVerificationAttempt(
       employeeId,
       verify,
@@ -384,6 +477,7 @@ export class AttendanceService {
       geoFenceId,
       locationInfo?.branchId ?? null,
       punchMode ?? null,
+      punchLocation,
     );
 
     if (!verify.verified) {
@@ -409,10 +503,6 @@ export class AttendanceService {
       };
     }
 
-    if (punchType && latitude !== undefined && longitude !== undefined) {
-      this.resolvePunchLocationInBackground(employeeId, latitude, longitude);
-    }
-
     return {
       success: true,
       action: punchType ?? undefined,
@@ -427,39 +517,36 @@ export class AttendanceService {
     };
   }
 
-  // NEW — compares this WFH punch-OUT's coordinates against the most
-  // recent WFH punch already on record for this employee (their punch-IN
-  // for this same session). Flag only — logs a warning, never blocks or
-  // affects the punch's success in any way. Deliberately does NOT try to
-  // scope "same session" by date/shift — just "their most recent WFH
-  // punch, period" — mirroring the same simple, no-date-filter approach
-  // getLastPunch() already uses for the general punch-state logic.
+  // Compares this WFH punch-OUT's coordinates against TODAY'S FIRST
+  // punch-IN (the morning punch-in). Flag only — logs a warning, never
+  // blocks or affects the punch's success in any way.
+  //
+  // The comparison only happens if that first punch-in of the day was
+  // itself a WFH punch. If the day started in another mode (e.g. Office
+  // in, WFH out), or the punch-in has no coordinates, or there is no
+  // punch-in today at all, there is nothing to compare against — it
+  // skips quietly and the punch-out just goes through.
   private async checkWfhSelfDistance(
     employeeId: string,
     currentLat: number,
     currentLon: number,
   ): Promise<void> {
     try {
-      const pool = await this.databaseService.connect();
-      const result = await pool
-        .request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .input('PunchMode', sql.Int, AttendanceService.PUNCH_MODE.WFH).query(`
-          SELECT TOP 1 Latitude, Longitude
-          FROM RawPunches
-          WHERE EmployeeID = @EmployeeID
-            AND PunchMode = @PunchMode
-            AND Latitude IS NOT NULL AND Longitude IS NOT NULL
-          ORDER BY PunchTimestamp DESC
-        `);
-      const row = result.recordset?.[0];
-      if (!row) return; // no prior WFH punch-in on record — nothing to compare against
+      const first = await this.getTodaysFirstPunchIn(employeeId);
+      if (
+        !first ||
+        first.punchMode !== AttendanceService.PUNCH_MODE.WFH ||
+        first.latitude === null ||
+        first.longitude === null
+      ) {
+        return;
+      }
 
       const distance = AttendanceService.haversineMeters(
         currentLat,
         currentLon,
-        Number(row.Latitude),
-        Number(row.Longitude),
+        first.latitude,
+        first.longitude,
       );
 
       if (distance > this.WFH_SELF_DISTANCE_THRESHOLD_METERS) {
@@ -472,6 +559,169 @@ export class AttendanceService {
         `checkWfhSelfDistance failed for ${employeeId} - ${(err as Error).message}`,
       );
     }
+  }
+
+  // Today's first punch-IN for this employee — the reference point for the
+  // WFH 300m check. Shared by checkWfhSelfDistance (the real check) and
+  // getLocationCheck (the on-screen display), so the number an employee
+  // sees comes from exactly the same row the check uses.
+  private async getTodaysFirstPunchIn(employeeId: string): Promise<{
+    punchMode: number | null;
+    latitude: number | null;
+    longitude: number | null;
+  } | null> {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
+          SELECT TOP 1 PunchMode, Latitude, Longitude
+          FROM RawPunches
+          WHERE EmployeeID = @EmployeeID
+            AND PunchType = 60
+            AND PunchTimestamp >= CAST(GETDATE() AS DATE)
+            AND PunchTimestamp <  DATEADD(DAY, 1, CAST(GETDATE() AS DATE))
+          ORDER BY PunchTimestamp ASC
+        `);
+      const row = result.recordset?.[0];
+      if (!row) return null;
+      return {
+        punchMode: row.PunchMode ?? null,
+        latitude: row.Latitude == null ? null : Number(row.Latitude),
+        longitude: row.Longitude == null ? null : Number(row.Longitude),
+      };
+    } catch (err) {
+      this.logger.error(
+        `getTodaysFirstPunchIn failed for ${employeeId} - ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  // The approved office geofence the employee is closest to, judged by how
+  // far past its edge they are (distance - radius), so "inside" here means
+  // exactly what findMatchingGeoFence means by inside.
+  private async getNearestGeoFence(
+    companyId: number,
+    latitude: number,
+    longitude: number,
+  ): Promise<{
+    fenceId: number;
+    distanceMeters: number;
+    radiusMeters: number;
+    bearingDegrees: number;
+  } | null> {
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool.request().input('CompanyID', sql.Int, companyId)
+        .query(`
+          SELECT ID, Latitude, Longitude, RadiusMeters
+          FROM GeoFences
+          WHERE CompanyID = @CompanyID AND IsActive = 1
+        `);
+
+      let best: {
+        fenceId: number;
+        distance: number;
+        radius: number;
+        margin: number;
+        bearing: number;
+      } | null = null;
+
+      for (const fence of result.recordset ?? []) {
+        if (fence.RadiusMeters == null) continue;
+        const distance = AttendanceService.haversineMeters(
+          latitude,
+          longitude,
+          Number(fence.Latitude),
+          Number(fence.Longitude),
+        );
+        const radius = Number(fence.RadiusMeters);
+        const margin = distance - radius;
+        if (!best || margin < best.margin) {
+          best = {
+            fenceId: fence.ID,
+            distance,
+            radius,
+            margin,
+            bearing: AttendanceService.bearingDegrees(
+              Number(fence.Latitude),
+              Number(fence.Longitude),
+              latitude,
+              longitude,
+            ),
+          };
+        }
+      }
+
+      return best
+        ? {
+            fenceId: best.fenceId,
+            distanceMeters: Math.round(best.distance),
+            radiusMeters: best.radius,
+            bearingDegrees: Math.round(best.bearing),
+          }
+        : null;
+    } catch (err) {
+      this.logger.error(
+        `getNearestGeoFence failed for company ${companyId} - ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  // Backs the coordinates/distance panel in the punch modal. Read-only:
+  // it never records anything and never affects a punch.
+  async getLocationCheck(
+    employeeId: string,
+    latitude: number,
+    longitude: number,
+  ): Promise<LocationCheckResult> {
+    const locationInfo = await this.resolveEmployeeLocation(employeeId);
+    const office = locationInfo
+      ? await this.getNearestGeoFence(
+          locationInfo.companyId,
+          latitude,
+          longitude,
+        )
+      : null;
+
+    // The WFH comparison is only worked out — and only sent — while
+    // EXPOSE_WFH_COMPARISON is on. Otherwise it is never even looked up.
+    let wfh: LocationCheckResult['wfh'] = null;
+    if (this.EXPOSE_WFH_COMPARISON) {
+      const first = await this.getTodaysFirstPunchIn(employeeId);
+      if (!first) {
+        wfh = { status: 'no-punch-in-today' };
+      } else if (first.punchMode !== AttendanceService.PUNCH_MODE.WFH) {
+        wfh = { status: 'first-punch-in-not-wfh' };
+      } else if (first.latitude === null || first.longitude === null) {
+        wfh = { status: 'no-coordinates' };
+      } else {
+        wfh = {
+          status: 'compared',
+          distanceMeters: Math.round(
+            AttendanceService.haversineMeters(
+              latitude,
+              longitude,
+              first.latitude,
+              first.longitude,
+            ),
+          ),
+          thresholdMeters: this.WFH_SELF_DISTANCE_THRESHOLD_METERS,
+          bearingDegrees: Math.round(
+            AttendanceService.bearingDegrees(
+              first.latitude,
+              first.longitude,
+              latitude,
+              longitude,
+            ),
+          ),
+        };
+      }
+    }
+
+    return { enabled: true, office, wfh };
   }
 
   private static readonly PUNCH_TYPE_CODE: Record<'IN' | 'OUT', string> = {
@@ -488,13 +738,17 @@ export class AttendanceService {
 
   private async getLastPunch(
     employeeId: string,
-  ): Promise<{ typeCode: number; timestamp: Date } | null> {
+  ): Promise<{ typeCode: number; timestamp: Date; isToday: boolean } | null> {
     try {
       const pool = await this.databaseService.connect();
       const result = await pool
         .request()
         .input('EmployeeID', sql.VarChar(25), employeeId).query(`
-          SELECT TOP 1 PunchType, PunchTimestamp
+          SELECT TOP 1
+            PunchType,
+            PunchTimestamp,
+            CASE WHEN CAST(PunchTimestamp AS DATE) = CAST(GETDATE() AS DATE)
+                 THEN 1 ELSE 0 END AS IsToday
           FROM RawPunches
           WHERE EmployeeID = @EmployeeID
           ORDER BY PunchTimestamp DESC
@@ -504,6 +758,7 @@ export class AttendanceService {
       return {
         typeCode: row.PunchType,
         timestamp: new Date(row.PunchTimestamp),
+        isToday: row.IsToday === 1,
       };
     } catch (err) {
       this.logger.error(
@@ -528,7 +783,7 @@ export class AttendanceService {
 
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/verify`, form, {
+        this.http.post(`${this.PYTHON_ATTENDANCE_URL}/verify`, form, {
           headers: form.getHeaders(),
           timeout: 20000,
         }),
@@ -560,6 +815,21 @@ export class AttendanceService {
     }
   }
 
+  // The location text saved with a punch and shown in the punch lists. It is
+  // built here from the punch itself, so no coordinates leave the company
+  // (no address lookup on a public map service).
+  private static describePunchLocation(
+    latitude: number,
+    longitude: number,
+    geoFenceId: number | null,
+    isWfhPunch: boolean,
+  ): string {
+    const coordinates = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+    if (isWfhPunch) return `Work from home (${coordinates})`;
+    if (geoFenceId !== null) return `Approved office location (${coordinates})`;
+    return coordinates;
+  }
+
   private async recordVerificationAttempt(
     claimedEmployeeId: string,
     verify: FaceVerifyResult,
@@ -569,6 +839,7 @@ export class AttendanceService {
     geoFenceId?: number | null,
     clientLocationId?: number | null,
     punchMode?: number | null,
+    punchLocation?: string | null,
   ): Promise<{ ok: boolean }> {
     try {
       const pool = await this.databaseService.connect();
@@ -606,7 +877,7 @@ export class AttendanceService {
         .input('GeoFenceID', sql.Int, geoFenceId ?? null)
         .input('ClientLocationID', sql.Int, clientLocationId ?? null)
         .input('PunchMode', sql.Int, punchMode ?? null)
-        .input('PunchLocation', sql.VarChar(sql.MAX), null)
+        .input('PunchLocation', sql.VarChar(sql.MAX), punchLocation ?? null)
         .execute('USP_RecordFaceVerificationPunch');
       return { ok: true };
     } catch (err) {
@@ -615,26 +886,6 @@ export class AttendanceService {
       );
       return { ok: false };
     }
-  }
-
-  private resolvePunchLocationInBackground(
-    employeeId: string,
-    latitude: number,
-    longitude: number,
-  ): void {
-    void (async () => {
-      const rawPunchId = await this.getLatestRawPunchId(employeeId);
-      if (!rawPunchId) return;
-
-      const locationText = await this.reverseGeocode(latitude, longitude);
-      if (!locationText) return;
-
-      await this.updatePunchLocation(rawPunchId, locationText);
-    })().catch((err) => {
-      this.logger.error(
-        `resolvePunchLocationInBackground failed for ${employeeId} - ${(err as Error).message}`,
-      );
-    });
   }
 
   private async reverseGeocode(
@@ -649,7 +900,7 @@ export class AttendanceService {
             'User-Agent':
               'KTS-People360-Attendance/1.0 (internal HRMS attendance system)',
           },
-          timeout: 5000,
+          timeout: 3000,
         }),
       );
       return response.data?.display_name ?? null;
@@ -658,44 +909,6 @@ export class AttendanceService {
         `reverseGeocode failed for (${latitude}, ${longitude}) - ${(err as Error).message}`,
       );
       return null;
-    }
-  }
-
-  private async getLatestRawPunchId(
-    employeeId: string,
-  ): Promise<number | null> {
-    try {
-      const pool = await this.databaseService.connect();
-      const result = await pool
-        .request()
-        .input('EmployeeID', sql.VarChar(25), employeeId)
-        .query(
-          'SELECT TOP 1 ID FROM RawPunches WHERE EmployeeID = @EmployeeID ORDER BY ID DESC',
-        );
-      return result.recordset?.[0]?.ID ?? null;
-    } catch (err) {
-      this.logger.error(
-        `getLatestRawPunchId failed for ${employeeId} - ${(err as Error).message}`,
-      );
-      return null;
-    }
-  }
-
-  private async updatePunchLocation(
-    rawPunchId: number,
-    locationText: string,
-  ): Promise<void> {
-    try {
-      const pool = await this.databaseService.connect();
-      await pool
-        .request()
-        .input('RawPunchID', sql.BigInt, rawPunchId)
-        .input('PunchLocation', sql.VarChar(sql.MAX), locationText)
-        .execute('USP_UpdatePunchLocation');
-    } catch (err) {
-      this.logger.error(
-        `updatePunchLocation failed for RawPunches ID ${rawPunchId} - ${(err as Error).message}`,
-      );
     }
   }
 
@@ -761,6 +974,23 @@ export class AttendanceService {
     }
   }
 
+  // Compass direction from point 1 to point 2, in degrees: 0 = north,
+  // 90 = east, 180 = south, 270 = west.
+  private static bearingDegrees(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const dLon = toRad(lon2 - lon1);
+    const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+    const x =
+      Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+      Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  }
+
   private static haversineMeters(
     lat1: number,
     lon1: number,
@@ -781,6 +1011,7 @@ export class AttendanceService {
   async enrollFace(
     employeeId: string,
     frames: Express.Multer.File[],
+    photo?: Express.Multer.File,
   ): Promise<EnrollResult> {
     const computed = await this.computeFaceVectors(frames);
 
@@ -848,6 +1079,12 @@ export class AttendanceService {
         };
       }
 
+      // PHOTO — only after the vectors are safely saved. Never throws: a
+      // photo problem must not undo or fail a successful registration.
+      if (photo) {
+        await this.saveEnrollmentPhoto(employeeId, photo);
+      }
+
       return {
         success: true,
         message: `Face registered successfully (${savedCount} angle${savedCount === 1 ? '' : 's'} saved). You can now use it to punch in and out.`,
@@ -863,6 +1100,109 @@ export class AttendanceService {
     }
   }
 
+  // PHOTO — the relative path of the active enrollment's profile photo, or
+  // null when there is none (older registrations, or the column not there
+  // yet). Never throws.
+  private async getActivePhotoPath(employeeId: string): Promise<string | null> {
+    if (!this.IMAGE_PATH_COLUMN_READY) return null;
+    try {
+      const pool = await this.databaseService.connect();
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
+          SELECT TOP 1 ImagePath
+          FROM EmployeeFaceVectors
+          WHERE EmployeeID = @EmployeeID AND IsActive = 1 AND ImagePath IS NOT NULL
+          ORDER BY EnrolledDateTime DESC
+        `);
+      return (result.recordset?.[0]?.ImagePath as string | undefined) ?? null;
+    } catch (err) {
+      this.logger.error(
+        `getActivePhotoPath failed for ${employeeId} - ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  // PHOTO — the logged-in employee's own enrollment photo as bytes, or null
+  // if there is none or the file can't be read. The stored path is checked
+  // to stay inside FACE_PHOTO_DIR before anything is read from disk.
+  async getFacePhoto(employeeId: string): Promise<Buffer | null> {
+    const relativePath = await this.getActivePhotoPath(employeeId);
+    if (!relativePath) return null;
+
+    const root = path.resolve(this.FACE_PHOTO_DIR);
+    const absolutePath = path.resolve(root, relativePath);
+    if (!absolutePath.startsWith(root + path.sep)) {
+      this.logger.warn(
+        `getFacePhoto: stored path for ${employeeId} points outside the photos folder - refused`,
+      );
+      return null;
+    }
+    try {
+      return await fs.readFile(absolutePath);
+    } catch (err) {
+      this.logger.warn(
+        `getFacePhoto: could not read the photo file for ${employeeId} - ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  // PHOTO — writes the step-6 photo to disk and records its relative path
+  // on this employee's ACTIVE face-vector rows (the ones just enrolled).
+  // Best-effort: every failure is logged and swallowed, and a file whose
+  // DB update failed is removed so no orphan images pile up.
+  private async saveEnrollmentPhoto(
+    employeeId: string,
+    photo: Express.Multer.File,
+  ): Promise<void> {
+    if (!this.IMAGE_PATH_COLUMN_READY) return;
+
+    let absolutePath: string | null = null;
+    try {
+      const data = photo.buffer;
+      const isJpeg =
+        !!data &&
+        data.length > 3 &&
+        data[0] === 0xff &&
+        data[1] === 0xd8 &&
+        data[2] === 0xff;
+      if (!isJpeg || data.length > this.FACE_PHOTO_MAX_BYTES) {
+        this.logger.warn(
+          `saveEnrollmentPhoto: photo for ${employeeId} skipped (not a JPEG or over ${this.FACE_PHOTO_MAX_BYTES} bytes)`,
+        );
+        return;
+      }
+
+      // EmployeeID comes from the JWT, but is still stripped to safe
+      // characters so it can never form a path outside the photos folder.
+      const safeId = employeeId.replace(/[^A-Za-z0-9_-]/g, '');
+      if (!safeId) return;
+
+      const relativePath = `${safeId}/${randomUUID()}.jpg`;
+      absolutePath = path.join(this.FACE_PHOTO_DIR, relativePath);
+      await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+      await fs.writeFile(absolutePath, data);
+
+      const pool = await this.databaseService.connect();
+      await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId)
+        .input('ImagePath', sql.NVarChar(260), relativePath)
+        .query(
+          'UPDATE EmployeeFaceVectors SET ImagePath = @ImagePath WHERE EmployeeID = @EmployeeID AND IsActive = 1',
+        );
+    } catch (err) {
+      this.logger.error(
+        `saveEnrollmentPhoto failed for ${employeeId} - ${(err as Error).message}`,
+      );
+      if (absolutePath) {
+        await fs.unlink(absolutePath).catch(() => undefined);
+      }
+    }
+  }
+
   async checkEnrollmentFrame(frame: Express.Multer.File): Promise<{
     passed: boolean;
     reason?: string | null;
@@ -875,7 +1215,7 @@ export class AttendanceService {
     });
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/enroll/check-frame`, form, {
+        this.http.post(`${this.PYTHON_ATTENDANCE_URL}/enroll/check-frame`, form, {
           headers: form.getHeaders(),
           timeout: 8000,
         }),
@@ -906,7 +1246,7 @@ export class AttendanceService {
     });
     try {
       const response = await firstValueFrom(
-        this.http.post(`${PYTHON_ATTENDANCE_URL}/enroll`, form, {
+        this.http.post(`${this.PYTHON_ATTENDANCE_URL}/enroll`, form, {
           headers: form.getHeaders(),
           timeout: 20000,
         }),

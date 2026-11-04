@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -20,13 +20,16 @@ export default function LeaveStatusCard({
   leave,
   defaultExpanded = false,
 }: Props) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [expandedState, setExpandedState] = useState({
+    defaultExpanded,
+    value: defaultExpanded,
+  });
+  const expanded =
+    expandedState.defaultExpanded === defaultExpanded
+      ? expandedState.value
+      : defaultExpanded;
 
   const [cancelOpen, setCancelOpen] = useState(false);
-
-  useEffect(() => {
-    setExpanded(defaultExpanded);
-  }, [defaultExpanded]);
 
   const completedStages = leave.Stages.filter((stage) =>
     ["COMPLETED", "APPROVED"].includes(stage.StageState.toUpperCase()),
@@ -66,7 +69,12 @@ export default function LeaveStatusCard({
 
           <div
             className="flex cursor-pointer items-center justify-between px-4 py-2 transition-colors hover:bg-slate-50"
-            onClick={() => setExpanded((prev) => !prev)}
+            onClick={() =>
+              setExpandedState({
+                defaultExpanded,
+                value: !expanded,
+              })
+            }
           >
             <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-4">
               {/* Leave */}

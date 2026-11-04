@@ -1,11 +1,11 @@
 import { LeaveTypeOption } from './leave.types';
 import { TeamMember } from './team.types';
-
+ 
 export interface ActionButton {
   label: string;
   send: string;
 }
-
+ 
 export interface ListPreviewRow {
   primary: string;
   secondary?: string;
@@ -14,12 +14,12 @@ export interface ListPreviewRow {
   tone?: 'pending' | 'success' | 'danger' | 'neutral';
   action?: string;
 }
-
+ 
 export interface DataCardField {
   label: string;
   value: string;
 }
-
+ 
 export interface ResponseWidget {
   type:
     | 'date'
@@ -33,7 +33,15 @@ export interface ResponseWidget {
   step?: string;
   minDate?: string;
   holidays?: { date: string; name?: string }[];
-  leaveDates?: { date: string; leaveType: string; status: string }[];
+  leaveDates?: {
+    date: string;
+    leaveType: string;
+    status: string;
+    leaveId?: number;
+    sessionFrom?: string;
+    sessionTo?: string;
+    isHalfDay?: boolean;
+  }[];
   options?: LeaveTypeOption[];
   url?: string;
   filename?: string;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
  
 import {
   Check,
@@ -105,12 +105,14 @@ const getProgress = (
 export default function SeparationStatusTimeline({
   request,
 }: SeparationTimelineProps) {
-  const [expanded, setExpanded] =
-    useState(false);
- 
-  useEffect(() => {
-    setExpanded(true);
-  }, [request]);
+  const [expandedState, setExpandedState] = useState<{
+    request: SeparationTimelineProps["request"];
+    value: boolean;
+  } | null>(null);
+  const expanded =
+    expandedState?.request === request
+      ? expandedState.value
+      : true;
  
   const overallStatus = String(
     request.OverallStatus ?? "Pending"
@@ -130,7 +132,7 @@ export default function SeparationStatusTimeline({
   );
  
   const toggleExpand = () =>
-    setExpanded((prev) => !prev);
+    setExpandedState({ request, value: !expanded });
   return (
     <div className="space-y-5">
      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

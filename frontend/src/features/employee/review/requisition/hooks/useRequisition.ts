@@ -1,215 +1,10 @@
-// import {
-//   useEffect,
-//   useMemo,
-//   useState,
-// } from "react";
-
-// import {
-//   useGetPendingLeaveRequestsMutation,
-//   useApproveLeaveRequestsMutation,
-//   useRejectLeaveRequestsMutation,
-// } from "../api/requisitionApi";
-
-// import {
-//   REQUISITION_MESSAGES,
-// } from "../constants/requisition.constants";
-
-// import type {
-//   PendingLeaveRequest,
-//   Requisition,
-// } from "../types/requisition.types";
-
-// const extractRequests = (
-//   response: unknown
-// ): PendingLeaveRequest[] => {
-//   if (Array.isArray(response)) {
-//     return response as PendingLeaveRequest[];
-//   }
-
-//   if (response && typeof response === "object") {
-//     const result = response as Record<string, unknown>;
-
-//     const possibleKeys = [
-//       "data",
-//       "result",
-//       "items",
-//       "records",
-//       "requests",
-//     ];
-
-//     for (const key of possibleKeys) {
-//       const value = result[key];
-
-//       if (Array.isArray(value)) {
-//         return value as PendingLeaveRequest[];
-//       }
-
-//       if (value && typeof value === "object") {
-//         const nested = extractRequests(value);
-
-//         if (nested.length > 0) {
-//           return nested;
-//         }
-//       }
-//     }
-//   }
-
-//   return [];
-// };
-
-// const mapRequest = (
-//   item: PendingLeaveRequest,
-//   index: number
-// ): Requisition => ({
-//   id: String(item.LeaveId ?? item.LeaveID ?? item.Id ?? `${item.EmployeeId ?? "employee"}-${item.AppliedDate ?? index}-${index}`),
-//   approvalId: Number(item.ApprovalId ?? item.ApprovalID ?? item.LeaveId ?? item.LeaveID ?? item.Id ?? 0),
-//   leaveId: Number(item.LeaveId ?? item.LeaveID ?? item.Id ?? 0),
-//   employeeId: String(item.EmployeeId ?? ""),
-//   employeeName: String(item.EmployeeName ?? ""),
-//   leaveName: String(item.LeaveName ?? ""),
-//   date: String(item.FromDate ?? ""),
-//   days: Number(item.NoDays ?? item.NoOfDays ?? 0),
-//   reason: String(item.Reason ?? ""),
-// });
-
-// export const useRequisition = () => {
-//   const [
-//     getPendingLeaveRequests,
-//     { data, isLoading, isError },
-//   ] = useGetPendingLeaveRequestsMutation();
-//   const [approveLeaveRequests] = useApproveLeaveRequestsMutation();
-//   const [rejectLeaveRequests] = useRejectLeaveRequestsMutation();
-
-//   const [search, setSearch] = useState("");
-//   const [selectedIds, setSelectedIds] =
-//     useState<string[]>([]);
-
-//   useEffect(() => {
-//     void getPendingLeaveRequests({
-//       fromDate: "2026-09-01",
-//       toDate: "2026-09-18",
-//     });
-//   }, [getPendingLeaveRequests]);
-
-//   const requisitions: Requisition[] = useMemo(
-//     () => extractRequests(data).map(mapRequest),
-//     [data]
-//   );
-
-//   const filteredRequisitions = useMemo(() => {
-//     const value = search.trim().toLowerCase();
-
-//     if (!value) return requisitions;
-
-//     return requisitions.filter((item) =>
-//       [
-//         item.id,
-//         item.employeeId,
-//         item.employeeName,
-//         item.leaveName,
-//         item.date,
-//         item.days,
-//         item.reason,
-//       ].some((field) =>
-//         String(field ?? "")
-//           .toLowerCase()
-//           .includes(value)
-//       )
-//     );
-//   }, [requisitions, search]);
-
-//   const toggleSelect = (id: string) => {
-//     setSelectedIds((previous) =>
-//       previous.includes(id)
-//         ? previous.filter(
-//             (selectedId) => selectedId !== id
-//           )
-//         : [...previous, id]
-//     );
-//   };
-
-//   const toggleSelectAll = () => {
-//     const visibleIds = filteredRequisitions.map(
-//       (item) => item.id
-//     );
-
-//     const allSelected =
-//       visibleIds.length > 0 &&
-//       visibleIds.every((id) =>
-//         selectedIds.includes(id)
-//       );
-
-//     setSelectedIds((previous) =>
-//       allSelected
-//         ? previous.filter(
-//             (id) => !visibleIds.includes(id)
-//           )
-//         : Array.from(
-//             new Set([...previous, ...visibleIds])
-//           )
-//     );
-//   };
-
-//   const updateSelected = async (
-//     action: "approved" | "rejected"
-//   ): Promise<Requisition[]> => {
-//     const selectedRequests = requisitions
-//       .filter((item) => selectedIds.includes(item.id))
-//     const approvalIds = selectedRequests
-//       .map((item) => item.approvalId)
-//       .filter((approvalId) => Number.isInteger(approvalId) && approvalId > 0);
-
-//     if (approvalIds.length === 0) {
-//       return [];
-//     }
-
-//     const mutation = action === "approved"
-//       ? approveLeaveRequests
-//       : rejectLeaveRequests;
-
-//     for (const approvalId of approvalIds) {
-//       await mutation({
-//         approvalId,
-//         actionStatusId: action === "approved" ? 4 : 5,
-//       }).unwrap();
-//     }
-
-//     setSelectedIds([]);
-//     await refetch();
-//     return selectedRequests;
-//   };
-
-//   const refetch = () =>
-//     getPendingLeaveRequests({
-//       fromDate: "2026-09-01",
-//       toDate: "2026-09-18",
-//     });
-
-//   return {
-//     requisitions: filteredRequisitions,
-//     search,
-//     setSearch,
-//     selectedIds,
-//     toggleSelect,
-//     toggleSelectAll,
-//     updateSelected,
-//     loading: isLoading,
-//     error: isError
-//       ? REQUISITION_MESSAGES.FETCH_ERROR
-//       : "",
-//     refetch,
-//   };
-// };
-
-
-
-
 import {
   useEffect,
   useMemo,
   useState,
   useCallback,
 } from "react";
+import { toast } from "react-toastify";
 
 import {
   useGetPendingLeaveRequestsMutation,
@@ -376,9 +171,6 @@ export const useRequisition = () => {
   const [actionError, setActionError] =
     useState("");
 
-  const [successMessage, setSuccessMessage] =
-    useState("");
-
   const refetch = useCallback(
     () =>
       getPendingLeaveRequests({
@@ -452,10 +244,10 @@ export const useRequisition = () => {
   };
 
   const updateSelected = async (
-    action: "approved" | "rejected"
+    action: "approved" | "rejected",
+    rejectionRemarks: Record<string, string> = {},
   ): Promise<Requisition[]> => {
     setActionError("");
-    setSuccessMessage("");
 
     if (selectedIds.length === 0) {
       setActionError(
@@ -467,6 +259,14 @@ export const useRequisition = () => {
     const selectedRequests = requisitions.filter(
       (item) => selectedIds.includes(item.id)
     );
+
+    if (
+      action === "rejected" &&
+      selectedRequests.some((item) => !rejectionRemarks[item.id]?.trim())
+    ) {
+      setActionError("Please enter your reason for rejecting the selected leave.");
+      return [];
+    }
 
     const invalidRequest = selectedRequests.find(
       (item) => item.approvalId <= 0
@@ -485,6 +285,9 @@ export const useRequisition = () => {
       for (const item of selectedRequests) {
         const payload = {
           approvalId: item.approvalId,
+          ...(action === "rejected"
+            ? { remarks: rejectionRemarks[item.id].trim() }
+            : {}),
         };
 
         if (action === "approved") {
@@ -496,10 +299,10 @@ export const useRequisition = () => {
 
       setSelectedIds([]);
 
-      setSuccessMessage(
+      toast.success(
         action === "approved"
-          ? "Leave approved successfully!"
-          : "Leave rejected successfully!"
+          ? "Leave request approved."
+          : "Leave request rejected.",
       );
 
       try {
@@ -538,11 +341,6 @@ export const useRequisition = () => {
     loading: isLoading,
     actionLoading,
     actionError,
-    successMessage,
-    clearActionMessages: () => {
-      setSuccessMessage("");
-      setActionError("");
-    },
     error: isError
       ? REQUISITION_MESSAGES.FETCH_ERROR
       : "",

@@ -7,6 +7,9 @@ import { loginSuccess } from "../authSlice";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { showPageLoader } from "../../employee/employeeSlice"; 
 import type { LoginFormData } from "../validation/loginSchema";
+import { baseApi } from "../../../app/baseApi";
+import { getHomePath } from "@/shared/constants/roles";
+import { setSessionTiming } from "@/app/sessionClock";
  
 export const useLogin = () => {
   const dispatch = useAppDispatch();
@@ -38,33 +41,40 @@ export const useLogin = () => {
         captchaAnswer: data.captchaAnswer,
       }).unwrap();
  
+      dispatch(baseApi.util.resetApiState());
       dispatch(loginSuccess(response));
+      setSessionTiming(response.session);
       localStorage.removeItem(`hrmsChatbotWidgetMessages-${response.data.employeeId}`);
       applyTheme("blue");
       dispatch(showPageLoader());
       toast.success("Login successful.");
-      if (response.isFirstLogin) {
+      if (response.mustChangePassword) {
         navigate(`/${domain}/first-login-reset-password`);
         return;
       }
-      const roleId =
-        (response.data as any)?.roleId ?? (response as any)?.roleId;
- 
-      if (roleId === 1 || roleId === 2) {
-        navigate(`/${domain}/admin/dashboard`); // ✅ Admin + HR Admin → admin dashboard
-      } else if (roleId === 3) {
-        navigate(`/${domain}/employee/dashboard`); // ✅ regular employee
-      } else {
+      const homePath = getHomePath(domain, response.data.roleId);
+      if (!homePath) {
         toast.error("Unauthorized role");
         return;
       }
-    } catch (err: any) {
-      const message = err?.data?.message ?? "Login failed. Please try again.";
- 
+      navigate(homePath);
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
+      const message = data.message ?? "Login failed. Please try again.";
+
       if (Array.isArray(message)) {
-        message.forEach((m: string) => toast.error(m));
+        message.forEach((item) => {
+          if (typeof item === "string") toast.error(item);
+        });
       } else {
-        toast.error(message);
+        toast.error(typeof message === "string" ? message : String(message));
       }
       loadCaptcha();
     }

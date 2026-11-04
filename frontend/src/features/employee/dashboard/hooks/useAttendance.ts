@@ -96,6 +96,14 @@ export function useAttendance() {
   // backend rejects any punch without coordinates).
   const [locationStatus, setLocationStatus] = useState<"idle" | "checking" | "captured" | "unavailable">("idle");
 
+  // The coordinates from the most recent successful location fix, exposed
+  // so the modal can show them (and the distance check) on screen.
+  const [currentLocation, setCurrentLocation] = useState<{
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+  } | null>(null);
+
   const [punchAttendance, { isLoading: isSubmitting }] = usePunchAttendanceMutation();
 
   const stopCamera = useCallback(() => {
@@ -146,6 +154,7 @@ export function useAttendance() {
     const location = await locationPromise;
     if (!location) {
       setLocationStatus("unavailable");
+      setCurrentLocation(null);
       setCameraError(
         "Location is required to punch in or out. Please enable location access in your browser and try again."
       );
@@ -159,6 +168,7 @@ export function useAttendance() {
       return;
     }
     locationRef.current = location;
+    setCurrentLocation(location);
     setLocationStatus("captured");
 
     try {
@@ -300,6 +310,7 @@ export function useAttendance() {
     isCapturingSequence,
     captureProgress,
     locationStatus,
+    currentLocation,
     openCamera,
     captureAndSubmit,
     cancelCamera: stopCamera,

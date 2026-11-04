@@ -5,52 +5,56 @@ import { Label } from "@/components/ui/label";
 import { useEsiDetails } from "../hooks/useEsiDetails";
 import { useToast, Toast } from "./common/Toast";
 import type { EsiConfiguration } from "../types/company.types";
-import { CalendarDays, Clock, Bookmark, Loader2 } from "lucide-react";
- 
+import { Bookmark, Loader2 } from "lucide-react";
+import { EffectiveFromBar } from "./common/EffectiveFromBar";
+import { FormSelect } from "./common/FormSelect";
+
 const EMPTY_ESI: EsiConfiguration = {
-  effectiveFrom: "Feb/2026",
+  effectiveFrom: "",
   cutOffAmount: 0,
   employeeRate: 0,
   employerRate: 0,
   minimumDailyWage: 0,
-  roundOff: "Higher Amount",
+  roundOff: "",
 };
- 
-// Generates month/year options, e.g. last 12 months through next 12 months
-function generateMonthOptions(): string[] {
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-  ];
-  const now = new Date();
-  const options: string[] = [];
-  for (let i = -12; i <= 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    options.push(`${months[d.getMonth()]}/${d.getFullYear()}`);
-  }
-  return options;
-}
- 
-const MONTH_OPTIONS = generateMonthOptions();
- 
+
 export default function EsiDetailsForm() {
-  const { esi, isLoading, updateEsi, isSaving, refetch } = useEsiDetails();
+  const {
+    esi,
+    roundOffOptions,
+    isRoundOffLoading,
+    isRoundOffError,
+    isLoading,
+    updateEsi,
+    isSaving,
+    refetch,
+  } = useEsiDetails();
   const [esiData, setEsiData] = useState<EsiConfiguration>(EMPTY_ESI);
- 
+  const selectedRoundOff = roundOffOptions.find(
+    (option) => option.name === esiData.roundOff,
+  );
+  const { toast, showToast } = useToast();
+
   useEffect(() => {
     if (esi) setEsiData(esi);
   }, [esi]);
- 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { id, value } = e.target;
     setEsiData((prev) => ({ ...prev, [id]: value }));
   }
- 
-  const { toast, showToast } = useToast();
- 
+
   async function handleSave() {
+    if (!selectedRoundOff) {
+      showToast("Select a valid salary round-off option before saving.", "error");
+      return;
+    }
+
     try {
-      await updateEsi(esiData).unwrap();
+      await updateEsi({
+        configuration: esiData,
+        roundOffTypeId: selectedRoundOff.id,
+      }).unwrap();
       await refetch();
       showToast("ESI details saved successfully");
     } catch (err) {
@@ -58,123 +62,143 @@ export default function EsiDetailsForm() {
       showToast("Failed to save ESI details. Please try again.", "error");
     }
   }
- 
-  if (isLoading) return <div className="text-sm text-slate-500 p-6">Loading ESI details…</div>;
- 
+
+  if (isLoading) {
+    return (
+      <div className="p-4 text-sm text-[#626262] sm:p-6">Loading ESI details…</div>
+    );
+  }
+
   return (
-    <div>
+    <div className="w-full min-w-0 font-['Urbanist'] text-[#131313]">
       <Toast toast={toast} />
-      <Card className="rounded-2xl border border-gray-200 shadow-sm p-6">
-        {/* Effective From */}
-        <div className="grid grid-cols-3 items-center bg-violet-100 rounded-xl p-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-white border flex items-center justify-center">
-              <CalendarDays className="w-5 h-5 text-violet-600" />
-            </div>
-            <Label htmlFor="effectiveFrom" className="font-medium">
-              Effective From
-            </Label>
-          </div>
- 
-          <div className="flex justify-center">
-            <select
-              id="effectiveFrom"
-              value={esiData.effectiveFrom}
-              onChange={handleChange}
-              className="h-9 w-40 bg-white border rounded-md px-3 text-sm"
-            >
-              {MONTH_OPTIONS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </div>
- 
-          <div className="flex justify-end">
-            <Clock className="w-5 h-5 text-gray-500" />
-          </div>
-        </div>
- 
-        {/* First Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <Card
+        data-company-module-card
+        className="w-full min-w-0 rounded-2xl border border-[#EDEDED] bg-white p-4 shadow-[0_1px_0_rgba(15,23,42,0.02)] sm:p-6"
+      >
+        <EffectiveFromBar
+          value={esiData.effectiveFrom}
+          onChange={(value) =>
+            setEsiData((prev) => ({ ...prev, effectiveFrom: value }))
+          }
+        />
+
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
           <div>
-            <Label htmlFor="cutOffAmount">Cut Off(Amount)</Label>
+            <Label
+              htmlFor="cutOffAmount"
+              className="text-[13px] font-medium leading-5 text-[#2E2E2E]"
+            >
+              Cut Off (Amount)
+            </Label>
             <Input
               id="cutOffAmount"
               placeholder="21000"
-              className="mt-2 h-11"
+              className="mt-2 h-11 rounded-xl border border-[#EDEDED] bg-white px-3 text-sm text-[#2E2E2E] placeholder:text-[#626262]"
               value={esiData.cutOffAmount}
               onChange={handleChange}
             />
           </div>
           <div>
-            <Label htmlFor="employeeRate">Employee Rate(%)</Label>
+            <Label
+              htmlFor="employeeRate"
+              className="text-[13px] font-medium leading-5 text-[#2E2E2E]"
+            >
+              Employee Rate (%)
+            </Label>
             <Input
               id="employeeRate"
               placeholder="0.75"
-              className="mt-2 h-11"
+              className="mt-2 h-11 rounded-xl border border-[#EDEDED] bg-white px-3 text-sm text-[#2E2E2E] placeholder:text-[#626262]"
               value={esiData.employeeRate}
               onChange={handleChange}
             />
           </div>
         </div>
- 
-        {/* Second Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
           <div>
-            <Label htmlFor="employerRate">Employer Rate(%)</Label>
+            <Label
+              htmlFor="employerRate"
+              className="text-[13px] font-medium leading-5 text-[#2E2E2E]"
+            >
+              Employer Rate (%)
+            </Label>
             <Input
               id="employerRate"
               placeholder="3.25"
-              className="mt-2 h-11"
+              className="mt-2 h-11 rounded-xl border border-[#EDEDED] bg-white px-3 text-sm text-[#2E2E2E] placeholder:text-[#626262]"
               value={esiData.employerRate}
               onChange={handleChange}
             />
           </div>
           <div>
-            <Label htmlFor="minimumDailyWage">Minimum Daily Wage (Amount)</Label>
+            <Label
+              htmlFor="minimumDailyWage"
+              className="text-[13px] font-medium leading-5 text-[#2E2E2E]"
+            >
+              Minimum Daily Wage (Amount)
+            </Label>
             <Input
               id="minimumDailyWage"
               placeholder="137"
-              className="mt-2 h-11"
+              className="mt-2 h-11 rounded-xl border border-[#EDEDED] bg-white px-3 text-sm text-[#2E2E2E] placeholder:text-[#626262]"
               value={esiData.minimumDailyWage}
               onChange={handleChange}
             />
           </div>
         </div>
- 
-        {/* Round Off */}
-        <div className="inline-block">
-          <Label htmlFor="roundOff">Round Off</Label>
-          <select
-            id="roundOff"
-            value={esiData.roundOff}
-            onChange={handleChange}
-            className="mt-2 h-11 w-44 border rounded-md px-3"
+
+        <div className="w-full max-w-[12rem]">
+          <Label
+            htmlFor="roundOff"
+            className="text-[13px] font-medium leading-5 text-[#2E2E2E]"
           >
-            <option value="Higher Amount">Higher Amount</option>
-            <option value="Lower Amount">Lower Amount</option>
-            <option value="Nearest Amount">Nearest Amount</option>
-          </select>
+            Round Off
+          </Label>
+          <div className="mt-2">
+            <FormSelect
+              id="roundOff"
+              value={esiData.roundOff}
+              onValueChange={(value) =>
+                setEsiData((prev) => ({ ...prev, roundOff: value }))
+              }
+              options={roundOffOptions.map((option) => option.name)}
+              placeholder="Select"
+              disabled={isRoundOffLoading || isRoundOffError || roundOffOptions.length === 0}
+            />
+          </div>
+          {isRoundOffError && (
+            <p className="mt-2 text-sm text-[#B42318]" role="alert">
+              Could not load salary round-off options. Please refresh and try again.
+            </p>
+          )}
+          {!isRoundOffLoading && !isRoundOffError && roundOffOptions.length === 0 && (
+            <p className="mt-2 text-sm text-[#B42318]" role="alert">
+              No salary round-off options were returned.
+            </p>
+          )}
         </div>
       </Card>
- 
-      {/* Buttons — outside the card, on the page background */}
-      <div className="flex justify-end gap-4 mt-6">
-        <button type="button" className="px-5 py-2 border rounded-lg bg-white hover:bg-gray-100">
+
+      <div className="mt-4 flex flex-col-reverse justify-end gap-3 sm:mt-6 sm:flex-row sm:gap-4">
+        <button
+          type="button"
+          onClick={() => setEsiData(esi ?? EMPTY_ESI)}
+          className="w-full rounded-xl border border-[#EDEDED] bg-white px-5 py-2 text-sm font-medium text-[#2E2E2E] transition hover:bg-[#EDEDED] sm:w-auto"
+        >
           Load Default Value
         </button>
         <button
           type="button"
-          className="flex items-center gap-2 px-6 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#7A5BED] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#5932E9] disabled:opacity-60 sm:w-auto"
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || !selectedRoundOff || isRoundOffLoading || isRoundOffError}
         >
           {isSaving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Bookmark className="w-4 h-4" />
+            <Bookmark className="h-4 w-4" />
           )}
           {isSaving ? "Saving" : "Save"}
         </button>

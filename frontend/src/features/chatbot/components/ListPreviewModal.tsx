@@ -86,7 +86,7 @@ export default function ListPreviewModal({
         </div>
 
         {/* Body */}
-        <div className="px-[14px] py-3 max-h-[380px] overflow-y-auto flex flex-col gap-2">
+        <div className="px-[14px] py-3 max-h-[min(380px,55dvh)] overflow-y-auto flex flex-col gap-2">
           {rows.length === 0 ? (
             <p className="text-[13px] text-[#8b86a3] py-6 text-center m-0">
               Nothing to show here right now.
@@ -101,16 +101,16 @@ export default function ListPreviewModal({
                     aria-hidden="true"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-[#1f2430] m-0 truncate">
+                    <p className="text-[13px] font-medium text-[#1f2430] m-0 [overflow-wrap:anywhere]">
                       {row.primary}
                     </p>
                     {(row.meta ?? row.secondary) && !row.status && (
-                      <p className="text-[11.5px] text-[#8a90a5] m-0 mt-0.5 truncate">
+                      <p className="text-[11.5px] text-[#8a90a5] m-0 mt-0.5 [overflow-wrap:anywhere]">
                         {row.meta ?? row.secondary}
                       </p>
                     )}
                     {row.meta && row.status && (
-                      <p className="text-[11.5px] text-[#8a90a5] m-0 mt-0.5 truncate">
+                      <p className="text-[11.5px] text-[#8a90a5] m-0 mt-0.5 [overflow-wrap:anywhere]">
                         {row.meta}
                       </p>
                     )}
@@ -122,7 +122,7 @@ export default function ListPreviewModal({
                       {row.status}
                     </span>
                   ) : row.secondary ? (
-                    <span className="text-[11.5px] text-[#4a4f5c] whitespace-nowrap shrink-0">
+                    <span className="max-w-[45%] text-right text-[11.5px] text-[#4a4f5c] [overflow-wrap:anywhere]">
                       {row.secondary}
                     </span>
                   ) : null}

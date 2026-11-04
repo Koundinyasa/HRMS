@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import type { FormEvent } from "react";
 
 import {
@@ -9,8 +10,8 @@ import {
 } from "lucide-react";
 
 import { toast } from "react-toastify";
-
 import { useChangePasswordMutation } from "@/features/auth/api/authApi";
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 
 interface ChangePasswordModalProps {
   open: boolean;
@@ -21,6 +22,8 @@ export default function ChangePasswordModal({
   open,
   onClose,
 }: ChangePasswordModalProps) {
+  const { signOut } = useSignOut();
+
   const [
     currentPassword,
     setCurrentPassword,
@@ -61,18 +64,6 @@ export default function ChangePasswordModal({
   // =========================
   // Reset Form
   // =========================
-
-  useEffect(() => {
-    if (!open) {
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
-      setShowCurrentPassword(false);
-      setShowNewPassword(false);
-      setShowConfirmPassword(false);
-    }
-  }, [open]);
 
   // =========================
   // Close Modal
@@ -138,6 +129,17 @@ export default function ChangePasswordModal({
       return;
     }
 
+    // Same rule the server enforces.
+    if (
+      newPassword.length < 8 ||
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(newPassword)
+    ) {
+      toast.error(
+        "Password must be at least 8 characters and contain uppercase, lowercase, number and special character (@ $ ! % * ? &)."
+      );
+      return;
+    }
+
     try {
       const response = await changePassword({
         currentPassword,
@@ -152,21 +154,40 @@ export default function ChangePasswordModal({
         );
 
         handleClose();
+
+        // The server keeps this one session alive after a password change.
+        // The app has always sent the user back to the login page, so end the
+        // session properly instead of just changing the address.
+        setTimeout(() => {
+          void signOut();
+        }, 1000);
       } else {
         toast.error(
           response.message ||
             "Failed to change password."
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(
         "Change password error:",
         error
       );
 
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const data =
+        errorRecord.data && typeof errorRecord.data === "object"
+          ? (errorRecord.data as Record<string, unknown>)
+          : {};
+      // Validation errors from the server arrive as a list of messages.
+      const serverMessage = Array.isArray(data.message)
+        ? data.message.filter((m): m is string => typeof m === "string").join(" ")
+        : data.message;
       const message =
-        error?.data?.message ||
-        error?.error ||
+        (typeof serverMessage === "string" && serverMessage) ||
+        (typeof errorRecord.error === "string" && errorRecord.error) ||
         "Failed to change password. Please try again.";
 
       toast.error(message);
@@ -626,4 +647,4 @@ export default function ChangePasswordModal({
       </div>
     </div>
   );
-}
+}

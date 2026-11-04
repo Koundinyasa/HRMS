@@ -1,0 +1,462 @@
+import type { ReactNode } from "react";
+
+/** The dashboard's only period selector. */
+export type PunchPeriod = "today" | "yesterday";
+ 
+/** Every KPI tile drills down to a filtered employee list. */
+export type PunchMetric =
+  | "yet-to-login"
+  | "logged-in"
+  | "present"
+  | "absent"
+  | "late-in"
+  | "early-in"
+  | "early-out"
+  | "on-leave"
+  | "week-off"
+  | "holiday";
+ 
+export type PunchProcessTab =
+  | "dashboard"
+  | "process"
+  | "punch"
+  | "attendance-overview"
+  | "ta-insights"
+  | "import";
+ 
+/** Grouping for the "Attendance Irregularities" charts. */
+export type IrregularityClassification =
+  | "all"
+  | "department"
+  | "team"
+  | "branch"
+  | "salary-structure"
+  | "leave-policy"
+  | "attendance"
+  | "designation"
+  | "cost-center"
+  | "ta-policy";
+ 
+/**
+ * One punch record per employee per period. Metrics are derived from these
+ * fields rather than stored, so the tile counts and the drill-down lists can
+ * never disagree.
+ */
+export interface PunchRecord {
+  employeeId: string;
+  employeeName: string;
+  shiftAssigned: string;
+  shiftStartTime: string;
+  shiftEndTime: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  /** e.g. "Second Half : SL" or "Second Half : LOP, First Half : SL" */
+  leaveStatus?: string;
+  isWeekOff?: boolean;
+  isHoliday?: boolean;
+  punchMode?: "Bio Metric" | "ESS";
+ 
+  // Dimensions the filter chips slice on.
+  department: string;
+  team: string;
+  branch: string;
+  salaryStructure: string;
+  leavePolicy: string;
+  attendance: string;
+  designation: string;
+  costCenter: string;
+  taPolicy: string;
+  pattern: string;
+  taSupervisor: string;
+}
+ 
+/** A PunchRecord plus the minute deltas the drill-down tables display. */
+export interface PunchRow extends PunchRecord {
+  lateInMins?: number;
+  earlyInMins?: number;
+  earlyOutMins?: number;
+}
+ 
+/** Free-text search plus one value per filter chip. */
+export interface PunchFilters {
+  search?: string;
+  query?: string;
+  taPolicy?: string;
+  pattern?: string;
+  taSupervisor?: string;
+  attendance?: string;
+  leave?: string;
+}
+ 
+export interface AttendanceOverviewPoint {
+  date: string;
+  present: number;
+  absent: number;
+  leave: number;
+  weekOff: number;
+  generalHoliday: number;
+}
+ 
+export interface IrregularityPoint {
+  date: string;
+  lateIn: number;
+  earlyOut: number;
+}
+ 
+export interface WorkingHoursPoint {
+  date: string;
+  /** Minutes. The axis renders these as H:MM. */
+  avgWorkMinutes: number;
+  avgOtMinutes: number;
+}
+ 
+export interface DateRange {
+  fromDate: string;
+  tillDate: string;
+}
+
+export interface TaInsightsQuery {
+  fromDate: string;
+  toDate: string;
+  insightId?: number;
+}
+
+export interface ShiftMasterBody {
+  shiftName: string;
+  shiftCode?: string;
+  startTime?: string;
+  endTime?: string;
+  remarks?: string;
+}
+
+export interface GeoLocationBody {
+  locationName: string;
+  locationCode?: string;
+  latitude?: string;
+  longitude?: string;
+  radius?: string;
+}
+
+/** Tile counts, keyed by metric. */
+export interface DashboardSummary {
+  totalEmployees: number;
+  latestPunchIntegratedAt?: string;
+  selectedDate?: string;
+  counts: Partial<Record<PunchMetric, number>>;
+}
+ 
+export interface PunchModeSlice {
+  mode: string;
+  count: number;
+}
+ 
+export interface PendingRequest {
+  id: string;
+  label: string;
+}
+ 
+/** Avg work and avg OT are separate endpoints, so each returns a single series. */
+export interface HoursPoint {
+  date: string;
+  minutes: number;
+}
+ 
+export interface PolicySummary {
+  name: string;
+  effectiveFrom: string;
+  updatedAgo: string;
+}
+ 
+export interface ShiftSummary {
+  name: string;
+  timing: string;
+}
+ 
+// ---- Process tab ----
+ 
+export type ProcessTile =
+  | "timeAttendance"
+  | "nonTimeAttendance"
+  | "missedPunch"
+  | "shiftUnassigned"
+  | "processed"
+  | "yetToProcess"
+  | "reProcessEffectiveDate"
+  | "allReProcess";
+ 
+export type ProcessSummary = Record<ProcessTile, number>;
+ 
+export type ProcessHistoryStatus = "Completed" | "Processing" | "Failed" | "Unknown";
+ 
+export interface ProcessHistoryEntry {
+  id: string;
+  rangeLabel: string;
+  processedOn: string;
+  status: ProcessHistoryStatus;
+}
+ 
+export interface PunchRequestsSummary {
+  regularization: number;
+  essMobile: number;
+}
+ 
+/** Backend hasn't published field names for the drill-down lists yet, so columns render dynamically from whatever keys come back. */
+export type ProcessDrilldownRow = Record<string, string | number>;
+ 
+/** The subset of ProcessTile that has a real drill-down endpoint. */
+export type ProcessDrilldownTile = Extract<
+  ProcessTile,
+  "missedPunch" | "shiftUnassigned" | "yetToProcess" | "processed" | "reProcessEffectiveDate" | "allReProcess"
+>;
+ 
+// ---- Regularization ----
+ 
+export type RegularizationTab = "punch" | "missed-punch" | "attendance" | "ta-insights";
+ 
+export interface MissedPunchRow {
+  employeeId: string;
+  employeeName: string;
+  punchDate: string;
+}
+ 
+export interface RegularizationPunch {
+  direction: "In" | "Out";
+  time: string;
+  status: "Approved" | "Pending" | "Rejected";
+}
+ 
+/** A punch row as returned by the Punch tab / Missed Punch regularization-details endpoints. */
+export interface PunchDetailRow extends RegularizationPunch {
+  punchId: string;
+  remarks?: string;
+}
+ 
+/** Single-half codes plus the "first-half/second-half differ" combos the grid shows as a split circle. */
+export type AttendanceDayCode = "P" | "A" | "H" | "WO" | "IN" | "P_A" | "A_P" | "P_AB" | "AB_P";
+ 
+export interface AttendanceDayCell {
+  code: AttendanceDayCode;
+  tooltip: string;
+}
+ 
+export interface AttendanceEmployeeRow {
+  empId: string;
+  name: string;
+  days: AttendanceDayCell[];
+}
+ 
+export interface DailyLogPunch {
+  punchId?: string;
+  direction: "In" | "Out";
+  time: string;
+  entryType: string;
+}
+ 
+export interface DailyLog {
+  empName: string;
+  date: string;
+  fhStatus: string;
+  shStatus: string;
+  lateIn: string;
+  earlyOut: string;
+  totalHours: string;
+  ot: string;
+  punches: DailyLogPunch[];
+}
+ 
+export interface InsightTile {
+  key: string;
+  label: string;
+  value: number;
+  total: number;
+  color: string;
+  active: boolean;
+}
+ 
+// ---- Settings ----
+ 
+export type SettingsTab = "general-settings" | "auto-process" | "mail-scheduler" | "punch-integration";
+ 
+// ---- Assign ----
+ 
+export type AssignTab = "geo-location" | "policy-update" | "face-template" | "import";
+ 
+export interface AssignEmployeeRow {
+  employeeId: string;
+  employeeName: string;
+}
+ 
+export interface PolicyUpdateRow extends AssignEmployeeRow {
+  effectiveDate: string;
+  policy: string;
+}
+ 
+// ---- Force Approval ----
+ 
+export type ForceApprovalTab =
+  | "punch"
+  | "weekly-off"
+  | "over-time"
+  | "official-permission"
+  | "personal-permission"
+  | "shift"
+  | "face-template";
+ 
+// ---- TA Reports ----
+ 
+export interface TaReportCategory {
+  title: string;
+  reports: string[];
+}
+ 
+// ---- Masters ----
+ 
+export type MastersTab = "policy" | "shift-pattern" | "shift-master" | "geo-location" | "import";
+ 
+export interface ShiftMasterRow {
+  shiftCode: string;
+  shiftName: string;
+  startTime: string;
+  endTime: string;
+}
+ 
+export interface GeoLocationRow {
+  locationName: string;
+  address: string;
+  radiusMeters: number;
+}
+ 
+export interface PunchEvent {
+  direction: "In" | "Out";
+  time: string;
+}
+
+export interface EmployeeRawPunchesRequest {
+  employeeId: string;
+  date?: string;
+}
+
+export interface EmployeeRawPunch extends Record<string, unknown> {
+  PunchID?: string | number;
+  PunchType?: string | number | null;
+  Direction?: string | null;
+  OriginalTime?: string | null;
+  CorrectedTime?: string | null;
+  PunchTimestamp?: string | null;
+  LocationAddress?: string | null;
+  CaptureSource?: string | number | null;
+  Device?: string | null;
+  PunchDate?: string | null;
+  SelfieURL?: string | null;
+}
+
+export interface TimeOfficeEmployee {
+  employeeId: string;
+  employeeName: string;
+  classificationId?: number;
+}
+
+ 
+// ---- Sidebar ----
+ 
+export interface SubNavItem {
+  label: string;
+  path: string;
+  children?: SubNavItem[];
+}
+ 
+// ---- Module-level (slice) ----
+ 
+export type TimeOfficeSection =
+  | "punch-process"
+  | "regularization"
+  | "ta-reports"
+  | "force-approval"
+  | "masters"
+  | "assign"
+  | "settings";
+
+export interface TimeOfficeState {
+  activeSection: TimeOfficeSection;
+  punchProcessTab: PunchProcessTab;
+  regularizationTab: RegularizationTab;
+  selectedEmployeeIds: string[];
+  punchProcessFilters: PunchFilters;
+  regularizationFilters: PunchFilters;
+}
+
+export interface PunchStatTilesProps {
+  period: PunchPeriod;
+  totalEmployees: number;
+  counts: Record<PunchMetric, number>;
+  onOpenMetric: (metric: PunchMetric) => void;
+  header?: ReactNode;
+}
+
+export interface ProcessDrilldownListProps {
+  title: string;
+  color: string;
+  rows: ProcessDrilldownRow[];
+  isLoading: boolean;
+  scrollable?: boolean;
+  /** Omit when this table isn't reached via a tile drill-down (e.g. a standalone approval queue). */
+  onBack?: () => void;
+}
+
+export interface PunchMetricListProps {
+  metric: PunchMetric;
+  allRows: PunchRow[];
+  filteredRows: PunchRow[];
+  pagedRows: PunchRow[];
+  filters: PunchFilters;
+  onFiltersChange: (next: PunchFilters) => void;
+  onClearFilters: () => void;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  /** Parent can hide the filter bar (the dashboard has a toggle for it). */
+  showFilters?: boolean;
+  isLoading?: boolean;
+  errorMessage?: string;
+}
+
+export interface ImportPanelProps {
+  title: string;
+  onUpload?: (file: File) => Promise<string | void>;
+  templateHeaders?: string[];
+  templateTypeOptions?: string[];
+}
+
+export interface DateFieldProps {
+  label?: string;
+  value: string;
+  onChange: (iso: string) => void;
+  className?: string;
+  inputClassName?: string;
+  align?: "left" | "right";
+  /** Called when the calendar opens or closes. */
+  onOpenChange?: (open: boolean) => void;
+  /** Use fixed positioning so the calendar is not clipped by a scrolling parent. */
+  fixedCalendarPosition?: boolean;
+}
+
+export interface ProcessStatTilesProps {
+  summary: ProcessSummary;
+  onOpenTile?: (tile: ProcessTile) => void;
+}
+
+export interface PunchFilterBarProps {
+  /** Unfiltered rows — chip options come from the data itself, not a hardcoded list. */
+  rows: PunchRow[];
+  filters: PunchFilters;
+  onChange: (next: PunchFilters) => void;
+  onClear: () => void;
+  onDismiss?: () => void;
+  showChipsInitially?: boolean;
+  showOverflowControls?: boolean;
+  showAddFilter?: boolean;
+  scrollable?: boolean;
+  searchPlaceholder?: string;
+  showSearch?: boolean;
+}

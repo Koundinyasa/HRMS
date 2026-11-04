@@ -5,8 +5,9 @@ import LeaveNavbar from "./LeaveNavbar";
 export default function LeaveLayout() {
   const location = useLocation();
   const hideNavbar = Boolean(
-    (location.state as { forceApplyForEmployee?: boolean } | null)
-      ?.forceApplyForEmployee
+    location.pathname.endsWith("/leave/apply-for-employee") ||
+      (location.state as { forceApplyForEmployee?: boolean } | null)
+        ?.forceApplyForEmployee
   );
  
   return (

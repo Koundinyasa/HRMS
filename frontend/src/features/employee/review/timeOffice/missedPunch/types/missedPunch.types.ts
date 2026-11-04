@@ -98,6 +98,8 @@ export interface MissedPunchFiltersProps {
 ========================================================= */
 
 export interface MissedPunchNavbarProps {
+  adminMode?: boolean;
+
   filters: MissedPunchFilters;
 
   onFromDateChange: (

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { useDomainVerification } from "../hooks/useDomainVerification";
 import { domainSchema } from "../validation/domainSchema";
@@ -8,7 +9,7 @@ export default function DomainForm() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    const { verifyDomain } = useDomainVerification();
+    const { verifyDomain, isVerifying } = useDomainVerification();
 
     const validateDomain = (value: string) => {
         const result = domainSchema.safeParse({ domain: value });
@@ -24,6 +25,9 @@ export default function DomainForm() {
     };
 
     const handleSubmit = async () => {
+        if (isVerifying) {
+            return;
+        }
         if (!validateDomain(domain)) {
             return;
         }
@@ -46,7 +50,7 @@ export default function DomainForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Domain*
                 </label>
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-3">
                     <div
                         className={`flex flex-1 items-center h-[48px] bg-[#EEF5FB] border rounded-lg px-3 gap-2 transition-colors ${
                             error
@@ -92,22 +96,36 @@ export default function DomainForm() {
                     </div>
                     <Button
                         onClick={handleSubmit}
-                        className="h-[44px] w-[100px] text-sm rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8]"
+                        disabled={isVerifying}
+                        aria-busy={isVerifying}
+                        className="h-[44px] w-[112px] shrink-0 whitespace-nowrap px-2 text-sm rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8]"
                     >
-                        Proceed →
+                        {isVerifying ? (
+                            <>
+                                <Loader2
+                                    className="mr-2 h-4 w-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                Checking
+                            </>
+                        ) : (
+                            "Proceed →"
+                        )}
                     </Button>
                 </div>
  
-                {error && (
-                    <p className="text-red-500 text-xs mt-1.5">
-                        {error}
-                    </p>
-                )}
-                {success && (
-                    <p className="text-green-500 text-xs mt-1.5">
-                        {success}
-                    </p>
-                )}
+                <div className="mt-1.5 min-h-[16px]" aria-live="polite">
+                    {error && (
+                        <p className="text-red-500 text-xs">
+                            {error}
+                        </p>
+                    )}
+                    {success && (
+                        <p className="text-green-500 text-xs">
+                            {success}
+                        </p>
+                    )}
+                </div>
             </div>
         </div>
     );

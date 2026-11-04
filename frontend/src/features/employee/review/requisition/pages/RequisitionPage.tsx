@@ -35,7 +35,7 @@ export default function RequisitionPage() {
     }
   };
 
-  const handleReject = async () => {
+  const handleReject = () => {
     const rejected = requisitions.filter((item) =>
       selectedIds.includes(item.id)
     );
@@ -46,16 +46,10 @@ export default function RequisitionPage() {
 
     setRejectedRequests(rejected);
     setApproved(false);
-
-    try {
-      await updateSelected("rejected");
-    } catch (actionError) {
-      console.error("Unable to reject leave requests.", actionError);
-    }
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f4f9] p-4 sm:p-5 md:p-[26px] font-[Urbanist]">
+    <div className="min-h-screen bg-[#f3f4f9] p-4 font-[Urbanist] sm:p-5 md:p-[26px]">
       <div className="mx-auto w-full space-y-3 font-[Urbanist]">
         {/* Navbar */}
         <RequisitionNavbar />
@@ -68,7 +62,7 @@ export default function RequisitionPage() {
             void handleApprove();
           }}
           onReject={() => {
-            void handleReject();
+            handleReject();
           }}
           onHistory={() => {
             setShowHistory((previous) => !previous);
@@ -81,7 +75,7 @@ export default function RequisitionPage() {
         {error && (
           <div
             role="alert"
-            className="rounded-md border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]"
+            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]"
           >
             {error}
           </div>
@@ -90,18 +84,9 @@ export default function RequisitionPage() {
         {actionError && (
           <div
             role="alert"
-            className="rounded-md border border-black bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]"
+            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600 font-[Urbanist]"
           >
             {actionError}
-          </div>
-        )}
-
-        {approved && (
-          <div
-            role="status"
-            className="rounded-md border border-black bg-green-50 p-4 text-sm font-medium text-green-700 font-[Urbanist]"
-          >
-            REQUEST IS APPROVED SUCCESSFULLY
           </div>
         )}
 
@@ -114,7 +99,7 @@ export default function RequisitionPage() {
 
         {/* History */}
         {showHistory && (
-          <div className="rounded-md border border-black bg-white p-4 text-sm text-slate-600 font-[Urbanist]">
+          <div className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-600 font-[Urbanist]">
             Leave history
 
             <button
@@ -127,16 +112,7 @@ export default function RequisitionPage() {
           </div>
         )}
 
-        {/* Rejected remarks */}
-        {!loading && rejectedRequests.length > 0 && (
-          <RequisitionRemarksPage
-            requisitions={rejectedRequests}
-            onBack={() => setRejectedRequests([])}
-          />
-        )}
-
-        {/* Table */}
-        {!loading && rejectedRequests.length === 0 && (
+        {!loading && (
           <RequisitionTable
             requisitions={requisitions}
             selectedIds={selectedIds}
@@ -145,6 +121,20 @@ export default function RequisitionPage() {
           />
         )}
 
+        {!loading && rejectedRequests.length > 0 && (
+          <RequisitionRemarksPage
+            requisitions={rejectedRequests}
+            onBack={() => setRejectedRequests([])}
+            onSubmit={async (remarks) => {
+              const rejected = await updateSelected("rejected", remarks);
+              if (rejected.length > 0) {
+                setRejectedRequests([]);
+              } else {
+                throw new Error("Leave rejection was not completed.");
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

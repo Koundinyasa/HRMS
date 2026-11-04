@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { HrmsDbService } from '../../db/hrms-db.service';
 import { DraftService } from './draft.service';
 import { ParserService } from './parser.service';
@@ -10,14 +10,28 @@ export interface ChatbotLeaveDate {
   date: string;
   leaveType: string;
   status: string;
+  sessionFrom?: string;
+  sessionTo?: string;
+  leaveId?: number;
+  isHalfDay?: boolean;
 }
 
+interface CalendarLeaveRange {
+  fromDate: string;
+  toDate: string;
+  leaveType: string;
+  status: string;
+  leaveId?: number;
+  sessionFrom?: string;
+  sessionTo?: string;
+  isHalfDay?: boolean;
+}
 function toDateOnly(value: unknown): string {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) return '';
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
+    const year = value.getUTCFullYear();
+    const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(value.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
@@ -29,6 +43,28 @@ function toDateOnly(value: unknown): string {
   return dayFirstMatch
     ? `${dayFirstMatch[3]}-${dayFirstMatch[2]}-${dayFirstMatch[1]}`
     : text;
+}
+
+function toOptionalString(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  const text = String(value).trim();
+  return text || undefined;
+}
+
+function toOptionalBoolean(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'true' || normalized === '1') return true;
+  if (normalized === 'false' || normalized === '0') return false;
+  return undefined;
+}
+
+function toOptionalId(value: unknown): number | undefined {
+  if (value === null || value === undefined || value === '') return undefined;
+  const id = Number(value);
+  return Number.isFinite(id) ? id : undefined;
 }
 
 @Injectable()
@@ -64,75 +100,403 @@ export class LeaveService {
     return holiday?.name ?? null;
   }
 
-  private holidaysInRange(
+  private eligibleWorkingDaysInRange(
     ctx: IntentCtx,
     startDate: string,
     endDate: string,
-  ): string[] {
-    const holidays: string[] = [];
+  ): number {
+    if (!startDate || !endDate || endDate < startDate) return 0;
+
+    let eligibleDays = 0;
     const current = new Date(`${startDate}T00:00:00Z`);
     const end = new Date(`${endDate}T00:00:00Z`);
 
     while (current <= end) {
       const iso = current.toISOString().slice(0, 10);
-      if (this.holidayName(ctx, iso)) holidays.push(iso);
+      const day = current.getUTCDay();
+      if (day !== 0 && day !== 6 && !this.holidayName(ctx, iso)) {
+        eligibleDays++;
+      }
       current.setUTCDate(current.getUTCDate() + 1);
     }
 
-    return holidays;
+    return eligibleDays;
+  }
+
+  private leaveDateValidationError(
+    ctx: IntentCtx,
+    startDate: string,
+    endDate: string,
+  ): string | null {
+    if (startDate === endDate) {
+      const day = new Date(`${startDate}T00:00:00Z`).getUTCDay();
+      if (day === 0 || day === 6) {
+        return `Leave cannot be applied on weekends.`;
+      }
+
+      const holiday = this.holidayName(ctx, startDate);
+      if (holiday) {
+        return `${holiday} is a company holiday. Please choose a working day.`;
+      }
+
+      return null;
+    }
+
+    return this.eligibleWorkingDaysInRange(ctx, startDate, endDate) > 0
+      ? null
+      : `The selected date range contains no eligible working days. Weekends and company holidays are excluded.`;
+  }
+
+  // What to tell the employee when a leave submission fails. Only messages
+  // the server meant for the user (a 4xx such as "Invalid leave dates.") are
+  // shown; a database or code fault never leaks its text into the chat.
+  private submissionErrorMessage(error: unknown): string {
+    const fallback = `I couldn't submit your leave right now. Please try again.`;
+    if (!(error instanceof HttpException) || error.getStatus() >= 500) {
+      return fallback;
+    }
+    const body = error.getResponse();
+    const raw =
+      typeof body === 'string' ? body : (body as { message?: unknown })?.message;
+    const message = Array.isArray(raw)
+      ? raw.filter((item) => typeof item === 'string').join(' ')
+      : raw;
+    return typeof message === 'string' && message.trim()
+      ? message.trim()
+      : fallback;
+  }
+
+  private calendarField(record: unknown, ...names: string[]): unknown {
+    if (record === null || typeof record !== 'object') return undefined;
+    const entries = Object.entries(record);
+    const normalizedNames = new Set(
+      names.map((name) => name.toLowerCase().replace(/[^a-z0-9]/g, '')),
+    );
+    const match = entries.find(([key]) =>
+      normalizedNames.has(key.toLowerCase().replace(/[^a-z0-9]/g, '')),
+    );
+    return match?.[1];
+  }
+
+  private async getCalendarLeaveStatusMapped(
+    user: Record<string, unknown>,
+  ): Promise<CalendarLeaveRange[]> {
+    const raw: unknown = await this.leaveApiService.getLeaveStatus(user);
+    const applications = this.calendarField(raw, 'LeaveApplications');
+    if (!Array.isArray(applications)) return [];
+
+    return applications.flatMap((application): CalendarLeaveRange[] => {
+      const fromDate = toDateOnly(
+        this.calendarField(application, 'FromDate', 'From Date'),
+      );
+      const toDate = toDateOnly(
+        this.calendarField(application, 'ToDate', 'To Date'),
+      );
+      if (!fromDate || !toDate) return [];
+
+      const stagesValue = this.calendarField(application, 'Stages');
+      const stages = Array.isArray(stagesValue) ? stagesValue : [];
+      const stageStates = stages
+        .map((stage) =>
+          toOptionalString(
+            this.calendarField(stage, 'StageState'),
+          )?.toUpperCase(),
+        )
+        .filter((state): state is string => Boolean(state));
+      const explicitStatus = toOptionalString(
+        this.calendarField(application, 'Status', 'StatusName', 'LeaveStatus'),
+      );
+      // The status endpoint primarily exposes workflow stages. If it does not
+      // include a record status, retain the same stage-derived meaning used by
+      // the existing leave-status mapper without changing that mapper globally.
+      const status =
+        explicitStatus ??
+        (stageStates.some((state) => state === 'REJECTED')
+          ? 'Rejected'
+          : stageStates.length > 0 &&
+              stageStates.every((state) => state === 'APPROVED')
+            ? 'Approved'
+            : 'Pending');
+      const leave: CalendarLeaveRange = {
+        fromDate,
+        toDate,
+        leaveType:
+          toOptionalString(
+            this.calendarField(
+              application,
+              'LeaveName',
+              'LeaveTypeName',
+              'LeaveType',
+            ),
+          ) ?? 'Leave',
+        status,
+        leaveId: toOptionalId(
+          this.calendarField(
+            application,
+            'Id',
+            'LeaveId',
+            'LeaveApplicationId',
+          ),
+        ),
+        sessionFrom: toOptionalString(
+          this.calendarField(
+            application,
+            'SessionFrom',
+            'FromSession',
+            'LeaveSessionFrom',
+          ),
+        ),
+        sessionTo: toOptionalString(
+          this.calendarField(
+            application,
+            'SessionTo',
+            'ToSession',
+            'LeaveSessionTo',
+          ),
+        ),
+        isHalfDay: toOptionalBoolean(
+          this.calendarField(application, 'IsHalfDay', 'HalfDay'),
+        ),
+      };
+
+      return [leave];
+    });
+  }
+
+  private async getCalendarEmployeeLeaveHistoryMapped(
+    user: Record<string, unknown>,
+  ): Promise<CalendarLeaveRange[]> {
+    const raw: unknown =
+      await this.leaveApiService.getEmployeeLeaveDetails(user);
+    const history = this.calendarField(raw, 'employeeLeaveHistory');
+    if (!Array.isArray(history)) return [];
+
+    return history.flatMap((record): CalendarLeaveRange[] => {
+      const fromDate = toDateOnly(
+        this.calendarField(record, 'FromDate', 'From Date'),
+      );
+      const toDate = toDateOnly(
+        this.calendarField(record, 'ToDate', 'To Date'),
+      );
+      if (!fromDate || !toDate) return [];
+
+      return [
+        {
+          fromDate,
+          toDate,
+          leaveType:
+            toOptionalString(
+              this.calendarField(
+                record,
+                'LeaveType',
+                'LeaveName',
+                'LeaveTypeName',
+              ),
+            ) ?? 'Leave',
+          status:
+            toOptionalString(
+              this.calendarField(
+                record,
+                'Status',
+                'OverallStatus',
+                'LeaveStatus',
+              ),
+            ) ?? 'Other',
+          leaveId: toOptionalId(
+            this.calendarField(
+              record,
+              'LeaveId',
+              'LeaveID',
+              'Id',
+              'LeaveApplicationId',
+            ),
+          ),
+          sessionFrom: toOptionalString(
+            this.calendarField(
+              record,
+              'SessionFrom',
+              'FromSession',
+              'LeaveSessionFrom',
+            ),
+          ),
+          sessionTo: toOptionalString(
+            this.calendarField(
+              record,
+              'SessionTo',
+              'ToSession',
+              'LeaveSessionTo',
+            ),
+          ),
+          isHalfDay: toOptionalBoolean(
+            this.calendarField(record, 'IsHalfDay', 'HalfDay'),
+          ),
+        },
+      ];
+    });
   }
 
   async getCalendarLeaveDates(
     user: Record<string, unknown>,
   ): Promise<ChatbotLeaveDate[]> {
     try {
-      const [statusResult, historyResult] = await Promise.allSettled([
-        this.getLeaveStatusMapped(user),
-        this.getLeaveHistoryMapped(user),
-      ]);
+      const companyId = Number(user.companyId);
+      const [statusResult, employeeDetailsResult, sessionDetailsResult] =
+        await Promise.allSettled([
+          this.getCalendarLeaveStatusMapped(user),
+          this.getCalendarEmployeeLeaveHistoryMapped(user),
+          this.hrmsDbService.getEmployeeLeaveSessionDetails(
+            String(user.employeeId ?? ''),
+            Number.isInteger(companyId) ? companyId : undefined,
+          ),
+        ]);
+
       const statusLeaves =
         statusResult.status === 'fulfilled' ? statusResult.value : [];
+
       const historyLeaves =
-        historyResult.status === 'fulfilled' ? historyResult.value : [];
+        employeeDetailsResult.status === 'fulfilled'
+          ? employeeDetailsResult.value
+          : [];
+      const sessionDetails =
+        sessionDetailsResult.status === 'fulfilled'
+          ? sessionDetailsResult.value
+          : [];
 
       if (statusResult.status === 'rejected') {
-        console.error('Unable to load leave status for chatbot calendar:', statusResult.reason);
+        console.error(
+          'Unable to load leave status for chatbot calendar:',
+          statusResult.reason,
+        );
       }
-      if (historyResult.status === 'rejected') {
-        console.error('Unable to load leave history for chatbot calendar:', historyResult.reason);
+
+      if (employeeDetailsResult.status === 'rejected') {
+        console.error(
+          'Unable to load employee leave details for chatbot calendar:',
+          employeeDetailsResult.reason,
+        );
       }
-      const calendarLeaves: ChatbotLeaveDate[] = [];
-      const addRange = (
-        fromDate: string,
-        toDate: string,
-        leaveType: string,
-        status: string,
-      ) => {
+      if (sessionDetailsResult.status === 'rejected') {
+        console.error(
+          'Unable to load leave sessions for chatbot calendar:',
+          sessionDetailsResult.reason,
+        );
+      }
+
+      const sessionDetailsByLeaveId = new Map<number, unknown>();
+      for (const record of sessionDetails) {
+        const leaveId = toOptionalId(this.calendarField(record, 'Id'));
+        if (leaveId !== undefined) {
+          sessionDetailsByLeaveId.set(leaveId, record);
+        }
+      }
+
+      const addLeaveRange = (leave: CalendarLeaveRange) => {
+        const sessionRecord =
+          leave.leaveId === undefined
+            ? undefined
+            : sessionDetailsByLeaveId.get(leave.leaveId);
+        addRange({
+          ...leave,
+          sessionFrom:
+            leave.sessionFrom ??
+            toOptionalString(
+              this.calendarField(
+                sessionRecord,
+                'SessionFrom',
+                'FromSession',
+                'LeaveSessionFrom',
+              ),
+            ),
+          sessionTo:
+            leave.sessionTo ??
+            toOptionalString(
+              this.calendarField(
+                sessionRecord,
+                'SessionTo',
+                'ToSession',
+                'LeaveSessionTo',
+              ),
+            ),
+          isHalfDay:
+            leave.isHalfDay ??
+            toOptionalBoolean(
+              this.calendarField(sessionRecord, 'IsHalfDay', 'HalfDay'),
+            ),
+        });
+      };
+
+      // Keep multiple leave records on the same date.
+      const byDate = new Map<string, ChatbotLeaveDate[]>();
+
+      const addRange = (leave: CalendarLeaveRange) => {
+        const fromDate = leave.fromDate;
+        const toDate = leave.toDate;
         if (!fromDate || !toDate) return;
+
         const current = new Date(`${fromDate.slice(0, 10)}T00:00:00Z`);
+
         const end = new Date(`${toDate.slice(0, 10)}T00:00:00Z`);
-        if (Number.isNaN(current.getTime()) || Number.isNaN(end.getTime()))
+
+        if (Number.isNaN(current.getTime()) || Number.isNaN(end.getTime())) {
           return;
+        }
+
         while (current <= end) {
           const date = current.toISOString().slice(0, 10);
-          calendarLeaves.push({
-            date,
-            leaveType: leaveType || 'Leave',
-            status: status || 'Pending',
-          });
+
+          const existing = byDate.get(date) ?? [];
+          const leaveId =
+            leave.leaveId !== undefined && Number.isFinite(leave.leaveId)
+              ? leave.leaveId
+              : undefined;
+          const duplicateIndex = existing.findIndex((item) =>
+            leaveId !== undefined
+              ? item.leaveId === leaveId
+              : item.leaveId === undefined &&
+                item.leaveType === leave.leaveType &&
+                item.status === leave.status &&
+                item.sessionFrom === leave.sessionFrom &&
+                item.sessionTo === leave.sessionTo,
+          );
+          if (duplicateIndex >= 0) {
+            const duplicate = existing[duplicateIndex];
+            existing[duplicateIndex] = {
+              ...duplicate,
+              sessionFrom: duplicate.sessionFrom ?? leave.sessionFrom,
+              sessionTo: duplicate.sessionTo ?? leave.sessionTo,
+              isHalfDay: duplicate.isHalfDay ?? leave.isHalfDay,
+            };
+          } else {
+            existing.push({
+              date,
+              leaveType: leave.leaveType || 'Leave',
+              status: leave.status || 'Other',
+              leaveId,
+              sessionFrom: leave.sessionFrom,
+              sessionTo: leave.sessionTo,
+              isHalfDay: leave.isHalfDay,
+            });
+          }
+
+          byDate.set(date, existing);
+
           current.setUTCDate(current.getUTCDate() + 1);
         }
       };
 
-      for (const leave of statusLeaves) {
-        addRange(leave.fromDate, leave.toDate, leave.leaveType, leave.status);
-      }
       for (const leave of historyLeaves) {
-        addRange(leave.fromDate, leave.toDate, leave.leaveType, leave.status);
+        addLeaveRange(leave);
       }
-      return calendarLeaves;
+
+      for (const leave of statusLeaves) {
+        addLeaveRange(leave);
+      }
+
+      // Flatten the grouped dates for the existing API response.
+      return [...byDate.values()].flat();
     } catch (error) {
       console.error('Unable to load leave dates for chatbot calendar:', error);
+
       return [];
     }
   }
@@ -163,10 +527,6 @@ export class LeaveService {
     if (draft.step === 'awaiting_start') {
       if (!iso)
         return `Please pick your leave start date below (or type it as YYYY-MM-DD).`;
-      const holiday = this.holidayName(ctx, iso);
-      if (holiday) {
-        return `${iso} is a company holiday (${holiday}). Please choose a working day.`;
-      }
       draft.startDate = iso;
       draft.leaveDate = iso;
       draft.step = 'awaiting_end';
@@ -184,16 +544,18 @@ export class LeaveService {
       if (iso < draft.startDate) {
         return `The end date can't be before the start date (${draft.startDate}). Please pick a later date.`;
       }
-      const holidays = this.holidaysInRange(ctx, draft.startDate, iso);
-      if (holidays.length) {
-        return `Your leave range includes a company holiday (${holidays.join(', ')}). Please choose dates without holidays.`;
-      }
+      const dateError = this.leaveDateValidationError(
+        ctx,
+        draft.startDate,
+        iso,
+      );
+      if (dateError) return dateError;
       draft.endDate = iso;
-      draft.duration =
-        Math.floor(
-          (new Date(iso).getTime() - new Date(draft.startDate).getTime()) /
-            86400000,
-        ) + 1;
+      draft.duration = this.eligibleWorkingDaysInRange(
+        ctx,
+        draft.startDate,
+        iso,
+      );
       draft.step = 'awaiting_type';
       this.draftService.setDraft(
         this.draftService.leaveDrafts,
@@ -221,6 +583,14 @@ export class LeaveService {
       }
 
       draft.leaveType = code;
+      if (picked?.id === 4 || picked?.id === 5) {
+        draft.duration =
+          Math.floor(
+            (new Date(draft.endDate).getTime() -
+              new Date(draft.startDate).getTime()) /
+              86400000,
+          ) + 1;
+      }
 
       if (isSingleDay) {
         draft.step = 'awaiting_dayChoice';
@@ -328,9 +698,9 @@ export class LeaveService {
     const records =
       balRaw?.sections?.[0]?.records ?? (Array.isArray(balRaw) ? balRaw : []);
 
-    const normalize = (v: string) =>
+    const normalize = (v: unknown) =>
       String(v ?? '')
-        .trim()
+        .replace(/[^a-z0-9]/gi, '')
         .toLowerCase();
     const balByName = new Map<string, number>();
     for (const rec of records) {
@@ -350,9 +720,10 @@ export class LeaveService {
         .map((t) => ({
           code: t.code,
           name: t.name,
-          balance: balByName.has(normalize(t.name))
-            ? balByName.get(normalize(t.name))!
-            : null,
+          balance:
+            balByName.get(normalize(t.name)) ??
+            balByName.get(normalize(`${t.code}${t.name}`)) ??
+            null,
         }))
         // Only offer leave types the employee can actually apply — a real,
         // positive balance — plus LOP unconditionally, since it's unpaid
@@ -430,6 +801,7 @@ export class LeaveService {
       fromDate: string;
       toDate: string;
       status: string;
+      appliedDate?: string;
       currentStage?: string;
     }[]
   > {
@@ -450,31 +822,40 @@ export class LeaveService {
       return [];
     }
     const apps = raw?.LeaveApplications ?? [];
-    return apps.map((app: any) => {
-      const stages = app.Stages ?? [];
-      const rejected = stages.some(
-        (s: any) => (s.StageState ?? '').toUpperCase() === 'REJECTED',
-      );
-      const allApproved =
-        stages.length > 0 &&
-        stages.every(
-          (s: any) => (s.StageState ?? '').toUpperCase() === 'APPROVED',
+    return apps
+      .map((app: any) => {
+        const stages = app.Stages ?? [];
+        const rejected = stages.some(
+          (s: any) => (s.StageState ?? '').toUpperCase() === 'REJECTED',
         );
-      const status = rejected
-        ? 'Rejected'
-        : allApproved
-          ? 'Approved'
-          : 'Pending';
-      const current = stages.find((s: any) => s.LevelNo === app.CurrentLevelNo);
-      return {
-        leaveId: Number(app.Id),
-        leaveType: app.LeaveName,
-        fromDate: app.FromDate,
-        toDate: app.ToDate,
-        status,
-        currentStage: current?.StageName,
-      };
-    });
+        const allApproved =
+          stages.length > 0 &&
+          stages.every(
+            (s: any) => (s.StageState ?? '').toUpperCase() === 'APPROVED',
+          );
+        const status = rejected
+          ? 'Rejected'
+          : allApproved
+            ? 'Approved'
+            : 'Pending';
+        const current = stages.find(
+          (s: any) => s.LevelNo === app.CurrentLevelNo,
+        );
+        return {
+          leaveId: Number(app.Id),
+          leaveType: app.LeaveName,
+          fromDate: app.FromDate,
+          toDate: app.ToDate,
+          status,
+          appliedDate: toOptionalString(app.AppliedDate),
+          currentStage: current?.StageName,
+        };
+      })
+      .sort(
+        (left, right) =>
+          right.fromDate.localeCompare(left.fromDate) ||
+          right.leaveId - left.leaveId,
+      );
   }
 
   // Same idea as getLeaveStatusMapped above, but for the history endpoint —
@@ -492,15 +873,11 @@ export class LeaveService {
   // cancelPendingOnly reads its IDs from getLeaveStatusMapped above instead,
   // which is unaffected).
   private async getLeaveHistoryMapped(user: Record<string, any>): Promise<
-    {
+    (Omit<CalendarLeaveRange, 'leaveId'> & {
       leaveId: number;
-      leaveType: string;
-      fromDate: string;
-      toDate: string;
       noOfDays: number;
-      status: string;
       actionBy?: string;
-    }[]
+    })[]
   > {
     const raw: any = await this.leaveApiService.getLeaveHistory(user);
     // Backend switched this endpoint to a nested {sections:[{records:[{fields:[...]}]}]}
@@ -508,15 +885,17 @@ export class LeaveService {
     // if it ever reverts or if another endpoint still returns the old shape.
     const sections = raw?.sections ?? raw?.Sections;
     const records = Array.isArray(sections)
-      ? sections.flatMap((section) => section?.records ?? section?.Records ?? [])
-      : raw?.records ?? raw?.Records ?? (Array.isArray(raw) ? raw : []);
+      ? sections.flatMap(
+          (section) => section?.records ?? section?.Records ?? [],
+        )
+      : (raw?.records ?? raw?.Records ?? (Array.isArray(raw) ? raw : []));
     const mapped = records.map((rec: any) => {
       const record = rec as Record<string, unknown>;
       const rawFields = record.fields ?? record.Fields;
       const fields = Array.isArray(rawFields) ? rawFields : [];
       const directValue = (labels: string[]) => {
         const entry = Object.entries(record).find(([key]) =>
-          labels.some((label) => key.toLowerCase() === label.toLowerCase()),
+          labels.some((name) => key.toLowerCase() === name.toLowerCase()),
         );
         return entry?.[1];
       };
@@ -534,23 +913,33 @@ export class LeaveService {
           ),
         );
         const fieldRecord = field as Record<string, unknown> | undefined;
-        return (
-          fieldRecord?.value ??
-          fieldRecord?.Value ??
-          directValue(labels)
-        );
+        return fieldRecord?.value ?? fieldRecord?.Value ?? directValue(labels);
       };
       return {
         leaveId: Number(get('Leave Id', 'LeaveId') ?? NaN),
-        leaveType: get('Leave Type', 'LeaveType', 'LeaveTypeName'),
+        leaveType:
+          toOptionalString(get('Leave Type', 'LeaveType', 'LeaveTypeName')) ??
+          'Leave',
         fromDate: toDateOnly(get('From Date', 'FromDate')),
         toDate: toDateOnly(get('To Date', 'ToDate')),
         noOfDays: Number(get('Days', 'NoOfDays')),
-        status: get('Status', 'Leave Status', 'LeaveStatus', 'Action'),
-        actionBy: get('Approved By', 'ApprovedBy', 'ActionBy'),
+        status:
+          toOptionalString(
+            get('Status', 'Leave Status', 'LeaveStatus', 'Action'),
+          ) ?? '',
+        sessionFrom: toOptionalString(get('Session From', 'SessionFrom')),
+        sessionTo: toOptionalString(get('Session To', 'SessionTo')),
+        isHalfDay: toOptionalBoolean(get('Is Half Day', 'IsHalfDay')),
+        actionBy: toOptionalString(
+          get('Approved By', 'ApprovedBy', 'ActionBy'),
+        ),
       };
     });
-    return mapped;
+    return mapped.sort(
+      (left, right) =>
+        right.fromDate.localeCompare(left.fromDate) ||
+        right.leaveId - left.leaveId,
+    );
   }
 
   getIntents(): IntentDefinition[] {
@@ -653,58 +1042,48 @@ export class LeaveService {
           ctx.msg.includes('status of my leave') ||
           ctx.msg.includes('latest status'),
         handle: async (ctx) => {
-          const [statusResult, historyResult] = await Promise.allSettled([
-            this.getLeaveStatusMapped(ctx.user),
-            this.getLeaveHistoryMapped(ctx.user),
-          ]);
-          const statusLeaves =
-            statusResult.status === 'fulfilled' ? statusResult.value : [];
-          const historyLeaves =
-            historyResult.status === 'fulfilled' ? historyResult.value : [];
-          const leaves = [
-            ...historyLeaves.map((leave) => ({
-              ...leave,
-              currentStage: undefined,
-            })),
-            ...statusLeaves,
-          ]
-            .filter((leave, index, all) => {
-              const leaveType = String(leave.leaveType ?? '').toLowerCase();
-              return (
-                all.findIndex(
-                  (candidate) =>
-                    candidate.fromDate === leave.fromDate &&
-                    candidate.toDate === leave.toDate &&
-                    (!leaveType ||
-                      !String(candidate.leaveType ?? '').trim() ||
-                      String(candidate.leaveType).toLowerCase() === leaveType),
-                ) === index
-              );
-            })
-            .sort((left, right) => right.fromDate.localeCompare(left.fromDate));
+          const leaves = await this.getLeaveStatusMapped(ctx.user);
           if (!leaves.length) {
             this.draftService.pendingSuggestedActions.set(ctx.employeeId, [
               { label: 'Apply Leave', send: 'apply leave' },
             ]);
             return `You don't have any leave requests on record yet.`;
           }
+
+          const datedLeaves = leaves.map((leave) => ({
+            leave,
+            appliedDate: toDateOnly(leave.appliedDate ?? ''),
+          }));
+          if (datedLeaves.some(({ appliedDate }) => !appliedDate)) {
+            return `I found leave applications, but their application dates are unavailable, so I can't determine the latest one.`;
+          }
+
+          const newestAppliedDate = datedLeaves.reduce(
+            (newest, current) =>
+              current.appliedDate > newest ? current.appliedDate : newest,
+            datedLeaves[0].appliedDate,
+          );
+          const latestLeaves = datedLeaves.filter(
+            ({ appliedDate }) => appliedDate === newestAppliedDate,
+          );
+
           this.draftService.pendingListPreview.set(ctx.employeeId, {
-            title: 'Your leave requests',
-            rows: leaves.map((l) => {
+            title: 'Latest Leave',
+            rows: latestLeaves.map(({ leave, appliedDate }) => {
               const dateRange =
-                l.fromDate === l.toDate
-                  ? l.fromDate
-                  : `${l.fromDate} to ${l.toDate}`;
+                leave.fromDate === leave.toDate
+                  ? leave.fromDate
+                  : `${leave.fromDate} to ${leave.toDate}`;
               return {
-                primary: l.leaveType,
-                meta: l.currentStage
-                  ? `${dateRange} · Awaiting ${l.currentStage}`
-                  : dateRange,
-                status: l.status,
+                primary: leave.leaveType,
+                meta: `Applied ${leave.appliedDate ?? appliedDate} · ${dateRange}${
+                  leave.currentStage ? ` · Awaiting ${leave.currentStage}` : ''
+                }`,
+                status: leave.status,
               };
             }),
           });
-          return `Here are your leave requests (newest first):`;
+          return `Here are your latest leave applications:`;
         },
       },
       {
@@ -724,6 +1103,13 @@ export class LeaveService {
           if (!draft) {
             return `I don't have your leave details yet. Say "Apply leave" to start.`;
           }
+          const dateError = this.leaveDateValidationError(
+            ctx,
+            draft.startDate,
+            draft.endDate,
+          );
+          if (dateError) return dateError;
+
           const leaveTypeId = this.parserService.resolveLeaveTypeId(
             draft.leaveType,
             ctx.leaveTypes,
@@ -735,15 +1121,24 @@ export class LeaveService {
             );
             return `I couldn't recognise the leave type "${draft.leaveType}". Please start again with "Apply leave".`;
           }
-          const rawResult = await this.leaveApiService.applyLeave(ctx.user, {
-            leaveTypeId,
-            fromDate: draft.startDate,
-            toDate: draft.endDate,
-            reason: draft.reason || undefined,
-            isHalfDay: draft.isHalfDay,
-            sessionFrom: draft.isHalfDay ? draft.session : undefined,
-            sessionTo: draft.isHalfDay ? draft.session : undefined,
-          });
+          let rawResult: any;
+          try {
+            rawResult = await this.leaveApiService.applyLeave(ctx.user, {
+              leaveTypeId,
+              fromDate: draft.startDate,
+              toDate: draft.endDate,
+              reason: draft.reason || undefined,
+              isHalfDay: draft.isHalfDay,
+              sessionFrom: draft.isHalfDay ? draft.session : undefined,
+              sessionTo: draft.isHalfDay ? draft.session : undefined,
+            });
+          } catch (error) {
+            this.draftService.deleteDraft(
+              this.draftService.leaveDrafts,
+              ctx.employeeId,
+            );
+            return this.submissionErrorMessage(error);
+          }
           // The real endpoint calls the same stored procedure our old code
           // did, so it should return the same {StatusCode, Message} shape —
           // worth confirming with a real test rather than trusting blindly.
@@ -760,6 +1155,7 @@ export class LeaveService {
             ctx.employeeId,
           );
           if (result.ok) {
+            this.draftService.leaveChanged.add(ctx.employeeId);
             const rangeText = formatLeaveRange(draft.startDate, draft.endDate);
             const dayText = draft.isHalfDay
               ? `Half day (${this.parserService.sessionLabel(draft.session)})`
@@ -830,6 +1226,7 @@ export class LeaveService {
             target.leaveId,
             target.actionId,
           );
+          if (result.ok) this.draftService.leaveChanged.add(ctx.employeeId);
           return result.message;
         },
       },
@@ -990,9 +1387,15 @@ export class LeaveService {
 
         handle: async (ctx) => {
           const leaves = await this.getLeaveHistoryMapped(ctx.user);
+          const today = new Date();
+          const todayDate = `${today.getFullYear()}-${String(
+            today.getMonth() + 1,
+          ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
           const eligible = leaves.filter(
-            (l) => (l.status ?? '').toLowerCase() === 'approved',
+            (l) =>
+              (l.status ?? '').toLowerCase() === 'approved' &&
+              l.toDate >= todayDate,
           );
 
           if (!eligible.length) {
@@ -1060,7 +1463,7 @@ export class LeaveService {
         handle: async (ctx) => this.getLeaveBalanceSummary(ctx),
       },
     ];
- 
+
     // Admin/HR manage their own leave through a separate employee login —
     // this account should never reach any leave-management feature at all.
     // Wrapping here (rather than gating each intent individually) means

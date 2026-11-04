@@ -16,7 +16,10 @@ export interface CompanyDetails {
   isTDSApplicable: boolean;
   tdsFilingMarToFeb: boolean;
   isLWFAvailable: boolean;
+  /** Raw path exactly as stored by the backend (sent back unchanged on PUT). */
   companyLogoPath: string;
+  /** Browser-loadable URL derived from companyLogoPath (display only, never sent to backend). */
+  companyLogoUrl?: string;
 }
  
 export interface CompanyDetailsApi {
@@ -45,6 +48,9 @@ export interface EsiGroup {
 }
  
 export interface EsiConfiguration {
+  /** Row id of the ESI configuration - required by PUT /admin/configuration/esi */
+  id?: number;
+  groupId?: number;
   effectiveFrom: string;
   cutOffAmount: number;
   employeeRate: number;
@@ -57,6 +63,11 @@ export interface EsiDetails {
   group: EsiGroup[];
   configuration: EsiConfiguration[];
 }
+
+export interface SalaryRoundOffOption {
+  id: number;
+  name: string;
+}
  
 export interface EsiGroupApi {
   ID: number;
@@ -64,6 +75,10 @@ export interface EsiGroupApi {
 }
  
 export interface EsiConfigurationApi {
+  /** Row id returned by the GET result set - sent back as `id` on PUT */
+  ID?: number;
+  Id?: number;
+  id?: number;
   "Effective From": string;
   "Cut Off(Amount)": number;
   "Employee Rate(%)": number;
@@ -102,6 +117,11 @@ export interface LwfGroup {
 }
  
 export interface LwfConfiguration {
+  /** Row id of the LWF configuration - required by PUT /admin/configuration/lwf */
+  id?: number;
+  groupId?: number;
+  stateId?: number;
+  stateName?: string;
   effectiveFrom: string;
   cutoffAmount: number;
   employeeContribution: number;
@@ -133,6 +153,18 @@ export interface LwfGroupApi {
 }
  
 export interface LwfConfigurationApi {
+  /** Row id returned by the GET result set - sent back as `id` on PUT */
+  ID?: number;
+  Id?: number;
+  id?: number;
+  LWFID?: number;
+  LWFId?: number;
+  "LWF ID"?: number;
+  LWFConfigurationID?: number;
+  LWFRowID?: number;
+  LWFGroupID?: number;
+  Stateid?: number;
+  "State ID"?: number;
   "Effective From": string;
   "Cutoff Amount": number;
   "Employee Contribution(Amount)": number;
@@ -161,7 +193,10 @@ export interface PfGroup {
   name: string;
 }
  
+/** effectiveFrom is a full date "YYYY-MM-DD" for PF / ESI / LWF configurations. */
 export interface PfConfiguration {
+  /** Row id of the PF configuration - required by PUT /admin/configuration/pf */
+  id?: number;
   effectiveFrom: string;
   epfPercentage: number;
   cutoff: number;
@@ -187,6 +222,10 @@ export interface PfGroupApi {
 }
  
 export interface PfConfigurationApi {
+  /** Row id returned by the GET result set - sent back as `id` on PUT */
+  ID?: number;
+  Id?: number;
+  id?: number;
   "Effective From": string;
   "EPF(A)-(%)": number;
   Cutoff: number;
@@ -213,11 +252,14 @@ export interface PtGroup {
 }
  
 export interface PtSlab {
+  slabId?: number;
+  groupId?: number;
   effectiveFrom: string;
   period: string;
   fromSalary: number;
   toSalary: number;
   ptAmount: number;
+  isActive?: boolean;
 }
  
 export interface PtDetails {
@@ -233,23 +275,32 @@ export interface PtGroupApi {
 }
  
 export interface PtSlabApi {
+  ID?: number;
+  id?: number;
+  PTID?: number;
+  PTId?: number;
+  ptId?: number;
+  "PT ID"?: number;
+  PTSlabId?: number;
+  PTSlabID?: number;
+  SlabId?: number;
+  SlabID?: number;
+  slabId?: number;
+  PTGroupID?: number;
+  PTGroupId?: number;
+  ptGroupId?: number;
+  GroupId?: number;
+  groupId?: number;
   "Effective From": string;
   Period: string;
   FromSalary: number;
   ToSalary: number;
   PTAmount: number;
+  IsActive?: boolean;
+  isActive?: boolean;
 }
  
 export interface PtDetailsApi {
   group: PtGroupApi[];
   slabs: PtSlabApi[];
-}
- 
-export interface Establishment {
-  nameAndAddressofEstablishment: string;
-  nameAndAddressofEmployeer: string;
-  nameAndAddressofPrincipalEmployeer: string;
-  nameAndAddressofContractor: string;
-  nameAndAddressofManager: string;
-  nameOfNatureofBusiness: string;
 }

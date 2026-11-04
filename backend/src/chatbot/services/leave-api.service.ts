@@ -1,117 +1,97 @@
-import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { JwtService } from '@nestjs/jwt';
-import { firstValueFrom } from 'rxjs';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { LeaveService as EmployeeLeaveService } from '../../employee/leave/leave.service';
+import { TtlCache } from '../../common/ttl-cache';
 
-const BASE_URL = 'http://localhost:3001/api/employee/leave';
+type ChatUser = Record<string, any>;
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_REASON_LENGTH = 500; // USP_LeaveRequestSubmission @Reason is NVARCHAR(500)
+
+/**
+ * The chatbot's door to the employee leave module.
+ *
+ * It calls the leave service inside the same process, as the signed-in user.
+ * (It used to call this backend over HTTP at a hard-coded address, with a
+ * freshly signed token, which broke whenever the port or protocol changed and
+ * ran the login guard and validation a second time.)
+ *
+ * Who the call is for always comes from the signed-in user's own login
+ * (`employeeId`, `companyId`, `createdBy`), exactly as the controller does it.
+ * Nothing here accepts another employee's id.
+ *
+ * Because the controller's validation pipe is not in the path any more, the
+ * inputs are checked here.
+ */
 @Injectable()
 export class LeaveApiService {
-  constructor(
-    private readonly http: HttpService,
-    private readonly jwtService: JwtService,
-  ) {}
+  // The leave types of an employee hardly ever change; the chatbot asks for
+  // them on every message, so they are kept for 60 seconds per company and
+  // employee. Failed calls are not kept.
+  private readonly leaveTypesCache = new TtlCache(60_000);
 
-  // Mints a token carrying the same claims the browser's own session cookie
-  // has, so these server-to-server calls satisfy the leave module's
-  // JwtAuthGuard exactly as if the real user's browser made the request.
-  // This works because both modules share the same JWT_SECRET.
-  private mintCookieHeader(user: Record<string, any>): { Cookie: string } {
-    const token = this.jwtService.sign({
-      employeeId: user.employeeId,
-      userId: user.userId,
-      createdBy: user.createdBy,
-      roleId: user.roleId,
-      companyId: user.companyId,
-      name: user.name,
-    });
-    return { Cookie: `access_token=${token}` };
+  constructor(private readonly leaves: EmployeeLeaveService) {}
+
+  // The old HTTP path returned JSON, so dates arrived as plain strings.
+  // Passing the result through JSON keeps every caller's parsing unchanged.
+  private plain<T>(value: T): T {
+    return value === undefined
+      ? value
+      : (JSON.parse(JSON.stringify(value)) as T);
   }
 
-  // NOTE: /leavetypes IS guarded by JwtAuthGuard on the real controller
-  // (unlike /holidaylist below, which really is public) — it needs the
-  // minted cookie too, or the guard rejects it with "Token missing or
-  // invalid" before this call ever reaches LeaveService.
-
-  async getLeaveTypes(user: Record<string, any>) {
-    const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/leavetypes`, {
-        headers: this.mintCookieHeader(user),
-      }),
-    );
-    return res.data;
+  private employeeId(user: ChatUser): string {
+    const id = String(user?.employeeId ?? '').trim();
+    if (!id) throw new BadRequestException('Invalid employeeId');
+    return id;
   }
 
-  async getLeaveBalance(user: Record<string, any>) {
-    const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/balance`, {
-        headers: this.mintCookieHeader(user),
-      }),
-    );
-    return res.data;
+  private companyId(user: ChatUser): number {
+    const id = Number(user?.companyId);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new BadRequestException('Invalid companyId');
+    }
+    return id;
   }
 
-  async getLeaveHistory(user: Record<string, any>) {
-    const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/history`, {
-        headers: this.mintCookieHeader(user),
-      }),
+  async getLeaveTypes(user: ChatUser) {
+    const employeeId = this.employeeId(user);
+    const companyId = this.companyId(user);
+    const types = await this.leaveTypesCache.get(
+      `${companyId}:${employeeId}`,
+      () => this.leaves.getLeaveTypes(employeeId, companyId),
     );
-    return res.data;
+    // plain() hands every caller its own copy of the cached result.
+    return this.plain(types);
   }
 
-  async getLeaveStatus(user: Record<string, any>) {
-    const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/status`, {
-        headers: this.mintCookieHeader(user),
-      }),
+  async getLeaveBalance(user: ChatUser) {
+    return this.plain(
+      await this.leaves.getEmployeeLeaveBalance(this.employeeId(user)),
     );
-    return res.data;
   }
 
-  async getPendingLeaveRequests(user: Record<string, any>) {
-    const res = await firstValueFrom(
-      this.http.get(`${BASE_URL}/pending`, {
-        headers: this.mintCookieHeader(user),
-      }),
-    );
-    return res.data;
+  async getLeaveHistory(user: ChatUser) {
+    return this.plain(await this.leaves.getLeaveHistory(this.employeeId(user)));
   }
 
-  async withdrawOrCancelLeave(
-    user: Record<string, any>,
-    leaveApplicationId: number,
-    actionId: number,
-    reason?: string,
-  ) {
-    const res = await firstValueFrom(
-      this.http.post(
-        `${BASE_URL}/withdrawcancel`,
-        { leaveApplicationId, actionId, reason },
-        { headers: this.mintCookieHeader(user) },
-      ),
+  async getEmployeeLeaveDetails(user: ChatUser) {
+    return this.plain(
+      await this.leaves.getEmployeeLeaveDetails(this.employeeId(user)),
     );
-    return res.data;
   }
 
-  async approveLeave(
-    user: Record<string, any>,
-    approvalId: number,
-    actionStatusId: number,
-    remarks?: string,
-  ) {
-    const res = await firstValueFrom(
-      this.http.post(
-        `${BASE_URL}/approval`,
-        { approvalId, actionStatusId, remarks },
-        { headers: this.mintCookieHeader(user) },
-      ),
+  async getLeaveStatus(user: ChatUser) {
+    return this.plain(await this.leaves.getLeaveStatus(this.employeeId(user)));
+  }
+
+  async getPendingLeaveRequests(user: ChatUser) {
+    return this.plain(
+      await this.leaves.getPendingLeaveRequests(this.employeeId(user)),
     );
-    return res.data;
   }
 
   async applyLeave(
-    user: Record<string, any>,
+    user: ChatUser,
     params: {
       leaveTypeId: number;
       fromDate: string;
@@ -122,29 +102,45 @@ export class LeaveApiService {
       reason?: string;
     },
   ): Promise<any> {
-    // The real /apply endpoint uses FileInterceptor, so it expects
-    // multipart/form-data even though the chatbot never attaches a document.
-    const form = new FormData();
-    form.append('leaveTypeId', String(params.leaveTypeId));
-    form.append('fromDate', params.fromDate);
-    form.append('toDate', params.toDate);
-    if (params.sessionFrom) form.append('sessionFrom', params.sessionFrom);
-    if (params.sessionTo) form.append('sessionTo', params.sessionTo);
-    form.append('isHalfDay', String(params.isHalfDay));
-    if (params.reason) form.append('reason', params.reason);
+    const employeeId = this.employeeId(user);
+    const createdBy = Number(user?.createdBy);
+    if (!Number.isInteger(createdBy) || createdBy <= 0) {
+      throw new BadRequestException('Invalid user');
+    }
 
-    const res = await firstValueFrom(
-      this.http.post(`${BASE_URL}/apply`, form, {
-        headers: this.mintCookieHeader(user),
-      }),
+    const leaveTypeId = Number(params.leaveTypeId);
+    if (!Number.isInteger(leaveTypeId) || leaveTypeId <= 0) {
+      throw new BadRequestException('Invalid leave type.');
+    }
+    if (!ISO_DATE.test(String(params.fromDate ?? '')) ||
+        !ISO_DATE.test(String(params.toDate ?? ''))) {
+      throw new BadRequestException('Invalid leave dates.');
+    }
+    const reason = params.reason?.trim() || undefined;
+    if (reason && reason.length > MAX_REASON_LENGTH) {
+      throw new BadRequestException(
+        `The reason is too long (maximum ${MAX_REASON_LENGTH} characters).`,
+      );
+    }
+
+    // The chatbot never attaches a document.
+    return this.plain(
+      await this.leaves.applyLeave(
+        employeeId,
+        createdBy,
+        leaveTypeId,
+        params.fromDate,
+        params.toDate,
+        params.sessionFrom || undefined,
+        params.sessionTo || undefined,
+        params.isHalfDay === true,
+        reason,
+        undefined,
+      ),
     );
-    // TEMPORARY DEBUG LINE — remove once we've seen the real shape of the
-    // response and fixed confirmLeave's parsing accordingly.
-    console.log('APPLY LEAVE RAW RESPONSE:', JSON.stringify(res.data));
-    return res.data;
   }
 
-  // NOTE: applyhr intentionally not built — HR applies their own leave
-  // through their separate employee login, using the method above. Applying
-  // leave on someone else's behalf isn't a chatbot feature.
+  // NOTE: applying leave for someone else (applyhr), approving and
+  // withdrawing are not chatbot features here. The chatbot's own withdraw flow
+  // goes through HrmsDbService.
 }

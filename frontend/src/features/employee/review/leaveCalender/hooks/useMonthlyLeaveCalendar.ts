@@ -1,5 +1,5 @@
 
-import { useGetMonthlyLeaveCalendarQuery } from "../apis/leaveCalendarApi";
+import { useGetReviewMonthlyLeaveCalendarQuery } from "../apis/leaveCalendarApi";
 import type { UseMonthlyLeaveCalendarParams } from "../types/leavecalendar.types";
 
 export const useMonthlyLeaveCalendar = ({
@@ -8,7 +8,7 @@ export const useMonthlyLeaveCalendar = ({
   month,
   branchId,
 }: UseMonthlyLeaveCalendarParams) => {
-  return useGetMonthlyLeaveCalendarQuery(
+  return useGetReviewMonthlyLeaveCalendarQuery(
     {
       companyId,
       year,

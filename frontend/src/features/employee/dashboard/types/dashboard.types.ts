@@ -1,9 +1,9 @@
 import type React from "react";
-
+ 
 // =========================
 // Employee Profile
 // =========================
-
+ 
 export interface EmployeeProfile {
   FullName: string;
   ShortName: string;
@@ -17,7 +17,7 @@ export interface EmployeeProfile {
   WelcomeMessage: string;
   LastLoginDateTime: string;
 }
-
+ 
 export interface MenuItem {
   menuId: number;
   menuName: string;
@@ -25,7 +25,7 @@ export interface MenuItem {
   iconClass?: string | null;
   children?: MenuItem[];
 }
-
+ 
 export interface AttendanceSummary {
   EmployeeID: string;
   AverageHours: string;
@@ -33,56 +33,48 @@ export interface AttendanceSummary {
   "On-TimeArrival": string;
   "AverageCheck-Out": string;
   CurrentSessionStartTime: string | null;
-
+ 
   TotalCompletedMinutesToday: number;
-
+ 
   CheckInTime: string | null;
-
+ 
   CheckOutTime: string | null;
-
-  LateOrEarlyInStatus:
-    | "Early"
-    | "Late"
-    | "OnTime"
-    | null;
-
+ 
+  LateOrEarlyInStatus: "Early" | "Late" | "OnTime" | null;
+ 
   LateOrEarlyInMinutes: number | null;
-
-  LateOrEarlyOutStatus:
-    | "Early"
-    | "Late"
-    | "OnTime"
-    | null;
-
+ 
+  LateOrEarlyOutStatus: "Early" | "Late" | "OnTime" | null;
+ 
   LateOrEarlyOutMinutes: number | null;
 }
-
+ 
 export interface UpcomingEvent {
   FullName: string;
   Code: string;
   EventName: string;
   EventDate: string;
 }
-
+ 
 export interface ProfileResponse {
   success: boolean;
-
+ 
   data: {
     profile: EmployeeProfile;
     attendanceSummary: AttendanceSummary;
     upcomingEvents: UpcomingEvent[];
   };
 }
-
+ 
 export type TeamAttendanceRow = Record<string, string | number | null>;
-
+ 
 export interface MenuResponse {
   success: boolean;
   data: MenuItem[];
 }
-
+ 
 export type TeamAttendanceResponse = TeamAttendanceRow[];
-
+ 
 export interface Holiday {
   HolidayId: number;
   HolidayName: string;
@@ -91,38 +83,67 @@ export interface Holiday {
   HolidayYear: number;
   IsOptional: boolean;
 }
-
+ 
 export interface HolidayResponse {
   success: boolean;
   data: Holiday[];
 }
-
+ 
 export interface HeaderProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
+ 
 export interface NavbarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
+ 
 export interface SidebarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
+ 
 // ===============================
-// NEW — Approval Summary (Quick Access)
+// Approval Summary (Quick Access)
 // ===============================
 export interface RequestDetail {
   RequestType: string;
   RequestCount: number;
 }
-
+ 
 export interface ApprovalSummaryResponse {
   PendingApprovals: number;
   MyRequests: number;
   MyRequestsDetails: RequestDetail[];
   MyApprovalsDetails: RequestDetail[];
 }
+ 
+// =========================================================
+// ⬇️ CHANGED — Monthly Leave Calendar (NEW employee API)
+// GET /employee/dashboard/monthly-leave-calendar?year=&month=
+// =========================================================
+export interface MonthlyLeaveCalendarParams {
+  year?: number;
+  month?: number; // 1–12
+}
+ 
+/** One employee row. Day keys like "1 Thu", "2 Fri" → status code */
+export interface MonthlyLeaveCalendarEmployee {
+  EmployeeID: string;
+  FullName: string;
+  NOD?: number;
+  NDP?: number;
+  [dayKey: string]: string | number | undefined;
+}
+ 
+export interface MonthlyLeaveCalendarResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: MonthlyLeaveCalendarEmployee[];
+}
+// =========================================================
+// ⬆️ END CHANGED
+// =========================================================
+ 

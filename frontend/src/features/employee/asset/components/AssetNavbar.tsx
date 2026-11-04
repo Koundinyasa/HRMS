@@ -25,11 +25,9 @@ export default function AssetNavbar() {
 
   const { menuData } = useDashboard();
 
-  const assetMenu =
-    menuData?.data?.[0]?.children?.find(
-      (item: MenuItem) =>
-        item.menuName === "Assets"
-    );
+  const assetMenu = menuData?.data?.[0]?.children?.find(
+    (item: MenuItem) => item.menuName === "Assets",
+  );
 
   const tabs = assetMenu?.children ?? [];
 
@@ -54,34 +52,27 @@ export default function AssetNavbar() {
         sm:rounded-xl
         sm:p-2
       "
-    // style={{
-    //   borderColor: "var(--primary-border)",
-    // }}
+      // style={{
+      //   borderColor: "var(--primary-border)",
+      // }}
     >
-      <div className="flex min-w-max gap-35">
+      <div className="grid w-full grid-cols-3 gap-2">
         {tabs.map((tab: MenuItem) => {
-          let route = "";
-
-          switch (tab.menuName) {
-            case "Asset Request":
-              route = `/${domain}/employee/assets/request`;
-              break;
-
-            case "Asset Status":
-              route = `/${domain}/employee/assets/return`;
-              break;
-
-            case "History":
-              route = `/${domain}/employee/assets/assigned`;
-              break;
-
-            default:
-              route =
-                tab.routeUrl?.replace(
-                  "/Employee",
-                  `/${domain}/employee`
-                ) ?? "";
-          }
+          const route = (() => {
+            switch (tab.menuName) {
+              case "Asset Request":
+                return `/${domain}/employee/assets/request`;
+              case "Asset Status":
+                return `/${domain}/employee/assets/return`;
+              case "History":
+                return `/${domain}/employee/assets/assigned`;
+              default:
+                return (
+                  tab.routeUrl?.replace("/Employee", `/${domain}/employee`) ??
+                  ""
+                );
+            }
+          })();
 
           const Icon = getTabIcon(tab.menuName);
 
@@ -92,50 +83,33 @@ export default function AssetNavbar() {
               className={({ isActive }) =>
                 `
                 flex
-              h-9
-              w-[110px]
-              shrink-0
-              items-center
-              justify-center
-              gap-2
-              whitespace-nowrap
-              rounded-md
-              bg-white
-              px-2
-              text-xs
-              font-medium
-              transition-all
-             
-              sm:h-10
-              sm:w-[130px]
-              sm:px-3
-              sm:text-sm
-             
-              md:w-[400px]
-              md:px-1
-                ${isActive
-                  ? "border border-blue-500 text-blue-600"
-                  : "border border-transparent text-slate-500 hover:text-slate-700"
+h-9
+w-full
+min-w-0
+items-center
+justify-center
+gap-2
+whitespace-nowrap
+rounded-md
+bg-white
+px-2
+text-xs
+font-medium
+transition-all
+sm:h-10
+sm:px-3
+sm:text-sm
+                ${
+                  isActive
+                    ? "border border-blue-500 text-blue-600"
+                    : "border border-transparent text-slate-500 hover:text-slate-700"
                 }
-            `}
+            `
+              }
 
-            // style={({ isActive }) =>
-            //   isActive
-            //     ? {
-            //         color: "var(--primary-color)",
-            //         borderColor: "var(--primary-color)",
-            //       }
-            //     : {}
-            // }
             >
-
-              <Icon
-                size={14}
-                className="shrink-0 sm:h-4 sm:w-4"
-              />
-              <span className="truncate">
-                {tab.menuName}
-              </span>
+              <Icon size={14} className="shrink-0 sm:h-4 sm:w-4" />
+              <span className="truncate">{tab.menuName}</span>
             </NavLink>
           );
         })}

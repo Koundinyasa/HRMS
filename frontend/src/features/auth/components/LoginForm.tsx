@@ -6,7 +6,6 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import { loginSchema } from "../validation/loginSchema";
 import type { LoginFormData } from "../validation/loginSchema";
@@ -36,8 +35,22 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data);
-    } catch (err: any) {
-      const message = err?.data?.message ?? err?.response?.data?.message ?? "";
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const response =
+        errorRecord.response && typeof errorRecord.response === "object"
+          ? (errorRecord.response as Record<string, unknown>)
+          : {};
+      const dataValue = errorRecord.data ?? response.data;
+      const data =
+        dataValue && typeof dataValue === "object"
+          ? (dataValue as Record<string, unknown>)
+          : {};
+      const message =
+        typeof data.message === "string" ? data.message : "";
       if (message.toLowerCase().includes("captcha")) {
         setError("captchaAnswer", { type: "manual", message });
       }
@@ -169,6 +182,7 @@ export default function LoginForm() {
               className="pl-9 pr-10 h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
               style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
               {...register("password")}
+              onPaste={(event) => event.preventDefault()}
             />
             <button
               type="button"
@@ -272,23 +286,8 @@ export default function LoginForm() {
           )}
         </div>
 
-        {/* ── Remember me + Forgot password ── */}
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <Checkbox id="rememberMe" className="h-4 w-4 rounded" />
-            <Label
-              htmlFor="rememberMe"
-              className="cursor-pointer"
-              style={{
-                ...urbanist,
-                fontWeight: 400,
-                fontSize: "clamp(11px, 0.85vw, 13px)",
-                color: "#374151",
-              }}
-            >
-              Remember me
-            </Label>
-          </div>
+        {/* ── Forgot password ── */}
+        <div className="flex items-center justify-end w-full">
           <button
             type="button"
             onClick={() => navigate(`/${domain}/forgot-password`)}

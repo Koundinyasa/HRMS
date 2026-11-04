@@ -1,30 +1,7 @@
-// import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
-
-// export class ResetForgotPasswordDto {
-//   @IsString()
-//   @IsNotEmpty()
-//   employeeId!: string;
-
-//   @IsNotEmpty()
-//   @MinLength(8)
-//   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, {
-//     message:
-//       'Password must contain uppercase, lowercase, number and special character',
-//   })
-//   newPassword!: string;
-
-//   @IsNotEmpty()
-//   confirmPassword!: string;
-// }
-
-import { IsNotEmpty, IsString, MinLength, Matches } from 'class-validator';
-
+import { IsNotEmpty, MinLength, Matches } from 'class-validator';
+ 
 export class ResetForgotPasswordDto {
-  @IsString()
-  @IsNotEmpty()
-  employeeId!: string;
-  @IsString()
-  userId?: string;
+  // Who is resetting is decided by the reset cookie, not by anything sent here.
   @IsNotEmpty()
   @MinLength(8)
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, {
@@ -32,7 +9,7 @@ export class ResetForgotPasswordDto {
       'Password must contain uppercase, lowercase, number and special character',
   })
   newPassword!: string;
-
+ 
   @IsNotEmpty()
   confirmPassword!: string;
 }

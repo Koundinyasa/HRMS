@@ -1,18 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as sql from 'mssql';
 
 import { DatabaseService } from '../database/database.service';
 import { MonthlyLeaveCalendarDto } from './dto/monthly-leave-calendar.dto';
 import { MissedPunchEmployeesDto } from './dto/missed-punch-employees.dto';
+import { keepReportees } from './reportee-filter';
 
 @Injectable()
 export class ReviewService {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  /** EmployeeIDs (lower case) of the manager's active direct reports. */
+  private async reporteeIdsOf(managerEmployeeId: string): Promise<Set<string>> {
+    const manager = String(managerEmployeeId ?? '').trim();
+    if (!manager) return new Set();
+    const pool = await this.databaseService.connect();
+    const result = await pool
+      .request()
+      .input('ManagerID', sql.VarChar(25), manager)
+      .query(
+        `SELECT EmployeeID FROM Employee
+          WHERE ReportingManagerID = @ManagerID
+            AND Deleted = 0
+            AND EmploymentStatusID = 1`,
+      );
+    return new Set(
+      (result.recordset ?? []).map((r: any) => String(r.EmployeeID).trim().toLowerCase()),
+    );
+  }
+
   // 1. Monthly Leave Calendar
   async getMonthlyLeaveCalendar(
     dto: MonthlyLeaveCalendarDto,
     companyId: number,
+    managerEmployeeId: string,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -24,7 +45,12 @@ export class ReviewService {
       .input('BranchId', sql.Int, dto.branchId ?? null)
       .execute('usp_GetMonthlyLeaveCalendar');
 
-    return result.recordset;
+    // The procedure returns the whole company; a manager sees only their team.
+    return keepReportees(
+      result.recordset,
+      await this.reporteeIdsOf(managerEmployeeId),
+      'EmployeeID',
+    );
   }
 
   // 2. Pending Leave Requests
@@ -43,6 +69,7 @@ export class ReviewService {
   async getMissedPunchEmployees(
     dto: MissedPunchEmployeesDto,
     companyId: number,
+    managerEmployeeId: string,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -53,7 +80,12 @@ export class ReviewService {
       .input('CompanyId', sql.Int, companyId)
       .execute('usp_GetMissedPunchEmployees');
 
-    return result.recordset;
+    // The procedure returns the whole company; a manager sees only their team.
+    return keepReportees(
+      result.recordset,
+      await this.reporteeIdsOf(managerEmployeeId),
+      'Employee ID',
+    );
   }
 
   // 4. Employee Punch Dashboard
@@ -61,6 +93,7 @@ export class ReviewService {
     employeeId: string,
     selectedDate?: string,
     viewType?: string,
+    showAll?: boolean,
   ) {
     const pool = await this.databaseService.connect();
 
@@ -75,6 +108,8 @@ export class ReviewService {
     );
 
     request.input('ViewType', sql.VarChar(20), viewType || 'CustomMonth');
+
+    request.input('ShowAll', sql.Bit, showAll ?? false);
 
     const result = await request.execute('USP_GetEmployeePunchDashboard');
 
@@ -120,7 +155,7 @@ export class ReviewService {
 
   // 7. Employee Monthly Attendance Details
   async getEmployeeMonthlyAttendanceDetails(
-    employeeId: number,
+    employeeId: string,
     companyId: number,
     month: number | undefined,
     year: number | undefined,
@@ -130,7 +165,7 @@ export class ReviewService {
 
     const result = await pool
       .request()
-      .input('EmployeeID', sql.Int, employeeId)
+      .input('EmployeeID', sql.VarChar(25), employeeId)
       .input('CompanyID', sql.Int, companyId)
       .input('Month', sql.Int, month ?? null)
       .input('Year', sql.Int, year ?? null)
@@ -188,7 +223,7 @@ export class ReviewService {
       }
       const pool =
         await this.databaseService.connect();
-   
+
       const result = await pool
         .request()
         .input(
@@ -199,7 +234,7 @@ export class ReviewService {
         .execute(
           'USP_GetReportingManagerEmployeeList',
         );
-   
+
       return result.recordset;
     } catch (error) {
       console.error('Error in getReportingManagerEmployeeList:', error);
@@ -227,6 +262,90 @@ export class ReviewService {
     } catch (error) {
       console.error('Error in hierarchicalLeaveAction:', error);
       throw error;
+    }
+  }
+  async getAttendanceStatuses(companyId: number) {
+    try {
+      const pool = await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input('CompanyID', sql.Int, companyId)
+        .execute('USP_GetCompanyDropdownData');
+
+      const sets = result.recordsets as Record<string, any>[][];
+
+      if (sets.length !== 10) {
+        throw new Error(
+          `USP_GetCompanyDropdownData returned ${sets.length} result sets, expected 10.`,
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Attendance statuses retrieved successfully.',
+        data: sets[5],
+      };
+    } catch (error) {
+      console.error('Attendance statuses error:', error);
+
+      throw new InternalServerErrorException(
+        'Failed to retrieve attendance statuses.',
+      );
+    }
+
+
+  }
+  async getEmployeesWithAuthority(
+    companyId: number,
+  ) {
+    try {
+      const pool =
+        await this.databaseService.connect();
+
+      const result = await pool
+        .request()
+        .input(
+          'CompanyId',
+          companyId,
+        )
+        .execute(
+          'USP_GetEmployeesWithAuthority',
+        );
+
+      const firstRecordset =
+        result.recordsets[0];
+
+      if (
+        firstRecordset &&
+        firstRecordset.length > 0 &&
+        firstRecordset[0].StatusCode
+      ) {
+        return {
+          success: false,
+          statusCode:
+            firstRecordset[0].StatusCode,
+          message:
+            firstRecordset[0].StatusMessage,
+        };
+      }
+      return {
+        success: true,
+        data: {
+          reportingAuthorities:
+            result.recordsets[0] ?? [],
+
+        },
+      };
+    } catch (error) {
+      console.error(
+        'Error while fetching employees with authority:',
+        error,
+      );
+
+      throw new InternalServerErrorException(
+        'Unable to fetch employees with authority.',
+      );
     }
   }
 }

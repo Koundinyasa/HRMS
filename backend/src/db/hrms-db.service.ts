@@ -1,29 +1,115 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
+import { PoolHolder, buildSqlConfig } from '../database/sql-pool';
+import { TtlCache } from '../common/ttl-cache';
 
 @Injectable()
-export class HrmsDbService {
-  private pool?: sql.ConnectionPool;
+export class HrmsDbService implements OnModuleDestroy {
+  // This pool keeps the driver's default useUTC (true) on purpose: the methods
+  // below turn DATE columns into 'YYYY-MM-DD' with toISOString(), which is
+  // only right when dates are read as UTC midnight. The main pool
+  // (DatabaseService) reads them the other way, so the two are not merged.
+  private readonly holder = new PoolHolder('chatbot', () =>
+    buildSqlConfig(this.config, true),
+  );
+
+  // The chatbot asks for the same company-wide data on every message. These
+  // short-lived caches let one lookup serve many messages (and many employees of
+  // the same company for the directory). Each key includes the company, so one
+  // company's data is never handed to another. Failed lookups are not kept.
+  private readonly userInfoCache = new TtlCache(5_000);
+  private readonly directoryCache = new TtlCache(60_000);
+  private readonly masterDataCache = new TtlCache(60_000);
 
   constructor(private readonly config: ConfigService) {}
 
-  private async getPool() {
-    if (this.pool?.connected) return this.pool;
+  private getPool() {
+    return this.holder.get();
+  }
 
-    this.pool = await new sql.ConnectionPool({
-      user: this.config.get<string>('DB_USER') || '',
-      password: this.config.get<string>('DB_PASSWORD') || '',
-      server: this.config.get<string>('DB_HOST') || 'localhost',
-      database: this.config.get<string>('DB_NAME') || '',
-      options: { encrypt: false, trustServerCertificate: true },
-    }).connect();
+  async onModuleDestroy(): Promise<void> {
+    await this.holder.close();
+  }
 
-    return this.pool;
+  // ─── Chatbot drafts (table dbo.ChatbotDrafts) ────────────────────────────────
+
+  async saveChatbotDraft(
+    employeeId: string,
+    draftType: string,
+    payload: string,
+    savedAtMs: number,
+  ): Promise<void> {
+    const pool = await this.getPool();
+    await pool
+      .request()
+      .input('EmployeeID', sql.VarChar(100), employeeId)
+      .input('DraftType', sql.VarChar(40), draftType)
+      .input('Payload', sql.NVarChar(sql.MAX), payload)
+      .input('SavedAtMs', sql.BigInt, savedAtMs).query(`
+        MERGE dbo.ChatbotDrafts AS t
+        USING (SELECT @EmployeeID AS EmployeeID, @DraftType AS DraftType) AS s
+          ON t.EmployeeID = s.EmployeeID AND t.DraftType = s.DraftType
+        WHEN MATCHED THEN
+          UPDATE SET Payload = @Payload, SavedAtMs = @SavedAtMs
+        WHEN NOT MATCHED THEN
+          INSERT (EmployeeID, DraftType, Payload, SavedAtMs)
+          VALUES (@EmployeeID, @DraftType, @Payload, @SavedAtMs);
+      `);
+  }
+
+  async deleteChatbotDraft(
+    employeeId: string,
+    draftType: string,
+  ): Promise<void> {
+    const pool = await this.getPool();
+    await pool
+      .request()
+      .input('EmployeeID', sql.VarChar(100), employeeId)
+      .input('DraftType', sql.VarChar(40), draftType)
+      .query(
+        'DELETE FROM dbo.ChatbotDrafts WHERE EmployeeID = @EmployeeID AND DraftType = @DraftType',
+      );
+  }
+
+  async deleteExpiredChatbotDrafts(olderThanMs: number): Promise<void> {
+    const pool = await this.getPool();
+    await pool
+      .request()
+      .input('Cutoff', sql.BigInt, olderThanMs)
+      .query('DELETE FROM dbo.ChatbotDrafts WHERE SavedAtMs < @Cutoff');
+  }
+
+  async loadChatbotDrafts(
+    newerThanMs: number,
+  ): Promise<{ employeeId: string; draftType: string; payload: string }[]> {
+    const pool = await this.getPool();
+    const result = await pool
+      .request()
+      .input('Cutoff', sql.BigInt, newerThanMs)
+      .query(
+        'SELECT EmployeeID, DraftType, Payload FROM dbo.ChatbotDrafts WHERE SavedAtMs >= @Cutoff',
+      );
+    return (result.recordset as any[]).map((row) => ({
+      employeeId: String(row.EmployeeID),
+      draftType: String(row.DraftType),
+      payload: String(row.Payload),
+    }));
   }
 
   // ─── HRMSDEV: real basic-info via USP_GetUserInfo ────────────────────────────
+  // One USP_GetUserInfo run is shared by the calls made for the same employee
+  // within a few seconds (a single chat message asks for it more than once).
+  // A missing result (not found, or the call failed) is not kept.
   async getUserInfo(employeeId: string) {
+    return this.userInfoCache.get(
+      employeeId,
+      () => this.loadUserInfo(employeeId),
+      (info) => info !== null,
+    );
+  }
+
+  private async loadUserInfo(employeeId: string) {
     const pool = await this.getPool();
 
     let result: sql.IProcedureResult<any>;
@@ -66,6 +152,32 @@ export class HrmsDbService {
     }));
 
     return { self, holidays };
+  }
+
+  async getEmployeeLeaveSessionDetails(
+    employeeId: string,
+    companyId?: number,
+  ) {
+    const normalizedEmployeeId = employeeId.trim();
+    if (!normalizedEmployeeId) return [];
+
+    const pool = await this.getPool();
+    const request = pool
+      .request()
+      .input('EmployeeID', sql.VarChar(100), normalizedEmployeeId);
+    let query = `
+      SELECT Id, IsHalfDay, SessionFrom, SessionTo
+      FROM LeaveApplication
+      WHERE EmployeeId = @EmployeeID
+    `;
+
+    if (companyId !== undefined) {
+      request.input('CompanyId', sql.Int, companyId);
+      query += ' AND CompanyId = @CompanyId';
+    }
+
+    const result = await request.query(query);
+    return result.recordset;
   }
 
   // ─── HRMSDEV: fetch user by email for login (USP_Validateuser) ────────────────
@@ -193,22 +305,32 @@ export class HrmsDbService {
   // longer selects Code. Any caller that used to show e.code (e.g. the
   // "Tester (T1)" style badge in the chatbot's employee list) needs to switch
   // to e.designation, or the SP needs Code added back — check with the team.
+  //
+  // The list is for one company and is kept for 60 seconds, shared by everyone
+  // in that company, so the database is not asked again for every chat message.
   async getEmployeeDirectory(companyId: number) {
-    const pool = await this.getPool();
     try {
-      const result = await pool
-        .request()
-        .input('CompanyID', sql.Int, companyId)
-        .execute('USP_GetEmployeeDirectory');
-      return result.recordset.map((r: any) => ({
-        id: r.EmployeeID as string,
-        name: r.FullName as string,
-        designation: r.Designation ?? '',
-      }));
+      const rows = await this.directoryCache.get(String(companyId), () =>
+        this.loadEmployeeDirectory(companyId),
+      );
+      return [...rows];
     } catch (err) {
       console.error('getEmployeeDirectory failed -', (err as Error).message);
       return [];
     }
+  }
+
+  private async loadEmployeeDirectory(companyId: number) {
+    const pool = await this.getPool();
+    const result = await pool
+      .request()
+      .input('CompanyID', sql.Int, companyId)
+      .execute('USP_GetEmployeeDirectory');
+    return result.recordset.map((r: any) => ({
+      id: r.EmployeeID as string,
+      name: r.FullName as string,
+      designation: r.Designation ?? '',
+    }));
   }
 
   // ─── HRMSDEV: batched read for the chatbot's per-message ctx build ───────────
@@ -216,11 +338,31 @@ export class HrmsDbService {
   // single USP_GetCompanyMasterData call instead of 5 separate ones. Used by
   // chatbot.service.ts; the individual getters above remain for callers that
   // only need one piece (e.g. the team export endpoint).
+  //
+  // Kept for 60 seconds per company and employee (the own-office part is
+  // specific to the employee). The lists are copied so a caller cannot change
+  // the cached ones.
   async getCompanyMasterData(companyId: number | null, employeeId: string) {
+    const data = await this.masterDataCache.get(
+      `${companyId ?? 'none'}:${employeeId}`,
+      () => this.loadCompanyMasterData(companyId, employeeId),
+    );
+    return {
+      ...data,
+      departments: [...data.departments],
+      designation: [...data.designation],
+      branches: [...data.branches],
+    };
+  }
+
+  private async loadCompanyMasterData(
+    companyId: number | null,
+    employeeId: string,
+  ) {
     const sets = await this.execCompanyMasterData(companyId, employeeId);
     return {
       departments: (sets[1] ?? []).map((r: any) => r.Name as string),
-      designations: (sets[2] ?? []).map((r: any) => r.Name as string),
+      designation: (sets[2] ?? []).map((r: any) => r.Name as string),
       companyInfo: sets[3]?.[0]
         ? {
             name: sets[3][0].CompanyName as string,
@@ -580,10 +722,5 @@ export class HrmsDbService {
     const pool = await this.getPool();
     const result = await pool.request().execute('usp_GetCompanyLogo');
     return result.recordset[0]?.logo_url ?? null;
-  }
-  async ping() {
-    const pool = await this.getPool();
-    const result = await pool.request().execute('usp_Ping');
-    return result.recordset[0] ?? null;
   }
 }

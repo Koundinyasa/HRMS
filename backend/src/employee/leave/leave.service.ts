@@ -2,24 +2,26 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { HrLeaveRequestDto } from './dto/hr-leave-request.dto';
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import * as sql from 'mssql';
 @Injectable()
 export class LeaveService {
   constructor(private readonly databaseService: DatabaseService) {}
   // Leave Types
-  async getLeaveTypes(employeeId: string) {
+  async getLeaveTypes(employeeId: string, companyId: number) {
     try {
       const pool = await this.databaseService.connect();
-
+ 
       const result = await pool
         .request()
+        .input('CompanyID', sql.Int, companyId)
         .input('EmployeeID', sql.VarChar(100), employeeId)
         .execute('USP_LeaveMasterData');
-
+ 
       return result.recordsets[0];
     } catch (error) {
       console.error('Error in getLeaveTypes:', error);
@@ -39,15 +41,33 @@ export class LeaveService {
     }
   }
   // Employee Leave Balance
-  // Employee Leave Balance
   async getEmployeeLeaveBalance(employeeId: string) {
     try {
       const pool = await this.databaseService.connect();
+ 
       const result = await pool
         .request()
-        .input('EmployeeId', employeeId)
+        .input('EmployeeId', sql.VarChar(25), employeeId)
         .execute('USP_EmployeeLeaveBalance');
-      const records = result.recordset.map((item) => ({
+ 
+      const rows = result.recordset ?? [];
+ 
+      if (rows.length === 1 && rows[0].StatusCode !== undefined) {
+        const statusCode = Number(rows[0].StatusCode);
+        const message = rows[0].Message;
+ 
+        if (statusCode === 400) {
+          throw new BadRequestException(message);
+        }
+ 
+        if (statusCode === 404) {
+          throw new NotFoundException(message);
+        }
+ 
+        throw new InternalServerErrorException(message);
+      }
+ 
+      const records = rows.map((item) => ({
         fields: [
           {
             label: 'Leave Type',
@@ -55,7 +75,7 @@ export class LeaveService {
           },
           {
             label: 'Opening Balance',
-            value: item.OpeningBalance,
+            value: item.Opening,
           },
           {
             label: 'Accrued',
@@ -71,7 +91,7 @@ export class LeaveService {
           },
           {
             label: 'Closing Balance',
-            value: item.ClosingBalance,
+            value: item.Closing,
           },
           {
             label: 'Leave Year',
@@ -83,6 +103,7 @@ export class LeaveService {
           },
         ],
       }));
+ 
       return {
         sections: [
           {
@@ -96,15 +117,45 @@ export class LeaveService {
       throw error;
     }
   }
+ 
+  /** Plain value of an Excel cell (formula result, rich text, link text). */
+  private excelCellValue(value: ExcelJS.CellValue): unknown {
+    if (value === null || value === undefined || value instanceof Date) {
+      return value ?? null;
+    }
+    if (typeof value === 'object') {
+      if ('result' in value) return value.result ?? null;
+      if ('richText' in value) return value.richText.map((t) => t.text).join('');
+      if ('text' in value) return value.text;
+      return null;
+    }
+    return value;
+  }
+
   // Upload Holiday Excel
   async uploadHolidayFile(file: Express.Multer.File) {
     try {
-      const workbook = XLSX.read(file.buffer, {
-        type: 'buffer',
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(file.buffer as unknown as ExcelJS.Buffer);
+      const sheet = workbook.worksheets[0];
+      if (!sheet) {
+        throw new BadRequestException('The Excel file has no sheets.');
+      }
+      // Row 1 holds the column names; every later non-empty row is a holiday.
+      const headers: string[] = [];
+      sheet.getRow(1).eachCell({ includeEmpty: false }, (cell, col) => {
+        headers[col] = String(cell.text ?? '').trim();
       });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const holidays: any[] = XLSX.utils.sheet_to_json(sheet);
+      const holidays: Record<string, unknown>[] = [];
+      sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const item: Record<string, unknown> = {};
+        row.eachCell({ includeEmpty: false }, (cell, col) => {
+          const name = headers[col];
+          if (name) item[name] = this.excelCellValue(cell.value);
+        });
+        if (Object.keys(item).length > 0) holidays.push(item);
+      });
       const pool = await this.databaseService.connect();
       let insertedCount = 0;
       for (const holiday of holidays) {
@@ -228,8 +279,8 @@ export class LeaveService {
         .input('EmployeeId', sql.VarChar(25), employeeId)
         .execute('USP_GetLeaveStatus');
  
-      console.log('🔥 Leave Status Recordset:', result.recordset);
-      console.log('🔥 Leave Status Recordsets:', result.recordsets);
+      // //console.log('🔥 Leave Status Recordset:', result.recordset);
+      // //console.log('🔥 Leave Status Recordsets:', result.recordsets);
  
       // SQL FOR JSON result
       const row = result.recordset?.[0];
@@ -611,3 +662,6 @@ export class LeaveService {
     }
   }
 }
+ 
+ 
+ 

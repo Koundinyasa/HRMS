@@ -1,0 +1,97 @@
+# services:
+#   frontend:
+#     container_name: kts-frontend
+#     build:
+#       context: ./frontend
+#       dockerfile: Dockerfile
+#       args:
+#         VITE_API_URL: http://localhost:3001/api
+#     image: bgayathridev/kts-people360-frontend:latest
+#     ports:
+#       - "5173:80"
+#     depends_on:
+#       - backend
+#     restart: unless-stopped
+
+#   backend:
+#     container_name: kts-backend
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#     image: bgayathridev/kts-people360-backend:latest
+#     env_file:
+#       - path: ./backend/.env
+#         format: raw
+#     ports:
+#       - "3001:3001"
+#     depends_on:
+#       - attendance-service
+#     restart: unless-stopped
+
+#   attendance-service:
+#     container_name: kts-attendance
+#     build:
+#       context: ./attendance-service
+#       dockerfile: Dockerfile
+#     image: bgayathridev/attendance-service:latest
+#     env_file:
+#       - path: ./attendance-service/.env
+#         format: raw
+#     environment:
+#       DB_DRIVER: "ODBC Driver 18 for SQL Server"
+#       TZ: "Asia/Kolkata"
+#     ports:
+#       - "5000:5000"
+#     restart: unless-stopped
+services:
+  frontend:
+    container_name: kts-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001/api
+    image: bgayathridev/kts-people360-frontend:latest
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    container_name: kts-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: bgayathridev/kts-people360-backend:latest
+    env_file:
+      - path: ./backend/.env
+        format: raw
+    
+    environment:
+      PYTHON_ATTENDANCE_URL: http://attendance-service:5000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - attendance-service
+    restart: unless-stopped
+
+  attendance-service:
+    container_name: kts-attendance
+    build:
+      context: ./attendance-service
+      dockerfile: Dockerfile
+    image: bgayathridev/attendance-service:latest
+    env_file:
+      - path: ./attendance-service/.env
+        format: raw
+    environment:
+      DB_DRIVER: "ODBC Driver 18 for SQL Server"
+      TZ: "Asia/Kolkata"
+    ports:
+      - "5000:5000"  
+    # REMOVED the published port (5000:5000). The attendance service has no
+    # login, so it must not be reachable from outside. The backend reaches it
+    # over the Compose network at http://attendance-service:5000.
+    # To test it from this PC only, use:  - "127.0.0.1:5000:5000"
+    restart: unless-stopped
