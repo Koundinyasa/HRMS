@@ -3,7 +3,7 @@ name: KTS-People360 Combined CI/CD pipeline
 on:
   push:
     branches:
-      - gayathri_cicd
+      - gayathri_devops
   workflow_dispatch:
 
 env:
