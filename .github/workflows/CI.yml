@@ -89,8 +89,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=SONAR_ORGANIZATION
-            -Dsonar.projectKey=SONAR_PROJECT_KEY
+            -Dsonar.organization=YOUR_ACTUAL_ORGANIZATION_KEY
+            -Dsonar.projectKey=YOUR_ACTUAL_PROJECT_KEY
             -Dsonar.sources=backend/src,frontend/src
             -Dsonar.tests=backend/src,frontend/src
             -Dsonar.test.inclusions=**/*.test.js
