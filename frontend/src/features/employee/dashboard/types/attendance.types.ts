@@ -1,3 +1,4 @@
+
 export interface PunchResponse {
   success: boolean;
   action?: "IN" | "OUT";
@@ -46,4 +47,26 @@ export interface RegistrationStatusResponse {
   lastUpdated: string | null;
   // True when the active registration has a saved profile photo.
   hasPhoto?: boolean;
+}
+
+// ---- Face re-registration approval (Reporting Manager) ----
+
+export type ReRegistrationStatus = "none" | "pending" | "approved" | "rejected";
+
+export interface ReRegistrationStatusResponse {
+  status: ReRegistrationStatus;
+  requestId: number | null;
+  requestedAt: string | null;
+  decidedAt: string | null;
+  expiresAt: string | null;
+  rejectionReason: string | null;
+}
+
+export interface ReRegistrationRequestPayload {
+  reason?: string;
+}
+
+export interface ReRegistrationActionResponse {
+  success: boolean;
+  message: string;
 }

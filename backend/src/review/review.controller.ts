@@ -9,6 +9,7 @@ import {
   Req,
   Param,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { ReviewService } from './review.service';
@@ -25,6 +26,7 @@ import { EmployeeMonthlyAttendanceDetailsDto } from './dto/employee-monthly-atte
 import { EmployeeAttendanceOverviewDto } from './dto/employee-attendance-overview.dto';
 import { EmployeeDashboardDetailsDto } from './dto/employee-dashboard-details.dto';
 import { HierarchicalLeaveActionDto } from '../employee/leave/dto/hierarchical-leave-action.dto';
+import { FaceReRegistrationService } from '../employee/attendance/face-reregistration/face-reregistration.service';
 // Review is the reporting-manager menu. Force Leave Approval (HR Admin) also
 // uses the approval route.
 @RequiresMenu(MenuCode.Review)
@@ -33,7 +35,51 @@ export class ReviewController {
   constructor(
     private readonly reviewService: ReviewService,
     private readonly scope: EmployeeScopeService,
+    private readonly faceReRegistration: FaceReRegistrationService,
   ) {}
+
+  // ==========================================
+  // Face Re-registration Approvals
+  // ==========================================
+  // Only requests routed to the signed-in manager are returned or changed:
+  // every query filters on ApproverID = the caller's employeeId (from the JWT).
+
+  @Get('face-reregistration')
+  async getFaceReRegistrationRequests(
+    @Req() req: any,
+    @Query('status') status?: string,
+  ) {
+    return this.faceReRegistration.listForManager(req.user.employeeId, status);
+  }
+
+  @Post('face-reregistration/:id/approve')
+  async approveFaceReRegistration(@Req() req: any, @Param('id') id: string) {
+    return this.faceReRegistration.approve(
+      this.parseRequestId(id),
+      req.user.employeeId,
+    );
+  }
+
+  @Post('face-reregistration/:id/reject')
+  async rejectFaceReRegistration(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: { rejectionReason?: string },
+  ) {
+    return this.faceReRegistration.reject(
+      this.parseRequestId(id),
+      req.user.employeeId,
+      typeof body?.rejectionReason === 'string' ? body.rejectionReason : '',
+    );
+  }
+
+  private parseRequestId(id: string): number {
+    const value = Number(id);
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new BadRequestException('Invalid request id.');
+    }
+    return value;
+  }
 
   // 1. Monthly Leave Calendar
   @Post('monthlyleavecalendar')

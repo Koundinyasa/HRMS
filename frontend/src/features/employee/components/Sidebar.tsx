@@ -15,6 +15,7 @@ import {
   CalendarCheck,
   ClipboardCheck,
   ChartNoAxesColumnIncreasing,
+  ScanFace,
 } from "lucide-react";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 import type { MenuItem } from "../dashboard/types/dashboard.types";
@@ -92,6 +93,10 @@ const getMenuIcon = (menuName: string) => {
     normalizedName === "attendance"
   ) {
     return <CalendarCheck size={20} strokeWidth={2.2} />;
+  }
+
+  if (normalizedName.includes("face")) {
+    return <ScanFace size={20} strokeWidth={2.2} />;
   }
 
   if (
