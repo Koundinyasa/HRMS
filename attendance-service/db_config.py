@@ -31,13 +31,7 @@ def get_db_connection():
 
             #  Microsoft ODBC Driver 18 is installed in the Linux container.
 
-            # ODBC Driver 17/18 properly later so this file matches
-
-            # everyone else's setup — this is a quick fix, not the
-
-            # long-term standard.
-
-            f'DRIVER={{{DB_DRIVER}}};'
+            r'DRIVER={ODBC Driver 18 for SQL Server};'
 
             f'SERVER={DB_HOST},{DB_PORT};'
 
