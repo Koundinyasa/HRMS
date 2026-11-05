@@ -1,4 +1,4 @@
-import {
+  import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -218,11 +218,17 @@ export class DashboardService {
             RequestCount: Number(row.RequestCount ?? 0),
           })) ?? [];
  
+      // Face re-registration requests are not part of USP_GetUserInfo; they
+      // are counted here and merged into the same lists.
+      const face = await this.getFaceReRegistrationCounts(employeeId);
+      this.addRequestCount(myApprovalsDetails, 'Face Re-registration', face.toApprove);
+      this.addRequestCount(myRequestsDetails, 'Face Re-registration', face.myPending);
+
       const myRequests = myRequestsDetails.reduce(
         (total, item) => total + item.RequestCount,
         0,
       );
- 
+
       const pendingApprovalTotal = myApprovalsDetails.reduce(
         (total, item) => total + item.RequestCount,
         0,
@@ -237,6 +243,52 @@ export class DashboardService {
     } catch (error) {
       console.error('Error fetching approval summary:', error);
       throw error;
+    }
+  }
+
+  // Pending (Mst_Status 3) face re-registration requests: how many wait for this employee
+  // as Reporting Manager, and whether the employee has one of their own.
+  // Never fails the dashboard: if the table is missing (DB script not run
+  // yet) or the query errors, both counts are 0.
+  private async getFaceReRegistrationCounts(
+    employeeId: string,
+  ): Promise<{ toApprove: number; myPending: number }> {
+    try {
+      const pool = await this.dbService.connect();
+      const result = await pool
+        .request()
+        .input('EmployeeID', sql.VarChar(25), employeeId).query(`
+          IF OBJECT_ID(N'dbo.FaceReRegistrationRequest', N'U') IS NULL
+            SELECT 0 AS ToApprove, 0 AS MyPending;
+          ELSE
+            SELECT
+              (SELECT COUNT(*) FROM dbo.FaceReRegistrationRequest
+                WHERE ApproverID = @EmployeeID AND Status = 3 AND Deleted = 0) AS ToApprove,
+              (SELECT COUNT(*) FROM dbo.FaceReRegistrationRequest
+                WHERE EmployeeID = @EmployeeID AND Status = 3 AND Deleted = 0) AS MyPending;
+        `);
+      const row = result.recordset?.[0];
+      return {
+        toApprove: Number(row?.ToApprove ?? 0),
+        myPending: Number(row?.MyPending ?? 0),
+      };
+    } catch (error) {
+      console.error('Error counting face re-registration requests:', error);
+      return { toApprove: 0, myPending: 0 };
+    }
+  }
+
+  private addRequestCount(
+    details: { RequestType: string; RequestCount: number }[],
+    requestType: string,
+    count: number,
+  ): void {
+    if (count <= 0) return;
+    const existing = details.find((d) => d.RequestType === requestType);
+    if (existing) {
+      existing.RequestCount += count;
+    } else {
+      details.push({ RequestType: requestType, RequestCount: count });
     }
   }
   async getTeamAttendance(
@@ -353,4 +405,3 @@ export class DashboardService {
   }
 }
    
- 

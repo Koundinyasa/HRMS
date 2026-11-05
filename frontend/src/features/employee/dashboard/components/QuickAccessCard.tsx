@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+
+ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
  import {
   CheckCheck,
@@ -11,6 +12,7 @@ import { useNavigate, useParams } from "react-router-dom";
   LifeBuoy,
   LogOut,
   Package, // ADDED: Icon for Asset Requests
+  ScanFace,
 } from "lucide-react";
 import { useDashboard } from "../hooks/useDashboard";
  
@@ -49,6 +51,13 @@ const REQUEST_TYPE_CONFIG: Record<string, RequestTypeConfig> = {
     bg: "#fff7ed",
     color: "#f59e0b",
     path: (domain) => `/${domain}/employee/separation/status`,
+  },
+
+  "Face Re-registration": {
+    icon: ScanFace,
+    bg: "#eef2ff",
+    color: "#6366f1",
+    path: (domain) => `/${domain}/employee/attendance/face-registration`,
   },
 };
  
@@ -109,6 +118,13 @@ function buildSubItems(
         description = `${item.RequestCount} ticket${
           item.RequestCount === 1 ? "" : "s"
         } awaiting response`;
+      } else if (item.RequestType === "Face Re-registration") {
+        description =
+          mode === "approval"
+            ? `${item.RequestCount} request${
+                item.RequestCount === 1 ? "" : "s"
+              } to re-register face`
+            : "Waiting for your Reporting Manager";
       }
  
       return {
@@ -126,6 +142,9 @@ function buildSubItems(
             ? `/${domain}/employee/Review/requisition/Resignationrequests`
             : mode === "approval" && item.RequestType === "Helpdesk Tickets"
             ? `/${domain}/employee/TA/HelpdeskRequests`
+            : mode === "approval" &&
+              item.RequestType === "Face Re-registration"
+            ? `/${domain}/employee/Review/FaceReRegistration`
             : config.path(domain),
         bg: config.bg,
         color: config.color,
@@ -496,6 +515,4 @@ export default function QuickAccessCard() {
     </div>
   );
 }
- 
- 
  

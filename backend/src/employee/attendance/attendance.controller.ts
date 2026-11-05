@@ -9,6 +9,7 @@ import {
   UploadedFiles,
   UseInterceptors,
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
   Res,
   StreamableFile,
@@ -19,7 +20,12 @@ import {
   FilesInterceptor,
 } from '@nestjs/platform-express';
 import { AttendanceService } from './attendance.service';
+import { FaceReRegistrationService } from './face-reregistration/face-reregistration.service';
 import type { Response } from 'express';
+
+interface ReRegistrationRequestBody {
+  reason?: string;
+}
 
 // Sent alongside the frame files as ordinary multipart text fields (not
 // JSON) — the frontend appends these to the same FormData as the frames.
@@ -73,7 +79,30 @@ function parseDeviceLabel(userAgent: string | undefined): string {
 
 @Controller('employee/attendance')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(
+    private readonly attendanceService: AttendanceService,
+    private readonly faceReRegistration: FaceReRegistrationService,
+  ) {}
+
+  // Face Registration page: is there an open re-registration request for the
+  // logged-in employee, and what state is it in (none/pending/approved/rejected).
+  @Get('re-registration/status')
+  async reRegistrationStatus(@Req() req: any) {
+    return this.faceReRegistration.getMyStatus(req.user.employeeId);
+  }
+
+  // "Send RM request" in the approval pop-up. The manager is looked up from
+  // Employee.ReportingManagerID on the server, never sent by the client.
+  @Post('re-registration/request')
+  async requestReRegistration(
+    @Req() req: any,
+    @Body() body: ReRegistrationRequestBody,
+  ) {
+    return this.faceReRegistration.createRequest(
+      req.user.employeeId,
+      typeof body?.reason === 'string' ? body.reason : undefined,
+    );
+  }
 
   // Checked by the frontend BEFORE it opens the camera for a punch — tells
   // the dashboard whether the logged-in employee has an active face vector
@@ -242,8 +271,30 @@ async recentPunches(@Req() req: any) {
       );
     }
     const employeeId = req.user.employeeId;
-    return photo
-      ? this.attendanceService.enrollFace(employeeId, frames, photo)
-      : this.attendanceService.enrollFace(employeeId, frames);
+
+    // RE-REGISTRATION APPROVAL — first-time registration is always allowed.
+    // Replacing an existing face needs an approved, unexpired request from
+    // the employee's Reporting Manager. Enforced here (not only in the UI)
+    // so calling the API directly cannot skip it.
+    const isReRegistration =
+      await this.faceReRegistration.hasActiveFace(employeeId);
+    if (
+      isReRegistration &&
+      !(await this.faceReRegistration.hasUsableApproval(employeeId))
+    ) {
+      throw new ForbiddenException(
+        'Re-registering your face needs approval from your Reporting Manager.',
+      );
+    }
+
+    const result = photo
+      ? await this.attendanceService.enrollFace(employeeId, frames, photo)
+      : await this.attendanceService.enrollFace(employeeId, frames);
+
+    // The approval is single-use: spend it only when the new face was saved.
+    if (isReRegistration && result.success) {
+      await this.faceReRegistration.markApprovalUsed(employeeId);
+    }
+    return result;
   }
 }

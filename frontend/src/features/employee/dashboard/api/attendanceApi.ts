@@ -1,3 +1,5 @@
+
+ 
 import { baseApi } from "@/app/baseApi";
  
 import type {
@@ -7,6 +9,9 @@ import type {
   EnrollResponse,
   CheckFrameResponse,
   RegistrationStatusResponse,
+  ReRegistrationStatusResponse,
+  ReRegistrationRequestPayload,
+  ReRegistrationActionResponse,
 } from "../types/attendance.types";
  
 export const attendanceApi = baseApi.injectEndpoints({
@@ -66,6 +71,28 @@ export const attendanceApi = baseApi.injectEndpoints({
       }),
     }),
  
+    // Re-registration approval: state of the employee's latest request.
+    getReRegistrationStatus: builder.query<ReRegistrationStatusResponse, void>({
+      query: () => ({
+        url: "/employee/attendance/re-registration/status",
+        method: "GET",
+      }),
+      providesTags: ["FaceReRegistration"],
+    }),
+
+    // "Send RM request" in the approval pop-up.
+    requestReRegistration: builder.mutation<
+      ReRegistrationActionResponse,
+      ReRegistrationRequestPayload
+    >({
+      query: (body) => ({
+        url: "/employee/attendance/re-registration/request",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["FaceReRegistration", "ApprovalSummary"],
+    }),
+
     // REMOVED — getTodaySummary. That data now comes from the dashboard's
     // getProfile query instead (see dashboardApi.ts) — USP_GetUserInfo
     // merges it in directly, so there's no reason to fetch it twice from
@@ -81,5 +108,7 @@ export const {
   useLazyGetRecentPunchesQuery,
   useCheckEnrollmentFrameMutation,
   useGetRegistrationStatusQuery,
+  useGetReRegistrationStatusQuery,
+  useRequestReRegistrationMutation,
 } = attendanceApi;
  
