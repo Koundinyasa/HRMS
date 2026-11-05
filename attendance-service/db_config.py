@@ -29,23 +29,9 @@ def get_db_connection():
 
         conn_str = (
 
-            # CHANGED — this machine doesn't have "ODBC Driver 17/18 for
+            #  Microsoft ODBC Driver 18 is installed in the Linux container.
 
-            # SQL Server" installed (confirmed via Get-OdbcDriver — only
-
-            # the older built-in "SQL Server" driver exists here). Using
-
-            # that instead avoids needing a fresh driver install just to
-
-            # unblock this one machine. Worth installing the real
-
-            # ODBC Driver 17/18 properly later so this file matches
-
-            # everyone else's setup — this is a quick fix, not the
-
-            # long-term standard.
-
-            f'DRIVER={{{DB_DRIVER}}};'
+            r'DRIVER={ODBC Driver 18 for SQL Server};'
 
             f'SERVER={DB_HOST},{DB_PORT};'
 
