@@ -1,58 +1,108 @@
+# ==========================================================
+# KTS-PEOPLE360 - DOCKER COMPOSE
+# ==========================================================
+
 services:
+
+  # --------------------------------------------------------
+  # FRONTEND SERVICE
+  # --------------------------------------------------------
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
-    image: teluguvenkata33/kts-people360-frontend
+
+    image: teluguvenkata33/kts-people360-frontend:latest
+
     container_name: people360-frontend
+
     ports:
       - "5173:80"
+
     depends_on:
       - backend
+
     restart: unless-stopped
+
+    environment:
+      TZ: Asia/Kolkata
+
     networks:
       - kts-network
+
+
+  # --------------------------------------------------------
+  # BACKEND SERVICE
+  # --------------------------------------------------------
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: teluguvenkata33/kts-people360-backend
+
+    image: teluguvenkata33/kts-people360-backend:latest
+
     container_name: people360-backend
+
     ports:
       - "3001:3001"
+
     env_file:
       - path: ./backend/.env
-        format: raw
         required: false
+
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: 3001
+      TZ: Asia/Kolkata
       SWAGGER_ENABLED: "true"
+      FRONTEND_URL: http://localhost:5173
       PYTHON_ATTENDANCE_URL: http://attendance:5000
+
     depends_on:
       - attendance
+
     restart: unless-stopped
+
     networks:
       - kts-network
+
+
+  # --------------------------------------------------------
+  # ATTENDANCE SERVICE
+  # --------------------------------------------------------
 
   attendance:
     build:
       context: ./attendance-service
       dockerfile: Dockerfile
-    image: teluguvenkata33/kts-people360-attendance
+
+    image: teluguvenkata33/kts-people360-attendance:latest
+
     container_name: people360-attendance
+
     ports:
       - "5000:5000"
+
     env_file:
       - path: ./attendance-service/.env
-        format: raw
         required: false
+
+    environment:
+      TZ: Asia/Kolkata
+
     restart: unless-stopped
+
     networks:
       - kts-network
+
+
+# ----------------------------------------------------------
+# NETWORK CONFIGURATION
+# ----------------------------------------------------------
 
 networks:
   kts-network:
