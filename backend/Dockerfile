@@ -24,8 +24,10 @@ ENV NODE_ENV=production \
 
 WORKDIR /app
 
-# Install timezone data
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Update Debian packages and install timezone data
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 

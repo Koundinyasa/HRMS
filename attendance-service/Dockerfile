@@ -44,8 +44,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install timezone data, runtime dependencies and ODBC prerequisites
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Update Debian packages and install runtime dependencies
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
     tzdata \
     ca-certificates \
     curl \
