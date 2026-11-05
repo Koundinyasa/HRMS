@@ -217,12 +217,11 @@ jobs:
       - name: Run Trivy Security Scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: 'fs'
-          scan-ref: 'attendance-service'
+          scan-type: 'image'
+          image-ref: people360-attendance:${{ github.sha }}
           format: 'table'
-          exit-code: '0'
           severity: 'CRITICAL,HIGH'
-        continue-on-error: true
+          exit-code: '0'
 
 
 
