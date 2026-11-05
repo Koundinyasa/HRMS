@@ -1,13 +1,13 @@
 
-name: People360 CI/CD
+name: People360 CI/CD 
 
 on:
   push:
     branches:
-      - suresh
+     - Suresh_KTS_People360
   pull_request:
     branches:
-      - suresh
+     - Suresh_KTS_People360
   workflow_dispatch:
 
 permissions:
