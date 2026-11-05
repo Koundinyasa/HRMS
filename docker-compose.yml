@@ -53,6 +53,7 @@ services:
     environment:
 
       NODE_ENV: development
+      TZ: Asia/Kolkata
       SWAGGER_ENABLED: "true"
       PYTHON_ATTENDANCE_URL: http://attendance:5000
 
