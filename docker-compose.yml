@@ -1,13 +1,10 @@
-# ==========================================================
-# KTS-PEOPLE360 - DOCKER COMPOSE
-# ==========================================================
+name: hrms
 
 services:
 
-  # --------------------------------------------------------
-  # FRONTEND SERVICE
-  # --------------------------------------------------------
-
+  # ==========================================
+  # HRMS FRONTEND
+  # ==========================================
   frontend:
     build:
       context: ./frontend
@@ -15,9 +12,9 @@ services:
       args:
         VITE_API_URL: /api
 
-    image: teluguvenkata33/kts-people360-frontend:latest
+    image: ${DOCKERHUB_USERNAME:-teluguvenkata33}/hrms-frontend:latest
 
-    container_name: people360-frontend
+    container_name: hrms-frontend
 
     ports:
       - "5173:80"
@@ -27,39 +24,34 @@ services:
 
     restart: unless-stopped
 
-    environment:
-      TZ: Asia/Kolkata
-
     networks:
-      - kts-network
+      - hrms-network
 
 
-  # --------------------------------------------------------
-  # BACKEND SERVICE
-  # --------------------------------------------------------
-
+  # ==========================================
+  # HRMS BACKEND
+  # ==========================================
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
 
-    image: teluguvenkata33/kts-people360-backend:latest
+    image: ${DOCKERHUB_USERNAME:-teluguvenkata33}/hrms-backend:latest
 
-    container_name: people360-backend
+    container_name: hrms-backend
 
     ports:
       - "3001:3001"
 
     env_file:
       - path: ./backend/.env
+        format: raw
         required: false
 
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3001
-      TZ: Asia/Kolkata
       SWAGGER_ENABLED: "true"
-      FRONTEND_URL: http://localhost:5173
       PYTHON_ATTENDANCE_URL: http://attendance:5000
 
     depends_on:
@@ -68,42 +60,39 @@ services:
     restart: unless-stopped
 
     networks:
-      - kts-network
+      - hrms-network
 
 
-  # --------------------------------------------------------
-  # ATTENDANCE SERVICE
-  # --------------------------------------------------------
-
+  # ==========================================
+  # HRMS ATTENDANCE SERVICE
+  # ==========================================
   attendance:
     build:
       context: ./attendance-service
       dockerfile: Dockerfile
 
-    image: teluguvenkata33/kts-people360-attendance:latest
+    image: ${DOCKERHUB_USERNAME:-teluguvenkata33}/hrms-attendance-service:latest
 
-    container_name: people360-attendance
+    container_name: hrms-attendance-service
 
     ports:
       - "5000:5000"
 
     env_file:
       - path: ./attendance-service/.env
+        format: raw
         required: false
-
-    environment:
-      TZ: Asia/Kolkata
 
     restart: unless-stopped
 
     networks:
-      - kts-network
+      - hrms-network
 
 
-# ----------------------------------------------------------
-# NETWORK CONFIGURATION
-# ----------------------------------------------------------
-
+# ==========================================
+# HRMS DOCKER NETWORK
+# ==========================================
 networks:
-  kts-network:
+  hrms-network:
+    name: hrms-network
     driver: bridge

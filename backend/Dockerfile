@@ -1,12 +1,6 @@
-# ==========================================================
-# KTS-PEOPLE360 BACKEND
-# NestJS + Node.js 24
-# ==========================================================
-
-# ----------------------------------------------------------
-# STAGE 1: BUILD
-# ----------------------------------------------------------
-
+# ==========================================
+# Build stage
+# ==========================================
 FROM node:24-trixie-slim AS build
 
 WORKDIR /app
@@ -19,21 +13,18 @@ COPY . .
 
 RUN npm run build
 
-# ----------------------------------------------------------
-# STAGE 2: PRODUCTION
-# ----------------------------------------------------------
 
+# ==========================================
+# Production stage
+# ==========================================
 FROM node:24-trixie-slim AS production
 
-ENV NODE_ENV=production
-ENV TZ=Asia/Kolkata
+ENV NODE_ENV=production \
+    TZ=Asia/Kolkata
 
 WORKDIR /app
 
-# ----------------------------------------------------------
-# Configure timezone and update OS packages
-# ----------------------------------------------------------
-
+# Update system packages and install timezone data
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends tzdata \
@@ -41,10 +32,7 @@ RUN apt-get update \
     && echo Asia/Kolkata > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
-# ----------------------------------------------------------
 # Install production dependencies only
-# ----------------------------------------------------------
-
 COPY package*.json ./
 
 RUN npm ci --omit=dev \
@@ -53,10 +41,7 @@ RUN npm ci --omit=dev \
               /usr/local/bin/npm \
               /usr/local/bin/npx
 
-# ----------------------------------------------------------
-# Copy compiled NestJS application
-# ----------------------------------------------------------
-
+# Copy compiled application
 COPY --from=build /app/dist ./dist
 
 # Create uploads directory

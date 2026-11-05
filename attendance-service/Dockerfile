@@ -1,9 +1,4 @@
-# ==========================================================
-# KTS-PEOPLE360 ATTENDANCE SERVICE
-# Python 3.11 + Face Recognition + SQL Server ODBC 18
-# ==========================================================
-
-FROM python:3.11-slim-trixie
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -11,26 +6,22 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV TZ=Asia/Kolkata
 
-# ----------------------------------------------------------
-# Install system libraries, timezone and SQL Server ODBC
-# ----------------------------------------------------------
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        tzdata \
-        curl \
-        ca-certificates \
-        gnupg \
-        unixodbc \
-        odbcinst \
-        libgssapi-krb5-2 \
-        libxcb1 \
-        libgl1 \
-        libglib2.0-0 \
-        libsm6 \
-        libxext6 \
-        libxrender1 \
-        libgomp1 \
+# Install system libraries, ODBC tools and configure IST timezone
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    curl \
+    ca-certificates \
+    gnupg \
+    unixodbc \
+    odbcinst \
+    libgssapi-krb5-2 \
+    libxcb1 \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libgomp1 \
     && ln -snf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime \
     && echo "Asia/Kolkata" > /etc/timezone \
     && curl -sSL -o /tmp/packages-microsoft-prod.deb \
@@ -41,10 +32,7 @@ RUN apt-get update \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
     && rm -rf /var/lib/apt/lists/*
 
-# ----------------------------------------------------------
 # Install Python dependencies
-# ----------------------------------------------------------
-
 COPY requirements.txt .
 
 RUN grep -v -E "^(msvc-runtime|face-recognition)==" requirements.txt > requirements-linux.txt \
@@ -54,21 +42,15 @@ RUN grep -v -E "^(msvc-runtime|face-recognition)==" requirements.txt > requireme
        "setuptools==80.10.2" \
        "wheel>=0.46.2"
 
-# ----------------------------------------------------------
-# Verify timezone and Python dependencies
-# ----------------------------------------------------------
-
+# Verify timezone, face-recognition dependencies and SQL Server ODBC driver
 RUN python -c "import time, datetime; print('Timezone:', time.tzname); print('Local time:', datetime.datetime.now().astimezone().isoformat()); assert time.strftime('%z') == '+0530'" \
     && python -c "import pkg_resources, face_recognition_models, dlib, face_recognition, cv2; print('Face recognition dependencies OK'); print('dlib:', dlib.__version__); print('OpenCV:', cv2.__version__)" \
     && python -c "import pyodbc; print('pyodbc version:', pyodbc.version); print('ODBC drivers:', pyodbc.drivers()); assert 'ODBC Driver 18 for SQL Server' in pyodbc.drivers(); print('SQL Server ODBC Driver OK')"
 
-# ----------------------------------------------------------
-# Copy attendance application
-# ----------------------------------------------------------
-
+# Copy application
 COPY . .
 
-# Remove any accidentally copied local Windows virtual environments
+# Remove local Windows virtual environments copied into the image
 RUN rm -rf /app/venv /app/.venv
 
 EXPOSE 5000
