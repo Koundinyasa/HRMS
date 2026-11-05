@@ -1,4 +1,15 @@
-import { Injectable, Logger, UnauthorizedException,NotFoundException,BadRequestException,ForbiddenException,ConflictException,InternalServerErrorException,HttpException,HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  ConflictException,
+  InternalServerErrorException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sql from 'mssql';
 import * as bcrypt from 'bcrypt';
@@ -13,7 +24,10 @@ import { randomBytes, randomInt, randomUUID } from 'crypto';
 import { SessionBoundaryEvents } from './session-boundary.events';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { SendWishDto } from './dto/SendWish.dto';
-import { AuthSessionService, SessionMeta } from './session/auth-session.service';
+import {
+  AuthSessionService,
+  SessionMeta,
+} from './session/auth-session.service';
 import { AuthErrorCode } from './auth-error-codes';
 import { sessionEndedException } from './session/session-end';
 @Injectable()
@@ -26,7 +40,7 @@ export class AuthService {
     private readonly boundary: SessionBoundaryEvents,
     private readonly sessions: AuthSessionService,
     private readonly config: ConfigService,
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(AuthService.name);
 
@@ -72,14 +86,20 @@ export class AuthService {
 
     const row = result.recordset?.[0];
     if (row && Number(row.StatusCode) >= 400) {
-      this.logger.error(`USP_UpdatePassword failed for ${employeeId}: ${JSON.stringify(row)}`);
-      throw new InternalServerErrorException('Could not update the password. Please try again.');
+      this.logger.error(
+        `USP_UpdatePassword failed for ${employeeId}: ${JSON.stringify(row)}`,
+      );
+      throw new InternalServerErrorException(
+        'Could not update the password. Please try again.',
+      );
     }
     if (result.output?.Result !== 1) {
       this.logger.error(
         `USP_UpdatePassword did not update ${employeeId} (Result=${result.output?.Result})`,
       );
-      throw new InternalServerErrorException('Could not update the password. Please try again.');
+      throw new InternalServerErrorException(
+        'Could not update the password. Please try again.',
+      );
     }
   }
 
@@ -89,7 +109,11 @@ export class AuthService {
     keepFamilyId?: string,
   ): Promise<void> {
     await this.sessions.setMustChangePassword(employeeId, false, true);
-    await this.sessions.revokeAllForEmployee(employeeId, 'password_changed', keepFamilyId);
+    await this.sessions.revokeAllForEmployee(
+      employeeId,
+      'password_changed',
+      keepFamilyId,
+    );
   }
 
   private buildAccessClaims(user: any, familyId: string, mustChange = false) {
@@ -100,8 +124,7 @@ export class AuthService {
       companyId: user.CompanyID,
       createdBy: user.Sessionuserid,
       name: user.FullName,
-      role:
-        user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
+      role: user.RoleID === 1 ? 'admin' : user.RoleID === 2 ? 'hr' : 'employee',
       sid: familyId,
       // Present only while the password must be changed; see JwtAuthGuard.
       ...(mustChange ? { mcp: true } : {}),
@@ -138,14 +161,21 @@ export class AuthService {
   // both from here, so the browser never has to send (or know) either.
   issueResetToken(employeeId: string, userId: string): string {
     return this.jwtService.sign(
-      { purpose: AuthService.RESET_PURPOSE, sub: String(employeeId), uid: String(userId) },
+      {
+        purpose: AuthService.RESET_PURPOSE,
+        sub: String(employeeId),
+        uid: String(userId),
+      },
       { expiresIn: AuthService.RESET_TTL, jwtid: randomUUID() },
     );
   }
 
-  private verifyResetToken(
-    token: string | undefined,
-  ): { sub: string; uid: string; jti: string; exp: number } {
+  private verifyResetToken(token: string | undefined): {
+    sub: string;
+    uid: string;
+    jti: string;
+    exp: number;
+  } {
     if (!token) {
       throw new UnauthorizedException(
         'Password reset session not found. Please verify your OTP again.',
@@ -205,7 +235,10 @@ export class AuthService {
   // that is the accepted trade-off against brute-forcing a 6-digit code.
   private static readonly OTP_MAX_ATTEMPTS = 5;
   private static readonly OTP_LOCK_MS = 15 * 60 * 1000;
-  private readonly otpFailures = new Map<string, { count: number; since: number }>();
+  private readonly otpFailures = new Map<
+    string,
+    { count: number; since: number }
+  >();
 
   private assertOtpNotLocked(key: string): void {
     const entry = this.otpFailures.get(key);
@@ -237,9 +270,13 @@ export class AuthService {
     if (!entry || now - entry.since > AuthService.OTP_LOCK_MS) {
       if (this.otpFailures.size >= AuthService.OTP_TRACKED_MAX) {
         for (const [k, v] of this.otpFailures) {
-          if (now - v.since > AuthService.OTP_LOCK_MS) this.otpFailures.delete(k);
+          if (now - v.since > AuthService.OTP_LOCK_MS)
+            this.otpFailures.delete(k);
         }
-        if (this.otpFailures.size >= AuthService.OTP_TRACKED_MAX && key.startsWith('unknown:')) {
+        if (
+          this.otpFailures.size >= AuthService.OTP_TRACKED_MAX &&
+          key.startsWith('unknown:')
+        ) {
           return;
         }
       }
@@ -255,64 +292,58 @@ export class AuthService {
   private clearChatbotState(employeeId: string): void {
     this.boundary.emit(employeeId);
   }
- 
+
   // ================= LOGIN =================
- 
+
   async login(dto: LoginDto, meta: SessionMeta = {}) {
     try {
       const captchaValid = this.captchaService.validate(
         dto.captchaId,
         dto.captchaAnswer,
       );
- 
+
       if (!captchaValid) {
         throw new BadRequestException(
           'Invalid or expired captcha. Please refresh and try again.',
         );
       }
- 
+
       const pool = await this.dbService.connect();
- 
+
       const result = await pool
         .request()
         .input('EmailID', dto.userId)
         .execute('USP_Validateuser');
- 
+
       const user = result.recordset[0];
- 
+
       if (!user) {
         throw new UnauthorizedException('Invalid UserID or Password');
       }
- 
-      if (
-        user.IsAccountLocked === true ||
-        user.IsAccountLocked === 1
-      ) {
+
+      if (user.IsAccountLocked === true || user.IsAccountLocked === 1) {
         throw new UnauthorizedException(
           'Account is locked. Contact administrator.',
         );
       }
- 
+
       const isPasswordValid = await bcrypt.compare(
         dto.password,
         user.PasswordHash,
       );
- 
+
       if (!isPasswordValid) {
         await pool
           .request()
           .input('EmployeeID', user.EmployeeID)
           .input('flag', 1)
           .execute('USP_UpdateLoginInfo');
- 
-        throw new UnauthorizedException(
-          'Invalid UserID or Password',
-        );
+
+        throw new UnauthorizedException('Invalid UserID or Password');
       }
- 
+
       const isFirstLogin = user.LastLoginDateTime === null;
- 
- 
+
       // Anything that can fail is checked before the session starts: starting
       // it ends the employee's other logins.
       const mustChange = await this.mustChangePassword(user);
@@ -355,19 +386,19 @@ export class AuthService {
       const accessToken = this.jwtService.sign(
         this.buildAccessClaims(user, familyId, mustChange),
       );
- 
+
       let loginMessage = 'Login successful';
- 
+
       if (user.RoleID === 1) {
         loginMessage = 'Super Admin login successful';
       } else if (user.RoleID === 2) {
         loginMessage = 'HR Admin login successful';
       }
- 
+
       // Fresh session boundary — wipe any chatbot flow left over
       // from a previous session for this employee.
       this.clearChatbotState(String(user.EmployeeID));
- 
+
       return {
         success: true,
         message: loginMessage,
@@ -389,58 +420,51 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   // ================= VERIFY COMPANY =================
- async verifyCompany(tenantCode: string) {
-  try {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .execute('USP_GetCompanyInfo');
- 
-    const company = result.recordset.find(
-      (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
-    );
- 
-    if (!company) {
-      throw new NotFoundException('Company not found');
-    }
- 
-    return {
-      exists: true,
-      companyId: company.CompanyID,
-      companyName: company.CompanyCode,
-      domain: company.DomainName,
-    };
-  } catch (error) {
-    throw error;
-  }
-}
- 
- 
- 
-  // ================= RESET PASSWORD =================
- 
-  async resetPassword(
-    userId: string,
-    dto: ResetPasswordDto,
-  ) {
+  async verifyCompany(tenantCode: string) {
     try {
       const pool = await this.dbService.connect();
- 
+
+      const result = await pool.request().execute('USP_GetCompanyInfo');
+
+      const company = result.recordset.find(
+        (x) => x.DomainName?.toLowerCase() === tenantCode?.toLowerCase(),
+      );
+
+      if (!company) {
+        throw new NotFoundException('Company not found');
+      }
+
+      return {
+        exists: true,
+        companyId: company.CompanyID,
+        companyName: company.CompanyCode,
+        domain: company.DomainName,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // ================= RESET PASSWORD =================
+
+  async resetPassword(userId: string, dto: ResetPasswordDto) {
+    try {
+      const pool = await this.dbService.connect();
+
       // Get user using UserID (email)
       const result = await pool
         .request()
         .input('EmailID', userId.trim())
         .execute('USP_Validateuser');
- 
+
       const user = result.recordset?.[0];
- 
+
       if (!user) {
         throw new BadRequestException('User not found');
       }
- 
+
       // Allowed on first login, or while HR's temporary password is still set.
       if (
         user.LastLoginDateTime !== null &&
@@ -450,48 +474,53 @@ export class AuthService {
           'Password reset is allowed only on first login',
         );
       }
- 
+
       // Validate current password
       const isMatch = await bcrypt.compare(
         dto.currentPassword,
         user.PasswordHash,
       );
- 
+
       if (!isMatch) {
-        throw new BadRequestException(
-          'Current password is incorrect',
-        );
+        throw new BadRequestException('Current password is incorrect');
       }
- 
+
       // Prevent same password reuse
       const samePassword = await bcrypt.compare(
         dto.newPassword,
         user.PasswordHash,
       );
- 
+
       if (samePassword) {
         throw new BadRequestException(
           'New password must be different from current password',
         );
       }
- 
+
       // Confirm password check
       if (dto.newPassword !== dto.confirmPassword) {
-        throw new BadRequestException(
-          'Passwords do not match',
-        );
+        throw new BadRequestException('Passwords do not match');
       }
- 
+
       // Hash new password
-      const hashedPassword = await bcrypt.hash(
-        dto.newPassword,
-        10,
-      );
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
       // USP_UpdatePassword expects EmployeeID
-      await this.updatePassword(pool, user.EmployeeID, hashedPassword, 1, user.EmployeeID);
+      await this.updatePassword(
+        pool,
+        user.EmployeeID,
+        hashedPassword,
+        1,
+        user.EmployeeID,
+      );
 
       // STEP 2: Mark first login completed
-      await this.updatePassword(pool, user.EmployeeID, hashedPassword, 2, user.EmployeeID);
+      await this.updatePassword(
+        pool,
+        user.EmployeeID,
+        hashedPassword,
+        2,
+        user.EmployeeID,
+      );
 
       // The new password is the user's own: clear the "must change" flag and
       // end every login, this one included. The caller is sent to the login
@@ -506,48 +535,55 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   // ================= TEMP PASSWORD =================
- 
+
   private generateTempPassword(length = 10): string {
     const chars =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
- 
+
     const bytes = randomBytes(length);
- 
+
     return Array.from(bytes)
       .map((b) => chars[b % chars.length])
       .join('');
   }
- 
+
   async sendTemporaryPassword(employeeId: string) {
     try {
       const pool = await this.dbService.connect();
- 
+
       const result = await pool
         .request()
         .input('EmployeeID', employeeId)
         .execute('USP_GetUserInfo');
- 
+
       const user = result.recordset[0];
- 
+
       if (!user) {
-      throw new NotFoundException('User not found');
+        throw new NotFoundException('User not found');
       }
- 
+
       const tempPassword = this.generateTempPassword();
- 
+
       const hashedPassword = await bcrypt.hash(tempPassword, 10);
- 
+
       await this.updatePassword(pool, employeeId, hashedPassword, 1, 'SYSTEM');
 
       // The temporary password is known to HR and was sent by email: the
       // owner must replace it at the next login, and anyone logged in with the
       // old password is signed out.
       await this.sessions.setMustChangePassword(String(employeeId), true);
-      await this.sessions.revokeAllForEmployee(String(employeeId), 'admin_reset');
+      await this.sessions.revokeAllForEmployee(
+        String(employeeId),
+        'admin_reset',
+      );
 
-      await this.mailService.sendTempPassword(user.Email, tempPassword,user.ApplicationURL);
+      await this.mailService.sendTempPassword(
+        user.Email,
+        tempPassword,
+        user.ApplicationURL,
+      );
       return {
         success: true,
         message: 'Temporary password sent successfully',
@@ -556,28 +592,26 @@ export class AuthService {
       throw error;
     }
   }
- 
+
   // async testMail() {
   //   return this.mailService.sendTempPassword(
   //     'test@gmail.com',
   //     'TEST1234',
   //   );
   // }
- 
+
   // async testMail() {
   //   return this.mailService.sendTempPassword(
   //     'test@gmail.com',
   //     'TEST1234',
   //   );
   // }
- 
- 
+
   // crypto.randomInt is cryptographically secure; Math.random is predictable.
   private generateOtp(): string {
     return randomInt(100000, 1000000).toString();
   }
- 
- 
+
   // ── Forgot password ─────────────────────────────────────────────────────
   // Step 1 of 3. The answer is the same whether or not the user ID exists (and
   // whether or not the e-mail could be sent), so this endpoint cannot be used
@@ -586,6 +620,83 @@ export class AuthService {
   private static readonly OTP_VALID_SECONDS = 180;
   private static readonly OTP_ERROR = 'Invalid or expired OTP.';
 
+  // async forgotPassword(userId: string) {
+  //   const pool = await this.dbService.connect();
+
+  //   const result = await pool
+  //     .request()
+  //     .input('EmailID', userId.trim())
+  //     .execute('USP_Validateuser');
+
+  //   const user = result.recordset?.[0];
+
+  //   const answer = {
+  //     success: true,
+  //     message:
+  //       'If this user ID is registered, an OTP has been sent to its e-mail address.',
+  //     remainingSeconds: AuthService.OTP_VALID_SECONDS,
+  //     remainingMinutes: AuthService.OTP_VALID_SECONDS / 60,
+  //   };
+
+  //   if (!user) return answer;
+
+  //   // A locked account cannot unlock itself through e-mail: only the
+  //   // administrator can. The answer stays the same, so nobody can tell from
+  //   // the response that this account is locked; no OTP is created or mailed.
+  //   if (this.isLocked(user)) {
+  //     this.logger.warn(
+  //       `Forgot password ignored: account of employee ${user.EmployeeID} is locked`,
+  //     );
+  //     return answer;
+  //   }
+
+  //   try {
+  //     const otp = this.generateOtp();
+
+  //     const saved = await pool
+  //       .request()
+  //       .input('EmployeeID', user.EmployeeID)
+  //       .input('UserID', user.UserID)
+  //       .input('OTP', otp)
+  //       .input('GeneratedOn', new Date())
+  //       .input(
+  //         'ExpiresOn',
+  //         new Date(Date.now() + AuthService.OTP_VALID_SECONDS * 1000),
+  //       )
+  //       .execute('USP_SaveGeneratedOTP');
+
+  //     const row = saved.recordset?.[0];
+  //     if (row && Number(row.StatusCode) >= 400) {
+  //       this.logger.error(
+  //         `USP_SaveGeneratedOTP failed for ${user.EmployeeID}: ${JSON.stringify(row)}`,
+  //       );
+  //       return answer;
+  //     }
+
+  //     // Not awaited: waiting for the mail server would make a real user
+  //     // visibly slower than an unknown one.
+  //     this.mailService.sendOtp(user.Email, otp).catch((error: unknown) => {
+  //       this.logger.error(
+  //         `Could not e-mail the OTP to employee ${user.EmployeeID}: ${
+  //           error instanceof Error ? error.message : String(error)
+  //         }`,
+  //       );
+  //     });
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `Forgot password failed for employee ${user.EmployeeID}: ${
+  //         error instanceof Error ? error.message : String(error)
+  //       }`,
+  //     );
+  //   }
+
+  //   return answer;
+  // }
+
+  // Step 2 of 3. The person is identified by the user ID they typed in step 1.
+  // Every failure gives the same message, whatever the reason (no such user,
+  // wrong code, expired code, already used). A correct code returns a
+  // short-lived reset token; the controller puts it in an httpOnly cookie.
   async forgotPassword(userId: string) {
     const pool = await this.dbService.connect();
 
@@ -604,11 +715,11 @@ export class AuthService {
       remainingMinutes: AuthService.OTP_VALID_SECONDS / 60,
     };
 
-    if (!user) return answer;
+    if (!user) {
+      return answer;
+    }
 
-    // A locked account cannot unlock itself through e-mail: only the
-    // administrator can. The answer stays the same, so nobody can tell from
-    // the response that this account is locked; no OTP is created or mailed.
+    // Locked accounts cannot reset their password through email.
     if (this.isLocked(user)) {
       this.logger.warn(
         `Forgot password ignored: account of employee ${user.EmployeeID} is locked`,
@@ -616,10 +727,17 @@ export class AuthService {
       return answer;
     }
 
+    if (!user.Email) {
+      this.logger.error(
+        `Employee email not found for employee ${user.EmployeeID}`,
+      );
+      return answer;
+    }
+
     try {
       const otp = this.generateOtp();
 
-      const saved = await pool
+      const otpResult = await pool
         .request()
         .input('EmployeeID', user.EmployeeID)
         .input('UserID', user.UserID)
@@ -631,23 +749,31 @@ export class AuthService {
         )
         .execute('USP_SaveGeneratedOTP');
 
-      const row = saved.recordset?.[0];
-      if (row && Number(row.StatusCode) >= 400) {
+      const otpResponse = otpResult.recordset?.[0];
+
+      this.logger.log(`OTP SP Response: ${JSON.stringify(otpResponse)}`);
+
+      if (!otpResponse || Number(otpResponse.StatusCode) !== 200) {
         this.logger.error(
-          `USP_SaveGeneratedOTP failed for ${user.EmployeeID}: ${JSON.stringify(row)}`,
+          `USP_SaveGeneratedOTP failed for employee ${user.EmployeeID}: ${JSON.stringify(otpResponse)}`,
         );
         return answer;
       }
 
-      // Not awaited: waiting for the mail server would make a real user
-      // visibly slower than an unknown one.
-      this.mailService.sendOtp(user.Email, otp).catch((error: unknown) => {
-        this.logger.error(
-          `Could not e-mail the OTP to employee ${user.EmployeeID}: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      });
+      const mins = String(
+        otpResponse.RemainingMinutes ?? AuthService.OTP_VALID_SECONDS / 60,
+      );
+
+      // Send OTP through MSG91 email template.
+      this.mailService
+        .sendForgotPasswordOtp(user.Email, user.FullName, otp, mins)
+        .catch((error: unknown) => {
+          this.logger.error(
+            `Could not e-mail OTP to employee ${user.EmployeeID}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        });
     } catch (error) {
       this.logger.error(
         `Forgot password failed for employee ${user.EmployeeID}: ${
@@ -659,10 +785,6 @@ export class AuthService {
     return answer;
   }
 
-  // Step 2 of 3. The person is identified by the user ID they typed in step 1.
-  // Every failure gives the same message, whatever the reason (no such user,
-  // wrong code, expired code, already used). A correct code returns a
-  // short-lived reset token; the controller puts it in an httpOnly cookie.
   async verifyOtp(userId: string, otp: string) {
     const pool = await this.dbService.connect();
 
@@ -783,7 +905,7 @@ export class AuthService {
       return null;
     }
   }
- 
+
   // ── Refresh ─────────────────────────────────────────────────────────────
   // Swaps the refresh token for a new one and issues a new access token.
   //   OK      -> new tokens
@@ -793,7 +915,9 @@ export class AuthService {
   // A refresh token that is replayed later (REUSED) ends the whole session.
   async refresh(refreshToken: string | undefined, meta: SessionMeta = {}) {
     if (!refreshToken) {
-      throw new UnauthorizedException('Session not found. Please sign in again.');
+      throw new UnauthorizedException(
+        'Session not found. Please sign in again.',
+      );
     }
 
     let payload: any;
@@ -813,7 +937,9 @@ export class AuthService {
       !payload.uid ||
       !payload.sid
     ) {
-      throw new UnauthorizedException('Session is not valid. Please sign in again.');
+      throw new UnauthorizedException(
+        'Session is not valid. Please sign in again.',
+      );
     }
 
     const familyId = String(payload.sid).toLowerCase();
@@ -828,9 +954,17 @@ export class AuthService {
       .execute('USP_Validateuser');
     const user = found.recordset?.[0];
 
-    if (!user || String(user.EmployeeID) !== employeeId || this.isLocked(user)) {
-      await this.sessions.revoke(familyId, 'user_blocked').catch(() => undefined);
-      throw new UnauthorizedException('Session is no longer valid. Please sign in again.');
+    if (
+      !user ||
+      String(user.EmployeeID) !== employeeId ||
+      this.isLocked(user)
+    ) {
+      await this.sessions
+        .revoke(familyId, 'user_blocked')
+        .catch(() => undefined);
+      throw new UnauthorizedException(
+        'Session is no longer valid. Please sign in again.',
+      );
     }
 
     const mustChange = await this.mustChangePassword(user);
@@ -850,7 +984,9 @@ export class AuthService {
           `Refresh mismatch for employee ${employeeId}: token family ${familyId}, stored ${rotated.familyId}`,
         );
         await this.sessions.revoke(familyId, 'mismatch').catch(() => undefined);
-        throw new UnauthorizedException('Session is not valid. Please sign in again.');
+        throw new UnauthorizedException(
+          'Session is not valid. Please sign in again.',
+        );
       }
 
       return {
@@ -908,7 +1044,8 @@ export class AuthService {
     const access = read(accessToken);
     if (access && !access.purpose) {
       return {
-        employeeId: access.employeeId != null ? String(access.employeeId) : undefined,
+        employeeId:
+          access.employeeId != null ? String(access.employeeId) : undefined,
         familyId: access.sid ? String(access.sid) : undefined,
       };
     }
@@ -957,7 +1094,9 @@ export class AuthService {
   // ── Current user (for GET /auth/me) ─────────────────────────────────────
   async getSessionUser(user: any) {
     // Seconds left on the login, so a reloaded page can show its countdown.
-    const session = user?.sid ? await this.sessions.getTiming(String(user.sid)) : null;
+    const session = user?.sid
+      ? await this.sessions.getTiming(String(user.sid))
+      : null;
     return {
       success: true,
       session: session ?? undefined,
@@ -980,7 +1119,9 @@ export class AuthService {
   // left so the countdown stays correct. If the login has ended the global
   // guard has already answered 401 with the reason.
   async heartbeat(user: any) {
-    const session = user?.sid ? await this.sessions.getTiming(String(user.sid)) : null;
+    const session = user?.sid
+      ? await this.sessions.getTiming(String(user.sid))
+      : null;
     return { success: true, session: session ?? undefined };
   }
 
@@ -990,82 +1131,83 @@ export class AuthService {
     dto: ChangePasswordDto,
     current: { sid?: string; mustChange?: boolean } = {},
   ) {
-  try {
-    const pool = await this.dbService.connect();
- 
-    const result = await pool
-      .request()
-      .input('EmailID', userId.trim())
-      .execute('USP_Validateuser');
- 
-    const user = result.recordset?.[0];
- 
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
- 
-    const isMatch = await bcrypt.compare(
-      dto.currentPassword,
-      user.PasswordHash,
-    );
- 
-    if (!isMatch) {
-      throw new BadRequestException(
-        'Current password is incorrect',
-      );
-    }
- 
-    if (dto.newPassword !== dto.confirmPassword) {
-      throw new BadRequestException(
-        'Passwords do not match',
-      );
-    }
- 
-    const samePassword = await bcrypt.compare(
-      dto.newPassword,
-      user.PasswordHash,
-    );
- 
-    if (samePassword) {
-      throw new BadRequestException(
-        'New password must be different from current password',
-      );
-    }
- 
-    const hashedPassword = await bcrypt.hash(
-      dto.newPassword,
-      10,
-    );
- 
-    await this.updatePassword(pool, user.EmployeeID, hashedPassword, 2, user.EmployeeID);
+    try {
+      const pool = await this.dbService.connect();
 
-    // Other logins end; this one stays.
-    await this.afterOwnPasswordChange(String(user.EmployeeID), current.sid);
+      const result = await pool
+        .request()
+        .input('EmailID', userId.trim())
+        .execute('USP_Validateuser');
 
-    // If this login was restricted ("must change password"), it is free now:
-    // hand the controller a fresh access token without the restriction.
-    const newAccessToken =
-      current.mustChange && current.sid
-        ? this.jwtService.sign(this.buildAccessClaims(user, current.sid, false))
-        : undefined;
+      const user = result.recordset?.[0];
 
-    return {
-      success: true,
-      message: 'Password changed successfully',
-      newAccessToken,
-    };
-  } catch (error) {
-    throw error;
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      const isMatch = await bcrypt.compare(
+        dto.currentPassword,
+        user.PasswordHash,
+      );
+
+      if (!isMatch) {
+        throw new BadRequestException('Current password is incorrect');
+      }
+
+      if (dto.newPassword !== dto.confirmPassword) {
+        throw new BadRequestException('Passwords do not match');
+      }
+
+      const samePassword = await bcrypt.compare(
+        dto.newPassword,
+        user.PasswordHash,
+      );
+
+      if (samePassword) {
+        throw new BadRequestException(
+          'New password must be different from current password',
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+      await this.updatePassword(
+        pool,
+        user.EmployeeID,
+        hashedPassword,
+        2,
+        user.EmployeeID,
+      );
+
+      // Other logins end; this one stays.
+      await this.afterOwnPasswordChange(String(user.EmployeeID), current.sid);
+
+      // If this login was restricted ("must change password"), it is free now:
+      // hand the controller a fresh access token without the restriction.
+      const newAccessToken =
+        current.mustChange && current.sid
+          ? this.jwtService.sign(
+              this.buildAccessClaims(user, current.sid, false),
+            )
+          : undefined;
+
+      return {
+        success: true,
+        message: 'Password changed successfully',
+        newAccessToken,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
-  }
- 
+
   async sendWish(senderEmployeeId: string, dto: SendWishDto) {
     const pool = await this.dbService.connect();
     const result = await pool
       .request()
       .input('EmployeeID', dto.employeeId)
       .execute('USP_GetUserInfo');
- 
+
     const employee = result.recordset?.[0];
     if (!employee) {
       throw new NotFoundException('Employee not found');
@@ -1073,7 +1215,7 @@ export class AuthService {
     if (!employee.Email) {
       throw new BadRequestException('Employee does not have an email address');
     }
- 
+
     const senderResult = await pool
       .request()
       .input('EmployeeID', senderEmployeeId)
@@ -1082,14 +1224,16 @@ export class AuthService {
     if (!sender) {
       throw new NotFoundException('Sender not found');
     }
- 
-    await this.mailService.sendWish(
+
+    await this.mailService.sendCelebrationWish(
       employee.Email,
+      employee.FullName,
       dto.eventType,
       dto.message,
       sender.FullName,
+      sender.Email,
     );
- 
+
     return {
       success: true,
       message: 'Wish sent successfully',

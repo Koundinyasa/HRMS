@@ -19,6 +19,7 @@ export const baseApi = createApi({
     "ApprovalSummary",
     "Candidate",
     "Payroll",
+    "FaceReRegistration",
   ],
   endpoints: () => ({}),
 });

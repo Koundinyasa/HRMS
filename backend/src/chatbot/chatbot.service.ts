@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HrmsDbService } from '../db/hrms-db.service';
-
+ 
 import { DraftService } from './services/draft.service';
 import { ParserService } from './services/parser.service';
 import { MenuService } from './services/menu.service';
@@ -14,7 +14,7 @@ import { LeaveService as EmployeeLeaveService } from '../employee/leave/leave.se
 import { DatabaseService } from '../database/database.service';
 import { ResponseService } from './services/response.service';
 import { TeamService } from './services/team.service';
-
+ 
 import { IntentCtx, IntentDefinition, ChatResult, ActionButton } from './types';
 import {
   PII_PATTERNS,
@@ -26,7 +26,7 @@ import { DEFAULT_TEST_USER } from './constants/chatbot.constants';
 import { normalizeText, normalizeMessage } from './utils/string.util';
 import { fuzzyContains } from './utils/fuzzy.util';
 import { getTodayInfo } from './utils/date.util';
-
+ 
 @Injectable()
 export class ChatbotService {
   // The extra services below default-construct themselves so that
@@ -70,7 +70,7 @@ export class ChatbotService {
       draftService,
     ),
   ) {}
-
+ 
   // ── Core intents that don't belong to any single domain service ──────────
   private readonly coreIntents: IntentDefinition[] = [
     {
@@ -131,7 +131,7 @@ export class ChatbotService {
         `You're welcome, ${ctx.name}. If you need anything else, just ask!`,
     },
   ];
-
+ 
   // Order matters — first match wins. This is the exact same order the
   // intents appeared in the original single-file version: menu, leave,
   // today/identity/greeting, employee+payroll, company, thankYou.
@@ -148,23 +148,23 @@ export class ChatbotService {
       this.coreIntents[3], // thankYou
     ];
   }
-
+ 
   hasLeaveDraft(employeeId: string): boolean {
     return this.draftService.hasLeaveDraft(employeeId);
   }
-
+ 
   getMainMenu(role: string): { title: string; actions: ActionButton[] } {
     return this.menuService.getMainMenu(role);
   }
-
+ 
   normalizeText(raw: string): string {
     return normalizeText(raw);
   }
-
+ 
   fuzzyContains(text: string, keyword: string): boolean {
     return fuzzyContains(text, keyword);
   }
-
+ 
   // Hard, non-negotiable blocks — these force local handling no matter what,
   // even before we bother checking whether any real intent matches. This is
   // defense-in-depth *underneath* the real check (which now happens by
@@ -179,11 +179,11 @@ export class ChatbotService {
     const employeeId = String(user?.employeeId ?? '');
     const rawMsg = message.toLowerCase();
     const msg = normalizeMessage(message);
-
+ 
     if (/(^|\s)menu:/i.test(message) || msg === 'menu' || msg === 'main menu') {
       return { blocked: true, reason: 'menu' };
     }
-
+ 
     if (
       this.draftService.hasDraft(this.draftService.leaveDrafts, employeeId) ||
       this.draftService.hasDraft(
@@ -202,29 +202,29 @@ export class ChatbotService {
     ) {
       return { blocked: true, reason: 'pending_draft' };
     }
-
+ 
     if (LEAVE_ACTION_TRIGGERS.some((k) => msg.includes(k))) {
       return { blocked: true, reason: 'leave_action' };
     }
-
+ 
     if (PII_PATTERNS.some((k) => rawMsg.includes(k))) {
       return { blocked: true, reason: 'pii' };
     }
-
+ 
     const hasPayrollKeyword = PAYROLL_KEYWORDS.some((k) => rawMsg.includes(k));
-
+ 
     const isPersonalPayrollQuestion =
       /\b(my|me|mine|i|employee|staff)\b/.test(rawMsg) && hasPayrollKeyword;
-
+ 
     const isPayrollDocumentRequest =
       /\b(form\s*16|form16|payslip|pay\s*slip|salary\s*slip|tax\s*statement)\b/i.test(
         rawMsg,
       );
-
+ 
     if (isPersonalPayrollQuestion || isPayrollDocumentRequest) {
       return { blocked: true, reason: 'payroll' };
     }
-
+ 
     if (
       msg.includes('my') &&
       (PERSONAL_INFO_KEYWORDS.some((k) => msg.includes(k)) ||
@@ -233,10 +233,10 @@ export class ChatbotService {
     ) {
       return { blocked: true, reason: 'personal_info' };
     }
-
+ 
     return { blocked: false, reason: '' };
   }
-
+ 
   async chat(
     message: string,
     userPayload?: Record<string, unknown>,
@@ -283,7 +283,7 @@ export class ChatbotService {
         ...(refresh ? { refresh } : {}),
       };
     };
-
+ 
     // Step 1 — hard, unconditional blocks (leave actions, PII, payroll,
     // personal info, an in-progress flow). No amount of AI broadening ever
     // gets a chance to touch these — always resolved locally.
@@ -292,7 +292,7 @@ export class ChatbotService {
       const { text } = await this.generateResponse(message, user);
       return buildResult(text, 'LOCAL');
     }
-
+ 
     // Step 2 — actually attempt to resolve this locally, for real, using the
     // exact same rules that would answer it anyway. This is the real
     // "is this a company/office matter?" check — not a keyword guess. Any
@@ -302,7 +302,7 @@ export class ChatbotService {
     if (local.matched) {
       return buildResult(local.text, 'LOCAL');
     }
-
+ 
     // Step 3 — nothing in our own rules recognised this message at all, so
     // it's treated as a general, non-company question and handed to the AI.
     try {
@@ -315,20 +315,20 @@ export class ChatbotService {
       return buildResult(local.text, 'FALLBACK');
     }
   }
-
+ 
   status() {
     return this.aiService.status();
   }
-
+ 
   private async generateResponse(
     message: string,
     user: Record<string, unknown>,
   ): Promise<{ matched: boolean; text: string }> {
     const employeeId = user.employeeId as string;
-
+ 
     const info = await this.hrmsDbService.getUserInfo(employeeId);
     const selfEmployee = info?.self ?? null;
-
+ 
     const employees: Record<string, unknown>[] = selfEmployee
       ? [selfEmployee]
       : [];
@@ -336,7 +336,7 @@ export class ChatbotService {
       holidays: info?.holidays ?? [],
       announcements: [] as { date: string; title: string }[],
     };
-
+ 
     const leaveTypesRaw = await this.leaveApiService.getLeaveTypes(user);
     const leaveTypes = (leaveTypesRaw ?? []).map((t: any) => ({
       id: t.ID,
@@ -345,7 +345,7 @@ export class ChatbotService {
       description: t.Description,
       annualQuota: t.AnnualQuota,
     }));
-
+ 
     // Batched: departments, designations, companyInfo, ownOffice, and
     // branches now come from one USP_GetCompanyMasterData call instead of
     // 5 separate ones (getDepartments/getDesignations/getCompanyInfo/
@@ -365,7 +365,7 @@ export class ChatbotService {
     const directory = companyId
       ? await this.hrmsDbService.getEmployeeDirectory(companyId)
       : [];
-
+ 
     const ctx: IntentCtx = {
       message,
       msg: normalizeText(message),
@@ -384,18 +384,62 @@ export class ChatbotService {
       ownOffice,
       directory,
     };
-
+ 
     const flowReply = await this.leaveService.handleLeaveFlow(ctx);
-    if (flowReply !== null) return { matched: true, text: flowReply };
-
-    for (const intent of this.intents) {
-      if (intent.test(ctx))
-        return { matched: true, text: await intent.handle(ctx) };
+    if (flowReply !== null) {
+      this.cleanupStaleDraftsOnIntent(ctx.employeeId, 'leaveFlow');
+      return { matched: true, text: flowReply };
     }
-
+ 
+    for (const intent of this.intents) {
+      if (intent.test(ctx)) {
+        this.cleanupStaleDraftsOnIntent(ctx.employeeId, intent.name);
+        return { matched: true, text: await intent.handle(ctx) };
+      }
+    }
+ 
+    this.cleanupStaleDraftsOnIntent(ctx.employeeId, 'fallback');
+ 
     return {
       matched: false,
       text: `I didn't quite catch that. Try the ☰ Menu button, or ask something like:\n- "How many leaves do I have left?"\n- "Apply leave"\n- "Latest leave"\n- "How do I download Form16?"`,
     };
   }
+ 
+  private cleanupStaleDraftsOnIntent(
+    employeeId: string,
+    intentName: string,
+  ): void {
+    const employeeDirectoryIntents = new Set([
+      'allEmployees',
+      'employeeDirectoryAction',
+      'employeeDirectoryViewFollowup',
+      'employeeDirectoryFormat',
+      'employeeDirectoryCancelAny',
+    ]);
+    if (!employeeDirectoryIntents.has(intentName)) {
+      this.draftService.deleteDraft(
+        this.draftService.employeeDirectoryDrafts,
+        employeeId,
+      );
+    }
+ 
+    const teamIntents = new Set([
+      'myTeam',
+      'allTeams',
+      'teamPick',
+      'teamAction',
+      'teamViewFollowup',
+      'teamFormat',
+      'teamCancelAny',
+    ]);
+    if (!teamIntents.has(intentName)) {
+      this.draftService.deleteDraft(
+        this.draftService.teamDrafts,
+        employeeId,
+      );
+    }
+  }
 }
+ 
+ 

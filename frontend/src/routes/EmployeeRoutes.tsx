@@ -1,3 +1,4 @@
+
 import { lazy } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 
@@ -46,6 +47,7 @@ const FaceRegistrationPage = lazy(() => import("@/features/employee/dashboard/pa
 const AssetRequestsApprovalPage = lazy(() => import("@/features/employee/review/assetRequests/pages/AssetRequestsApprovalPage"));
 const HelpdeskRequestsPage = lazy(() => import("@/features/employee/review/helpdeskRequests/pages/HelpdeskRequestsPage"));
 const ResignationRequestPage = lazy(() => import("@/features/employee/review/resignationRequest/pages/ResignationRequestPage"));
+const FaceReRegistrationApprovalPage = lazy(() => import("@/features/employee/review/faceReRegistration/pages/FaceReRegistrationApprovalPage"));
 
 // Redirect the backend menu URL to the dedicated team-lead page.
 function ApplyLeaveForEmployeeRedirect() {
@@ -154,6 +156,10 @@ export default function EmployeeRoutes() {
         <Route
           path="Review/requisition/Resignationrequests"
           element={<ResignationRequestPage />}
+        />
+        <Route
+          path="Review/FaceReRegistration"
+          element={<FaceReRegistrationApprovalPage />}
         />
         <Route path="TA/HelpdeskRequests" element={<HelpdeskRequestsPage />} />
         <Route path="Punch" element={<PunchPage />} />

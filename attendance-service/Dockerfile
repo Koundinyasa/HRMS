@@ -1,3 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV TZ=Asia/Kolkata
+
+# Install system libraries, ODBC tools and configure IST timezone
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    curl \
+    ca-certificates \
+    gnupg \
+    unixodbc \
+    odbcinst \
+    libgssapi-krb5-2 \
+    libxcb1 \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libgomp1 \
+    && ln -snf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime \
+    && echo "Asia/Kolkata" > /etc/timezone \
+    && curl -sSL -o /tmp/packages-microsoft-prod.deb \
+       https://packages.microsoft.com/config/debian/13/packages-microsoft-prod.deb \
+    && dpkg -i /tmp/packages-microsoft-prod.deb \
+    && rm /tmp/packages-microsoft-prod.deb \
 
 # ==========================================
 # Builder stage
@@ -63,6 +93,30 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
+COPY requirements.txt .
+
+RUN grep -v -E "^(msvc-runtime|face-recognition)==" requirements.txt > requirements-linux.txt \
+    && pip install --no-cache-dir --default-timeout=300 --retries=10 -r requirements-linux.txt \
+    && pip install --no-cache-dir --default-timeout=300 --retries=10 --no-deps "face-recognition==1.3.0" \
+    && python -m pip install --no-cache-dir \
+       "setuptools==80.10.2" \
+       "wheel>=0.46.2"
+
+# Verify timezone, face-recognition dependencies and SQL Server ODBC driver
+RUN python -c "import time, datetime; print('Timezone:', time.tzname); print('Local time:', datetime.datetime.now().astimezone().isoformat()); assert time.strftime('%z') == '+0530'" \
+    && python -c "import pkg_resources, face_recognition_models, dlib, face_recognition, cv2; print('Face recognition dependencies OK'); print('dlib:', dlib.__version__); print('OpenCV:', cv2.__version__)" \
+    && python -c "import pyodbc; print('pyodbc version:', pyodbc.version); print('ODBC drivers:', pyodbc.drivers()); assert 'ODBC Driver 18 for SQL Server' in pyodbc.drivers(); print('SQL Server ODBC Driver OK')"
+
+# Copy application
+COPY . .
+
+# Remove local Windows virtual environments copied into the image
+RUN rm -rf /app/venv /app/.venv
+
+EXPOSE 5000
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
 # Remove vulnerable packaging tools inherited from the base image
 RUN rm -rf \
     /usr/local/lib/python3.11/site-packages/setuptools \
