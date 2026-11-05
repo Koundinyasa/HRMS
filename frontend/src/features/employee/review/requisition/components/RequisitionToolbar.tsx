@@ -38,7 +38,7 @@ export default function RequisitionToolbar({
           onClick={onApprove}
           disabled={!hasSelection}
           className={`h-[42px] rounded-md border px-4 text-sm transition disabled:cursor-not-allowed ${
-            approved
+            approved && hasSelection
               ? "border-green-600 bg-green-600 text-white"
               : hasSelection
               ? "border-green-200 bg-green-50 text-green-600 hover:bg-green-100"
