@@ -3,16 +3,16 @@ import TimeOfficeNavbar from "../../components/TimeOfficeNavbar";
 import LeaveCalendarSearch from "../components/LeaveCalendarSearch";
 import LeaveCalendarTable from "../components/LeaveCalendarTable";
 import LeaveCalendarFooter from "../components/LeaveCalendarFooter";
-
+ 
 import DailyLogModal, { type PunchLogEntry } from "../components/DailyLogModal";
-
+ 
 import type {
   LeaveCalendarEmployee,
   LeaveCalendarDay,
 } from "../types/leavecalendar.types";
-
+ 
 import { useMonthlyLeaveCalendar } from "../hooks/useMonthlyLeaveCalendar";
-
+ 
 import {
   buildLeaveCalendarDays,
   getCalendarDayKeys,
@@ -53,49 +53,49 @@ function formatAttendanceStatusName(name: string): string {
       return name;
   }
 }
-
+ 
 const LeaveCalendar = () => {
   // =========================================================
   // BASIC STATE
   // =========================================================
-
+ 
   const [searchTerm, setSearchTerm] = useState("");
   const [leaveType, setLeaveType] = useState("");
-
+ 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-
+ 
   const [pageState, setPageState] = useState({
     searchValue: "",
     statusValue: "",
     page: 1,
   });
-
+ 
   const [rowsPerPage, setRowsPerPage] = useState<number>(
     LEAVE_CALENDAR_CONSTANTS.DEFAULT_ROWS_PER_PAGE,
   );
-
+ 
   const navScrollRef = useRef<HTMLDivElement>(null);
   const monthPickerRef = useRef<HTMLDivElement>(null);
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
   const [navOffset, setNavOffset] = useState(0);
-
+ 
   const openMonthPicker = () => {
     if (monthPickerOpen) return;
     setNavOffset(navScrollRef.current?.scrollLeft ?? 0);
     setMonthPickerOpen(true);
   };
-
+ 
   // restore the scroll position once the picker is closed
   useLayoutEffect(() => {
     if (!monthPickerOpen && navScrollRef.current) {
       navScrollRef.current.scrollLeft = navOffset;
     }
   }, [monthPickerOpen, navOffset]);
-
+ 
   // treat an outside click or Escape as "picker closed"
   useEffect(() => {
     if (!monthPickerOpen) return;
-
+ 
     const handleMouseDown = (event: MouseEvent) => {
       if (!monthPickerRef.current?.contains(event.target as Node)) {
         setMonthPickerOpen(false);
@@ -104,7 +104,7 @@ const LeaveCalendar = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMonthPickerOpen(false);
     };
-
+ 
     document.addEventListener("mousedown", handleMouseDown);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -112,13 +112,13 @@ const LeaveCalendar = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [monthPickerOpen]);
-
+ 
   // =========================================================
   // DAILY LOG MODAL STATE
   // =========================================================
-
+ 
   const [dailyLogOpen, setDailyLogOpen] = useState(false);
-
+ 
   const [selectedEmployee, setSelectedEmployee] = useState<{
     employeeName: string;
     employeeId: string;
@@ -127,20 +127,20 @@ const LeaveCalendar = () => {
     status: string;
     punches: PunchLogEntry[];
   } | null>(null);
-
+ 
   const [punchesLoading, setPunchesLoading] = useState(false);
-
+ 
   // =========================================================
   // MONTHLY LEAVE CALENDAR API
   // =========================================================
-
+ 
   const companyId = 1;
-
+ 
   const selectedYear = new Date().getFullYear();
-
+ 
   // API expects month 1 - 12
   const apiMonth = selectedMonth + 1;
-
+ 
   const {
     data: monthlyLeaveCalendar = [],
     isLoading,
@@ -151,7 +151,7 @@ const LeaveCalendar = () => {
     year: selectedYear,
     month: apiMonth,
   });
-
+ 
   const {
     data: attendanceStatuses = [],
     isFetching: attendanceStatusesLoading,
@@ -164,54 +164,54 @@ const LeaveCalendar = () => {
       label: formatAttendanceStatusName(status.Name),
     })),
   ];
-
+ 
   // =========================================================
   // RAW PUNCH API
   // =========================================================
-
+ 
   const [getEmployeeRawPunches] = useLazyGetEmployeeDailyRawPunchesQuery();
-
+ 
   // =========================================================
   // DEBUG - PAGE LOAD
   // =========================================================
-
+ 
   useEffect(() => {
     console.log("========================================");
-
+ 
     console.log("LEAVE CALENDAR PAGE LOADED");
-
+ 
     console.log("Year:", selectedYear);
-
+ 
     console.log("Month:", apiMonth);
-
+ 
     console.log("Employees received:", monthlyLeaveCalendar.length);
-
+ 
     console.log("========================================");
   }, [selectedYear, apiMonth, monthlyLeaveCalendar.length]);
-
+ 
   // =========================================================
   // DEBUG - DAILY LOG
   // =========================================================
-
+ 
   useEffect(() => {
     console.log("DAILY LOG OPEN:", dailyLogOpen);
-
+ 
     console.log("SELECTED EMPLOYEE:", selectedEmployee);
   }, [dailyLogOpen, selectedEmployee]);
-
+ 
   // =========================================================
   // CALENDAR DAYS
   // =========================================================
-
+ 
   const days = useMemo(
     () => buildLeaveCalendarDays(selectedYear, selectedMonth),
     [selectedYear, selectedMonth],
   );
-
+ 
   // =========================================================
   // SEARCH
   // =========================================================
-
+ 
   const searchValue = searchTerm.toLowerCase().trim();
   const selectedStatusName =
     attendanceStatuses.find((status) => String(status.ID) === leaveType)?.Name ?? "";
@@ -229,14 +229,14 @@ const LeaveCalendar = () => {
       page: typeof update === "function" ? update(currentPage) : update,
     });
   };
-
+ 
   const filteredEmployees = useMemo(
     () =>
       monthlyLeaveCalendar.filter((employee) => {
         const name = String(employee.FullName ?? "").toLowerCase();
-
+ 
         const id = String(employee.EmployeeID ?? "").toLowerCase();
-
+ 
         const matchesSearch =
           name.includes(searchValue) || id.includes(searchValue);
         const matchesStatus =
@@ -247,64 +247,64 @@ const LeaveCalendar = () => {
               selectedStatusName,
             ),
           );
-
+ 
         return matchesSearch && matchesStatus;
       }),
     [monthlyLeaveCalendar, searchValue, selectedStatusName],
   );
-
+ 
   // =========================================================
   // PAGINATION
   // =========================================================
-
+ 
   const totalItems = filteredEmployees.length;
-
+ 
   const pageCount = Math.max(1, Math.ceil(totalItems / rowsPerPage));
-
+ 
   const safePage = Math.min(currentPage, pageCount);
-
+ 
   const paginatedEmployees = filteredEmployees.slice(
     (safePage - 1) * rowsPerPage,
     safePage * rowsPerPage,
   );
-
+ 
   // =========================================================
   // LEGEND
   // =========================================================
-
+ 
   const legendCodes = useMemo(() => {
     const codes = new Set<string>();
-
+ 
     filteredEmployees.forEach((employee) => {
       getCalendarDayKeys(employee).forEach((key) => {
         const value = String(employee[key] ?? "")
           .trim()
           .toUpperCase();
-
+ 
         if (value) {
           codes.add(value);
         }
       });
     });
-
+ 
     return Array.from(codes).sort();
   }, [filteredEmployees]);
-
+ 
   // =========================================================
   // ROWS PER PAGE
   // =========================================================
-
+ 
   const handleRowsPerPageChange = (value: number) => {
     console.log("ROWS PER PAGE:", value);
-
+ 
     setRowsPerPage(value);
     setCurrentPage(1);
   };
-
+ 
   // =========================================================
   // ATTENDANCE BADGE CLICK
   // =========================================================
-
+ 
   const handleAttendanceClick = async (
     employee: LeaveCalendarEmployee,
     day: LeaveCalendarDay,
@@ -312,47 +312,47 @@ const LeaveCalendar = () => {
   ) => {
     console.log("");
     console.log("==========================================");
-
+ 
     console.log("ATTENDANCE BADGE CLICKED");
-
+ 
     console.log("Employee:", employee.FullName);
-
+ 
     console.log("Employee ID:", employee.EmployeeID);
-
+ 
     console.log("Day:", day);
-
+ 
     console.log("Status:", status);
-
+ 
     const employeeName = String(employee.FullName ?? "").trim() || "-";
-
+ 
     const employeeId = String(employee.EmployeeID ?? "").trim() || "-";
-
+ 
     // Display date
     const selectedDate = `${day.date} ${day.weekday}`;
-
+ 
     // =====================================================
     // API DATE
     // Example:
     // 2026-09-10
     // =====================================================
-
+ 
     const apiDate = `${selectedYear}-${String(apiMonth).padStart(
       2,
       "0",
     )}-${String(day.date).padStart(2, "0")}`;
-
+ 
     const selectedStatus = String(status ?? "").trim() || "No Record";
-
+ 
     console.log("Employee ID for API:", employeeId);
-
+ 
     console.log("Date for API:", apiDate);
-
+ 
     console.log("==========================================");
-
+ 
     // =====================================================
     // OPEN MODAL
     // =====================================================
-
+ 
     setSelectedEmployee({
       employeeName,
       employeeId,
@@ -361,40 +361,40 @@ const LeaveCalendar = () => {
       status: selectedStatus,
       punches: [],
     });
-
+ 
     setDailyLogOpen(true);
-
+ 
     // =====================================================
     // LOADING
     // =====================================================
-
+ 
     setPunchesLoading(true);
-
+ 
     try {
       console.log("CALLING RAW PUNCH API");
-
+ 
       console.log("REQUEST BODY:", {
         employeeId,
         date: apiDate,
       });
-
+ 
       // ===================================================
       // API CALL
       // ===================================================
-
+ 
       const response = await getEmployeeRawPunches({
         employeeId,
         date: apiDate,
       }).unwrap();
-
+ 
       console.log("==========================================");
-
+ 
       console.log("RAW PUNCH API RESPONSE:");
-
+ 
       console.log(response);
-
+ 
       console.log("==========================================");
-
+ 
       // ===================================================
       // MAP API RESPONSE
       //
@@ -405,27 +405,27 @@ const LeaveCalendar = () => {
       // EntryType     -> source
       //
       // ===================================================
-
+ 
       const punches: PunchLogEntry[] = response.map((punch) => ({
         type: String(punch.type ?? "").toUpperCase() === "OUT" ? "Out" : "In",
-
+ 
         time: punch.time || "-",
-
+ 
         entryType: punch.source || "-",
-
+ 
         location: undefined,
-
+ 
         hasSelfie: false,
       }));
-
+ 
       console.log("MAPPED PUNCH DATA:");
-
+ 
       console.log(punches);
-
+ 
       // ===================================================
       // UPDATE MODAL
       // ===================================================
-
+ 
       setSelectedEmployee((current) => {
         if (
           !current ||
@@ -434,7 +434,7 @@ const LeaveCalendar = () => {
         ) {
           return current;
         }
-
+ 
         return {
           ...current,
           punches,
@@ -442,18 +442,18 @@ const LeaveCalendar = () => {
       });
     } catch (apiError) {
       console.error("==========================================");
-
+ 
       console.error("RAW PUNCH API ERROR:");
-
+ 
       console.error(apiError);
-
+ 
       console.error("==========================================");
-
+ 
       setSelectedEmployee((current) => {
         if (!current) {
           return current;
         }
-
+ 
         return {
           ...current,
           punches: [],
@@ -463,25 +463,25 @@ const LeaveCalendar = () => {
       setPunchesLoading(false);
     }
   };
-
+ 
   // =========================================================
   // CLOSE DAILY LOG
   // =========================================================
-
+ 
   const handleCloseDailyLog = () => {
     console.log("CLOSING DAILY LOG");
-
+ 
     setDailyLogOpen(false);
-
+ 
     setSelectedEmployee(null);
-
+ 
     setPunchesLoading(false);
   };
-
+ 
   // =========================================================
   // UI
   // =========================================================
-
+ 
   return (
     <div className="min-h-full w-full min-w-0 bg-[#f4f5f9] p-3 sm:p-6 md:h-full md:overflow-hidden">
       <div className="flex h-auto min-h-0 w-full flex-col overflow-visible md:h-full md:overflow-hidden">
@@ -520,7 +520,7 @@ const LeaveCalendar = () => {
                   className="h-10 w-full border-slate-300 bg-white font-[Urbanist]"
                 />
               </div>
-
+ 
               <Select
                 value={leaveType || "none"}
                 onValueChange={(value) => {
@@ -547,7 +547,7 @@ const LeaveCalendar = () => {
                     }
                   </span>
                 </SelectTrigger>
-
+ 
                 <SelectContent
                   side="bottom"
                   align="start"
@@ -566,7 +566,7 @@ const LeaveCalendar = () => {
                   ))}
                 </SelectContent>
               </Select>
-
+ 
               <button
                 type="button"
                 title="Export attendance"
@@ -591,8 +591,8 @@ const LeaveCalendar = () => {
             </div>
           </div>
         </TimeOfficeNavbar>
-
-        <div className="punch-horizontal-scroll flex shrink-0 items-center justify-end gap-2 overflow-x-auto rounded-t-xl border-b border-slate-200 bg-white px-3 py-2">
+ 
+        <div className="punch-horizontal-scroll flex shrink-0 items-center justify-start gap-2 overflow-x-auto overscroll-x-contain rounded-t-xl border-b border-slate-200 bg-white px-3 py-2 [touch-action:pan-x] md:justify-end">
           {[
             "Half Day Status",
             "Revert",
@@ -614,9 +614,9 @@ const LeaveCalendar = () => {
             </button>
           ))}
         </div>
-
+ 
         {/* SEARCH */}
-
+ 
         <div className="punch-horizontal-scroll flex min-h-12 min-w-full shrink-0 items-center justify-between gap-3 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2">
           <LeaveCalendarSearch
             searchTerm={searchTerm}
@@ -666,29 +666,29 @@ const LeaveCalendar = () => {
             </button>
           </div>
         </div>
-
+ 
         {/* LOADING */}
-
+ 
         {isLoading && (
           <div className="shrink-0 py-6 text-center text-gray-500">
             Loading monthly leave calendar...
           </div>
         )}
-
+ 
         {/* ERROR */}
-
+ 
         {isError && (
           <div className="shrink-0 py-6 text-center text-red-500">
             <p>Failed to load monthly leave calendar.</p>
-
+ 
             <pre className="mt-2 max-h-40 overflow-auto text-left text-xs">
               {JSON.stringify(error, null, 2)}
             </pre>
           </div>
         )}
-
+ 
         {/* TABLE */}
-
+ 
         {!isLoading && !isError && (
           <div className="min-h-[320px] flex-none overflow-visible border-x border-[#e0e5ec] bg-white md:min-h-0 md:flex-1 md:overflow-hidden">
             <LeaveCalendarTable
@@ -699,9 +699,9 @@ const LeaveCalendar = () => {
             />
           </div>
         )}
-
+ 
         {/* FOOTER */}
-
+ 
         <div className="shrink-0">
           <LeaveCalendarFooter
             totalItems={totalItems}
@@ -716,11 +716,11 @@ const LeaveCalendar = () => {
           />
         </div>
       </div>
-
+ 
       {/* =====================================================
           DAILY LOG MODAL
       ===================================================== */}
-
+ 
       <DailyLogModal
         open={dailyLogOpen}
         onClose={handleCloseDailyLog}
@@ -734,5 +734,5 @@ const LeaveCalendar = () => {
     </div>
   );
 };
-
+ 
 export default LeaveCalendar;
