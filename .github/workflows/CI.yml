@@ -83,14 +83,14 @@ jobs:
           find backend -name "lcov.info" || echo "lcov.info not found!"
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.HRMS_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=YOUR_ACTUAL_ORGANIZATION_KEY
-            -Dsonar.projectKey=YOUR_ACTUAL_PROJECT_KEY
+            -Dsonar.organization=Koundinyasa
+            -Dsonar.projectKey=Koundinyasa_HRMS
             -Dsonar.sources=backend/src,frontend/src
             -Dsonar.tests=backend/src,frontend/src
             -Dsonar.test.inclusions=**/*.test.js
