@@ -417,7 +417,7 @@ jobs:
 
   
   # ================================================
-  # JOB 5: Deployment
+  # JOB 5: Deployment (COMING WEEK 4)
   # ================================================
   deploy:
     name: Deploy to AWS
