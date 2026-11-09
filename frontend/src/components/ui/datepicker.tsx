@@ -1,4 +1,13 @@
-﻿import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+﻿import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEventHandler,
+} from "react";
+import { createPortal } from "react-dom";
 import {
   CalendarDays,
   ChevronLeft,
@@ -35,6 +44,10 @@ export interface DatePickerProps {
   // Position the calendar with `position: fixed` so it is not clipped by a
   // scrolling or overflow-hidden parent (used inside tables and cards).
   fixedPosition?: boolean;
+  // Render the calendar in document.body so no parent can clip it.
+  portal?: boolean;
+  onPopupMouseMove?: MouseEventHandler<HTMLDivElement>;
+  onPopupMouseLeave?: MouseEventHandler<HTMLDivElement>;
  
   monthLabel: string;
   weekdayLabels: string[];
@@ -58,6 +71,9 @@ export function DatePicker({
   open,
   onOpenChange,
   fixedPosition,
+  portal = false,
+  onPopupMouseMove,
+  onPopupMouseLeave,
   monthLabel,
   weekdayLabels,
   cells,
@@ -69,6 +85,44 @@ export function DatePicker({
 }: DatePickerProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [fixedStyle, setFixedStyle] = useState<CSSProperties>();
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [popupPosition, setPopupPosition] = useState({ left: 8, top: 8 });
+
+  const getPopupPosition = useCallback(() => {
+    const anchor = wrapperRef.current?.getBoundingClientRect();
+    if (!anchor) return null;
+    const popupWidth =
+      popupRef.current?.offsetWidth ?? Math.min(264, window.innerWidth - 24);
+    const maxLeft = Math.max(8, window.innerWidth - popupWidth - 8);
+    const left = Math.min(
+      Math.max(8, align === "right" ? anchor.right - popupWidth : anchor.left),
+      maxLeft,
+    );
+    return { left, top: anchor.bottom + 8 };
+  }, [align]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && portal) {
+      const position = getPopupPosition();
+      if (position) setPopupPosition(position);
+    }
+    onOpenChange?.(nextOpen);
+  };
+
+  useLayoutEffect(() => {
+    if (!open || !portal) return;
+    const update = () => {
+      const position = getPopupPosition();
+      if (position) setPopupPosition(position);
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [getPopupPosition, open, portal]);
 
   useLayoutEffect(() => {
     if (!open || !fixedPosition) return;
@@ -98,7 +152,8 @@ export function DatePicker({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
+        !wrapperRef.current.contains(event.target as Node) &&
+        !popupRef.current?.contains(event.target as Node)
       ) {
         onOpenChange(false);
       }
@@ -129,7 +184,7 @@ export function DatePicker({
         value={text}
         aria-invalid={isInvalid}
         readOnly
-        onClick={() => onOpenChange?.(!open)}
+        onClick={() => handleOpenChange(!open)}
         onBlur={onBlur}
         className={cn(
           "h-12 w-full rounded-2xl border-slate-300 bg-white px-4 pr-11 text-sm transition-all duration-150 focus:shadow-[0_0_0_4px_rgba(124,58,237,0.12)]",
@@ -150,7 +205,7 @@ export function DatePicker({
         size="sm"
         tabIndex={-1}
         aria-label="Open calendar"
-        onClick={() => onOpenChange(!open)}
+        onClick={() => handleOpenChange(!open)}
         className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full p-0 transition-colors"
         style={{
           color: open ? "var(--primary-color)" : "#94A3B8",
@@ -161,11 +216,28 @@ export function DatePicker({
       >
         <CalendarDays className="h-4 w-4" />
       </Button>
-      {open && (
+      {open && (() => {
+        const popup = (
         <div
-          style={fixedPosition ? fixedStyle : undefined}
+          ref={popupRef}
+          onMouseMove={onPopupMouseMove}
+          onMouseLeave={onPopupMouseLeave}
+          style={
+            portal
+              ? {
+                  position: "fixed",
+                  left: popupPosition.left,
+                  top: popupPosition.top,
+                  zIndex: 9999,
+                  maxHeight: `calc(100dvh - ${popupPosition.top + 8}px)`,
+                  overflowY: "auto",
+                }
+              : fixedPosition
+                ? fixedStyle
+                : undefined
+          }
           className={`
-      ${fixedPosition ? "fixed" : `absolute ${align === "right" ? "right-0" : "left-0"} top-full`}
+      ${portal ? "" : fixedPosition ? "fixed" : `absolute ${align === "right" ? "right-0" : "left-0"} top-full`}
       z-[9999]
       w-[min(16.5rem,calc(100vw-1.5rem))]
       overflow-hidden
@@ -179,7 +251,7 @@ export function DatePicker({
       animate-in
       fade-in
       zoom-in-95
-      slide-in-from-top-2
+      ${portal ? "" : "slide-in-from-top-2"}
       duration-200
     `}
         >
@@ -303,7 +375,9 @@ export function DatePicker({
             </div>
           </div>
         </div>
-      )}
+        );
+        return portal ? createPortal(popup, document.body) : popup;
+      })()}
     </div>
   );
 }

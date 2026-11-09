@@ -5,3 +5,4 @@ export * from './intent.types';
 export * from './widget.types';
 export * from './team.types';
 export * from './employee-directory.types';
+export * from './employee-business-profile.types';

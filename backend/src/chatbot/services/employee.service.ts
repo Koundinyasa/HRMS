@@ -1,11 +1,627 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  InternalServerErrorException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { IntentDefinition } from '../types';
+import type {
+  EmployeeBusinessProfile,
+  EmployeeInfoRecord,
+  EmployeeInfoResultSets,
+  EmployeeProfileField,
+  EmployeeProfileSection,
+  EmployeeProfileValue,
+} from '../types';
 import { fuzzyContains } from '../utils/fuzzy.util';
 import { DraftService } from './draft.service';
+import { HrmsDbService } from '../../db/hrms-db.service';
+
+type EmployeeLookupResult = {
+  employeeId: string;
+  fullName: string;
+  designation: string;
+};
+
+const PROFILE_FIELD_ALLOWLISTS: Record<
+  string,
+  Array<[key: string, label: string]>
+> = {
+  personal: [
+    ['EmployeeID', 'Employee ID'],
+    ['EmployeeId', 'Employee ID'],
+    ['EmployeeName', 'Full Name'],
+    ['FullName', 'Full Name'],
+    ['ProfilePhoto', 'Profile Photo'],
+    ['FirstName', 'First Name'],
+    ['LastName', 'Last Name'],
+    ['DOB', 'Date of Birth'],
+    ['Gender', 'Gender'],
+    ['DOJ', 'Date of Joining'],
+    ['DOL', 'Date of Leaving'],
+    ['Grade', 'Employment Grade'],
+    ['GradeValue', 'Employment Grade'],
+    ['EmploymentGrade', 'Employment Grade'],
+    ['CompanyName', 'Company Name'],
+    ['BranchName', 'Branch'],
+    ['DepartmentName', 'Department'],
+    ['Designation', 'Designation'],
+    ['DesignationName', 'Designation'],
+    ['ReportingManagerName', 'Reporting Manager Name'],
+    ['EmploymentTypeName', 'Employment Type'],
+    ['EmploymentType', 'Employment Type'],
+    ['Employementtype', 'Employment Type'],
+    ['EmploymentTypeID', 'Employment Type ID'],
+    ['EmploymentStatusName', 'Employment Status'],
+    ['EmploymentStatus', 'Employment Status'],
+    ['EmploymentStatusID', 'Employment Status ID'],
+    ['Email', 'Official Email'],
+    ['EMailID', 'Official Email'],
+    ['EmailId', 'Official Email'],
+    ['OfficialEmailId', 'Official Email'],
+    ['MobileNo', 'Mobile Number'],
+    ['AltMobileNo', 'Alternate Mobile'],
+    ['EmergencyNo', 'Emergency Number'],
+    ['AlternateEmailId', 'Alternate Email'],
+  ],
+  address: [
+    ['AddressType', 'Address Type'],
+    ['ResidentialNameNo', 'Residential Name / Number'],
+    ['Street', 'Street'],
+    ['StreetName', 'Street'],
+    ['AddressLine1', 'Address Line 1'],
+    ['AddressLine2', 'Address Line 2'],
+    ['Address1', 'Address Line 1'],
+    ['Address2', 'Address Line 2'],
+    ['Locality', 'Locality'],
+    ['City', 'City'],
+    ['District', 'District'],
+    ['State', 'State'],
+    ['Country', 'Country'],
+    ['PinCode', 'Pin Code'],
+    ['PostalCode', 'Postal Code'],
+    ['MobileNo', 'Mobile Number'],
+    ['MobileNumber', 'Mobile Number'],
+    ['AltMobileNo', 'Alternate Mobile'],
+    ['AlternateMobile', 'Alternate Mobile'],
+    ['Email', 'Official Email'],
+    ['OfficialEmail', 'Official Email'],
+    ['EmailId', 'Official Email'],
+    ['OfficialEmailId', 'Official Email'],
+    ['AlternateEmail', 'Alternate Email'],
+    ['AlternateEmailId', 'Alternate Email'],
+    ['EmergencyNo', 'Emergency Number'],
+    ['EmergencyNumber', 'Emergency Number'],
+  ],
+  bank: [
+    ['AccountHolderName', 'Account Holder Name'],
+    ['AccountNumber', 'Account Number'],
+    ['AccountType', 'Account Type'],
+    ['IFSC', 'IFSC Code'],
+    ['BankCode', 'Bank Code'],
+    ['BankName', 'Bank Name'],
+    ['BranchName', 'Branch Name'],
+    ['City', 'City'],
+    ['State', 'State'],
+    ['Address', 'Bank Address'],
+    ['BankAddress', 'Bank Address'],
+  ],
+  family: [
+    ['MemberName', 'Name'],
+    ['FamilyMemberName', 'Name'],
+    ['Relation', 'Relationship'],
+    ['Relationship', 'Relationship'],
+    ['DOB', 'Date of Birth'],
+    ['Gender', 'Gender'],
+    ['MobileNo', 'Mobile Number'],
+    ['ContactNo', 'Contact Number'],
+    ['ContactNumber', 'Contact Number'],
+    ['Age', 'Age'],
+    ['EmailId', 'Email'],
+  ],
+  documents: [
+    ['DocumentType', 'Document Type'],
+    ['DocumentName', 'Document Name'],
+    ['DocumentTitle', 'Document'],
+    ['IssueDate', 'Issue Date'],
+    ['ExpiryDate', 'Expiry Date'],
+    ['Status', 'Status'],
+    ['VerificationStatus', 'Verification Status'],
+  ],
+  experience: [
+    ['IsExperienced', 'Is Experienced'],
+    ['IsExperience', 'Is Experienced'],
+    ['CompanyName', 'Company'],
+    ['PreviousCompanyName', 'Previous Company Name'],
+    ['Designation', 'Designation'],
+    ['DesignationName', 'Designation'],
+    ['Department', 'Department'],
+    ['DepartmentName', 'Department'],
+    ['EmploymentType', 'Employment Type'],
+    ['EmploymentTypeName', 'Employment Type'],
+    ['Industry', 'Industry'],
+    ['FromDate', 'From Date'],
+    ['ToDate', 'To Date'],
+    ['StartDate', 'Start Date'],
+    ['EndDate', 'End Date'],
+    ['IsCurrentEmployer', 'Is Current Employer'],
+    ['TotalExperienceYears', 'Total Experience Years'],
+    ['TotalExperience', 'Total Experience Years'],
+    ['ReasonForLeaving', 'Reason for Leaving'],
+    ['Experience', 'Experience'],
+    ['Role', 'Role'],
+    ['Description', 'Description'],
+  ],
+  education: [
+    ['EducationLevel', 'Education Level'],
+    ['Level', 'Education Level'],
+    ['BoardOrUniversity', 'Board / University'],
+    ['InstitutionName', 'Institution'],
+    ['Degree', 'Degree'],
+    ['Qualification', 'Qualification'],
+    ['Course', 'Course'],
+    ['Specialization', 'Specialization'],
+    ['StartDate', 'Start Date'],
+    ['EndDate', 'End Date'],
+    ['YearOfPassing', 'Year of Passing'],
+    ['GradeValue', 'Grade'],
+    ['GradeType', 'Grade Type'],
+    ['Country', 'Country'],
+    ['State', 'State'],
+    ['Percentage', 'Percentage'],
+  ],
+};
 
 @Injectable()
 export class EmployeeService {
-  constructor(private readonly draftService: DraftService) {}
+  private readonly logger = new Logger(EmployeeService.name);
+
+  constructor(
+    private readonly draftService: DraftService,
+    private readonly hrmsDbService: HrmsDbService,
+  ) {}
+
+  async searchEmployees(
+    searchTerm: string,
+    user: Record<string, unknown>,
+  ): Promise<EmployeeLookupResult[]> {
+    this.assertPrivileged(user);
+
+    const term = searchTerm?.trim();
+    if (!term || term.length > 100) {
+      throw new BadRequestException(
+        'Search term must be between 1 and 100 characters.',
+      );
+    }
+
+    const companyId = this.authenticatedCompanyId(user);
+
+    const directory = await this.hrmsDbService.getEmployeeDirectory(companyId, {
+      failOnError: true,
+      bypassCache: true,
+    });
+    const normalizedTerm = term.toLowerCase();
+
+    return directory
+      .filter(
+        (employee) =>
+          employee.id.toLowerCase().includes(normalizedTerm) ||
+          employee.name.toLowerCase().includes(normalizedTerm),
+      )
+      .map((employee) => ({
+        employeeId: employee.id,
+        fullName: employee.name,
+        designation: employee.designation,
+      }));
+  }
+
+  async getEmployeeBusinessProfile(
+    employeeId: string,
+    user: Record<string, unknown>,
+  ): Promise<EmployeeBusinessProfile> {
+    this.assertPrivileged(user);
+
+    const normalizedEmployeeId =
+      typeof employeeId === 'string' ? employeeId.trim() : '';
+    if (!normalizedEmployeeId || normalizedEmployeeId.length > 25) {
+      throw new BadRequestException('Invalid employee selection.');
+    }
+
+    const companyId = this.authenticatedCompanyId(user);
+    const directoryMatches = await this.searchEmployees(
+      normalizedEmployeeId,
+      user,
+    );
+    const selectedEmployee = directoryMatches.find(
+      (employee) =>
+        employee.employeeId.toLowerCase() ===
+        normalizedEmployeeId.toLowerCase(),
+    );
+    if (!selectedEmployee) {
+      throw new NotFoundException(
+        'Employee not found in your company directory.',
+      );
+    }
+
+    let resultSets: EmployeeInfoResultSets | null;
+    try {
+      resultSets = await this.hrmsDbService.getEmployeeBusinessProfile(
+        selectedEmployee.employeeId,
+        companyId,
+      );
+    } catch {
+      this.logger.error('Employee business profile query failed.');
+      throw new InternalServerErrorException(
+        'Unable to retrieve employee profile.',
+      );
+    }
+
+    if (!resultSets || resultSets[0].length === 0) {
+      throw new NotFoundException(
+        'Employee not found in your company directory.',
+      );
+    }
+    const personal = resultSets[0][0];
+    const [employeeInfo, employeeOffice] = await Promise.all([
+      this.hrmsDbService.getUserInfo(selectedEmployee.employeeId),
+      this.hrmsDbService.getEmployeeOffice(selectedEmployee.employeeId),
+    ]);
+    const employeeGrade =
+      this.read(personal, 'Grade') ??
+      this.read(personal, 'EmploymentGrade') ??
+      this.read(personal, 'GradeValue');
+    const employmentTypeValue =
+      this.read(personal, 'EmploymentType') ??
+      this.read(personal, 'Employementtype');
+    const employmentStatusValue = this.read(personal, 'EmploymentStatus');
+    const employmentTypeId =
+      this.asText(this.read(personal, 'EmploymentTypeID')) ??
+      this.asIdentifier(employmentTypeValue);
+    const employmentStatusId =
+      this.asText(this.read(personal, 'EmploymentStatusID')) ??
+      this.asIdentifier(employmentStatusValue);
+
+    return {
+      sections: this.mapProfileSections(resultSets),
+      identity: {
+        employeeId:
+          this.asText(
+            this.read(personal, 'EmployeeID') ??
+              this.read(personal, 'EmployeeId'),
+          ) ?? selectedEmployee.employeeId,
+        fullName:
+          this.asText(this.read(personal, 'EmployeeName')) ??
+          this.asText(this.read(personal, 'FullName')) ??
+          selectedEmployee.fullName,
+        firstName: this.asText(this.read(personal, 'FirstName')),
+        lastName: this.asText(this.read(personal, 'LastName')),
+        profilePhoto: this.asText(this.read(personal, 'ProfilePhoto')),
+        dateOfBirth: this.asDate(this.read(personal, 'DOB')),
+        gender: this.asText(this.read(personal, 'Gender')),
+      },
+      employment: {
+        dateOfJoining: this.asDate(this.read(personal, 'DOJ')),
+        dateOfLeaving: this.asDate(this.read(personal, 'DOL')),
+        grade:
+          typeof employeeGrade === 'string' || typeof employeeGrade === 'number'
+            ? employeeGrade
+            : null,
+      },
+      organization: {
+        companyName: this.asText(this.read(personal, 'CompanyName')),
+        branchName:
+          this.asText(this.read(personal, 'BranchName')) ??
+          this.asText(employeeOffice?.branchName),
+        departmentName:
+          this.asText(this.read(personal, 'DepartmentName')) ??
+          this.asText(employeeInfo?.self.department),
+        designationName: this.asText(
+          this.read(personal, 'Designation') ??
+            this.read(personal, 'DesignationName'),
+        ),
+        reportingManagerName: this.asText(
+          this.read(personal, 'ReportingManagerName'),
+        ),
+        employmentType:
+          this.asText(employmentTypeValue) ??
+          this.asText(this.read(personal, 'EmploymentTypeName')) ??
+          this.asReadableName(employmentTypeValue),
+        employmentTypeId,
+        employmentStatus:
+          this.asText(this.read(personal, 'EmploymentStatusName')) ??
+          this.asReadableName(employmentStatusValue),
+        employmentStatusId,
+      },
+      contact: {
+        email:
+          this.asText(this.read(personal, 'Email')) ??
+          this.asText(this.read(personal, 'EMailID')) ??
+          this.asText(this.read(personal, 'OfficialEmailId')) ??
+          this.asText(this.read(personal, 'EmailId')),
+        mobileNo: this.asText(this.read(personal, 'MobileNo')),
+        alternateMobileNo: this.asText(this.read(personal, 'AltMobileNo')),
+        emergencyNo: this.asText(this.read(personal, 'EmergencyNo')),
+        alternateEmail: this.asText(this.read(personal, 'AlternateEmailId')),
+      },
+      unavailableSections: {
+        education: this.unavailableSection(
+          'Education active/deleted flag semantics are unverified.',
+        ),
+        experience: this.unavailableSection(
+          'Experience deleted flag semantics are unverified.',
+        ),
+        address: this.unavailableSection(
+          'Address deleted flag semantics are unverified.',
+        ),
+      },
+    };
+  }
+
+  private mapProfileSections(
+    resultSets: EmployeeInfoResultSets,
+  ): EmployeeProfileSection[] {
+    const [personal, address, bank, family, documents, experience, education] =
+      resultSets;
+    return [
+      this.section('Personal Information', 'user', 'personal', personal),
+      this.section('Address', 'map-pin', 'address', address),
+      this.section('Bank Information', 'landmark', 'bank', bank),
+      this.section('Family Details', 'users', 'family', family),
+      this.section('Documents', 'file-text', 'documents', documents),
+      this.section('Experience Details', 'briefcase', 'experience', experience),
+      this.section(
+        'Education Details',
+        'graduation-cap',
+        'education',
+        education,
+      ),
+    ];
+  }
+
+  private section(
+    title: string,
+    icon: string,
+    allowlist: keyof typeof PROFILE_FIELD_ALLOWLISTS,
+    rows: EmployeeInfoRecord[],
+  ): EmployeeProfileSection {
+    const records = rows
+      .map((row) => {
+        const fields = this.allowedFields(row, allowlist);
+        const heading =
+          allowlist === 'address'
+            ? (this.asText(this.read(row, 'AddressType')) ?? undefined)
+            : undefined;
+        return { ...(heading ? { heading } : {}), fields };
+      })
+      .filter((record) => record.fields.length > 0);
+    return { title, icon, records };
+  }
+
+  private allowedFields(
+    row: EmployeeInfoRecord,
+    section: keyof typeof PROFILE_FIELD_ALLOWLISTS,
+  ): EmployeeProfileField[] {
+    const fields = PROFILE_FIELD_ALLOWLISTS[section].flatMap(([key, label]) => {
+      if (section === 'family' && key === 'Age') {
+        const relation = this.asText(
+          this.read(row, 'Relation') ?? this.read(row, 'Relationship'),
+        )?.toLowerCase();
+        if (relation === 'father' || relation === 'mother') return [];
+      }
+
+      const actualKey = Object.keys(row).find(
+        (candidate) => candidate.toLowerCase() === key.toLowerCase(),
+      );
+      if (!actualKey) return [];
+      const rawValue = row[actualKey];
+      const value =
+        section === 'bank' && key === 'AccountNumber'
+          ? this.maskAccountNumber(rawValue)
+          : rawValue === null
+            ? null
+            : this.profileValue(rawValue);
+      if (value === undefined) return [];
+      const fieldLabel =
+        key === 'EmploymentType' && this.asIdentifier(rawValue)
+          ? 'Employment Type ID'
+          : key === 'EmploymentStatus' && this.asIdentifier(rawValue)
+            ? 'Employment Status ID'
+            : label;
+      return [{ label: fieldLabel, value }];
+    });
+    const uniqueFields = new Map<string, EmployeeProfileField>();
+    for (const field of fields) {
+      const key = `${field.label.toLowerCase()}:${String(field.value ?? '')}`;
+      if (!uniqueFields.has(key)) uniqueFields.set(key, field);
+    }
+    return [...uniqueFields.values()];
+  }
+
+  private maskAccountNumber(value: unknown): string | null {
+    if (value === null || value === undefined) return null;
+    if (typeof value !== 'string' && typeof value !== 'number') return null;
+
+    const digits = String(value).replace(/\D/g, '');
+    if (!digits) return null;
+    if (digits.length <= 4) return '*'.repeat(digits.length);
+    return `${'*'.repeat(digits.length - 4)}${digits.slice(-4)}`;
+  }
+
+  private profileValue(value: unknown): EmployeeProfileValue | undefined {
+    if (value === null || value === undefined) return undefined;
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime())
+        ? undefined
+        : value.toISOString().slice(0, 10);
+    }
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      if (
+        typeof value === 'string' &&
+        /[\\/]|^[a-z]:[\\/]|^file:\/\//i.test(value.trim())
+      ) {
+        return undefined;
+      }
+      return value;
+    }
+    return undefined;
+  }
+
+  private read(row: EmployeeInfoRecord, key: string): unknown {
+    const targetKey = key.toLowerCase();
+    const actualKey = Object.keys(row).find(
+      (candidate) => candidate.toLowerCase() === targetKey,
+    );
+    return actualKey ? row[actualKey] : undefined;
+  }
+
+  private assertPrivileged(user: Record<string, unknown>): void {
+    if (user.role !== 'admin' && user.role !== 'hr') {
+      throw new ForbiddenException('Only HR/Admin can access employee data.');
+    }
+  }
+
+  private authenticatedCompanyId(user: Record<string, unknown>): number {
+    const companyId = Number(user.companyId);
+    if (!Number.isInteger(companyId) || companyId <= 0) {
+      throw new BadRequestException('Invalid companyId');
+    }
+    return companyId;
+  }
+
+  private asText(value: unknown): string | null {
+    if (typeof value !== 'string' && typeof value !== 'number') return null;
+    const text = String(value).trim();
+    return text || null;
+  }
+
+  private asIdentifier(value: unknown): string | null {
+    const text = this.asText(value);
+    return text && /^\d+$/.test(text) ? text : null;
+  }
+
+  private asReadableName(value: unknown): string | null {
+    const text = this.asText(value);
+    return text && !/^\d+$/.test(text) ? text : null;
+  }
+
+  private asDate(value: unknown): string | null {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime())
+        ? null
+        : value.toISOString().slice(0, 10);
+    }
+    const text = this.asText(value);
+    if (!text) return null;
+    const isoDate = /^(\d{4}-\d{2}-\d{2})(?:$|[T ])/.exec(text);
+    return isoDate?.[1] ?? text;
+  }
+
+  private unavailableSection(reason: string) {
+    return { status: 'unavailable' as const, reason };
+  }
+
+  private lookupTerm(
+    message: string,
+    directory: { id: string; name: string }[],
+  ): string | null {
+    const normalized = message.trim();
+    const strictCommand =
+      normalized.match(
+        /^(?:search|find|lookup)\s+(?:for\s+)?(?:an?\s+)?employees?(?:\s+(?:named|name|id))?\s*[:-]?\s+(.+)$/i,
+      ) ?? normalized.match(/^employees?\s+(?:search|lookup)\s*[:-]?\s*(.+)$/i);
+    const strictTerm = strictCommand?.[1]?.trim();
+    if (strictTerm) return strictTerm;
+
+    const naturalLanguagePatterns = [
+      /^(?:get\s+)?employee\s+details\s+of\s+(.+)$/i,
+      /^details\s+of\s+employee\s+(.+)$/i,
+      /^(?:employee\s+)?id\s+([a-z0-9_-]+)$/i,
+      /^details\s+of\s+(.+)$/i,
+      /^show\s+me\s+(.+)$/i,
+      /^who\s+is\s+(.+?)[?!.]*$/i,
+      /^employee\s+(.+)$/i,
+    ];
+
+    for (const pattern of naturalLanguagePatterns) {
+      const term = normalized.match(pattern)?.[1]?.trim();
+      if (term && this.isNaturalSearchCandidate(term)) return term;
+    }
+
+    if (!this.isNaturalSearchCandidate(normalized)) return null;
+
+    const foldedInput = normalized.toLocaleLowerCase();
+    const inputTokens = this.nameTokens(normalized);
+    const matchesDirectoryEntity = directory.some((employee) => {
+      if (employee.id.toLocaleLowerCase() === foldedInput) return true;
+      if (employee.name.toLocaleLowerCase() === foldedInput) return true;
+      return (
+        inputTokens.length === 1 &&
+        this.nameTokens(employee.name).includes(foldedInput)
+      );
+    });
+
+    return matchesDirectoryEntity ? normalized : null;
+  }
+
+  private isNaturalSearchCandidate(term: string): boolean {
+    const value = term.trim();
+    if (!value || value.length > 100) return false;
+    if (/^[a-z0-9_-]+$/i.test(value)) {
+      return !this.containsHrmsTopic(value);
+    }
+
+    if (
+      !/^[\p{L}\p{M}][\p{L}\p{M}'’.-]*(?:\s+[\p{L}\p{M}][\p{L}\p{M}'’.-]*){0,4}$/u.test(
+        value,
+      )
+    ) {
+      return false;
+    }
+
+    return !this.containsHrmsTopic(value);
+  }
+
+  private containsHrmsTopic(value: string): boolean {
+    const topics = new Set([
+      'address',
+      'apply',
+      'attendance',
+      'balance',
+      'cancel',
+      'company',
+      'date',
+      'department',
+      'details',
+      'document',
+      'employee',
+      'experience',
+      'holiday',
+      'leave',
+      'manager',
+      'menu',
+      'office',
+      'payroll',
+      'payslip',
+      'policy',
+      'profile',
+      'salary',
+      'team',
+      'time',
+      'today',
+      'who',
+    ]);
+    return this.nameTokens(value).some((token) => topics.has(token));
+  }
+
+  private nameTokens(value: string): string[] {
+    return value.toLocaleLowerCase().match(/[\p{L}\p{M}\p{N}]+/gu) ?? [];
+  }
 
   private notify(
     employeeId: string,
@@ -69,6 +685,73 @@ export class EmployeeService {
 
   getIntents(): IntentDefinition[] {
     return [
+      {
+        name: 'employeeLookupSelect',
+        test: (ctx) => /^employee-select:/i.test(ctx.message.trim()),
+        handle: async (ctx) => {
+          if (ctx.role !== 'admin' && ctx.role !== 'hr') {
+            this.notify(ctx.employeeId, 'danger');
+            return `Access denied: only HR/Admin can search employees.`;
+          }
+
+          const selection = ctx.message
+            .trim()
+            .match(/^employee-select:(.+)$/i)?.[1];
+          if (!selection) return `Employee selection is invalid.`;
+
+          let employeeId: string;
+          try {
+            employeeId = decodeURIComponent(selection);
+          } catch {
+            return `Employee selection is invalid.`;
+          }
+
+          const employeeProfile = await this.getEmployeeBusinessProfile(
+            employeeId,
+            ctx.user,
+          );
+          const selectedEmployeeId =
+            employeeProfile.identity.employeeId ?? employeeId;
+          const selectedEmployeeName =
+            employeeProfile.identity.fullName ?? selectedEmployeeId;
+          return {
+            text: `Employee profile retrieved for ${selectedEmployeeName} (${selectedEmployeeId}).`,
+            employeeProfile,
+          };
+        },
+      },
+      {
+        name: 'employeeLookupSearch',
+        test: (ctx) => this.lookupTerm(ctx.message, ctx.directory) !== null,
+        handle: async (ctx) => {
+          if (ctx.role !== 'admin' && ctx.role !== 'hr') {
+            this.notify(ctx.employeeId, 'danger');
+            return `Access denied: only HR/Admin can search employees.`;
+          }
+
+          const searchTerm = this.lookupTerm(ctx.message, ctx.directory);
+          if (!searchTerm) return `Enter an employee name or ID to search.`;
+
+          const matches = await this.searchEmployees(searchTerm, ctx.user);
+          if (matches.length === 0) {
+            return `No employees matched "${searchTerm}".`;
+          }
+
+          this.draftService.pendingListPreview.set(ctx.employeeId, {
+            title: `Employee matches (${matches.length})`,
+            rows: matches.map((employee) => ({
+              primary: employee.fullName,
+              secondary: employee.employeeId,
+              meta: employee.designation || undefined,
+              action: `employee-select:${encodeURIComponent(employee.employeeId)}`,
+            })),
+          });
+
+          return matches.length === 1
+            ? `I found one match for "${searchTerm}". Select the employee to continue:`
+            : `I found ${matches.length} matches for "${searchTerm}". Select an employee to continue:`;
+        },
+      },
       {
         name: 'employeeListShort',
         test: (ctx) =>
@@ -737,3 +1420,4 @@ export class EmployeeService {
     ];
   }
 }
+

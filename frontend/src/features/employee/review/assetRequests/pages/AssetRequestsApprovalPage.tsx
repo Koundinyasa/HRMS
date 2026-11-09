@@ -26,7 +26,6 @@ export default function AssetRequestsApprovalPage() {
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [approved, setApproved] = useState(false);
   const [rejectionRequest, setRejectionRequest] =
     useState<AssetRecord | null>(null);
   const [rejectionRemarks, setRejectionRemarks] = useState("");
@@ -98,7 +97,6 @@ export default function AssetRequestsApprovalPage() {
       }
 
       setSelectedIds([]);
-      setApproved(true);
     } catch (error) {
       console.error(`Failed to ${action} asset requests.`, error);
     }
@@ -133,7 +131,6 @@ export default function AssetRequestsApprovalPage() {
           onReject={() => void updateSelected("reject")}
           onHistory={() => setShowHistory((current) => !current)}
           hasSelection={selectedIds.length > 0}
-          approved={approved}
         />
 
         {showHistory && (

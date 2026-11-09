@@ -2261,8 +2261,9 @@ const LeaveDailyDateGrid = ({
           className={`w-max min-w-full ${gridVars}`}
           style={
             {
-              // Fit all days on one screen; only scroll if each day would get < 20px
-              "--dw": `max(20px, calc((100cqw - var(--c1) - var(--c2)) / ${count}))`,
+              // Fit all days on one screen when there is room; on narrow screens keep each
+              // day at least 38px wide so the status circles never overlap (the grid scrolls sideways)
+              "--dw": `max(38px, calc((100cqw - var(--c1) - var(--c2)) / ${count}))`,
             } as CSSProperties
           }
         >

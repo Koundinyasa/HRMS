@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarDays, PenLine, Tags } from "lucide-react";
+import { CalendarDays, ChevronDown, PenLine, Tags } from "lucide-react";
 import { toast } from "react-toastify";
  
 import { Button } from "@/components/ui/button";
@@ -132,6 +132,31 @@ function EmployeeLeaveHistory({ history }: { history: EmployeeLeaveHistoryRow[] 
 export default function ApplyLeaveForEmployee() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [activeTab, setActiveTab] = useState<ActiveTab>("apply");
+  const [leaveTypeOpen, setLeaveTypeOpen] = useState(false);
+  const leaveTypeRef = useRef<HTMLDivElement>(null);
+ 
+  useEffect(() => {
+    if (!leaveTypeOpen) return;
+ 
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        leaveTypeRef.current &&
+        !leaveTypeRef.current.contains(event.target as Node)
+      ) {
+        setLeaveTypeOpen(false);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLeaveTypeOpen(false);
+    };
+ 
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [leaveTypeOpen]);
  
   const {
     data: employees = [],
@@ -202,6 +227,7 @@ export default function ApplyLeaveForEmployee() {
   const changeEmployee = (employeeId: string) => {
     setSelectedEmployeeId(employeeId);
     setActiveTab("apply");
+    setLeaveTypeOpen(false);
     reset(DEFAULT_VALUES);
   };
  
@@ -301,23 +327,75 @@ export default function ApplyLeaveForEmployee() {
                     <Controller
                       control={control}
                       name="leaveType"
-                      render={({ field }) => (
-                        <select
-                          {...field}
-                          id="leaveType"
-                          disabled={!selectedEmployeeId || leaveTypesLoading}
-                          className="h-[47px] w-full rounded-xl border border-slate-300 bg-white px-4 text-sm"
-                        >
-                          <option value="">
-                            {leaveTypesLoading ? "Loading leave types..." : "Select Leave Type"}
-                          </option>
-                          {leaveTypes.map((leave) => (
-                            <option key={leave.ID} value={String(leave.ID)}>
-                              {leave.Name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      render={({ field }) => {
+                        const selectedName = leaveTypes.find(
+                          (leave) => String(leave.ID) === field.value,
+                        )?.Name;
+ 
+                        return (
+                          <div className="relative" ref={leaveTypeRef}>
+                            <button
+                              type="button"
+                              id="leaveType"
+                              aria-haspopup="listbox"
+                              aria-expanded={leaveTypeOpen}
+                              disabled={!selectedEmployeeId || leaveTypesLoading}
+                              onClick={() =>
+                                setLeaveTypeOpen((previous) => !previous)
+                              }
+                              className="flex h-[47px] w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-4 text-sm disabled:cursor-not-allowed disabled:bg-slate-50"
+                            >
+                              <span
+                                className={
+                                  selectedName ? "text-slate-800" : "text-slate-400"
+                                }
+                              >
+                                {leaveTypesLoading
+                                  ? "Loading leave types..."
+                                  : selectedName ?? "Select Leave Type"}
+                              </span>
+                              <ChevronDown className="h-4 w-4 text-slate-400" />
+                            </button>
+ 
+                            {leaveTypeOpen && (
+                              <div
+                                role="listbox"
+                                className="absolute z-50 mt-2 max-h-[112px] w-full overflow-y-auto rounded-xl border border-slate-300 bg-white p-1 shadow-lg"
+                                style={{
+                                  scrollbarWidth: "thin",
+                                  scrollbarColor: "#94a3b8 #e2e8f0",
+                                }}
+                              >
+                                {leaveTypes.length > 0 ? (
+                                  leaveTypes.map((leave) => (
+                                    <button
+                                      key={leave.ID}
+                                      type="button"
+                                      role="option"
+                                      aria-selected={String(leave.ID) === field.value}
+                                      onClick={() => {
+                                        field.onChange(String(leave.ID));
+                                        setLeaveTypeOpen(false);
+                                      }}
+                                      className={`block w-full rounded-lg px-3 py-2 text-left text-sm ${
+                                        String(leave.ID) === field.value
+                                          ? "bg-purple-50 font-semibold"
+                                          : "hover:bg-slate-100"
+                                      }`}
+                                    >
+                                      {leave.Name}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="px-3 py-2 text-sm text-slate-500">
+                                    No leave types available
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }}
                     />
                     {errors.leaveType && (
                       <p className="text-sm text-red-500">{errors.leaveType.message}</p>
@@ -453,4 +531,3 @@ export default function ApplyLeaveForEmployee() {
     </div>
   );
 }
- 

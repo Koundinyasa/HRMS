@@ -47,10 +47,12 @@ import type {
   ChatWidget,
   ChatTeamMember,
   ChatListPreviewRow,
+  EmployeeBusinessProfile,
 } from "../types/chatbot.types";
 
 import TeamPreviewModal from "./TeamPreviewModal";
 import ListPreviewModal from "./ListPreviewModal";
+import EmployeeBusinessProfileCard from "./EmployeeBusinessProfileCard";
 
 import { useResetConversationMutation } from "../api/chatbotApi";
 
@@ -247,6 +249,16 @@ function formatTime(ts: Date | string) {
   });
 }
 
+function getEmployeeInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0] ?? "")
+    .join("")
+    .toUpperCase();
+}
+
 function isMenuActions(actions: ChatAction[]) {
   if (!actions.length) return false;
 
@@ -343,6 +355,24 @@ const MENU_ICONS: Record<string, React.ReactElement> = {
       <path d="M3 20c0-3 2.5-5 6-5s6 2 6 5" />
       <circle cx="17" cy="8" r="2.5" />
       <path d="M15.5 13.2c2.6.4 4.5 2 4.5 4.8" />
+    </svg>
+  ),
+  "employee-search:open": (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="10.5" cy="8" r="3.5" />
+      <path d="M3.5 20c0-3.5 2.8-5.5 7-5.5 1.4 0 2.6.2 3.6.7" />
+      <circle cx="17" cy="17" r="3.5" />
+      <path d="m19.5 19.5 2 2" />
     </svg>
   ),
   teams: (
@@ -532,6 +562,135 @@ export default function ChatbotWidget({
     rows: ChatListPreviewRow[];
   } | null>(null);
 
+  const [profileDataState, setProfileDataState] = useState<{
+    accountEmployeeId: string | undefined;
+    profiles: Record<string, EmployeeBusinessProfile>;
+  }>({ accountEmployeeId: employeeId, profiles: {} });
+  const [visibleProfileState, setVisibleProfileState] = useState<{
+    accountEmployeeId: string | undefined;
+    employeeId: string | null;
+  }>({ accountEmployeeId: employeeId, employeeId: null });
+  const [profileViewActions, setProfileViewActions] = useState<
+    Record<string, string>
+  >({});
+  const [employeeSearchMode, setEmployeeSearchMode] = useState<boolean>(false);
+  const [employeeSearchValue, setEmployeeSearchValue] = useState("");
+  const [employeeSuggestions, setEmployeeSuggestions] = useState<
+    ChatListPreviewRow[]
+  >([]);
+  const [employeeSearchPending, setEmployeeSearchPending] = useState(false);
+  const [employeeSearchCompleted, setEmployeeSearchCompleted] = useState(false);
+  const [employeeSearchError, setEmployeeSearchError] = useState<string | null>(
+    null,
+  );
+  const [isEmployeeSuggestionsOpen, setIsEmployeeSuggestionsOpen] =
+    useState(false);
+  const [activeEmployeeSuggestion, setActiveEmployeeSuggestion] = useState(-1);
+  const employeeSearchCardRef = useRef<HTMLDivElement>(null);
+  const employeeSearchRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    setProfileDataState({ accountEmployeeId: employeeId, profiles: {} });
+    setVisibleProfileState({ accountEmployeeId: employeeId, employeeId: null });
+    setProfileViewActions({});
+    setEmployeeSearchMode(false);
+    setEmployeeSearchValue("");
+    setEmployeeSuggestions([]);
+    setEmployeeSearchPending(false);
+    setEmployeeSearchCompleted(false);
+    setEmployeeSearchError(null);
+    setIsEmployeeSuggestionsOpen(false);
+    setActiveEmployeeSuggestion(-1);
+    employeeSearchRequestIdRef.current += 1;
+  }, [employeeId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setVisibleProfileState({ accountEmployeeId: employeeId, employeeId: null });
+      setEmployeeSearchMode(false);
+      setEmployeeSearchValue("");
+      setEmployeeSuggestions([]);
+      setEmployeeSearchPending(false);
+      setEmployeeSearchCompleted(false);
+      setEmployeeSearchError(null);
+      setIsEmployeeSuggestionsOpen(false);
+      setActiveEmployeeSuggestion(-1);
+      employeeSearchRequestIdRef.current += 1;
+    }
+  }, [employeeId, isOpen]);
+
+  useEffect(() => {
+    if (!employeeSearchMode) return;
+
+    const searchTerm = employeeSearchValue.trim();
+    const canSearch =
+      searchTerm.length >= 2 || /^\d$/.test(searchTerm);
+    if (!canSearch) {
+      employeeSearchRequestIdRef.current += 1;
+      setEmployeeSuggestions([]);
+      setEmployeeSearchPending(false);
+      setEmployeeSearchCompleted(false);
+      setEmployeeSearchError(null);
+      setIsEmployeeSuggestionsOpen(false);
+      setActiveEmployeeSuggestion(-1);
+      return;
+    }
+
+    const requestId = ++employeeSearchRequestIdRef.current;
+    setEmployeeSuggestions([]);
+    setEmployeeSearchError(null);
+    setEmployeeSearchCompleted(false);
+    setEmployeeSearchPending(true);
+    setIsEmployeeSuggestionsOpen(true);
+    setActiveEmployeeSuggestion(-1);
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const response = await sendChat(`search employee ${searchTerm}`);
+        if (requestId !== employeeSearchRequestIdRef.current) return;
+
+        const rows =
+          response.widget?.type === "listPreview"
+            ? (response.widget.listRows ?? []).filter(
+                (row) => row.action?.startsWith("employee-select:"),
+              )
+            : [];
+        setEmployeeSuggestions(rows);
+        setEmployeeSearchCompleted(true);
+      } catch (error) {
+        if (requestId !== employeeSearchRequestIdRef.current) return;
+        setEmployeeSearchError(getChatErrorMessage(error));
+        setEmployeeSearchCompleted(true);
+      } finally {
+        if (requestId === employeeSearchRequestIdRef.current) {
+          setEmployeeSearchPending(false);
+        }
+      }
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      if (requestId === employeeSearchRequestIdRef.current) {
+        employeeSearchRequestIdRef.current += 1;
+      }
+    };
+  }, [employeeSearchMode, employeeSearchValue, sendChat]);
+
+  useEffect(() => {
+    if (!isEmployeeSuggestionsOpen) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !employeeSearchCardRef.current?.contains(event.target)
+      ) {
+        setIsEmployeeSuggestionsOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () =>
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [isEmployeeSuggestionsOpen]);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -616,6 +775,7 @@ export default function ChatbotWidget({
     text: string,
     options?: {
       silent?: boolean;
+      displayText?: string;
     },
   ) => {
     const trimmed = text.trim();
@@ -630,7 +790,7 @@ export default function ChatbotWidget({
       if (!isNearBottom) setNewMessageCount((count) => count + 1);
       const userMessage: ChatMessage = {
         id: Date.now(),
-        text: trimmed,
+        text: options?.displayText ?? trimmed,
         sender: "user",
         timestamp: new Date(),
       };
@@ -659,6 +819,37 @@ export default function ChatbotWidget({
         return;
       }
 
+      const responseRole = response.user?.role;
+      const employeeProfile =
+        response.employeeProfile &&
+        (responseRole === "admin" || responseRole === "hr")
+          ? response.employeeProfile
+          : null;
+      const profileEmployeeId = employeeProfile?.identity.employeeId;
+      const profileActionToken =
+        employeeProfile && profileEmployeeId
+          ? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+          : null;
+      if (employeeProfile && profileEmployeeId) {
+        setProfileDataState((current) => ({
+          accountEmployeeId: employeeId,
+          profiles:
+            current.accountEmployeeId === employeeId
+              ? { ...current.profiles, [profileEmployeeId]: employeeProfile }
+              : { [profileEmployeeId]: employeeProfile },
+        }));
+        setVisibleProfileState({
+          accountEmployeeId: employeeId,
+          employeeId: profileEmployeeId,
+        });
+        if (profileActionToken) {
+          setProfileViewActions((current) => ({
+            ...current,
+            [profileActionToken]: profileEmployeeId,
+          }));
+        }
+      }
+
       if (response.widget?.type === "teamPreview") {
         setTeamPreview({
           teamName: response.widget.teamName ?? "",
@@ -681,7 +872,15 @@ export default function ChatbotWidget({
           : response.botResponse,
         sender: "bot",
         timestamp: new Date(response.timestamp),
-        actions: response.actions ?? [],
+        actions: employeeProfile && profileEmployeeId
+          ? [
+              ...(response.actions ?? []),
+              {
+                label: "View Details",
+                send: `employee-profile:view:${profileActionToken}`,
+              },
+            ]
+          : response.actions ?? [],
         widget: response.widget ?? undefined,
       };
 
@@ -798,13 +997,109 @@ export default function ChatbotWidget({
   };
 
   const handleActionClick = async (action: ChatAction) => {
+    const viewProfilePrefix = "employee-profile:view:";
+    if (action.send.startsWith(viewProfilePrefix)) {
+      const actionToken = action.send.slice(viewProfilePrefix.length);
+      const selectedEmployeeId = profileViewActions[actionToken];
+      if (
+        selectedEmployeeId &&
+        profileDataState.accountEmployeeId === employeeId &&
+        profileDataState.profiles[selectedEmployeeId]
+      ) {
+        setVisibleProfileState({
+          accountEmployeeId: employeeId,
+          employeeId: selectedEmployeeId,
+        });
+      }
+      return;
+    }
+
+    if (employeeSearchMode) return;
     setInputValue("");
+    if (action.send === "menu:main") {
+      await openMainMenu();
+      return;
+    }
+    if (action.send === "employee-search:open") {
+      setEmployeeSearchMode(true);
+      setEmployeeSearchValue("");
+      const timestamp = new Date();
+      const userMessage: ChatMessage = {
+        id: Date.now(),
+        text: "Search Employee",
+        sender: "user",
+        timestamp,
+      };
+      const botMessage: ChatMessage = {
+        id: Date.now() + Math.random(),
+        text: "Search Employee",
+        sender: "bot",
+        timestamp,
+      };
+
+      if (!isNearBottom) setNewMessageCount((count) => count + 2);
+      setMessages((prev) => {
+        const updated = [...prev, userMessage, botMessage];
+        localStorage.setItem(
+          getWidgetStorageKey(employeeId),
+          JSON.stringify(updated),
+        );
+        return updated;
+      });
+      return;
+    }
     await sendText(action.send);
   };
 
+  const selectEmployeeSuggestion = async (
+    suggestion?: ChatListPreviewRow,
+  ) => {
+    if (!suggestion?.action?.startsWith("employee-select:")) return;
+
+    employeeSearchRequestIdRef.current += 1;
+    setEmployeeSearchMode(false);
+    setEmployeeSearchValue("");
+    setEmployeeSuggestions([]);
+    setEmployeeSearchPending(false);
+    setEmployeeSearchCompleted(false);
+    setEmployeeSearchError(null);
+    setIsEmployeeSuggestionsOpen(false);
+    setActiveEmployeeSuggestion(-1);
+    const searchTerm = employeeSearchValue.trim().toLowerCase();
+    const employeeId = suggestion.secondary ?? "";
+    const fullName = suggestion.primary.toLowerCase();
+    const searchedById =
+      employeeId.length > 0 &&
+      employeeId.toLowerCase().includes(searchTerm) &&
+      !fullName.includes(searchTerm);
+    const displayText = searchedById ? employeeId : suggestion.primary;
+    await sendText(suggestion.action, { displayText });
+  };
+
   const openMainMenu = async () => {
+    setProfileViewActions({});
+    setVisibleProfileState({ accountEmployeeId: employeeId, employeeId: null });
     setInputValue("");
     await sendText("menu:main", { silent: true });
+  };
+
+  const cancelEmployeeSearch = async () => {
+    employeeSearchRequestIdRef.current += 1;
+    setEmployeeSearchMode(false);
+    setEmployeeSearchValue("");
+    setEmployeeSuggestions([]);
+    setEmployeeSearchPending(false);
+    setEmployeeSearchCompleted(false);
+    setEmployeeSearchError(null);
+    setIsEmployeeSuggestionsOpen(false);
+    setActiveEmployeeSuggestion(-1);
+    setListPreview((current) =>
+      current?.title.toLowerCase().startsWith("employee matches")
+        ? null
+        : current,
+    );
+    setVisibleProfileState({ accountEmployeeId: employeeId, employeeId: null });
+    await openMainMenu();
   };
 
   const resetConversation = async () => {
@@ -821,6 +1116,18 @@ export default function ChatbotWidget({
     localStorage.removeItem(getWidgetStorageKey(employeeId));
 
     setMessages([]);
+    setProfileDataState({ accountEmployeeId: employeeId, profiles: {} });
+    setVisibleProfileState({ accountEmployeeId: employeeId, employeeId: null });
+    setProfileViewActions({});
+    setEmployeeSearchMode(false);
+    setEmployeeSearchValue("");
+    setEmployeeSuggestions([]);
+    setEmployeeSearchPending(false);
+    setEmployeeSearchCompleted(false);
+    setEmployeeSearchError(null);
+    setIsEmployeeSuggestionsOpen(false);
+    setActiveEmployeeSuggestion(-1);
+    employeeSearchRequestIdRef.current += 1;
     setInputValue("");
     setTeamPreview(null);
     setListPreview(null);
@@ -1184,11 +1491,15 @@ export default function ChatbotWidget({
                           <div className="grid grid-cols-2 gap-2">
                             {actions
                               .filter((a) => !a.label.startsWith("←"))
-                              .map((action, i) => (
+                              .map((action) => (
                                 <button
-                                  key={i}
+                                  key={action.send}
                                   type="button"
-                                  disabled={loading || !isLast}
+                                  disabled={
+                                    loading ||
+                                    !isLast ||
+                                    employeeSearchMode
+                                  }
                                   onClick={() => handleActionClick(action)}
                                   className="flex items-center gap-2 px-3 py-3 rounded-xl border border-[#eceef5] bg-[var(--primary-light)] text-left text-[12.5px] font-semibold text-[#1f2430] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] disabled:opacity-45 disabled:cursor-not-allowed"
                                 >
@@ -1255,20 +1566,73 @@ export default function ChatbotWidget({
                                   : "flex flex-wrap gap-2 mt-2.5"
                               }
                             >
-                              {actions.map((action, i) => {
+                              {actions.map((action) => {
                                 const isBack = action.label.startsWith("←");
+                                const isViewDetails = action.send.startsWith(
+                                  "employee-profile:view:",
+                                );
+                                const profileActionToken = isViewDetails
+                                  ? action.send.slice(
+                                      "employee-profile:view:".length,
+                                    )
+                                  : null;
+                                const profileEmployeeId = profileActionToken
+                                  ? profileViewActions[profileActionToken]
+                                  : null;
                                 const isSecondary =
                                   isBack ||
                                   action.label.toLowerCase() === "cancel" ||
                                   action.label.toLowerCase() === "skip";
-                                const disabled = loading || !isLast;
+                                const disabled = isViewDetails
+                                  ? profileDataState.accountEmployeeId !==
+                                      employeeId ||
+                                    !profileEmployeeId ||
+                                    !profileDataState.profiles[profileEmployeeId]
+                                  : loading || !isLast;
+
+                                if (isViewDetails) {
+                                  return (
+                                    <div
+                                      key={action.send}
+                                      className="flex mt-2.5"
+                                    >
+                                      <button
+                                        type="button"
+                                        disabled={disabled}
+                                        onClick={() =>
+                                          handleActionClick(action)
+                                        }
+                                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[11px] text-[12.5px] font-semibold text-[var(--primary-color)] bg-white border-[1.5px] border-[var(--primary-color)] cursor-pointer transition-transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:opacity-45 disabled:cursor-not-allowed"
+                                      >
+                                        <svg
+                                          width="15"
+                                          height="15"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          aria-hidden="true"
+                                        >
+                                          <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+                                          <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                        View again
+                                      </button>
+                                    </div>
+                                  );
+                                }
 
                                 if (menuMode) {
                                   return (
                                     <button
-                                      key={i}
+                                      key={action.send}
                                       type="button"
-                                      disabled={disabled}
+                                      disabled={
+                                        disabled ||
+                                        employeeSearchMode
+                                      }
                                       onClick={() => handleActionClick(action)}
                                       className={`bg-white text-[#1f2430] border border-[#eceef5] shadow-[0_2px_8px_rgba(43,30,120,0.04)] px-3.5 py-4 rounded-2xl flex items-center gap-2.5 font-bold text-[13px] text-left transition-all duration-150 hover:border-[var(--primary-color)] hover:bg-[var(--primary-light)] hover:text-[var(--primary-color)] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(109,94,252,0.15)] disabled:opacity-45 disabled:cursor-not-allowed ${
                                         isBack
@@ -1286,9 +1650,12 @@ export default function ChatbotWidget({
 
                                 return (
                                   <button
-                                    key={i}
+                                    key={action.send}
                                     type="button"
-                                    disabled={disabled}
+                                    disabled={
+                                      disabled ||
+                                      employeeSearchMode
+                                    }
                                     onClick={() => handleActionClick(action)}
                                     style={
                                       !isSecondary ? GRADIENT_STYLE : undefined
@@ -1326,6 +1693,7 @@ export default function ChatbotWidget({
                               }
                             />
                           )}
+
                         </>
                       )}
 
@@ -1337,6 +1705,176 @@ export default function ChatbotWidget({
                 </React.Fragment>
               );
             })}
+
+            {employeeSearchMode && (
+              <div className="flex gap-2.5 items-end animate-[cbFadeIn_0.25s_ease]">
+                <div
+                  style={GRADIENT_STYLE}
+                  className="w-[30px] h-[30px] rounded-full text-white flex items-center justify-center text-[15px] shrink-0 shadow-[0_3px_8px_rgba(109,94,252,0.3)]"
+                  aria-hidden="true"
+                >
+                  🤖
+                </div>
+                <section
+                  aria-label="Employee search"
+                  className="w-full max-w-[84%] rounded-[18px] rounded-bl-md border border-[#eceef5] bg-white p-4 shadow-[0_3px_14px_rgba(43,30,120,0.07)]"
+                >
+                  <h3 className="m-0 text-[13.5px] font-semibold leading-relaxed text-[#1f2430]">
+                    Search Employee
+                  </h3>
+                  <div
+                    ref={employeeSearchCardRef}
+                    className="mt-3 flex flex-col gap-2"
+                  >
+                    <label
+                      htmlFor="veda-employee-search"
+                      className="text-[11px] font-medium text-[#555d72]"
+                    >
+                      Employee Name or ID
+                    </label>
+                    <input
+                      id="veda-employee-search"
+                      autoFocus
+                      value={employeeSearchValue}
+                      onChange={(event) => {
+                        employeeSearchRequestIdRef.current += 1;
+                        setEmployeeSearchValue(event.target.value);
+                      }}
+                      onFocus={() => {
+                        if (
+                          employeeSearchPending ||
+                          employeeSuggestions.length > 0 ||
+                          employeeSearchCompleted ||
+                          employeeSearchError
+                        ) {
+                          setIsEmployeeSuggestionsOpen(true);
+                        }
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "ArrowDown") {
+                          if (employeeSuggestions.length === 0) return;
+                          event.preventDefault();
+                          setIsEmployeeSuggestionsOpen(true);
+                          setActiveEmployeeSuggestion((index) =>
+                            Math.min(index + 1, employeeSuggestions.length - 1),
+                          );
+                        } else if (event.key === "ArrowUp") {
+                          if (employeeSuggestions.length === 0) return;
+                          event.preventDefault();
+                          setActiveEmployeeSuggestion((index) =>
+                            Math.max(index - 1, 0),
+                          );
+                        } else if (
+                          event.key === "Enter" &&
+                          isEmployeeSuggestionsOpen &&
+                          activeEmployeeSuggestion >= 0
+                        ) {
+                          event.preventDefault();
+                          void selectEmployeeSuggestion(
+                            employeeSuggestions[activeEmployeeSuggestion],
+                          );
+                        } else if (event.key === "Escape") {
+                          setIsEmployeeSuggestionsOpen(false);
+                        }
+                      }}
+                      maxLength={100}
+                      disabled={loading}
+                      placeholder="Enter employee name or ID"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      aria-expanded={isEmployeeSuggestionsOpen}
+                      aria-controls="veda-employee-suggestions"
+                      aria-activedescendant={
+                        activeEmployeeSuggestion >= 0
+                          ? `veda-employee-suggestion-${activeEmployeeSuggestion}`
+                          : undefined
+                      }
+                      className="w-full min-w-0 rounded-xl border border-[#dfe2eb] bg-[#f7f7fc] px-3 py-2.5 text-[13px] text-[#1f2430] outline-none focus:border-[var(--primary-color)] focus:bg-white"
+                    />
+                    {isEmployeeSuggestionsOpen && (
+                      <div
+                        id="veda-employee-suggestions"
+                        role="listbox"
+                        aria-label="Matching employees"
+                        className="mt-1 max-h-64 overflow-y-auto rounded-xl border border-[#eceef5] bg-white p-1.5 shadow-[0_8px_24px_rgba(31,36,48,0.16)]"
+                      >
+                        {employeeSearchPending ? (
+                          <div
+                            role="status"
+                            className="px-3 py-3 text-center text-[12px] text-[#747b91]"
+                          >
+                            Searching employees...
+                          </div>
+                        ) : employeeSearchError ? (
+                          <div
+                            role="alert"
+                            className="px-3 py-3 text-center text-[12px] text-[#b42318]"
+                          >
+                            {employeeSearchError}
+                          </div>
+                        ) : employeeSearchCompleted &&
+                          employeeSuggestions.length === 0 ? (
+                          <div className="px-3 py-3 text-center text-[12px] text-[#747b91]">
+                            No matching employees found.
+                          </div>
+                        ) : (
+                          employeeSuggestions.map((suggestion, index) => (
+                            <button
+                              id={`veda-employee-suggestion-${index}`}
+                              key={suggestion.action}
+                              type="button"
+                              role="option"
+                              aria-selected={
+                                activeEmployeeSuggestion === index
+                              }
+                              onMouseEnter={() =>
+                                setActiveEmployeeSuggestion(index)
+                              }
+                              onClick={() =>
+                                void selectEmployeeSuggestion(suggestion)
+                              }
+                              className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors ${
+                                activeEmployeeSuggestion === index
+                                  ? "bg-[var(--primary-light)]"
+                                  : "hover:bg-[#f7f7fc]"
+                              }`}
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary-light)] text-[11px] font-bold text-[var(--primary-color)]"
+                              >
+                                {getEmployeeInitials(suggestion.primary)}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-[12.5px] font-semibold text-[#1f2430]">
+                                  {suggestion.primary}
+                                </span>
+                                <span className="block truncate text-[11px] text-[#747b91]">
+                                  {suggestion.secondary}
+                                  {suggestion.meta
+                                    ? ` · ${suggestion.meta}`
+                                    : ""}
+                                </span>
+                              </span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => void cancelEmployeeSearch()}
+                        className="rounded-xl border border-[#eceef5] bg-white px-4 py-2.5 text-[12px] font-semibold text-[#747b91] hover:bg-[#f6f4ff]"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            )}
 
             {loading && (
               <div className="flex gap-2.5 items-end">
@@ -1513,6 +2051,23 @@ export default function ChatbotWidget({
           }}
         />
       )}
+      {isOpen &&
+        profileDataState.accountEmployeeId === employeeId &&
+        visibleProfileState.accountEmployeeId === employeeId &&
+        visibleProfileState.employeeId &&
+        profileDataState.profiles[visibleProfileState.employeeId] && (
+          <EmployeeBusinessProfileCard
+            profile={
+              profileDataState.profiles[visibleProfileState.employeeId]
+            }
+            onClose={() =>
+              setVisibleProfileState({
+                accountEmployeeId: employeeId,
+                employeeId: null,
+              })
+            }
+          />
+        )}
     </div>
   );
 }

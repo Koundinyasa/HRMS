@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Globe2, Loader2 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { useDomainVerification } from "../hooks/useDomainVerification";
 import { domainSchema } from "../validation/domainSchema";
@@ -8,22 +8,22 @@ export default function DomainForm() {
     const [domain, setDomain] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-
+ 
     const { verifyDomain, isVerifying } = useDomainVerification();
-
+ 
     const validateDomain = (value: string) => {
         const result = domainSchema.safeParse({ domain: value });
-
+ 
         if (!result.success) {
             setError(result.error.issues[0].message);
             setSuccess("");
             return false;
         }
-
+ 
         setError("");
         return true;
     };
-
+ 
     const handleSubmit = async () => {
         if (isVerifying) {
             return;
@@ -34,9 +34,9 @@ export default function DomainForm() {
  
         setError("");
         setSuccess("");
-
+ 
         const isValid = await verifyDomain(domain);
-
+ 
         if (isValid) {
             setSuccess("Valid domain name");
         } else {
@@ -45,89 +45,62 @@ export default function DomainForm() {
     };
  
     return (
-        <div className="flex flex-col gap-0">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Domain*
-                </label>
-                <div className="flex items-center gap-3">
-                    <div
-                        className={`flex flex-1 items-center h-[48px] bg-[#EEF5FB] border rounded-lg px-3 gap-2 transition-colors ${
-                            error
-                                ? "border-red-400"
-                                : "border-[#D8E2EC] focus-within:border-blue-400"
-                        }`}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="w-4 h-4 text-gray-400 shrink-0"
-                            aria-hidden="true"
-                        >
-                            <path
-                                fillRule="evenodd"
-                                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                                clipRule="evenodd"
-                            />
-                        </svg>
-                        <input
-                            type="text"
-                            spellCheck={false}
-                            value={domain}
-                            onChange={(e) => {
-                                const value = e.target.value;
-
-                                setDomain(value);
-
-                                if (value.trim() === "") {
-                                    setError("");
-                                    setSuccess("");
-                                    return;
-                                }
-                                validateDomain(value);
-                            }}
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleSubmit()
-                            }
-                            placeholder="https://hrms/"
-                            className="w-full bg-transparent outline-none border-none text-gray-700 text-sm placeholder:text-gray-400"
-                        />
-                    </div>
-                    <Button
-                        onClick={handleSubmit}
-                        disabled={isVerifying}
-                        aria-busy={isVerifying}
-                        className="h-[44px] w-[112px] shrink-0 whitespace-nowrap px-2 text-sm rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8]"
-                    >
-                        {isVerifying ? (
-                            <>
-                                <Loader2
-                                    className="mr-2 h-4 w-4 animate-spin"
-                                    aria-hidden="true"
-                                />
-                                Checking
-                            </>
-                        ) : (
-                            "Proceed →"
-                        )}
-                    </Button>
-                </div>
+        <div className="mt-8">
+            <label htmlFor="domain" className="mb-2 block text-xs font-bold text-[#1d2852]">
+                Domain <span className="text-[#e5485d]">*</span>
+            </label>
+            <div
+                className={`flex h-[60px] items-center gap-2 rounded-full border bg-white p-1.5 pl-4 shadow-[0_12px_30px_rgba(47,76,165,0.12)] transition-colors ${
+                    error
+                        ? "border-red-400"
+                        : "border-[#e0e7f2] focus-within:border-[#8299f1]"
+                }`}
+            >
+                <Globe2 className="h-[18px] w-[18px] shrink-0 text-slate-400" aria-hidden="true" />
+                <input
+                    id="domain"
+                    type="text"
+                    spellCheck={false}
+                    value={domain}
+                    onChange={(e) => {
+                        const value = e.target.value;
  
-                <div className="mt-1.5 min-h-[16px]" aria-live="polite">
-                    {error && (
-                        <p className="text-red-500 text-xs">
-                            {error}
-                        </p>
+                        setDomain(value);
+ 
+                        if (value.trim() === "") {
+                            setError("");
+                            setSuccess("");
+                            return;
+                        }
+                        validateDomain(value);
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                    placeholder="https://hrms/"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                />
+                <Button
+                    onClick={handleSubmit}
+                    disabled={isVerifying}
+                    aria-busy={isVerifying}
+                    className="h-[46px] shrink-0 rounded-full bg-[#3156e4] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#2647c7] sm:px-5"
+                >
+                    {isVerifying ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                            Checking
+                        </>
+                    ) : (
+                        <>
+                            Proceed
+                            <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
+                        </>
                     )}
-                    {success && (
-                        <p className="text-green-500 text-xs">
-                            {success}
-                        </p>
-                    )}
-                </div>
+                </Button>
             </div>
+            <div className="mt-2 min-h-[18px]" aria-live="polite">
+                {error && <p className="text-xs text-red-500">{error}</p>}
+                {success && <p className="text-xs text-green-600">{success}</p>}
+                </div>
         </div>
     );
 }
- 

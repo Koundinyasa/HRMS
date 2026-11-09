@@ -54,7 +54,7 @@ export default function ForgotPasswordForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4"
+      className="mt-7 flex flex-col gap-3"
     >
       {/* Email ID */}
       <div className="flex flex-col gap-1.5">
@@ -75,20 +75,26 @@ export default function ForgotPasswordForm() {
           onChange={(e) => setUserId(e.target.value)}
           placeholder="username@koundinyasa.tech.com"
           disabled={isLoading}
-          className="w-full h-[48px] px-4 rounded-lg border border-[#D8E2EC] bg-[#EEF5FB] outline-none"
+          className="h-[36px] w-full rounded-lg border border-slate-300 bg-white px-3 text-slate-600 outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+          style={{ ...U, fontSize: "clamp(11px, 0.85vw, 13px)" }}
         />
       </div>
 
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500" style={U}>
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-[50px] bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+        className="flex h-[36px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-700 to-blue-500 text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+        style={{ ...U, fontSize: "clamp(12px, 0.9vw, 14px)", fontWeight: 600 }}
       >
         {isLoading ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
             Sending OTP...
           </>
         ) : (
@@ -96,11 +102,6 @@ export default function ForgotPasswordForm() {
         )}
       </button>
 
-      <div className="mt-auto pt-30 text-center text-sm text-gray-500">
-        Powered by
-        <span className="text-blue-600 ml-1 font-semibold">KOUNDINYASA</span>
-        <span className="ml-1">Technology Services</span>
-      </div>
     </form>
   );
 }

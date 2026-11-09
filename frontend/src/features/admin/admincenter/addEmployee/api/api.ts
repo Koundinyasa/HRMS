@@ -1,6 +1,7 @@
 import api from "@/api/api";
 import type {
   Branch,
+  Company,
   CreateEmployeePayload,
   CreateEmployeeResult,
   Designation,
@@ -22,7 +23,8 @@ function mapMasterData(data: Record<string, unknown>): MasterData {
   const companies = ((data.companies as Record<string, unknown>[]) || []).map((r) => ({
     id: Number(r.CompanyID),
     name: String(r.CompanyName ?? ""),
-  })) as Option[];
+    emailDomain: String(r.DomainName ?? "").trim(),
+  })) as Company[];
  
   const branches = ((data.branches as Record<string, unknown>[]) || []).map((r) => ({
     id: Number(r.BranchID),

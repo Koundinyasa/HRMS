@@ -8,6 +8,7 @@ export const MENUS: Record<string, Menu> = {
       { label: 'Company Info', send: 'menu:company' },
       { label: 'Documents', send: 'menu:documents' },
       { label: 'Employee Directory', send: 'menu:directory', hrOnly: true },
+      { label: 'Search Employee', send: 'employee-search:open', hrOnly: true },
       { label: 'Teams', send: 'teams', hrOnly: true },
     ],
   },

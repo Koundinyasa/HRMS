@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Button } from "../../../components/ui/button";
 import { verifyOtpSchema } from "../validation/verifyOtpSchema";
 import { useVerifyOtp } from "../hooks/useVerifyOtp";
 import { useForgotPassword } from "../hooks/useForgotPassword";
@@ -9,6 +8,8 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { showPageLoader } from "../../employee/employeeSlice";
 import { Loader2 } from "lucide-react";
+
+const U: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
 
 export default function VerifyOtpForm() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -174,13 +175,14 @@ export default function VerifyOtpForm() {
 
   return (
     <form
+      className="mt-7"
       onSubmit={(event) => {
         event.preventDefault();
         void handleSubmit();
       }}
     >
       {/* OTP Inputs */}
-      <div className="flex justify-center gap-4 mt-8">
+      <div className="mt-2 flex justify-center gap-2 sm:gap-3">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -198,57 +200,57 @@ export default function VerifyOtpForm() {
             onKeyDown={(e) =>
               handleKeyDown(e, index)
             }
-            className="w-14 h-16 text-center text-3xl border rounded disabled:bg-gray-100"
+            className="h-12 min-w-0 max-w-12 flex-1 rounded-lg border border-slate-300 text-center text-xl text-[#17244f] outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400 disabled:bg-slate-100 sm:h-[52px]"
+            style={U}
           />
         ))}
       </div>
 
       {/* Verify Button */}
-      <Button
+      <button
         type="submit"
         disabled={
           isVerifying ||
           remainingSeconds <= 0 ||
           otp.join("").length !== 6
         }
-        className="w-full mt-10 h-[50px] bg-blue-600 disabled:opacity-60"
+        className="mt-7 flex h-[36px] w-full items-center justify-center rounded-full bg-gradient-to-r from-blue-700 to-blue-500 text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        style={{ ...U, fontSize: "clamp(12px, 0.9vw, 14px)", fontWeight: 600 }}
       >
         {isVerifying ? (
           <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Verifying...
           </>
         ) : (
           "Verify"
         )}
-      </Button>
+      </button>
 
       {/* Timer */}
-      <div className="mt-4 flex justify-between text-sm text-gray-500">
+      <div
+        className="mt-3 flex justify-between text-[11px] text-slate-500"
+        style={U}
+      >
         <span>
           {remainingSeconds > 0
             ? "OTP is valid for 3 mins"
             : "OTP has expired"}
         </span>
 
-        <span
-          className={
-            remainingSeconds <= 30
-              ? "text-red-500 font-medium"
-              : ""
-          }
-        >
+        <span className={remainingSeconds <= 30 ? "font-medium text-red-500" : ""}>
           {formattedTime}
         </span>
       </div>
 
       {/* Resend OTP */}
-      <div className="text-right mt-4">
+      <div className="mt-3 text-right">
         <button
           type="button"
           onClick={handleResendOtp}
           disabled={isResending || remainingSeconds > 0}
-          className="text-blue-600 text-sm disabled:text-gray-400 disabled:cursor-not-allowed"
+          className="text-[11px] text-[#3158db] disabled:cursor-not-allowed disabled:text-slate-400"
+          style={U}
         >
           {isResending ? (
             <span className="flex items-center gap-1">

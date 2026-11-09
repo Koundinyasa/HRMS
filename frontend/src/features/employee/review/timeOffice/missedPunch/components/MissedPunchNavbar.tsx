@@ -83,6 +83,7 @@ const formatTipDate = (iso: string) =>
   );
 
 interface MissedPunchDatePickerProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   align?: "left" | "right";
@@ -90,6 +91,7 @@ interface MissedPunchDatePickerProps {
 }
 
 function MissedPunchDatePicker({
+  id,
   value,
   onChange,
   align = "left",
@@ -573,12 +575,13 @@ function MissedPunchDatePicker({
   };
 
   return (
-    <div
-      onMouseMove={handleCellHover}
-      onMouseLeave={hideTip}
-    >
+    <div>
       <DatePicker
+        id={id}
         text={text}
+        portal
+        onPopupMouseMove={handleCellHover}
+        onPopupMouseLeave={hideTip}
         readOnly
         align={align}
         onTextChange={() => {
@@ -590,7 +593,6 @@ function MissedPunchDatePicker({
         }}
         open={open}
         onOpenChange={handleOpenChange}
-        fixedPosition
         monthLabel={monthLabel}
         weekdayLabels={WEEKDAY_LABELS}
         cells={cells}
@@ -731,39 +733,27 @@ export default function MissedPunchNavbar({
 
   return (
     <TimeOfficeNavbar allowVerticalOverflow className="mb-3">
-      <div
-        ref={scrollRef}
-        className={`punch-horizontal-scroll max-w-[calc(100vw-5.5rem)] pb-1 sm:max-w-none sm:overflow-visible ${
-          pickerOpen ? "overflow-visible" : "overflow-x-auto"
-        }`}
-      >
-        <div
-          className="flex w-max items-center gap-3"
-          style={
-            pickerOpen
-              ? { transform: `translateX(-${offset}px)` }
-              : undefined
-          }
-        >
-          <label className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-[#1f2937]">
-            From
+      <div className="punch-horizontal-scroll w-full min-w-0 max-w-[calc(100vw-5.5rem)] overflow-x-auto overflow-y-hidden pb-1 sm:max-w-none sm:overflow-visible">
+        <div className="flex w-max items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-[#1f2937]">
+            <label htmlFor="missed-punch-from">From</label>
             <MissedPunchDatePicker
+              id="missed-punch-from"
               value={filters.fromDate}
               onChange={onFromDateChange}
               align="left"
-              onOpenStateChange={handlePickerOpen}
             />
-          </label>
+          </div>
 
-          <label className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-[#1f2937]">
-            To
+          <div className="flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-medium text-[#1f2937]">
+            <label htmlFor="missed-punch-to">To</label>
             <MissedPunchDatePicker
+              id="missed-punch-to"
               value={filters.toDate}
               onChange={onToDateChange}
-              align="right"
-              onOpenStateChange={handlePickerOpen}
+              align="left"
             />
-          </label>
+          </div>
 
           <Button
             type="button"
