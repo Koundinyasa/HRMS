@@ -92,7 +92,10 @@ export class DraftService implements OnModuleInit {
   // it's always consumed within the same request/response cycle.
   readonly pendingListPreview = new Map<
     string,
-    { title: string; rows: { primary: string; secondary?: string }[] }
+    {
+      title: string;
+      rows: { primary: string; secondary?: string; action?: string }[];
+    }
   >();
 
   // Same one-shot pattern as pendingListPreview above, but for a single

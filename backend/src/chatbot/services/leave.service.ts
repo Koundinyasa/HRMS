@@ -1475,7 +1475,8 @@ export class LeaveService {
         if (ctx.role === 'admin' || ctx.role === 'hr') {
           return `Leave management isn't available from this account. Please sign in with your employee login to apply for or manage leave.`;
         }
-        return intent.handle(ctx);
+        const response = await intent.handle(ctx);
+        return typeof response === 'string' ? response : response.text;
       },
     }));
   }

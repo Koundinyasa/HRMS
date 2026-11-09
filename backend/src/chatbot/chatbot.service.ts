@@ -15,7 +15,13 @@ import { DatabaseService } from '../database/database.service';
 import { ResponseService } from './services/response.service';
 import { TeamService } from './services/team.service';
  
-import { IntentCtx, IntentDefinition, ChatResult, ActionButton } from './types';
+import {
+  IntentCtx,
+  IntentDefinition,
+  ChatResult,
+  ActionButton,
+  EmployeeBusinessProfile,
+} from './types';
 import {
   PII_PATTERNS,
   PAYROLL_KEYWORDS,
@@ -47,6 +53,7 @@ export class ChatbotService {
     ),
     private readonly employeeService: EmployeeService = new EmployeeService(
       draftService,
+      hrmsDbService,
     ),
     private readonly aiService: AiService = new AiService(configService),
     // Default only for direct `new ChatbotService(...)` construction in
@@ -248,6 +255,7 @@ export class ChatbotService {
     const buildResult = async (
       botResponse: string,
       confidence: 'LOCAL' | 'AI' | 'FALLBACK',
+      employeeProfile?: EmployeeBusinessProfile,
     ): Promise<ChatResult> => {
       const extras = await this.responseService.buildResponseExtras(
         user.employeeId as string,
@@ -281,6 +289,7 @@ export class ChatbotService {
         timestamp: new Date(),
         user: { name: user.name as string, role: user.role as string },
         ...(refresh ? { refresh } : {}),
+        ...(employeeProfile ? { employeeProfile } : {}),
       };
     };
  
@@ -289,8 +298,8 @@ export class ChatbotService {
     // gets a chance to touch these — always resolved locally.
     const { blocked } = this.hasHardLocalBlock(message, user);
     if (blocked || !this.aiService.aiEnabled) {
-      const { text } = await this.generateResponse(message, user);
-      return buildResult(text, 'LOCAL');
+      const local = await this.generateResponse(message, user);
+      return buildResult(local.text, 'LOCAL', local.employeeProfile);
     }
  
     // Step 2 — actually attempt to resolve this locally, for real, using the
@@ -300,7 +309,7 @@ export class ChatbotService {
     // and never goes near the AI.
     const local = await this.generateResponse(message, user);
     if (local.matched) {
-      return buildResult(local.text, 'LOCAL');
+      return buildResult(local.text, 'LOCAL', local.employeeProfile);
     }
  
     // Step 3 — nothing in our own rules recognised this message at all, so
@@ -323,7 +332,11 @@ export class ChatbotService {
   private async generateResponse(
     message: string,
     user: Record<string, unknown>,
-  ): Promise<{ matched: boolean; text: string }> {
+  ): Promise<{
+    matched: boolean;
+    text: string;
+    employeeProfile?: EmployeeBusinessProfile;
+  }> {
     const employeeId = user.employeeId as string;
  
     const info = await this.hrmsDbService.getUserInfo(employeeId);
@@ -394,7 +407,10 @@ export class ChatbotService {
     for (const intent of this.intents) {
       if (intent.test(ctx)) {
         this.cleanupStaleDraftsOnIntent(ctx.employeeId, intent.name);
-        return { matched: true, text: await intent.handle(ctx) };
+        const response = await intent.handle(ctx);
+        return typeof response === 'string'
+          ? { matched: true, text: response }
+          : { matched: true, ...response };
       }
     }
  
@@ -441,5 +457,3 @@ export class ChatbotService {
     }
   }
 }
- 
- 

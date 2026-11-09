@@ -1,3 +1,5 @@
+import { EmployeeBusinessProfile } from './employee-business-profile.types';
+ 
 export interface IntentCtx {
   message: string;
   msg: string;
@@ -43,10 +45,18 @@ export interface IntentCtx {
   directory: { id: string; name: string; designation: string }[];
 }
  
+export interface StructuredIntentResponse {
+  text: string;
+  employeeProfile?: EmployeeBusinessProfile;
+}
+ 
+export type IntentResponse = string | StructuredIntentResponse;
+ 
 // Shared shape for every "if user says X, reply with Y" entry, used by every
 // domain service's getIntents() and the orchestrator's own core intents.
 export interface IntentDefinition {
   name: string;
   test: (ctx: IntentCtx) => boolean;
-  handle: (ctx: IntentCtx) => Promise<string>;
+  handle: (ctx: IntentCtx) => Promise<IntentResponse>;
 }
+
