@@ -49,24 +49,35 @@ jobs:
       pull-requests: write
 
     steps:
+      # -----------------------------------------------
+      # STEP 1: CHECKOUT CODE
+      # -----------------------------------------------
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # -----------------------------------------------
+      # STEP 2: SETUP NODE.JS
+      # -----------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
+      # -----------------------------------------------
+      # STEP 3: INSTALL BACKEND DEPENDENCIES
+      # -----------------------------------------------
       - name: Install Backend Dependencies
-        run: |
-          cd backend
-          npm ci
+        working-directory: backend
+        run: npm ci
 
+      # -----------------------------------------------
+      # STEP 4: RUN TESTS WITH COVERAGE
+      # -----------------------------------------------
       - name: Run Tests with Coverage
+        working-directory: backend
         run: |
-          cd backend
           npm test -- --coverage --coverageReporters=lcov
         env:
           DB_HOST: localhost
@@ -75,13 +86,47 @@ jobs:
           DB_NAME: fooddelivery
           NODE_ENV: test
 
+      # -----------------------------------------------
+      # STEP 5: DISPLAY COVERAGE REPORT
+      # -----------------------------------------------
       - name: Display Coverage Report
         run: |
           echo "=== Checking coverage files ==="
           ls -la backend/coverage/ || echo "No coverage directory!"
+
           echo "=== Looking for lcov.info ==="
           find backend -name "lcov.info" || echo "lcov.info not found!"
 
+      # -----------------------------------------------
+      # STEP 6: VALIDATE SONARCLOUD TOKEN
+      # -----------------------------------------------
+      - name: Check SonarCloud Authentication
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_HRMS }}
+        run: |
+          echo "Checking SonarCloud authentication..."
+
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "ERROR: SONARQUBE_HRMS secret is missing or empty."
+            exit 1
+          fi
+
+          response=$(curl -sS \
+            --user "${SONAR_TOKEN}:" \
+            https://sonarcloud.io/api/authentication/validate)
+
+          echo "Authentication response: $response"
+
+          if ! echo "$response" | grep -q '"valid":true'; then
+            echo "ERROR: SonarCloud token is invalid."
+            exit 1
+          fi
+
+          echo "SUCCESS: SonarCloud token is valid."
+
+      # -----------------------------------------------
+      # STEP 7: SONARCLOUD QUALITY SCAN
+      # -----------------------------------------------
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
