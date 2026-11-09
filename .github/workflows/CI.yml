@@ -86,7 +86,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.HRMS_GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.Sonar_HRMS }}
         with:
           args: >
             -Dsonar.organization=Koundinyasa
