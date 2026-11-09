@@ -134,7 +134,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_HRMS }}
         with:
           args: >
-            -Dsonar.organization=Koundinyasa
+            -Dsonar.organization=koundinyasa
             -Dsonar.projectKey=Koundinyasa_HRMS
             -Dsonar.sources=backend/src,frontend/src
             -Dsonar.tests=backend/src,frontend/src
