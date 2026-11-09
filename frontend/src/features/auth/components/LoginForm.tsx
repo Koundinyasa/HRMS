@@ -13,7 +13,7 @@ import { useLogin } from "../hooks/useLogin";
 
 const urbanist: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
 const inputCls =
-  "h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400";
+  "h-[36px] w-full rounded-lg border-slate-300 bg-white text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400";
 
 export default function LoginForm() {
   const { captcha, captchaLoading, loadCaptcha, login } = useLogin();
@@ -59,18 +59,14 @@ export default function LoginForm() {
 
   return (
     <div
-      className="w-full flex flex-col"
+      className="flex w-full flex-col lg:h-full lg:min-h-0"
       style={{
-        borderRadius: "clamp(16px, 2vw, 24px)",
-        border: "1px solid rgba(46,46,46,0.18)",
-        boxShadow: "4px 4px 24px 8px rgba(28,32,53,0.10)",
-        background: "#FFFFFF",
-        padding:
-          "clamp(18px, 2.5vw, 30px) clamp(20px, 5vw, 56px) clamp(16px, 2vw, 24px)",
+        background: "transparent",
+        padding: 0,
       }}
     >
       {/* ── HRMS Badge ── */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="mb-9 flex items-center gap-2 lg:mb-0">
         <div
           className="flex items-center justify-center shrink-0"
           style={{
@@ -97,33 +93,39 @@ export default function LoginForm() {
       </div>
 
       {/* ── Header ── */}
-      <div className="mb-4">
+      <div className="mb-3 lg:mt-[clamp(88px,20vh,150px)]">
         <p
-          className="uppercase mb-2"
+          className="mb-3 flex items-center gap-2 uppercase"
           style={{
             ...urbanist,
             fontWeight: 500,
-            fontSize: "clamp(10px, 1.1vw, 13px)",
-            letterSpacing: "0.12em",
-            color: "#067EF1",
+            fontSize: 11,
+            letterSpacing: "0.16em",
+            color: "#3158db",
           }}
         >
-          Welcome Back
+          <span className="h-px w-5 bg-rose-400" />
+          Welcome back
         </p>
-        
+        <h1
+          className="mb-2 text-[clamp(40px,3.2vw,52px)] font-bold leading-[1] tracking-tight text-[#17244f]"
+          style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}
+        >
+          Sign in to <span className="text-[#3158db]">HRMS</span>
+        </h1>
         <p
           style={{
             ...urbanist,
             fontWeight: 400,
-            fontSize: "clamp(11px, 0.85vw, 14px)",
-            color: "#6B7280",
+            fontSize: 13,
+            color: "#64748b",
           }}
         >
-          Enter your credentials to access HRMS
+          Enter your credentials to access HRMS.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2">
 
         {/* ── Username ── */}
         <div className="flex flex-col gap-1.5">
@@ -147,7 +149,7 @@ export default function LoginForm() {
               id="userId"
               type="text"
               placeholder="username@koundinyasa.tech"
-              className="pl-9 h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
+              className="pl-9 h-[36px] w-full rounded-lg border-slate-300 bg-white text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
               style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
               {...register("userId")}
             />
@@ -179,7 +181,7 @@ export default function LoginForm() {
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
-              className="pl-9 pr-10 h-[42px] w-full rounded-lg border-slate-200 bg-slate-50 text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
+              className="pl-9 pr-10 h-[36px] w-full rounded-lg border-slate-300 bg-white text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
               style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
               {...register("password")}
               onPaste={(event) => event.preventDefault()}
@@ -198,7 +200,7 @@ export default function LoginForm() {
           )}
         </div>
 
-      
+     
         {/* Captcha */}
         <div className="flex flex-col gap-1.5">
           <Label
@@ -218,7 +220,7 @@ export default function LoginForm() {
               className="rounded-lg border border-blue-100 bg-[#EEF5FE] overflow-hidden flex items-center justify-center shrink-0"
               style={{
                 width: 120,
-                height: 44,
+                height: 36,
               }}
             >
               {captchaLoading ? (
@@ -242,7 +244,7 @@ export default function LoginForm() {
               onClick={loadCaptcha}
               disabled={captchaLoading}
               title="Refresh captcha"
-              className="h-[44px] w-[44px] shrink-0 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-500 transition-colors disabled:opacity-60"
+              className="h-[36px] w-[36px] shrink-0 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center text-slate-500 transition-colors disabled:opacity-60"
             >
               <RefreshCw
                 size={14}
@@ -312,8 +314,8 @@ export default function LoginForm() {
           disabled={isSubmitting || captchaLoading}
           className="w-full flex items-center justify-center text-white font-semibold transition-opacity disabled:opacity-70 hover:opacity-90"
           style={{
-            height: 40,
-            borderRadius: 10,
+            height: 36,
+            borderRadius: 9999,
             background: "linear-gradient(90deg, #1D4ED8 0%, #3B82F6 100%)",
             boxShadow: "0px 2px 16px 0px rgba(59,130,246,0.40)",
             ...urbanist,
@@ -344,8 +346,8 @@ export default function LoginForm() {
           type="button"
           className="w-full flex items-center justify-center gap-2 transition-colors hover:bg-slate-50"
           style={{
-            height: 40,
-            borderRadius: 10,
+            height: 36,
+            borderRadius: 9999,
             border: "1px solid #D1D5DB",
             background: "#FFFFFF",
             ...urbanist,
@@ -360,12 +362,8 @@ export default function LoginForm() {
       </form>
 
       {/* ── Powered by footer ── */}
-      <p
-        className="text-center mt-auto pt-4"
-        style={{ ...urbanist, fontSize: 12, color: "#9CA3AF" }}
-      >
-        Powered by{" "}
-        <span style={{ fontWeight: 700, color: "#067EF1" }}>KOUNDINYASA</span>{" "}
+      <p className="mt-4 pt-1 text-left lg:mt-auto" style={{ ...urbanist, fontSize: 10, color: "#64748b" }}>
+        Powered by <strong className="text-[#17244f]">KOUNDINYASA</strong>{" "}
         Technology Services
       </p>
     </div>

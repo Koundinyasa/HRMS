@@ -1,118 +1,135 @@
-import backgroundImg from "@/assets/images/background-bg.png";
-import logoImg from "@/assets/images/koundinyasa-logo.png";
-import peopleImg from "@/assets/images/people.png";
 import { useEffect } from "react";
+import { BarChart2, Clock, TrendingUp, User } from "lucide-react";
 
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import loginIllustration from "../../../assets/images/image(20261109-105952).png";
 import { hidePageLoader } from "@/features/employee/employeeSlice";
-
-import { BarChart3, Clock3, TrendingUp, KeyRound } from "lucide-react";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 import ForgotPasswordForm from "../components/ForgotPasswordForm";
 
+const U: React.CSSProperties = { fontFamily: "Urbanist, sans-serif" };
+
 function ForgotPassword() {
+  const dispatch = useAppDispatch();
 
-    const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(hidePageLoader());
+  }, [dispatch]);
 
-    useEffect(() => {
-        dispatch(hidePageLoader());
-    }, [dispatch]);
-    return (
-        <div
-            className="min-h-screen flex flex-col bg-cover bg-center bg-no-repeat"
-            style={{
-                backgroundImage: `url(${backgroundImg})`,
-            }}
-        >
-            <div className="flex-1 flex justify-center items-center px-8 py-4">
-                <div className="w-full max-w-[1350px] flex flex-col lg:flex-row items-center justify-center gap-15">
-                    {/* LEFT SIDE */}
-
-                    <div className="w-full lg:w-[46%] flex flex-col items-center justify-center">
-                        <div className="w-full max-w-[700px] h-[430px] bg-[#000033]/40 border border-white/10 rounded-[28px] backdrop-blur-sm px-10 py-10 text-center flex flex-col items-center justify-center">
-                            <h1 className="text-white text-4xl lg:text-5xl font-semibold leading-tight">
-                                People-first HR,
-                            </h1>
-
-                            <p className="text-white text-lg mt-6 max-w-[540px]">
-                                Manage your workforce, payroll, attendance and
-                                performance — all from one unified platform.
-                            </p>
-
-                            {/* FEATURES */}
-
-                            <div className="flex flex-wrap justify-center gap-4 mt-8">
-                                <div
-                                    className="flex items-center gap-2 px-5 py-2 border border-cyan-400 rounded-full text-white">
-                                    <BarChart3 size={16} />
-                                    Payroll
-                                </div>
-                                <div className="flex items-center gap-2 px-5 py-2 border border-cyan-400 rounded-full text-white">
-                                    <Clock3 size={16} />
-                                    Attendance
-                                </div>
-
-                                <div className="flex items-center gap-2 px-5 py-2 border border-cyan-400 rounded-full text-white">
-                                    <TrendingUp size={16} />
-                                    Analytics
-                                </div>
-                            </div>
-
-                            <p className="text-white text-2xl mt-10">
-                                Powered By
-                            </p>
-
-                            <img
-                                src={logoImg}
-                                alt="logo"
-                                className="w-[320px] mt-4 object-contain"
-                            />
-                        </div>
-
-                        <img
-                            src={peopleImg}
-                            alt="people"
-                            className="w-[260px] sm:w-[320px] lg:w-[420px] mt-4 object-contain"
-                        />
-                    </div>
-
-                    {/* RIGHT SIDE */}
-
-                    <div
-                        className="w-full max-w-[500px] h-[620px] bg-white rounded-[32px] px-8 py-10 shadow-xl flex flex-col">
-                        <div className="flex justify-center">
-                            <div className="w-[58px] h-[58px] rounded-full bg-[#C8EEF3] flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
-                                <KeyRound
-                                    size={22}
-                                    strokeWidth={2.5}
-                                    className="text-[#1E293B] -rotate-12"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="text-center mt-8">
-                            <h2 className="text-4xl font-normal">
-                                Forgot Password?
-                            </h2>
-
-                            <p className="text-gray-600 mt-4">
-                                Enter your email/mobile number and we will
-                                send you an OTP to reset your password
-                            </p>
-                        </div>
-
-                        <div className="mt-10">
-                            <ForgotPasswordForm />
-                        </div>
-                    </div>
-                </div>
+  return (
+    <div className="min-h-screen bg-white lg:h-[100dvh] lg:overflow-hidden">
+      <main className="grid min-h-screen grid-cols-1 lg:h-full lg:min-h-0 lg:grid-cols-2">
+        <section className="flex flex-col px-6 py-6 sm:px-12 lg:min-h-0 lg:px-[clamp(48px,8vw,120px)] lg:py-6">
+          <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col">
+            <div className="flex items-center gap-2">
+              <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-700 to-blue-500 shadow-md shadow-blue-200">
+                <User className="text-white" size={16} />
+              </div>
+              <span
+                className="text-[11px] font-bold uppercase tracking-widest text-slate-800"
+                style={U}
+              >
+                HRMS
+              </span>
             </div>
 
-            <footer className="h-[32px] h-[32px] bg-sky-300 flex items-center justify-center text-[10px] sm:text-xs text-black">
-                © 2026 Koundinyasa Technology Services Pvt. Ltd. All rights reserved. Unauthorized access is strictly prohibited.
-            </footer>
-        </div>
-    );
+            <div className="mt-16 lg:mt-[clamp(88px,20vh,150px)]">
+              <p
+                className="mb-3 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[#3158db]"
+                style={U}
+              >
+                <span className="h-px w-5 bg-rose-400" />
+                Account recovery
+              </p>
+              <h1
+                className="text-[clamp(40px,3.2vw,52px)] font-bold leading-[1] tracking-tight text-[#17244f]"
+                style={{
+                  fontFamily:
+                    'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+                }}
+              >
+                Forgot Password?
+              </h1>
+              <p
+                className="mt-3 max-w-[390px] text-[13px] leading-relaxed text-slate-600"
+                style={U}
+              >
+                Enter your email or mobile number and we’ll send you an OTP to
+                reset your password.
+              </p>
+            </div>
+
+            <ForgotPasswordForm />
+
+            <p
+              className="mt-6 text-left text-[10px] text-slate-500 lg:mt-auto"
+              style={U}
+            >
+              Powered by{" "}
+              <strong className="text-[#17244f]">KOUNDINYASA</strong> Technology
+              Services
+            </p>
+          </div>
+        </section>
+
+        <aside className="relative flex min-h-[520px] flex-col overflow-hidden bg-[#eef1ff] px-8 pb-4 pt-12 sm:px-12 lg:min-h-0 lg:px-[clamp(36px,5vw,76px)] lg:pt-[clamp(36px,6vh,64px)]">
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 z-10 hidden h-full w-[clamp(100px,9vw,140px)] lg:block"
+            viewBox="0 0 140 1000"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 0 H105 C135 120 140 210 115 310 C90 405 55 470 65 560 C75 660 125 720 115 820 C105 900 105 950 125 1000 H0 Z"
+              fill="#FFFFFF"
+            />
+          </svg>
+
+          <div className="relative z-10 mx-auto w-full max-w-[560px]">
+            <h2
+              className="text-[30px] font-bold leading-[1.08] tracking-tight text-[#17244f] sm:text-[36px]"
+              style={{
+                fontFamily: 'Georgia, "Times New Roman", serif',
+              }}
+            >
+              People-first HR,
+              <br />
+              <span className="text-[#3158db]">all in one place.</span>
+            </h2>
+            <p
+              className="mt-3 max-w-[460px] text-[12px] leading-relaxed text-slate-600 sm:text-[13px]"
+              style={U}
+            >
+              Manage your workforce, payroll, attendance, and performance, all
+              from one unified platform.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { icon: <BarChart2 size={12} />, label: "Payroll" },
+                { icon: <Clock size={12} />, label: "Attendance" },
+                { icon: <TrendingUp size={12} />, label: "Analytics" },
+              ].map(({ icon, label }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#d8def4] bg-white/80 px-3 py-1.5 text-[10px] font-medium text-[#273b78] shadow-sm"
+                  style={U}
+                >
+                  {icon}
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <img
+            src={loginIllustration}
+            alt="HR dashboard illustration showing leave, attendance, and payroll"
+            className="pointer-events-none absolute bottom-0 left-1/2 z-0 h-[64%] w-full -translate-x-1/2 object-contain object-bottom"
+          />
+        </aside>
+      </main>
+    </div>
+  );
 }
 
 export default ForgotPassword;
