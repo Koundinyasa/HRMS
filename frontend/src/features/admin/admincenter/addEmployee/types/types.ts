@@ -10,6 +10,10 @@ export interface Option<T extends string | number = number> {
   name: string;
 }
 
+export interface Company extends Option<number> {
+  emailDomain?: string;
+}
+
 export interface Branch extends Option<number> {
   companyId: number;
 }
@@ -23,7 +27,7 @@ export interface Manager extends Option<string> {
 }
 
 export interface MasterData {
-  companies: Option[];
+  companies: Company[];
   branches: Branch[];
   departments: Option[];
   designations: Designation[];

@@ -98,13 +98,13 @@ export default function PunchProcessPunchPage() {
     <div className="min-h-screen w-full min-w-0 bg-[#F3F7FE] px-3 pb-3 pt-0 sm:px-5 sm:pb-5">
       {/* Punch process tabs and date actions */}
 <div className="w-full min-w-0 rounded-xl border border-emerald-400 bg-emerald-50 shadow-sm">
-<div className="punch-horizontal-scroll w-full min-w-0 overflow-x-auto overscroll-x-contain [touch-action:pan-x]">
-  <header className="flex w-max min-w-full flex-nowrap items-center gap-3 px-3 py-2">
+<div className="w-full min-w-0">
+  <header className="flex w-full min-w-0 flex-col gap-2 px-3 py-2 md:flex-row md:items-center md:gap-3">
 
     {/* Navigation tabs */}
     <nav
       aria-label="Punch process"
-      className="flex shrink-0 items-center gap-2 whitespace-nowrap"
+      className="punch-horizontal-scroll flex min-w-0 max-w-full items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap pb-1 [touch-action:pan-x] md:pb-0"
     >
       {PUNCH_PROCESS_TABS.map((tab) => (
         <NavLink
@@ -124,7 +124,7 @@ export default function PunchProcessPunchPage() {
     </nav>
 
     {/* Date picker and action buttons */}
-    <div className="flex shrink-0 items-center gap-2">
+    <div className="flex min-w-0 flex-wrap items-center gap-2 md:ml-auto">
       <DateField
         label="Date"
         value={date}

@@ -427,8 +427,8 @@ function DateFieldControl({ name, value, onCommit, onFieldBlur, error, hint, min
 // ✅ CHANGED (card button 1/3): optional `action` renders INSIDE the card header (top-right)
 function Section({ config, children, action }: { config: SectionConfig; children: ReactNode; action?: ReactNode }) {
   return (
-    <section className="mb-5 scroll-mt-6 rounded-[14px] border border-[#D3D9E2] bg-white p-[22px_24px_24px]" id={config.id}>
-      <div className="mb-[18px] flex items-start justify-between gap-4">
+    <section className="mb-5 scroll-mt-6 rounded-[14px] border border-[#D3D9E2] bg-white p-[22px_24px_24px] max-sm:p-4" id={config.id}>
+      <div className="mb-[18px] flex items-start justify-between gap-4 max-sm:flex-col">
         <div>
           <h2 className="m-0 mb-1 text-lg font-bold">{config.title}</h2>
           <p className="m-0 text-sm text-[#5A6376]">{config.lead}</p>
@@ -583,7 +583,13 @@ export default function AddEmployee({
  
   /* ---------- Derived data ---------- */
  
-  const errors = useMemo(() => validateAll(values, photo), [values, photo]);
+  const companyDomain = masterData.companies.find(
+    company => String(company.id) === values.CompanyID,
+  )?.emailDomain;
+  const errors = useMemo(
+    () => validateAll(values, photo, companyDomain),
+    [values, photo, companyDomain],
+  );
   const visibleError = (key: ErrorKey): string | undefined => {
     if (!touched.has(key)) return undefined;
     if (errors[key]) return errors[key];
@@ -782,9 +788,11 @@ export default function AddEmployee({
       if (!CHECKED_FIELDS.includes(name as CheckedField)) return;
       const checkedName = name as CheckedField;
       // Only hit the server once the field already passes its own format rules
-      if (!validateField(name, values)) runIdentityCheck(checkedName, values[name]);
+      if (!validateField(name, values, companyDomain)) {
+        runIdentityCheck(checkedName, values[name]);
+      }
     },
-    [handleBlur, values, runIdentityCheck],
+    [handleBlur, values, companyDomain, runIdentityCheck],
   );
  
   const handleRegenerateCode = useCallback(() => {
@@ -940,8 +948,8 @@ export default function AddEmployee({
  
   return (
     <div className="text-[15px] leading-normal text-[#1B2230]">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-8 overflow-visible pb-6 md:grid-cols-[290px_minmax(0,1fr)]">
-        <aside className="sticky top-4 z-[5] flex max-h-[calc(100vh-32px)] flex-col gap-4 self-start overflow-y-auto">
+      <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 items-start gap-4 overflow-visible px-3 pb-6 sm:gap-6 sm:px-4 lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-8">
+        <aside className="z-[5] flex flex-col gap-4 self-start lg:sticky lg:top-4 lg:max-h-[calc(100vh-32px)] lg:overflow-y-auto">
           <IdCard
             firstName={values.FirstName.trim()}
             lastName={values.LastName.trim()}
@@ -956,7 +964,7 @@ export default function AddEmployee({
           <Progress items={progress} />
         </aside>
  
-        <form onSubmit={handleSubmit} noValidate>
+        <form className="min-w-0" onSubmit={handleSubmit} noValidate>
           {/* ✅ CHANGED (card button 2/3): "Back to Employee List" now sits INSIDE the Personal details card */}
           <Section
             config={SECTIONS[0]}
@@ -1156,16 +1164,16 @@ export default function AddEmployee({
             />
           </Section>
  
-          <div className="static z-auto mt-2 rounded-[14px] border border-[#D3D9E2] bg-white px-6 py-3.5">
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <span className={`mr-auto text-sm ${status.bad ? "font-semibold text-[#B42318]" : "text-[#5A6376]"}`} role="status">{status.text}</span>
-              <button type="button" className="min-h-11 cursor-pointer rounded-md border border-[#D3D9E2] bg-transparent px-5 py-2.5 font-semibold text-[#1B2230] hover:bg-[#F4F8FE] disabled:cursor-progress disabled:opacity-60" onClick={handlePreview} disabled={saving}>
+          <div className="static z-auto mt-2 rounded-[14px] border border-[#D3D9E2] bg-white px-6 py-3.5 max-sm:px-4 max-sm:py-4">
+            <div className="flex flex-wrap items-center justify-end gap-3 max-sm:gap-2">
+              <span className={`mr-auto text-sm max-sm:w-full ${status.bad ? "font-semibold text-[#B42318]" : "text-[#5A6376]"}`} role="status">{status.text}</span>
+              <button type="button" className="min-h-11 cursor-pointer rounded-md border border-[#D3D9E2] bg-transparent px-5 py-2.5 font-semibold text-[#1B2230] hover:bg-[#F4F8FE] disabled:cursor-progress disabled:opacity-60 max-sm:px-3" onClick={handlePreview} disabled={saving}>
                 Preview
               </button>
-              <button type="button" className="min-h-11 cursor-pointer rounded-md border border-[#D3D9E2] bg-transparent px-5 py-2.5 font-semibold text-[#1B2230] hover:bg-[#F4F8FE] disabled:cursor-progress disabled:opacity-60" onClick={handleReset} disabled={saving}>
+              <button type="button" className="min-h-11 cursor-pointer rounded-md border border-[#D3D9E2] bg-transparent px-5 py-2.5 font-semibold text-[#1B2230] hover:bg-[#F4F8FE] disabled:cursor-progress disabled:opacity-60 max-sm:px-3" onClick={handleReset} disabled={saving}>
                 Clear form
               </button>
-              <button type="submit" className="min-h-11 cursor-pointer rounded-md border border-[var(--theme-primary,#1F5C7A)] bg-[var(--theme-primary,#1F5C7A)] px-5 py-2.5 font-semibold text-white hover:brightness-110 disabled:cursor-progress disabled:opacity-60" disabled={saving}>
+              <button type="submit" className="min-h-11 cursor-pointer rounded-md border border-[var(--theme-primary,#1F5C7A)] bg-[var(--theme-primary,#1F5C7A)] px-5 py-2.5 font-semibold text-white hover:brightness-110 disabled:cursor-progress disabled:opacity-60 max-sm:px-3" disabled={saving}>
                 {saving ? "Creating…" : "Create employee"}
               </button>
             </div>

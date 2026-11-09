@@ -9,7 +9,11 @@ export interface Rule {
   label: string;
   required?: boolean;
   requiredMsg?: string;
-  check?: (value: string, all: EmployeeFormValues) => string;
+  check?: (
+    value: string,
+    all: EmployeeFormValues,
+    companyDomain?: string,
+  ) => string;
 }
 
 /* =========================================================
@@ -326,9 +330,15 @@ export const RULES: Record<FieldName, Rule> = {
   Email: {
     label: "Work email",
     required: true,
-    check: (v, all) => {
+    check: (v, all, companyDomain) => {
       if (!reEmail.test(v)) {
         return "Enter a valid email address.";
+      }
+
+      const emailDomain = v.slice(v.lastIndexOf("@") + 1).toLowerCase();
+      const officialDomain = companyDomain?.trim().replace(/^@/, "").toLowerCase();
+      if (!officialDomain || emailDomain !== officialDomain) {
+        return "Please enter an official email.";
       }
 
       if (
@@ -347,9 +357,15 @@ export const RULES: Record<FieldName, Rule> = {
   AlternateEmailId: {
     label: "Personal email",
     required: true,
-    check: (v, all) => {
+    check: (v, all, companyDomain) => {
       if (!reEmail.test(v)) {
         return "Enter a valid email address.";
+      }
+
+      const emailDomain = v.slice(v.lastIndexOf("@") + 1).toLowerCase();
+      const officialDomain = companyDomain?.trim().replace(/^@/, "").toLowerCase();
+      if (officialDomain && emailDomain === officialDomain) {
+        return "Please use a personal email address that is different from the company domain.";
       }
 
       if (
@@ -516,6 +532,7 @@ export const EMPTY_VALUES = Object.fromEntries(
 export function validateField(
   name: FieldName,
   values: EmployeeFormValues,
+  companyDomain?: string,
 ): string {
   const rule = RULES[name];
   const value = values[name].trim();
@@ -526,7 +543,7 @@ export function validateField(
       : "";
   }
 
-  return rule.check ? rule.check(value, values) : "";
+  return rule.check ? rule.check(value, values, companyDomain) : "";
 }
 
 /* =========================================================
@@ -564,11 +581,12 @@ export function validatePhoto(file: File | null): string {
 export function validateAll(
   values: EmployeeFormValues,
   photo: File | null,
+  companyDomain?: string,
 ): FormErrors {
   const errors: FormErrors = {};
 
   for (const name of FIELD_NAMES) {
-    const msg = validateField(name, values);
+    const msg = validateField(name, values, companyDomain);
 
     if (msg) {
       errors[name] = msg;

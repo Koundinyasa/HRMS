@@ -391,3 +391,13 @@ ol {
     min-height: 44px;
   }
 }
+
+.attendance-prompt-move-left {
+  animation: attendance-prompt-move-left 3s linear forwards;
+}
+
+@keyframes attendance-prompt-move-left {
+  to {
+    transform: translateX(var(--attendance-prompt-distance, 0px));
+  }
+}

@@ -1,5 +1,6 @@
 import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceTable from "../components/AttendanceTable";
+import EmployeeSearchSelect from "../components/EmployeeSearchSelect";
 import MonthlyOverview from "../components/MonthlyOverview";
 import OverviewDetailsModal from "../components/OverviewDetailsModal";
 import PunchDetails from "../components/PunchDetails";
@@ -7,7 +8,7 @@ import RequestStatus from "../components/RequestStatus";
 import ToastStack from "../components/ToastStack";
 import { useAttendanceOverview } from "../hooks/useAttendanceOverview";
 import { NavLink, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import {
   CalendarDays,
   FileSpreadsheet,
@@ -17,12 +18,6 @@ import {
 } from "lucide-react";
 import { MonthPicker } from "@/components/ui/monthpicker";
 import { useGetProfileQuery } from "../../../dashboard/api/dashboardApi";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
 import {
   PUNCH_PROCESS_TABS,
   TIME_OFFICE_SECTION_PATH,
@@ -36,6 +31,9 @@ interface AttendanceOverviewProps {
 export default function AttendanceOverview({
   adminMode = false,
 }: AttendanceOverviewProps) {
+  const employeeFilterRef = useRef<HTMLDivElement>(null);
+  const promptRowRef = useRef<HTMLDivElement>(null);
+  const promptTextRef = useRef<HTMLSpanElement>(null);
   const [showAttendanceDetails, setShowAttendanceDetails] = useState(false);
   const { domain } = useParams();
   const { data: profileData } = useGetProfileQuery();
@@ -95,6 +93,35 @@ export default function AttendanceOverview({
     rawPunches,
   } = useAttendanceOverview(adminMode);
 
+  useLayoutEffect(() => {
+    if (showAttendanceDetails) return;
+
+    const employeeFilter = employeeFilterRef.current;
+    const promptRow = promptRowRef.current;
+    const promptText = promptTextRef.current;
+    if (!employeeFilter || !promptRow || !promptText) return;
+
+    const positionPrompt = () => {
+      const filterRect = employeeFilter.getBoundingClientRect();
+      const rowRect = promptRow.getBoundingClientRect();
+      const target = Math.max(0, filterRect.left - rowRect.left);
+      const start = rowRect.width;
+      promptText.style.left = `${start}px`;
+      promptText.style.setProperty(
+        "--attendance-prompt-distance",
+        `${target - start}px`,
+      );
+    };
+
+    positionPrompt();
+    const resizeObserver = new ResizeObserver(positionPrompt);
+    resizeObserver.observe(employeeFilter);
+    resizeObserver.observe(promptRow);
+    resizeObserver.observe(promptText);
+
+    return () => resizeObserver.disconnect();
+  }, [showAttendanceDetails]);
+
   const profile = profileData?.data?.profile;
   const managerEmployee = profile
     ? {
@@ -115,14 +142,14 @@ export default function AttendanceOverview({
         <div
           className={
             adminMode
-              ? "punch-horizontal-scroll flex w-full min-w-0 flex-nowrap items-center justify-between gap-1 overflow-x-auto overscroll-x-contain rounded-xl border border-emerald-500 bg-emerald-50 px-2 py-1.5 font-[Urbanist] [touch-action:pan-x]"
-              : "flex min-w-0 items-center justify-between gap-8 overflow-x-auto rounded-xl border border-[#e0e5ec] bg-white px-4 font-[Urbanist]"
+              ? "flex w-full min-w-0 flex-col gap-2 rounded-xl border border-emerald-500 bg-emerald-50 px-2 py-1.5 font-[Urbanist] md:flex-row md:items-center md:justify-between md:gap-1"
+              : "flex min-w-0 flex-col gap-2 rounded-xl border border-[#e0e5ec] bg-white px-4 py-2 font-[Urbanist] md:flex-row md:items-center md:justify-between md:gap-8 md:py-0"
           }
         >
           {adminMode ? (
             <nav
               aria-label="Punch process"
-              className="flex min-w-max shrink-0 flex-nowrap items-center gap-1"
+              className="punch-horizontal-scroll flex min-w-0 max-w-full flex-nowrap items-center gap-1 overflow-x-auto overscroll-x-contain pb-1 [touch-action:pan-x] md:pb-0"
             >
               {PUNCH_PROCESS_TABS.map((tab) => (
                 <NavLink
@@ -141,7 +168,7 @@ export default function AttendanceOverview({
               ))}
             </nav>
           ) : (
-          <div className="flex min-w-max items-center gap-8 font-[Urbanist]">
+          <div className="flex min-w-0 items-center gap-8 overflow-x-auto font-[Urbanist]">
             <NavLink
               to={`/${domain}/employee/TA/attendanceoverview`}
               className="whitespace-nowrap border-b-2 border-[#1997e8] px-1 py-5 text-[15px] font-semibold text-[#1997e8] font-[Urbanist]"
@@ -150,7 +177,7 @@ export default function AttendanceOverview({
             </NavLink>
           </div>
           )}
-          <div className="flex min-w-max items-center gap-2 font-[Urbanist]">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 font-[Urbanist]">
             <button
               type="button"
               title="List view"
@@ -182,58 +209,21 @@ export default function AttendanceOverview({
                 className="h-9 rounded-lg border-black bg-white text-xs font-[Urbanist]"
               />
             </div>
-            <Select
-              value={selectedEmployee?.id || "none"}
-              onValueChange={(value) => {
-                if (value === null) return;
-
-                const employee = employees.find((item) => item.id === value);
-                if (employee) {
-                  selectEmployee(employee);
-                  setShowAttendanceDetails(true);
-                } else {
-                  setShowAttendanceDetails(false);
-                }
-              }}
-              disabled={reportingEmployeesLoading || employees.length === 0}
-            >
-              <SelectTrigger
-                aria-label="Select employee"
-                className="h-9 w-[180px] shrink-0 rounded-lg border-black bg-white px-2 text-xs text-slate-600 shadow-none focus:ring-0 font-[Urbanist]"
-              >
-                <span className="min-w-0 truncate">
-                  {selectedEmployee
-                    ? `${selectedEmployee.id} ${selectedEmployee.name}`
-                    : reportingEmployeesLoading
-                    ? "Loading employees..."
-                    : "Select employee"}
-                </span>
-              </SelectTrigger>
-
-              <SelectContent
-                side="bottom"
-                align="end"
-                sideOffset={4}
-                alignItemWithTrigger={false}
-                className="max-h-60 w-(--anchor-width) min-w-[220px] max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto"
-              >
-                <SelectItem
-                  value="none"
-                  className="min-w-0 whitespace-normal break-words"
-                >
-                  Select employee
-                </SelectItem>
-                {employees.map((employee) => (
-                  <SelectItem
-                    key={employee.id}
-                    value={employee.id}
-                    className="min-w-0 whitespace-normal break-words"
-                  >
-                    {employee.id} {employee.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div ref={employeeFilterRef} className="shrink-0">
+              <EmployeeSearchSelect
+                employees={employees}
+                selectedEmployee={selectedEmployee}
+                loading={reportingEmployeesLoading}
+                onSelect={(employee) => {
+                  if (employee) {
+                    selectEmployee(employee);
+                    setShowAttendanceDetails(true);
+                  } else {
+                    setShowAttendanceDetails(false);
+                  }
+                }}
+              />
+            </div>
             <button
               type="button"
               title="Grid view"
@@ -268,6 +258,20 @@ export default function AttendanceOverview({
         {/* ================================================================
             ATTENDANCE FILTERS
         ================================================================ */}
+
+        {!showAttendanceDetails && (
+          <div
+            ref={promptRowRef}
+            className="attendance-prompt-row relative h-16 overflow-hidden text-sm text-red-600 font-[Urbanist]"
+          >
+            <span
+              ref={promptTextRef}
+              className="attendance-prompt-move-left absolute top-6 whitespace-nowrap"
+            >
+              Select an employee to view details.
+            </span>
+          </div>
+        )}
 
         {showAttendanceDetails && (
           <AttendanceFilters
