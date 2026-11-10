@@ -198,21 +198,28 @@ export class EmployeeService {
 
     const companyId = this.authenticatedCompanyId(user);
 
-    const directory = await this.hrmsDbService.getEmployeeDirectory(companyId, {
-      failOnError: true,
-      bypassCache: true,
-    });
+    const directory = (
+      await this.hrmsDbService.getEmployeeDirectory(companyId, {
+        failOnError: true,
+        bypassCache: true,
+      })
+    ).map((employee) => ({
+      employeeId: String(employee.id ?? '').trim(),
+      fullName: String(employee.name ?? '').trim(),
+      designation: String(employee.designation ?? '').trim(),
+    }));
     const normalizedTerm = term.toLowerCase();
 
     return directory
+      .filter((employee) => employee.employeeId && employee.fullName)
       .filter(
         (employee) =>
-          employee.id.toLowerCase().includes(normalizedTerm) ||
-          employee.name.toLowerCase().includes(normalizedTerm),
+          employee.employeeId.toLowerCase().includes(normalizedTerm) ||
+          employee.fullName.toLowerCase().includes(normalizedTerm),
       )
       .map((employee) => ({
-        employeeId: employee.id,
-        fullName: employee.name,
+        employeeId: employee.employeeId,
+        fullName: employee.fullName,
         designation: employee.designation,
       }));
   }
@@ -236,7 +243,7 @@ export class EmployeeService {
     );
     const selectedEmployee = directoryMatches.find(
       (employee) =>
-        employee.employeeId.toLowerCase() ===
+        employee.employeeId.trim().toLowerCase() ===
         normalizedEmployeeId.toLowerCase(),
     );
     if (!selectedEmployee) {
@@ -486,6 +493,7 @@ export class EmployeeService {
     }
   }
 
+
   private authenticatedCompanyId(user: Record<string, unknown>): number {
     const companyId = Number(user.companyId);
     if (!Number.isInteger(companyId) || companyId <= 0) {
@@ -701,8 +709,11 @@ export class EmployeeService {
 
           let employeeId: string;
           try {
-            employeeId = decodeURIComponent(selection);
+            employeeId = decodeURIComponent(selection).trim();
           } catch {
+            return `Employee selection is invalid.`;
+          }
+          if (!employeeId || /\s/.test(employeeId)) {
             return `Employee selection is invalid.`;
           }
 

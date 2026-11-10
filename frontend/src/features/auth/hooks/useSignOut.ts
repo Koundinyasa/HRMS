@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { baseApi } from "@/app/baseApi";
 import { broadcastSignedOut } from "@/app/crossTab";
 import { clearSessionTiming } from "@/app/sessionClock";
@@ -13,10 +13,10 @@ import { logout } from "../authSlice";
  * working everywhere), then clears the app state and goes to the login page.
  * If the server cannot be reached the screen is still cleared, so the user is
  * never stuck on a page they tried to leave.
+ * Finishes with a full page load so no signed-in data stays in memory.
  */
 export function useSignOut() {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { domain: domainParam } = useParams();
   const domainFromStore = useAppSelector((state) => state.domain.domain);
   const [logoutRequest, { isLoading }] = useLogoutMutation();
@@ -32,9 +32,13 @@ export function useSignOut() {
       clearSessionTiming();
       dispatch(baseApi.util.resetApiState());
       broadcastSignedOut();
-      navigate(domain ? `/${domain}/login` : "/", { replace: true });
+      // A full page load (not an in-app route change) so nothing from the
+      // signed-in session is left in memory, and the browser starts the login
+      // page with a fresh network log.
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      window.location.replace(domain ? `${base}/${domain}/login` : `${base}/`);
     }
-  }, [dispatch, navigate, domainParam, domainFromStore, logoutRequest]);
+  }, [dispatch, domainParam, domainFromStore, logoutRequest]);
 
   return { signOut, isSigningOut: isLoading };
 }

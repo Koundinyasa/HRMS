@@ -31,7 +31,20 @@ import {
 import { DEFAULT_TEST_USER } from './constants/chatbot.constants';
 import { normalizeText, normalizeMessage } from './utils/string.util';
 import { fuzzyContains } from './utils/fuzzy.util';
-import { getTodayInfo } from './utils/date.util';
+import {
+  DateTimeIntent,
+  detectDateTimeIntent,
+  getDateTimeResponse,
+} from './utils/date.util';
+
+const DATE_TIME_INTENTS: DateTimeIntent[] = [
+  'CURRENT_DATETIME',
+  'YESTERDAY_DATE',
+  'TOMORROW_DATE',
+  'CURRENT_DATE',
+  'CURRENT_TIME',
+  'CURRENT_DAY',
+];
  
 @Injectable()
 export class ChatbotService {
@@ -80,14 +93,6 @@ export class ChatbotService {
  
   // ── Core intents that don't belong to any single domain service ──────────
   private readonly coreIntents: IntentDefinition[] = [
-    {
-      name: 'today',
-      test: (ctx) =>
-        /today'?s? date|current date|what date is it|date today|what day is it|current time|what time is it|time now/i.test(
-          ctx.msg,
-        ),
-      handle: async (_ctx) => getTodayInfo(),
-    },
     {
       name: 'identity',
       test: (ctx) =>
@@ -139,6 +144,14 @@ export class ChatbotService {
     },
   ];
  
+  private readonly dateTimeIntents: IntentDefinition[] = DATE_TIME_INTENTS.map(
+    (dateTimeIntent) => ({
+      name: dateTimeIntent,
+      test: (ctx) => detectDateTimeIntent(ctx.message) === dateTimeIntent,
+      handle: async () => getDateTimeResponse(dateTimeIntent),
+    }),
+  );
+
   // Order matters — first match wins. This is the exact same order the
   // intents appeared in the original single-file version: menu, leave,
   // today/identity/greeting, employee+payroll, company, thankYou.
@@ -147,12 +160,12 @@ export class ChatbotService {
       ...this.menuService.getIntents(),
       ...this.teamService.getIntents(),
       ...this.leaveService.getIntents(),
-      this.coreIntents[0], // today
-      this.coreIntents[1], // identity
-      this.coreIntents[2], // greeting
+      ...this.dateTimeIntents,
+      this.coreIntents[0], // identity
+      this.coreIntents[1], // greeting
       ...this.employeeService.getIntents(),
       ...this.companyService.getIntents(),
-      this.coreIntents[3], // thankYou
+      this.coreIntents[2], // thankYou
     ];
   }
  
@@ -456,4 +469,4 @@ export class ChatbotService {
       );
     }
   }
-}
+}
