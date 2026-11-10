@@ -3,10 +3,10 @@ name: KTS-People360 CI/CD
 on:
   push:
     branches:
-      - Devops_D
+      - Devops
   pull_request:
     branches:
-      - Devops_D
+      - Devops
   workflow_dispatch:
 
 permissions:
