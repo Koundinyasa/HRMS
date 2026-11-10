@@ -1,6 +1,6 @@
 import { Check, IndianRupee, UserRound } from "lucide-react";
 import DomainForm from "../components/DomainForm";
- 
+
 function DashboardIllustration() {
     return (
         <div
@@ -28,10 +28,10 @@ function DashboardIllustration() {
                     />
                 </svg>
             </div>
- 
+
             <div className="absolute right-[7%] top-[9%] text-4xl text-white">✦</div>
             <div className="absolute top-[38%] z-[2] hidden text-lg text-white/80 lg:left-[calc(50%+1.25vw-411px)] lg:block">✦</div>
- 
+
             {/* paper sheets */}
             <div className="absolute bottom-[18%] left-[3%] z-[2] hidden h-[70px] lg:left-[calc(50%+1.25vw-414px)] w-[56px] rotate-[8deg] rounded-md bg-white/90 p-2 shadow-md sm:block">
                 <div className="mb-1.5 h-1.5 w-full -rotate-12 rounded-full bg-[#c8d4fb]" />
@@ -43,12 +43,12 @@ function DashboardIllustration() {
                 <div className="mb-1.5 h-1.5 w-full rotate-12 rounded-full bg-[#c8d4fb]" />
                 <div className="h-1.5 w-2/3 rotate-12 rounded-full bg-[#c8d4fb]" />
             </div>
- 
+
             <div className="relative z-[2] h-[360px] w-full max-w-[650px] sm:h-[560px] lg:-translate-x-[100px]">
                 <div className="absolute left-1/2 top-[calc(50%+22px)] h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-[#3156df] via-[#5478ef] to-[#7795f7] shadow-[0_35px_80px_rgba(55,83,205,0.22)] sm:h-[540px] sm:w-[540px]" />
                 <div className="absolute right-[7%] top-[49%] h-2.5 w-2.5 rounded-full bg-[#ff6b7e]" />
                 <div className="absolute hidden h-14 w-14 rounded-full border-[6px] border-[#5f82f2] sm:left-[calc(50%-270px)] sm:top-[250px] sm:block" />
- 
+
                 <div className="absolute left-[46%] top-[43%] w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-[20px] bg-white p-3 shadow-[0_24px_50px_rgba(25,42,99,0.2)] sm:w-[60%] sm:p-5">
                     <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
                         <div className="flex items-center gap-1.5">
@@ -91,14 +91,14 @@ function DashboardIllustration() {
                         </div>
                     </div>
                 </div>
- 
-                <div className="absolute left-0 top-[14%] flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-xs font-semibold text-[#1d2852] shadow-[0_12px_30px_rgba(25,42,99,0.18)] sm:left-[5%] sm:px-4">
+
+                <div className="absolute left-0 top-[14%] flex items-center gap-2 rounded-full bg-white px-3 py-2.5 text-[16px] font-semibold text-[#1d2852] shadow-[0_12px_30px_rgba(25,42,99,0.18)] sm:left-[5%] sm:px-4">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#18845e] text-white">
                         <Check className="h-4 w-4" strokeWidth={3} />
                     </span>
                     Leave approved
                 </div>
- 
+
                 <div className="absolute right-[5%] top-[10.5%] flex items-center gap-3 rounded-2xl bg-white px-3 py-3 shadow-[0_15px_35px_rgba(25,42,99,0.18)] sm:right-[10%] sm:min-w-[210px] sm:px-4 sm:py-4">
                     <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-[#ff8f9c]">
                         <svg viewBox="0 0 48 48" className="h-12 w-12">
@@ -109,13 +109,13 @@ function DashboardIllustration() {
                     <span className="space-y-1.5">
                         <span className="block h-2.5 w-16 rounded-full bg-[#1d2852] sm:w-24" />
                         <span className="block h-2 w-12 rounded-full bg-[#c8d4fb] sm:w-16" />
-                        <span className="mt-1 flex w-fit items-center gap-1.5 rounded-full bg-[#d9f5eb] px-2.5 py-1 text-[9px] font-semibold text-[#18845e]">
+                        <span className="mt-1 flex w-fit items-center gap-1.5 rounded-full bg-[#d9f5eb] px-2.5 py-1 text-[16px] font-semibold text-[#18845e]">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#18845e]" />
                             Active
                         </span>
                     </span>
                 </div>
- 
+
                 <div className="absolute bottom-[31%] left-0 flex items-center gap-3 rounded-2xl bg-white px-3 py-3 shadow-[0_15px_35px_rgba(25,42,99,0.18)] sm:left-[calc(50%-281px)] sm:gap-4 sm:px-5 sm:py-4">
                     <svg viewBox="0 0 48 48" className="h-12 w-12 shrink-0">
                         <defs>
@@ -132,18 +132,18 @@ function DashboardIllustration() {
                         <path d="M16 25l6 6 11-12" fill="none" stroke="#ff6b7e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span>
-                        <span className="block text-xs font-bold text-[#1d2852] sm:text-sm">Attendance</span>
-                        <span className="text-[10px] text-slate-500 sm:text-xs">Checked in</span>
+                        <span className="block text-[16px] font-bold text-[#1d2852]">Attendance</span>
+                        <span className="text-[16px] text-slate-500">Checked in</span>
                     </span>
                 </div>
- 
+
                 <div className="absolute bottom-[13%] right-[4%] w-[42%] rounded-2xl bg-white p-3 shadow-[0_15px_35px_rgba(25,42,99,0.2)] sm:right-[14%] sm:w-[32%] sm:min-w-[220px] sm:p-4">
                     <div className="mb-3 flex items-center gap-2">
                         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8edff] text-[#365ce4]">
                             <IndianRupee className="h-4 w-4" strokeWidth={2.5} />
                         </span>
-                        <span className="text-xs font-bold text-[#1d2852] sm:text-sm">Payroll</span>
-                        <span className="ml-auto rounded-full bg-[#d9f5eb] px-2 py-1 text-[9px] font-semibold text-[#18845e]">Paid</span>
+                        <span className="text-[16px] font-bold text-[#1d2852]">Payroll</span>
+                        <span className="ml-auto rounded-full bg-[#d9f5eb] px-2 py-1 text-[16px] font-semibold text-[#18845e]">Paid</span>
                     </div>
                     <div className="flex h-12 items-end gap-1.5 sm:h-14 sm:gap-2">
                         {[35, 52, 42, 72, 58, 88].map((height, index) => (
@@ -155,7 +155,7 @@ function DashboardIllustration() {
                         ))}
                     </div>
                 </div>
- 
+
                 <div className="absolute right-[1%] top-[48%] flex h-16 w-16 rotate-[-10deg] items-center justify-center rounded-2xl bg-[#182968] text-[#ff8290] shadow-xl sm:right-[11%] sm:h-[76px] sm:w-[76px]">
                     <svg viewBox="0 0 48 48" className="h-9 w-9 sm:h-11 sm:w-11">
                         <path d="M24 4l16 6v12c0 10-7 18-16 22C15 40 8 32 8 22V10z" fill="#ff7787" />
@@ -166,20 +166,20 @@ function DashboardIllustration() {
         </div>
     );
 }
- 
+
 function DomainVerification() {
     return (
         <div className="grid min-h-screen w-full max-w-none overflow-x-hidden bg-white font-sans text-[#172554] lg:grid-cols-2">
-            <section className="flex min-h-[100svh] flex-col px-7 py-8 sm:px-12 lg:pb-2 lg:pt-10 lg:pl-[clamp(12rem,16.7vw,17rem)] lg:pr-8">
+            <section className="flex min-h-[100svh] flex-col px-7 py-8 text-left sm:px-12 lg:pb-2 lg:pt-10 lg:pl-[clamp(12rem,16.7vw,17rem)] lg:pr-8">
                 <header className="flex items-center gap-3">
                     <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#3156e4] text-white shadow-[0_8px_20px_rgba(49,86,228,0.25)]">
                         <UserRound className="h-4 w-4" />
                     </span>
-                    <span className="text-[11px] font-extrabold tracking-[0.16em] text-[#1d2852]">HRMS</span>
+                    <span className="text-[16px] font-extrabold tracking-[0.16em] text-[#1d2852]">HRMS</span>
                 </header>
- 
+
                 <main className="my-auto w-full max-w-[430px] py-14 lg:translate-y-10">
-                    <div className="mb-4 flex items-center gap-2 text-[10px] font-extrabold tracking-[0.18em] text-[#3156e4]">
+                    <div className="mb-4 flex items-center gap-2 text-[16px] font-extrabold tracking-[0.18em] text-[#3156e4]">
                         <span className="h-0.5 w-6 rounded-full bg-[#ff7787]" />
                         WELCOME
                     </div>
@@ -194,13 +194,13 @@ function DomainVerification() {
                         <br />
                         to <span className="text-[#3156e4]" style={{ fontFamily: "inherit", fontWeight: 700 }}>HRMS</span>
                     </h1>
-                    <p className="mt-5 text-[14px] text-slate-500">
+                    <p className="mt-5 text-[16px] font-medium text-slate-700">
                         Enter your domain to access HRMS.
                     </p>
                     <DomainForm />
                 </main>
- 
-                <footer className="mt-auto max-w-[430px] space-y-4 text-[10px] leading-relaxed text-slate-400 sm:text-[10px]">
+
+                <footer className="mt-auto max-w-[430px] space-y-4 text-[16px] leading-relaxed text-slate-600 text-left">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                         <span>Powered by</span>
                         <span
@@ -216,7 +216,7 @@ function DomainVerification() {
                             <span className="block font-extrabold tracking-wide text-[#172554]">
                                 KOUNDINYASA
                             </span>
-                            <span className="block text-[8px] font-semibold tracking-[0.12em] text-slate-500">
+                            <span className="block text-[16px] font-semibold tracking-[0.12em] text-slate-600">
                                 TECHNOLOGY SERVICES PVT. LTD.
                             </span>
                         </span>
@@ -227,10 +227,10 @@ function DomainVerification() {
                     </p>
                 </footer>
             </section>
- 
+
             <DashboardIllustration />
         </div>
     );
 }
- 
+
 export default DomainVerification;
