@@ -120,7 +120,7 @@ export default function Login() {
               </span>
             </h2>
 
-            <p className="mt-3 max-w-[460px] text-[12px] leading-relaxed text-slate-600 sm:text-[13px]">
+            <p className="mt-3 max-w-[460px] text-[16px] leading-relaxed text-slate-600">
               Manage your workforce, payroll, attendance, and performance, all
               from one unified platform.
             </p>
@@ -134,7 +134,7 @@ export default function Login() {
               ].map(({ icon, label }) => (
                 <span
                   key={label}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#d8def4] bg-white/80 px-3 py-1.5 text-[10px] font-medium text-[#273b78] shadow-sm"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#d8def4] bg-white/80 px-3 py-1.5 text-[16px] font-medium text-[#273b78] shadow-sm"
                 >
                   {icon}
                   {label}

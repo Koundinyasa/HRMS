@@ -7,11 +7,11 @@ import type {
   EmployeeInfoRecord,
   EmployeeInfoResultSets,
 } from '../chatbot/types/employee-business-profile.types';
- 
+
 @Injectable()
 export class HrmsDbService implements OnModuleDestroy {
   private readonly logger = new Logger(HrmsDbService.name);
- 
+
   // This pool keeps the driver's default useUTC (true) on purpose: the methods
   // below turn DATE columns into 'YYYY-MM-DD' with toISOString(), which is
   // only right when dates are read as UTC midnight. The main pool
@@ -19,7 +19,7 @@ export class HrmsDbService implements OnModuleDestroy {
   private readonly holder = new PoolHolder('chatbot', () =>
     buildSqlConfig(this.config, true),
   );
- 
+
   // The chatbot asks for the same company-wide data on every message. These
   // short-lived caches let one lookup serve many messages (and many employees of
   // the same company for the directory). Each key includes the company, so one
@@ -27,19 +27,19 @@ export class HrmsDbService implements OnModuleDestroy {
   private readonly userInfoCache = new TtlCache(5_000);
   private readonly directoryCache = new TtlCache(60_000);
   private readonly masterDataCache = new TtlCache(60_000);
- 
+
   constructor(private readonly config: ConfigService) {}
- 
+
   private getPool() {
     return this.holder.get();
   }
- 
+
   async onModuleDestroy(): Promise<void> {
     await this.holder.close();
   }
- 
+
   // ─── Chatbot drafts (table dbo.ChatbotDrafts) ────────────────────────────────
- 
+
   async saveChatbotDraft(
     employeeId: string,
     draftType: string,
@@ -63,7 +63,7 @@ export class HrmsDbService implements OnModuleDestroy {
           VALUES (@EmployeeID, @DraftType, @Payload, @SavedAtMs);
       `);
   }
- 
+
   async deleteChatbotDraft(
     employeeId: string,
     draftType: string,
@@ -77,7 +77,7 @@ export class HrmsDbService implements OnModuleDestroy {
         'DELETE FROM dbo.ChatbotDrafts WHERE EmployeeID = @EmployeeID AND DraftType = @DraftType',
       );
   }
- 
+
   async deleteExpiredChatbotDrafts(olderThanMs: number): Promise<void> {
     const pool = await this.getPool();
     await pool
@@ -85,7 +85,7 @@ export class HrmsDbService implements OnModuleDestroy {
       .input('Cutoff', sql.BigInt, olderThanMs)
       .query('DELETE FROM dbo.ChatbotDrafts WHERE SavedAtMs < @Cutoff');
   }
- 
+
   async loadChatbotDrafts(
     newerThanMs: number,
   ): Promise<{ employeeId: string; draftType: string; payload: string }[]> {
@@ -102,7 +102,7 @@ export class HrmsDbService implements OnModuleDestroy {
       payload: String(row.Payload),
     }));
   }
- 
+
   // ─── HRMSDEV: real basic-info via USP_GetUserInfo ────────────────────────────
   // One USP_GetUserInfo run is shared by the calls made for the same employee
   // within a few seconds (a single chat message asks for it more than once).
@@ -114,10 +114,10 @@ export class HrmsDbService implements OnModuleDestroy {
       (info) => info !== null,
     );
   }
- 
+
   private async loadUserInfo(employeeId: string) {
     const pool = await this.getPool();
- 
+
     let result: sql.IProcedureResult<any>;
     try {
       result = await pool
@@ -133,12 +133,12 @@ export class HrmsDbService implements OnModuleDestroy {
       );
       return null;
     }
- 
+
     const profileRow = result.recordsets[0]?.[0];
     const holidayRows = (result.recordsets[2] as any[]) ?? [];
- 
+
     if (!profileRow) return null;
- 
+
     const self = {
       id: profileRow.EmployeeID,
       name: profileRow.FullName,
@@ -156,17 +156,14 @@ export class HrmsDbService implements OnModuleDestroy {
       name: h.HolidayName,
       stateCode: h.StateCode ?? null,
     }));
- 
+
     return { self, holidays };
   }
- 
-  async getEmployeeLeaveSessionDetails(
-    employeeId: string,
-    companyId?: number,
-  ) {
+
+  async getEmployeeLeaveSessionDetails(employeeId: string, companyId?: number) {
     const normalizedEmployeeId = employeeId.trim();
     if (!normalizedEmployeeId) return [];
- 
+
     const pool = await this.getPool();
     const request = pool
       .request()
@@ -176,16 +173,16 @@ export class HrmsDbService implements OnModuleDestroy {
       FROM LeaveApplication
       WHERE EmployeeId = @EmployeeID
     `;
- 
+
     if (companyId !== undefined) {
       request.input('CompanyId', sql.Int, companyId);
       query += ' AND CompanyId = @CompanyId';
     }
- 
+
     const result = await request.query(query);
     return result.recordset;
   }
- 
+
   // ─── HRMSDEV: fetch user by email for login (USP_Validateuser) ────────────────
   async validateUser(email: string) {
     const pool = await this.getPool();
@@ -193,10 +190,10 @@ export class HrmsDbService implements OnModuleDestroy {
       .request()
       .input('EmailID', sql.VarChar, email)
       .execute('USP_Validateuser');
- 
+
     return result.recordset[0] ?? null;
   }
- 
+
   // ─── HRMSDEV: shared executor for the merged company-master-data procedure ───
   // USP_GetCompanyMasterData returns 8 result sets in a fixed order:
   // 0. leave types, 1. departments, 2. designations, 3. company info,
@@ -217,7 +214,7 @@ export class HrmsDbService implements OnModuleDestroy {
       .execute('USP_GetCompanyMasterData');
     return result.recordsets as unknown as any[][];
   }
- 
+
   // ─── HRMSDEV: real leave-type catalogue via USP_GetCompanyMasterData (set 0) ─
   async getLeaveTypes() {
     try {
@@ -331,7 +328,7 @@ export class HrmsDbService implements OnModuleDestroy {
       return [];
     }
   }
- 
+
   private async loadEmployeeDirectory(companyId: number) {
     const pool = await this.getPool();
     const result = await pool
@@ -339,12 +336,12 @@ export class HrmsDbService implements OnModuleDestroy {
       .input('CompanyID', sql.Int, companyId)
       .execute('USP_GetEmployeeDirectory');
     return result.recordset.map((r: any) => ({
-      id: r.EmployeeID as string,
-      name: r.FullName as string,
-      designation: r.Designation ?? '',
+      id: String(r.EmployeeID ?? '').trim(),
+      name: String(r.FullName ?? '').trim(),
+      designation: String(r.Designation ?? '').trim(),
     }));
   }
- 
+
   async getEmployeeBusinessProfile(
     employeeId: string,
     companyId: number,
@@ -355,7 +352,7 @@ export class HrmsDbService implements OnModuleDestroy {
       .input('EmployeeID', sql.VarChar(25), employeeId)
       .input('CompanyID', sql.Int, companyId)
       .execute('dbo.USP_GetEmployeeBasicDetailsChat');
- 
+
     const recordsets = result.recordsets ?? [];
     const resultSets: EmployeeInfoResultSets = [
       this.asEmployeeInfoRecords(recordsets[0]),
@@ -373,14 +370,14 @@ export class HrmsDbService implements OnModuleDestroy {
     ) {
       return null;
     }
- 
+
     if (Number(personalInformation[0].StatusCode) === 500) {
       throw new Error('Employee profile procedure reported a failure.');
     }
- 
+
     return resultSets;
   }
- 
+
   private asEmployeeInfoRecords(recordset: unknown): EmployeeInfoRecord[] {
     if (!Array.isArray(recordset)) return [];
     return recordset.filter(
@@ -388,7 +385,7 @@ export class HrmsDbService implements OnModuleDestroy {
         typeof row === 'object' && row !== null && !Array.isArray(row),
     );
   }
- 
+
   // ─── HRMSDEV: batched read for the chatbot's per-message ctx build ───────────
   // Bundles departments/designations/companyInfo/ownOffice/branches into a
   // single USP_GetCompanyMasterData call instead of 5 separate ones. Used by
@@ -410,7 +407,7 @@ export class HrmsDbService implements OnModuleDestroy {
       branches: [...data.branches],
     };
   }
- 
+
   private async loadCompanyMasterData(
     companyId: number | null,
     employeeId: string,
@@ -445,9 +442,9 @@ export class HrmsDbService implements OnModuleDestroy {
       })),
     };
   }
- 
+
   // ─── TEAMS ───────────────────────────────────────────────────────────────────
- 
+
   // ─── HRMSDEV: active teams via USP_GetCompanyMasterData (set 6) ──────────────
   async getActiveTeams() {
     try {
@@ -479,9 +476,9 @@ export class HrmsDbService implements OnModuleDestroy {
       return [];
     }
   }
- 
+
   // ─── AUTH ────────────────────────────────────────────────────────────────────
- 
+
   async findUserById(userId: string) {
     const pool = await this.getPool();
     const result = await pool
@@ -515,22 +512,22 @@ export class HrmsDbService implements OnModuleDestroy {
       name: row.name as string,
     };
   }
- 
+
   // ─── EMPLOYEES ───────────────────────────────────────────────────────────────
- 
+
   async findEmployeeById(employeeId: string) {
     const pool = await this.getPool();
     const result = await pool
       .request()
       .input('EmployeeId', sql.VarChar, employeeId)
       .execute('usp_GetEmployeeById');
- 
+
     return result.recordset[0] ?? null;
   }
- 
+
   async getAllEmployees() {
     const pool = await this.getPool();
- 
+
     const result = await pool
       .request()
       .input('SearchText', null)
@@ -540,14 +537,14 @@ export class HrmsDbService implements OnModuleDestroy {
       .input('EmploymentStatusID', null)
       .input('CompanyID', 1)
       .execute('dbo.USP_GetEmployeeMasterListing');
- 
+
     return result.recordset;
   }
- 
+
   async getPayrollSummary() {
     const pool = await this.getPool();
     const result = await pool.request().execute('usp_GetPayrollSummary');
- 
+
     const row = result.recordset[0];
     const averageSalary =
       row.employeeCount > 0
@@ -560,9 +557,9 @@ export class HrmsDbService implements OnModuleDestroy {
       employeeCount: row.employeeCount,
     };
   }
- 
+
   // ─── LEAVE REQUESTS ──────────────────────────────────────────────────────────
- 
+
   async getLeaveRequests(employeeId?: string | null) {
     const pool = await this.getPool();
     const result = await pool
@@ -586,10 +583,10 @@ export class HrmsDbService implements OnModuleDestroy {
       .request()
       .input('RequestCode', sql.NVarChar, code)
       .execute('usp_GetLeaveRequestByCode');
- 
+
     const row = result.recordset[0];
     if (!row) return null;
- 
+
     const toDateStr = (v: unknown) => {
       if (!v) return '';
       const d = v instanceof Date ? v : new Date(String(v));
@@ -623,10 +620,10 @@ export class HrmsDbService implements OnModuleDestroy {
       .input('RequestCode', sql.NVarChar, code)
       .input('ApproverId', sql.VarChar, approverId)
       .execute('usp_ApproveLeaveRequest');
- 
+
     return { requestCode: code, status: 'approved' };
   }
- 
+
   // ─── HRMSDEV: cancel or withdraw a leave via USP_LeaveWithdrawCancel ──────────
   // actionId: 13 = Cancel (only while Pending), 38 = Withdraw (only while
   // Approved AND before the leave's start date). Proc also refunds balance
@@ -688,10 +685,10 @@ export class HrmsDbService implements OnModuleDestroy {
       .input('RequestCode', sql.NVarChar, code)
       .input('CancelledDates', sql.NVarChar(sql.MAX), cancelledDates)
       .execute('usp_CancelLeaveRequestByCode');
- 
+
     const row = result.recordset[0];
     if (!row) return null;
- 
+
     const toDateStr = (v: unknown) => {
       if (!v) return '';
       const d = v instanceof Date ? v : new Date(String(v));
@@ -751,9 +748,9 @@ export class HrmsDbService implements OnModuleDestroy {
       })),
     };
   }
- 
+
   // ─── COMPANY DATA ────────────────────────────────────────────────────────────
- 
+
   async getCompanyData() {
     const pool = await this.getPool();
     let holidays: Array<{ date: string; name: string }> = [];
@@ -770,13 +767,14 @@ export class HrmsDbService implements OnModuleDestroy {
     } catch {
       /* table may not exist */
     }
- 
+
     return { holidays, announcements };
   }
- 
+
   async getCompanyLogo() {
     const pool = await this.getPool();
     const result = await pool.request().execute('usp_GetCompanyLogo');
     return result.recordset[0]?.logo_url ?? null;
   }
 }
+

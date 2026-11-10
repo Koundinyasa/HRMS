@@ -83,7 +83,7 @@ export default function LoginForm() {
           style={{
             ...urbanist,
             fontWeight: 700,
-            fontSize: 11,
+            fontSize: 16,
             color: "#1E293B",
             // letterSpacing: "0.30em",
           }}
@@ -99,7 +99,7 @@ export default function LoginForm() {
           style={{
             ...urbanist,
             fontWeight: 500,
-            fontSize: 11,
+            fontSize: 16,
             letterSpacing: "0.16em",
             color: "#3158db",
           }}
@@ -117,7 +117,7 @@ export default function LoginForm() {
           style={{
             ...urbanist,
             fontWeight: 400,
-            fontSize: 13,
+            fontSize: 16,
             color: "#64748b",
           }}
         >
@@ -134,7 +134,7 @@ export default function LoginForm() {
             style={{
               ...urbanist,
               fontWeight: 500,
-              fontSize: "clamp(11px, 0.85vw, 13px)",
+              fontSize: 16,
               color: "#131313",
             }}
           >
@@ -150,12 +150,12 @@ export default function LoginForm() {
               type="text"
               placeholder="username@koundinyasa.tech"
               className="pl-9 h-[36px] w-full rounded-lg border-slate-300 bg-white text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
-              style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
+              style={{ ...urbanist, fontSize: 16 }}
               {...register("userId")}
             />
           </div>
           {errors.userId && (
-            <p className="text-[11px] text-red-500">{errors.userId.message}</p>
+            <p className="text-[16px] text-red-500">{errors.userId.message}</p>
           )}
         </div>
 
@@ -166,7 +166,7 @@ export default function LoginForm() {
             style={{
               ...urbanist,
               fontWeight: 500,
-              fontSize: "clamp(11px, 0.85vw, 13px)",
+              fontSize: 16,
               color: "#131313",
             }}
           >
@@ -182,7 +182,7 @@ export default function LoginForm() {
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               className="pl-9 pr-10 h-[36px] w-full rounded-lg border-slate-300 bg-white text-slate-600 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-blue-400 focus-visible:border-blue-400"
-              style={{ ...urbanist, fontSize: "clamp(11px, 0.85vw, 13px)" }}
+              style={{ ...urbanist, fontSize: 16 }}
               {...register("password")}
               onPaste={(event) => event.preventDefault()}
             />
@@ -196,7 +196,7 @@ export default function LoginForm() {
             </button>
           </div>
           {errors.password && (
-            <p className="text-[11px] text-red-500">{errors.password.message}</p>
+            <p className="text-[16px] text-red-500">{errors.password.message}</p>
           )}
         </div>
 
@@ -207,7 +207,7 @@ export default function LoginForm() {
             style={{
               ...urbanist,
               fontWeight: 500,
-              fontSize: "clamp(11px,0.85vw,13px)",
+              fontSize: 16,
               color: "#1E293B",
             }}
           >
@@ -232,7 +232,7 @@ export default function LoginForm() {
                   className="w-full h-full object-contain"
                 />
               ) : (
-                <div className="text-xs text-gray-400">
+                <div className="text-[16px] text-gray-400">
                   No Captcha
                 </div>
               )}
@@ -264,7 +264,7 @@ export default function LoginForm() {
                 className={`pl-9 ${inputCls}`}
                 style={{
                   ...urbanist,
-                  fontSize: "clamp(11px,0.85vw,13px)",
+                  fontSize: 16,
                 }}
                 {...register("captchaAnswer")}
               />
@@ -274,7 +274,7 @@ export default function LoginForm() {
           <p
             style={{
               ...urbanist,
-              fontSize: 11,
+              fontSize: 16,
               color: "#9CA3AF",
             }}
           >
@@ -282,7 +282,7 @@ export default function LoginForm() {
           </p>
 
           {errors.captchaAnswer && (
-            <p className="text-[11px] text-red-500">
+            <p className="text-[16px] text-red-500">
               {errors.captchaAnswer.message}
             </p>
           )}
@@ -295,7 +295,7 @@ export default function LoginForm() {
             onClick={() => navigate(`/${domain}/forgot-password`)}
             style={{
               ...urbanist,
-              fontSize: "clamp(11px, 0.85vw, 13px)",
+              fontSize: 16,
               fontWeight: 500,
               color: "#067EF1",
               background: "none",
@@ -319,7 +319,7 @@ export default function LoginForm() {
             background: "linear-gradient(90deg, #1D4ED8 0%, #3B82F6 100%)",
             boxShadow: "0px 2px 16px 0px rgba(59,130,246,0.40)",
             ...urbanist,
-            fontSize: "clamp(12px, 0.9vw, 14px)",
+            fontSize: 16,
             fontWeight: 600,
           }}
         >
@@ -332,7 +332,7 @@ export default function LoginForm() {
           <span
             style={{
               ...urbanist,
-              fontSize: 11,
+              fontSize: 16,
               color: "#9CA3AF",
             }}
           >
@@ -351,7 +351,7 @@ export default function LoginForm() {
             border: "1px solid #D1D5DB",
             background: "#FFFFFF",
             ...urbanist,
-            fontSize: "clamp(12px, 0.9vw, 14px)",
+            fontSize: 16,
             fontWeight: 500,
             color: "#374151",
           }}
@@ -362,7 +362,7 @@ export default function LoginForm() {
       </form>
 
       {/* ── Powered by footer ── */}
-      <p className="mt-4 pt-1 text-left lg:mt-auto" style={{ ...urbanist, fontSize: 10, color: "#64748b" }}>
+      <p className="mt-4 pt-1 text-left lg:mt-auto" style={{ ...urbanist, fontSize: 16, color: "#64748b" }}>
         Powered by <strong className="text-[#17244f]">KOUNDINYASA</strong>{" "}
         Technology Services
       </p>
