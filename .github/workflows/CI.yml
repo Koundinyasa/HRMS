@@ -417,7 +417,7 @@ jobs:
 
   
   # ================================================
-  # JOB 5: Deployment (COMING WEEK 4)
+  # JOB 5: Deployment (COMING WEEK 2)
   # ================================================
   deploy:
     name: Deploy to AWS
@@ -441,7 +441,7 @@ jobs:
       - name: Deploy to EKS
         run: |
           echo "=========================================="
-          echo "Deployment will be implemented in Week 4"
+          echo "Deployment will be implemented in Week 2"
           echo "=========================================="
           echo "📦 Target: AWS EKS Cluster"
           echo "🔄 Strategy: Blue-Green Deployment"
