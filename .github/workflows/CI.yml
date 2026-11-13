@@ -99,13 +99,17 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.js
             -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
             -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
+  # =====================================================
+  # STAGE 2: APPLICATION BUILD AND VALIDATION
+  # All three jobs run in parallel after SonarCloud.
+  # =====================================================
   # ==========================================
   # JOB 1: FRONTEND BUILD
   # ==========================================
-
   frontend-build:
     name: Frontend Build
     runs-on: ubuntu-latest
+    needs: sonarcloud
 
     defaults:
       run:
@@ -128,15 +132,82 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+  # ==========================================
+  # JOB 3: BACKEND BUILD AND TEST
+  # ==========================================
+  backend-build:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+    needs: sonarcloud
 
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+   
+  # ==========================================
+  # JOB 5: ATTENDANCE SERVICE BUILD
+  # ==========================================
+  attendance-build:
+    name: Attendance Service Build and Validation
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: attendance-service/requirements.txt
+
+      - name: Install Attendance Dependencies
+        working-directory: attendance-service
+        run: |
+          python -m pip install --upgrade pip
+          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
+          pip install -r requirements-linux.txt
+          pip install face-recognition==1.3.0
+      - name: Validate Python syntax
+        run: |
+          python -m compileall -q attendance-service
+  # =====================================================
+  # STAGE 3: APPLICATION SECURITY SCANS
+  # All three scans start after all Stage 2 jobs succeed.
+  # =====================================================
   # ==========================================
   # JOB 2: FRONTEND SECURITY SCAN
   # ==========================================
-
   frontend-security:
     name: Frontend Security Scan
     runs-on: ubuntu-latest
-    needs: frontend-build
+
+    needs:
+      - frontend-build
+      - backend-build
+      - attendance-build
 
     defaults:
       run:
@@ -168,48 +239,17 @@ jobs:
           exit-code: '1'
           format: table
 
-
-  # ==========================================
-  # JOB 3: BACKEND BUILD AND TEST
-  # ==========================================
-
-  backend-build:
-    name: Backend Build and Test
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: backend
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build backend
-        run: npm run build
-
-      - name: Run backend tests
-        run: npm test -- --runInBand
-
-
   # ==========================================
   # JOB 4: BACKEND SECURITY SCAN
   # ==========================================
-
   backend-security:
     name: Backend Security Scan
     runs-on: ubuntu-latest
-    needs: backend-build
+
+    needs:
+      - frontend-build
+      - backend-build
+      - attendance-build
 
     defaults:
       run:
@@ -243,44 +283,17 @@ jobs:
           exit-code: '1'
           format: table
 
-
-  # ==========================================
-  # JOB 5: ATTENDANCE SERVICE BUILD
-  # ==========================================
-
-  attendance-build:
-    name: Attendance Service Build and Validation
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: attendance-service/requirements.txt
-
-      - name: Install Attendance Dependencies
-        working-directory: attendance-service
-        run: |
-          python -m pip install --upgrade pip
-          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
-          pip install -r requirements-linux.txt
-          pip install face-recognition==1.3.0
-      - name: Validate Python syntax
-        run: |
-          python -m compileall -q attendance-service
   # ==========================================
   # JOB 6: ATTENDANCE SERVICE SECURITY SCAN
   # ==========================================
-
   attendance-security:
     name: Attendance Service Security Scan
     runs-on: ubuntu-latest
-    needs: attendance-build
+
+    needs:
+      - frontend-build
+      - backend-build
+      - attendance-build
 
     steps:
       - name: Checkout repository
@@ -296,9 +309,10 @@ jobs:
           exit-code: '0'
 
 
-  # ==========================================
-  # JOB 7: BUILD PEOPLE360 DOCKER IMAGES
-  # ==========================================
+  # =====================================================
+  # STAGE 4: BUILD PEOPLE360 DOCKER IMAGES
+  # Waits for all three application security scans.
+  # =====================================================
 
   docker-build:
     name: Build People360 Docker Images
@@ -351,13 +365,15 @@ jobs:
           retention-days: 1
 
 
-  # ==========================================
-  # JOB 8: DOCKER IMAGE SECURITY SCAN
-  # ==========================================
+  # =====================================================
+  # STAGE 5: DOCKER IMAGE SECURITY SCAN
+  # Runs after Docker images are successfully built.
+  # =====================================================
 
   docker-image-scan:
     name: Docker Image Security Scan
     runs-on: ubuntu-latest
+
     needs: docker-build
 
     steps:
@@ -418,9 +434,10 @@ jobs:
           format: table
 
 
-  # ==========================================
-  # JOB 9: PUSH IMAGES TO DOCKER HUB
-  # ==========================================
+  # =====================================================
+  # STAGE 6: PUSH IMAGES TO DOCKER HUB
+  # Runs only after Docker Image Security Scan succeeds.
+  # =====================================================
 
   docker-push:
     name: Push Images to Docker Hub
