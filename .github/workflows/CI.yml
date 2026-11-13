@@ -101,7 +101,6 @@ jobs:
             -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
   # =====================================================
   # STAGE 2: APPLICATION BUILD AND VALIDATION
-  # All three jobs run in parallel after SonarCloud.
   # =====================================================
 
   frontend-build:
@@ -189,7 +188,6 @@ jobs:
           python -m compileall -q attendance-service
   # =====================================================
   # STAGE 3: APPLICATION SECURITY SCANS
-  # All three scans start after all Stage 2 jobs succeed.
   # =====================================================
 
   frontend-security:
