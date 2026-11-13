@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - Devops
+
   pull_request:
     branches:
       - Devops
+
   workflow_dispatch:
 
 permissions:
@@ -28,7 +30,7 @@ jobs:
   # =====================================================
 
   sonarcloud:
-    name: SonarCloud Quality Analysis
+    name: "Stage 1 - SonarCloud Quality Analysis"
     runs-on: ubuntu-latest
 
     permissions:
@@ -67,24 +69,31 @@ jobs:
           ls -la backend/coverage/ || echo "No coverage directory!"
           echo "=== Looking for lcov.info ==="
           find backend -name "lcov.info" || echo "lcov.info not found!"
+
       - name: Check SonarCloud Authentication
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_HRMS }}
         run: |
           echo "Checking SonarCloud authentication..."
+
           if [ -z "$SONAR_TOKEN" ]; then
             echo "ERROR: SONARQUBE_HRMS secret is missing or empty."
             exit 1
           fi
+
           response=$(curl -sS \
             --user "${SONAR_TOKEN}:" \
             https://sonarcloud.io/api/authentication/validate)
+
           echo "Authentication response: $response"
+
           if ! echo "$response" | grep -q '"valid":true'; then
             echo "ERROR: SonarCloud token is invalid."
             exit 1
           fi
+
           echo "SUCCESS: SonarCloud token is valid."
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
@@ -99,15 +108,19 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.js
             -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
             -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
+
+
   # =====================================================
   # STAGE 2: APPLICATION BUILD AND VALIDATION
-  # All three jobs run in parallel after SonarCloud.
+  # Three separate jobs running in parallel
   # =====================================================
-  # ==========================================
-  # JOB 1: FRONTEND BUILD
-  # ==========================================
+
+  # ------------------------------------------
+  # STAGE 2.1: FRONTEND BUILD
+  # ------------------------------------------
+
   frontend-build:
-    name: Frontend Build
+    name: "Stage 2.1 - Frontend Build"
     runs-on: ubuntu-latest
     needs: sonarcloud
 
@@ -132,11 +145,13 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-  # ==========================================
-  # JOB 3: BACKEND BUILD AND TEST
-  # ==========================================
+
+  # ------------------------------------------
+  # STAGE 2.2: BACKEND BUILD AND TEST
+  # ------------------------------------------
+
   backend-build:
-    name: Backend Build and Test
+    name: "Stage 2.2 - Backend Build and Test"
     runs-on: ubuntu-latest
     needs: sonarcloud
 
@@ -163,12 +178,14 @@ jobs:
 
       - name: Run backend tests
         run: npm test -- --runInBand
-   
-  # ==========================================
-  # JOB 5: ATTENDANCE SERVICE BUILD
-  # ==========================================
+
+
+  # ------------------------------------------
+  # STAGE 2.3: ATTENDANCE SERVICE BUILD
+  # ------------------------------------------
+
   attendance-build:
-    name: Attendance Service Build and Validation
+    name: "Stage 2.3 - Attendance Service Build and Validation"
     runs-on: ubuntu-latest
     needs: sonarcloud
 
@@ -190,18 +207,24 @@ jobs:
           grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
           pip install -r requirements-linux.txt
           pip install face-recognition==1.3.0
+
       - name: Validate Python syntax
         run: |
           python -m compileall -q attendance-service
+
+
   # =====================================================
   # STAGE 3: APPLICATION SECURITY SCANS
-  # All three scans start after all Stage 2 jobs succeed.
+  # Three separate jobs running in parallel
+  # All Stage 2 jobs must succeed first
   # =====================================================
-  # ==========================================
-  # JOB 2: FRONTEND SECURITY SCAN
-  # ==========================================
+
+  # ------------------------------------------
+  # STAGE 3.1: FRONTEND SECURITY SCAN
+  # ------------------------------------------
+
   frontend-security:
-    name: Frontend Security Scan
+    name: "Stage 3.1 - Frontend Security Scan"
     runs-on: ubuntu-latest
 
     needs:
@@ -239,11 +262,13 @@ jobs:
           exit-code: '1'
           format: table
 
-  # ==========================================
-  # JOB 4: BACKEND SECURITY SCAN
-  # ==========================================
+
+  # ------------------------------------------
+  # STAGE 3.2: BACKEND SECURITY SCAN
+  # ------------------------------------------
+
   backend-security:
-    name: Backend Security Scan
+    name: "Stage 3.2 - Backend Security Scan"
     runs-on: ubuntu-latest
 
     needs:
@@ -283,11 +308,13 @@ jobs:
           exit-code: '1'
           format: table
 
-  # ==========================================
-  # JOB 6: ATTENDANCE SERVICE SECURITY SCAN
-  # ==========================================
+
+  # ------------------------------------------
+  # STAGE 3.3: ATTENDANCE SERVICE SECURITY SCAN
+  # ------------------------------------------
+
   attendance-security:
-    name: Attendance Service Security Scan
+    name: "Stage 3.3 - Attendance Service Security Scan"
     runs-on: ubuntu-latest
 
     needs:
@@ -311,11 +338,11 @@ jobs:
 
   # =====================================================
   # STAGE 4: BUILD PEOPLE360 DOCKER IMAGES
-  # Waits for all three application security scans.
+  # Waits for all three Stage 3 jobs
   # =====================================================
 
   docker-build:
-    name: Build People360 Docker Images
+    name: "Stage 4 - Build People360 Docker Images"
     runs-on: ubuntu-latest
 
     needs:
@@ -334,12 +361,14 @@ jobs:
             -f frontend/Dockerfile \
             -t people360-frontend:${{ github.sha }} \
             frontend
+
       - name: Build backend image
         run: |
           docker build \
             -f backend/Dockerfile \
             -t people360-backend:${{ github.sha }} \
             backend
+
       - name: Build Attendance image
         run: |
           docker build \
@@ -347,9 +376,11 @@ jobs:
             -t people360-attendance:${{ github.sha }} \
             -t people360-attendance:latest \
             attendance-service
+
       - name: Verify Docker images
         run: |
           docker images
+
       - name: Save Docker images
         run: |
           docker save \
@@ -357,6 +388,7 @@ jobs:
             people360-backend:${{ github.sha }} \
             people360-attendance:${{ github.sha }} \
             -o people360-images.tar
+
       - name: Upload Docker images
         uses: actions/upload-artifact@v6
         with:
@@ -367,11 +399,10 @@ jobs:
 
   # =====================================================
   # STAGE 5: DOCKER IMAGE SECURITY SCAN
-  # Runs after Docker images are successfully built.
   # =====================================================
 
   docker-image-scan:
-    name: Docker Image Security Scan
+    name: "Stage 5 - Docker Image Security Scan"
     runs-on: ubuntu-latest
 
     needs: docker-build
@@ -385,9 +416,11 @@ jobs:
       - name: Load Docker images
         run: |
           docker load -i people360-images.tar
+
       - name: Verify Loaded Docker Images
         run: |
           docker images
+
       # --------------------------------------
       # FRONTEND IMAGE SCAN
       # --------------------------------------
@@ -436,11 +469,11 @@ jobs:
 
   # =====================================================
   # STAGE 6: PUSH IMAGES TO DOCKER HUB
-  # Runs only after Docker Image Security Scan succeeds.
+  # Runs after Docker Image Security Scan succeeds
   # =====================================================
 
   docker-push:
-    name: Push Images to Docker Hub
+    name: "Stage 6 - Push Images to Docker Hub"
     runs-on: ubuntu-latest
 
     needs: docker-image-scan
@@ -456,6 +489,7 @@ jobs:
       - name: Load Docker images
         run: |
           docker load -i people360-images.tar
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
@@ -470,8 +504,10 @@ jobs:
         run: |
           docker tag people360-frontend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
+
           docker tag people360-frontend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
+
       # --------------------------------------
       # TAG BACKEND IMAGE
       # --------------------------------------
@@ -480,8 +516,10 @@ jobs:
         run: |
           docker tag people360-backend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
+
           docker tag people360-backend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
+
       # --------------------------------------
       # TAG ATTENDANCE IMAGE
       # --------------------------------------
@@ -490,8 +528,10 @@ jobs:
         run: |
           docker tag people360-attendance:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:${{ github.sha }}
+
           docker tag people360-attendance:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:latest
+
       # --------------------------------------
       # PUSH FRONTEND IMAGE
       # --------------------------------------
@@ -500,6 +540,7 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
+
       # --------------------------------------
       # PUSH BACKEND IMAGE
       # --------------------------------------
@@ -508,6 +549,7 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
+
       # --------------------------------------
       # PUSH ATTENDANCE IMAGE
       # --------------------------------------
