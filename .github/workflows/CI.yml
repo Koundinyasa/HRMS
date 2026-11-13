@@ -1,3 +1,18 @@
+# =====================================================
+# KTS-PEOPLE360 - COMPLETE CI/CD PIPELINE
+# =====================================================
+# JOB 0: SonarCloud Quality Analysis
+# JOB 1: Frontend Build
+# JOB 2: Frontend Security Scan
+# JOB 3: Backend Build and Test
+# JOB 4: Backend Security Scan
+# JOB 5: Attendance Service Build
+# JOB 6: Attendance Service Security Scan
+# JOB 7: Build People360 Docker Images
+# JOB 8: Docker Image Security Scan
+# JOB 9: Push Images to Docker Hub
+# =====================================================
+
 name: HRMS CI/CD
 
 on:
@@ -26,42 +41,63 @@ env:
 jobs:
 
   # =====================================================
-  # JOB 1 - SONARCLOUD QUALITY ANALYSIS
-  # RUNS FIRST AND MUST COMPLETE SUCCESSFULLY
+  # JOB 0: SONARCLOUD QUALITY ANALYSIS
   # =====================================================
 
   sonarcloud:
-    name: "Job 1 - SonarCloud Quality Analysis"
+    name: SonarCloud Quality Analysis
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
 
     permissions:
       contents: read
       pull-requests: write
 
     steps:
+      # -----------------------------------------------
+      # STEP 1: CHECKOUT CODE
+      # -----------------------------------------------
+
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # -----------------------------------------------
+      # STEP 2: SETUP NODE.JS
+      # -----------------------------------------------
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: '18'
+
+      # -----------------------------------------------
+      # STEP 3: INSTALL BACKEND DEPENDENCIES
+      # -----------------------------------------------
 
       - name: Install Backend Dependencies
         working-directory: backend
         run: npm ci
 
+      # -----------------------------------------------
+      # STEP 4: RUN TESTS WITH COVERAGE
+      # -----------------------------------------------
+
       - name: Run Tests with Coverage
         working-directory: backend
-        run: npm test -- --coverage --coverageReporters=lcov
+        run: |
+          npm test -- --coverage --coverageReporters=lcov
         env:
           DB_HOST: localhost
           DB_USER: postgres
           DB_PASSWORD: postgres
           DB_NAME: fooddelivery
           NODE_ENV: test
+
+      # -----------------------------------------------
+      # STEP 5: DISPLAY COVERAGE REPORT
+      # -----------------------------------------------
 
       - name: Display Coverage Report
         run: |
@@ -70,6 +106,10 @@ jobs:
 
           echo "=== Looking for lcov.info ==="
           find backend -name "lcov.info" || echo "lcov.info not found!"
+
+      # -----------------------------------------------
+      # STEP 6: VALIDATE SONARCLOUD TOKEN
+      # -----------------------------------------------
 
       - name: Check SonarCloud Authentication
         env:
@@ -95,6 +135,10 @@ jobs:
 
           echo "SUCCESS: SonarCloud token is valid."
 
+      # -----------------------------------------------
+      # STEP 7: SONARCLOUD QUALITY SCAN
+      # -----------------------------------------------
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
@@ -111,18 +155,12 @@ jobs:
             -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
 
 
-  # =====================================================
-  # JOB 2 - APPLICATION BUILD AND VALIDATION
-  # THREE SEPARATE JOB BOXES
-  # ALL WAIT FOR SONARCLOUD
-  # =====================================================
-
-  # --------------------------------------
-  # BOX 1 - FRONTEND BUILD
-  # --------------------------------------
+  # ==========================================
+  # JOB 1: FRONTEND BUILD
+  # ==========================================
 
   frontend-build:
-    name: "Job 2 - Frontend Build"
+    name: Frontend Build
     runs-on: ubuntu-latest
     needs: sonarcloud
 
@@ -148,90 +186,14 @@ jobs:
         run: npm run build
 
 
-  # --------------------------------------
-  # BOX 2 - BACKEND BUILD
-  # --------------------------------------
-
-  backend-build:
-    name: "Job 2 - Backend Build and Test"
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-
-    defaults:
-      run:
-        working-directory: backend
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build backend
-        run: npm run build
-
-      - name: Run backend tests
-        run: npm test -- --runInBand
-
-
-  # --------------------------------------
-  # BOX 3 - ATTENDANCE BUILD
-  # --------------------------------------
-
-  attendance-build:
-    name: "Job 2 - Attendance Service Build"
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: attendance-service/requirements.txt
-
-      - name: Install Attendance Dependencies
-        working-directory: attendance-service
-        run: |
-          python -m pip install --upgrade pip
-          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
-          pip install -r requirements-linux.txt
-          pip install face-recognition==1.3.0
-
-      - name: Validate Python syntax
-        run: python -m compileall -q attendance-service
-
-
-  # =====================================================
-  # JOB 3 - APPLICATION SECURITY SCANS
-  # THREE SEPARATE JOB BOXES
-  # ALL WAIT FOR ALL THREE BUILD JOBS
-  # =====================================================
-
-  # --------------------------------------
-  # BOX 1 - FRONTEND SECURITY
-  # --------------------------------------
+  # ==========================================
+  # JOB 2: FRONTEND SECURITY SCAN
+  # ==========================================
 
   frontend-security:
-    name: "Job 3 - Frontend Security Scan"
+    name: Frontend Security Scan
     runs-on: ubuntu-latest
-
-    needs:
-      - frontend-build
-      - backend-build
-      - attendance-build
+    needs: frontend-build
 
     defaults:
       run:
@@ -260,22 +222,52 @@ jobs:
           scan-type: fs
           scan-ref: frontend
           severity: HIGH,CRITICAL
-          exit-code: "1"
+          exit-code: '1'
           format: table
 
 
-  # --------------------------------------
-  # BOX 2 - BACKEND SECURITY
-  # --------------------------------------
+  # ==========================================
+  # JOB 3: BACKEND BUILD AND TEST
+  # ==========================================
+
+  backend-build:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
+
+  # ==========================================
+  # JOB 4: BACKEND SECURITY SCAN
+  # ==========================================
 
   backend-security:
-    name: "Job 3 - Backend Security Scan"
+    name: Backend Security Scan
     runs-on: ubuntu-latest
-
-    needs:
-      - frontend-build
-      - backend-build
-      - attendance-build
+    needs: backend-build
 
     defaults:
       run:
@@ -306,22 +298,51 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: false
           vuln-type: os,library
-          exit-code: "1"
+          exit-code: '1'
           format: table
 
 
-  # --------------------------------------
-  # BOX 3 - ATTENDANCE SECURITY
-  # --------------------------------------
+  # ==========================================
+  # JOB 5: ATTENDANCE SERVICE BUILD
+  # ==========================================
+
+  attendance-build:
+    name: Attendance Service Build and Validation
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: attendance-service/requirements.txt
+
+      - name: Install Attendance Dependencies
+        working-directory: attendance-service
+        run: |
+          python -m pip install --upgrade pip
+          grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
+          pip install -r requirements-linux.txt
+          pip install face-recognition==1.3.0
+
+      - name: Validate Python syntax
+        run: |
+          python -m compileall -q attendance-service
+
+
+  # ==========================================
+  # JOB 6: ATTENDANCE SERVICE SECURITY SCAN
+  # ==========================================
 
   attendance-security:
-    name: "Job 3 - Attendance Security Scan"
+    name: Attendance Service Security Scan
     runs-on: ubuntu-latest
-
-    needs:
-      - frontend-build
-      - backend-build
-      - attendance-build
+    needs: attendance-build
 
     steps:
       - name: Checkout repository
@@ -334,15 +355,15 @@ jobs:
           scan-ref: attendance-service
           format: table
           severity: HIGH,CRITICAL
-          exit-code: "0"
+          exit-code: '0'
 
 
-  # =====================================================
-  # JOB 4 - BUILD PEOPLE360 DOCKER IMAGES
-  # =====================================================
+  # ==========================================
+  # JOB 7: BUILD PEOPLE360 DOCKER IMAGES
+  # ==========================================
 
   docker-build:
-    name: "Job 4 - Build People360 Docker Images"
+    name: Build People360 Docker Images
     runs-on: ubuntu-latest
 
     needs:
@@ -378,7 +399,8 @@ jobs:
             attendance-service
 
       - name: Verify Docker images
-        run: docker images
+        run: |
+          docker images
 
       - name: Save Docker images
         run: |
@@ -396,14 +418,13 @@ jobs:
           retention-days: 1
 
 
-  # =====================================================
-  # JOB 5 - DOCKER IMAGE SECURITY SCAN
-  # =====================================================
+  # ==========================================
+  # JOB 8: DOCKER IMAGE SECURITY SCAN
+  # ==========================================
 
   docker-image-scan:
-    name: "Job 5 - Docker Image Security Scan"
+    name: Docker Image Security Scan
     runs-on: ubuntu-latest
-
     needs: docker-build
 
     steps:
@@ -413,10 +434,12 @@ jobs:
           name: people360-docker-images
 
       - name: Load Docker images
-        run: docker load -i people360-images.tar
+        run: |
+          docker load -i people360-images.tar
 
       - name: Verify Loaded Docker Images
-        run: docker images
+        run: |
+          docker images
 
       # --------------------------------------
       # FRONTEND IMAGE SCAN
@@ -430,7 +453,7 @@ jobs:
           scanners: vuln
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: '1'
           format: table
 
       # --------------------------------------
@@ -445,7 +468,7 @@ jobs:
           scanners: vuln
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: '1'
           format: table
 
       # --------------------------------------
@@ -460,16 +483,16 @@ jobs:
           scanners: vuln
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "0"
+          exit-code: '0'
           format: table
 
 
-  # =====================================================
-  # JOB 6 - PUSH IMAGES TO DOCKER HUB
-  # =====================================================
+  # ==========================================
+  # JOB 9: PUSH IMAGES TO DOCKER HUB
+  # ==========================================
 
   docker-push:
-    name: "Job 6 - Push Images to Docker Hub"
+    name: Push Images to Docker Hub
     runs-on: ubuntu-latest
 
     needs: docker-image-scan
@@ -483,7 +506,8 @@ jobs:
           name: people360-docker-images
 
       - name: Load Docker images
-        run: docker load -i people360-images.tar
+        run: |
+          docker load -i people360-images.tar
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
