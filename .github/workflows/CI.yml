@@ -1,40 +1,12 @@
-# =====================================================
-# HRMS - COMPLETE CI/CD PIPELINE
-# =====================================================
-# Stage 1:
-#   SonarCloud Quality Analysis
-#
-# Stage 2: Application Build and Validation
-#   Attendance Build
-#   Backend Build
-#   Frontend Build
-#
-# Stage 3: Application Security Scans
-#   Attendance Security Scan
-#   Backend Security Scan
-#   Frontend Security Scan
-#
-# Stage 4:
-#   Build People360 Docker Images
-#
-# Stage 5:
-#   Docker Image Security Scan
-#
-# Stage 6:
-#   Push Images to Docker Hub
-# =====================================================
-
 name: KTS-People360 CI/CD
 
 on:
   push:
     branches:
       - Devops
-
   pull_request:
     branches:
       - Devops
-
   workflow_dispatch:
 
 permissions:
@@ -52,14 +24,12 @@ env:
 jobs:
 
   # =====================================================
-  # STAGE 1 - SONARCLOUD QUALITY ANALYSIS
+  # STAGE 1: SONARCLOUD QUALITY ANALYSIS
   # =====================================================
 
   sonarcloud:
     name: SonarCloud Quality Analysis
     runs-on: ubuntu-latest
-
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
 
     permissions:
       contents: read
@@ -97,31 +67,24 @@ jobs:
           ls -la backend/coverage/ || echo "No coverage directory!"
           echo "=== Looking for lcov.info ==="
           find backend -name "lcov.info" || echo "lcov.info not found!"
-
       - name: Check SonarCloud Authentication
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_HRMS }}
         run: |
           echo "Checking SonarCloud authentication..."
-
           if [ -z "$SONAR_TOKEN" ]; then
             echo "ERROR: SONARQUBE_HRMS secret is missing or empty."
             exit 1
           fi
-
           response=$(curl -sS \
             --user "${SONAR_TOKEN}:" \
             https://sonarcloud.io/api/authentication/validate)
-
           echo "Authentication response: $response"
-
           if ! echo "$response" | grep -q '"valid":true'; then
             echo "ERROR: SonarCloud token is invalid."
             exit 1
           fi
-
           echo "SUCCESS: SonarCloud token is valid."
-
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
@@ -136,24 +99,75 @@ jobs:
             -Dsonar.test.inclusions=**/*.test.js
             -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
             -Dsonar.exclusions=**/node_modules/**,**/build/**,**/coverage/**,**/*.test.js
-
-
   # =====================================================
-  # STAGE 2 - APPLICATION BUILD AND VALIDATION
-  # THREE SEPARATE JOB BOXES
+  # STAGE 2: APPLICATION BUILD AND VALIDATION
+  # All three jobs run in parallel after SonarCloud.
   # =====================================================
 
-  # -------------------------------
-  # STAGE 2.1 - ATTENDANCE BUILD
-  # -------------------------------
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+
+  backend-build:
+    name: Backend Build and Test
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
 
   attendance-build:
-    name: Attendance Build
+    name: Attendance Service Build and Validation
     runs-on: ubuntu-latest
     needs: sonarcloud
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Setup Python
@@ -170,56 +184,29 @@ jobs:
           grep -vi '^msvc-runtime==' requirements.txt > requirements-linux.txt
           pip install -r requirements-linux.txt
           pip install face-recognition==1.3.0
-
-      - name: Validate Python Syntax
+      - name: Validate Python syntax
         run: |
           python -m compileall -q attendance-service
+  # =====================================================
+  # STAGE 3: APPLICATION SECURITY SCANS
+  # All three scans start after all Stage 2 jobs succeed.
+  # =====================================================
 
-
-  # -------------------------------
-  # STAGE 2.2 - BACKEND BUILD
-  # -------------------------------
-
-  backend-build:
-    name: Backend Build
+  frontend-security:
+    name: Frontend Security Scan
     runs-on: ubuntu-latest
-    needs: sonarcloud
+
+    needs:
+      - frontend-build
+      - backend-build
+      - attendance-build
+
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install Backend Dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Build Backend
-        working-directory: backend
-        run: npm run build
-
-      - name: Run Backend Tests
-        working-directory: backend
-        run: npm test -- --runInBand
-
-
-  # -------------------------------
-  # STAGE 2.3 - FRONTEND BUILD
-  # -------------------------------
-
-  frontend-build:
-    name: Frontend Build
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-
-    steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Setup Node.js
@@ -229,63 +216,37 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Frontend Dependencies
-        working-directory: frontend
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build Frontend
-        working-directory: frontend
-        run: npm run build
+      - name: NPM Audit
+        run: npm audit --audit-level=high
 
-
-  # =====================================================
-  # STAGE 3 - APPLICATION SECURITY SCANS
-  # THREE SEPARATE JOB BOXES
-  # ALL THREE STAGE 2 JOBS MUST SUCCEED FIRST
-  # =====================================================
-
-  # -------------------------------
-  # STAGE 3.1 - ATTENDANCE SECURITY SCAN
-  # -------------------------------
-
-  attendance-security:
-    name: Attendance Security Scan
-    runs-on: ubuntu-latest
-
-    needs:
-      - attendance-build
-      - backend-build
-      - frontend-build
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-
-      - name: Attendance Trivy Filesystem Scan
-        uses: aquasecurity/trivy-action@0.33.1
+      - name: Run Trivy Security Scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
-          scan-ref: attendance-service
+          scan-ref: frontend
           severity: HIGH,CRITICAL
+          exit-code: '1'
           format: table
-          exit-code: '0'
 
-
-  # -------------------------------
-  # STAGE 3.2 - BACKEND SECURITY SCAN
-  # -------------------------------
 
   backend-security:
     name: Backend Security Scan
     runs-on: ubuntu-latest
 
     needs:
-      - attendance-build
-      - backend-build
       - frontend-build
+      - backend-build
+      - attendance-build
+
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Setup Node.js
@@ -295,16 +256,14 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install Backend Dependencies
-        working-directory: backend
+      - name: Install dependencies
         run: npm ci
 
-      - name: Backend NPM Audit
-        working-directory: backend
+      - name: NPM Audit
         run: npm audit --audit-level=high
 
-      - name: Backend Trivy Filesystem Scan
-        uses: aquasecurity/trivy-action@0.33.1
+      - name: Backend Security Scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: backend
@@ -315,50 +274,32 @@ jobs:
           format: table
 
 
-  # -------------------------------
-  # STAGE 3.3 - FRONTEND SECURITY SCAN
-  # -------------------------------
-
-  frontend-security:
-    name: Frontend Security Scan
+  attendance-security:
+    name: Attendance Service Security Scan
     runs-on: ubuntu-latest
 
     needs:
-      - attendance-build
-      - backend-build
       - frontend-build
+      - backend-build
+      - attendance-build
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Frontend Dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Frontend NPM Audit
-        working-directory: frontend
-        run: npm audit --audit-level=high
-
-      - name: Frontend Trivy Filesystem Scan
-        uses: aquasecurity/trivy-action@0.33.1
+      - name: Run Trivy Security Scan
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
-          scan-ref: frontend
-          severity: HIGH,CRITICAL
-          exit-code: '1'
+          scan-ref: attendance-service
           format: table
+          severity: HIGH,CRITICAL
+          exit-code: '0'
 
 
   # =====================================================
-  # STAGE 4 - BUILD PEOPLE360 DOCKER IMAGES
+  # STAGE 4: BUILD PEOPLE360 DOCKER IMAGES
+  # Waits for all three application security scans.
   # =====================================================
 
   docker-build:
@@ -366,49 +307,45 @@ jobs:
     runs-on: ubuntu-latest
 
     needs:
-      - attendance-security
-      - backend-security
       - frontend-security
+      - backend-security
+      - attendance-security
 
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Build Frontend Docker Image
+      - name: Build frontend image
         run: |
           docker build \
             --build-arg VITE_API_URL=/api \
             -f frontend/Dockerfile \
             -t people360-frontend:${{ github.sha }} \
             frontend
-
-      - name: Build Backend Docker Image
+      - name: Build backend image
         run: |
           docker build \
             -f backend/Dockerfile \
             -t people360-backend:${{ github.sha }} \
             backend
-
-      - name: Build Attendance Docker Image
+      - name: Build Attendance image
         run: |
           docker build \
             -f attendance-service/Dockerfile \
             -t people360-attendance:${{ github.sha }} \
             -t people360-attendance:latest \
             attendance-service
-
-      - name: Verify Docker Images
-        run: docker images
-
-      - name: Save Docker Images
+      - name: Verify Docker images
+        run: |
+          docker images
+      - name: Save Docker images
         run: |
           docker save \
             people360-frontend:${{ github.sha }} \
             people360-backend:${{ github.sha }} \
             people360-attendance:${{ github.sha }} \
             -o people360-images.tar
-
-      - name: Upload Docker Images Artifact
+      - name: Upload Docker images
         uses: actions/upload-artifact@v6
         with:
           name: people360-docker-images
@@ -417,7 +354,8 @@ jobs:
 
 
   # =====================================================
-  # STAGE 5 - DOCKER IMAGE SECURITY SCAN
+  # STAGE 5: DOCKER IMAGE SECURITY SCAN
+  # Runs after Docker images are successfully built.
   # =====================================================
 
   docker-image-scan:
@@ -427,49 +365,66 @@ jobs:
     needs: docker-build
 
     steps:
-      - name: Download Docker Images Artifact
+      - name: Download Docker images
         uses: actions/download-artifact@v6
         with:
           name: people360-docker-images
 
-      - name: Load Docker Images
-        run: docker load -i people360-images.tar
+      - name: Load Docker images
+        run: |
+          docker load -i people360-images.tar
+      - name: Verify Loaded Docker Images
+        run: |
+          docker images
+      # --------------------------------------
+      # FRONTEND IMAGE SCAN
+      # --------------------------------------
 
-      - name: Verify Loaded Images
-        run: docker images
-
-      - name: Scan Frontend Docker Image
-        uses: aquasecurity/trivy-action@0.33.1
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: people360-frontend:${{ github.sha }}
+          scanners: vuln
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
           format: table
 
-      - name: Scan Backend Docker Image
-        uses: aquasecurity/trivy-action@0.33.1
+      # --------------------------------------
+      # BACKEND IMAGE SCAN
+      # --------------------------------------
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: people360-backend:${{ github.sha }}
+          scanners: vuln
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
           format: table
 
-      - name: Scan Attendance Docker Image
-        uses: aquasecurity/trivy-action@0.33.1
+      # --------------------------------------
+      # ATTENDANCE IMAGE SCAN
+      # --------------------------------------
+
+      - name: Scan Attendance image
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: people360-attendance:${{ github.sha }}
+          scanners: vuln
           severity: HIGH,CRITICAL
+          ignore-unfixed: true
           exit-code: '0'
           format: table
 
 
   # =====================================================
-  # STAGE 6 - PUSH IMAGES TO DOCKER HUB
+  # STAGE 6: PUSH IMAGES TO DOCKER HUB
+  # Runs only after Docker Image Security Scan succeeds.
   # =====================================================
 
   docker-push:
@@ -481,49 +436,71 @@ jobs:
     if: github.event_name != 'pull_request'
 
     steps:
-      - name: Download Docker Images Artifact
+      - name: Download Docker images
         uses: actions/download-artifact@v6
         with:
           name: people360-docker-images
 
-      - name: Load Docker Images
-        run: docker load -i people360-images.tar
-
+      - name: Load Docker images
+        run: |
+          docker load -i people360-images.tar
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Tag and Push Frontend Image
+      # --------------------------------------
+      # TAG FRONTEND IMAGE
+      # --------------------------------------
+
+      - name: Tag frontend image
         run: |
           docker tag people360-frontend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
-
           docker tag people360-frontend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
+      # --------------------------------------
+      # TAG BACKEND IMAGE
+      # --------------------------------------
 
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
-
-      - name: Tag and Push Backend Image
+      - name: Tag backend image
         run: |
           docker tag people360-backend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
-
           docker tag people360-backend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
+      # --------------------------------------
+      # TAG ATTENDANCE IMAGE
+      # --------------------------------------
 
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
-
-      - name: Tag and Push Attendance Image
+      - name: Tag Attendance image
         run: |
           docker tag people360-attendance:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:${{ github.sha }}
-
           docker tag people360-attendance:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:latest
+      # --------------------------------------
+      # PUSH FRONTEND IMAGE
+      # --------------------------------------
 
+      - name: Push frontend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
+      # --------------------------------------
+      # PUSH BACKEND IMAGE
+      # --------------------------------------
+
+      - name: Push backend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
+      # --------------------------------------
+      # PUSH ATTENDANCE IMAGE
+      # --------------------------------------
+
+      - name: Push Attendance image
+        run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:latest
