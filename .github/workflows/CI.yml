@@ -111,8 +111,11 @@ jobs:
 
   # =====================================================
   # STAGE 2: APPLICATION BUILD AND VALIDATION
-  # All three jobs run in parallel after SonarCloud.
+  # Each job appears as a separate box.
+  # All three jobs run after SonarCloud.
   # =====================================================
+
+  # JOB 2.1: FRONTEND BUILD
 
   frontend-build:
     name: Frontend Build
@@ -140,6 +143,8 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+
+  # JOB 2.2: BACKEND BUILD AND TEST
 
   backend-build:
     name: Backend Build and Test
@@ -170,6 +175,8 @@ jobs:
       - name: Run backend tests
         run: npm test -- --runInBand
 
+
+  # JOB 2.3: ATTENDANCE SERVICE BUILD
 
   attendance-build:
     name: Attendance Service Build and Validation
@@ -202,8 +209,11 @@ jobs:
 
   # =====================================================
   # STAGE 3: APPLICATION SECURITY SCANS
-  # All three scans start after all Stage 2 jobs succeed.
+  # Each security scan appears as a separate box.
+  # All three wait for all Stage 2 jobs.
   # =====================================================
+
+  # JOB 3.1: FRONTEND SECURITY SCAN
 
   frontend-security:
     name: Frontend Security Scan
@@ -244,6 +254,8 @@ jobs:
           exit-code: '1'
           format: table
 
+
+  # JOB 3.2: BACKEND SECURITY SCAN
 
   backend-security:
     name: Backend Security Scan
@@ -287,6 +299,8 @@ jobs:
           format: table
 
 
+  # JOB 3.3: ATTENDANCE SECURITY SCAN
+
   attendance-security:
     name: Attendance Service Security Scan
     runs-on: ubuntu-latest
@@ -312,7 +326,8 @@ jobs:
 
   # =====================================================
   # STAGE 4: BUILD PEOPLE360 DOCKER IMAGES
-  # Waits for all three application security scans.
+  # One separate Docker build job.
+  # Waits for all three security scans.
   # =====================================================
 
   docker-build:
@@ -373,7 +388,8 @@ jobs:
 
   # =====================================================
   # STAGE 5: DOCKER IMAGE SECURITY SCAN
-  # Runs after Docker images are successfully built.
+  # One separate Docker image scanning job.
+  # Waits for Docker build.
   # =====================================================
 
   docker-image-scan:
@@ -396,9 +412,7 @@ jobs:
         run: |
           docker images
 
-      # --------------------------------------
       # FRONTEND IMAGE SCAN
-      # --------------------------------------
 
       - name: Scan frontend image
         uses: aquasecurity/trivy-action@v0.36.0
@@ -411,9 +425,7 @@ jobs:
           exit-code: '1'
           format: table
 
-      # --------------------------------------
       # BACKEND IMAGE SCAN
-      # --------------------------------------
 
       - name: Scan backend image
         uses: aquasecurity/trivy-action@v0.36.0
@@ -426,9 +438,7 @@ jobs:
           exit-code: '1'
           format: table
 
-      # --------------------------------------
       # ATTENDANCE IMAGE SCAN
-      # --------------------------------------
 
       - name: Scan Attendance image
         uses: aquasecurity/trivy-action@v0.36.0
@@ -444,7 +454,8 @@ jobs:
 
   # =====================================================
   # STAGE 6: PUSH IMAGES TO DOCKER HUB
-  # Runs only after Docker Image Security Scan succeeds.
+  # One separate Docker push job.
+  # Waits for Docker image security scan.
   # =====================================================
 
   docker-push:
@@ -471,9 +482,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # --------------------------------------
       # TAG FRONTEND IMAGE
-      # --------------------------------------
 
       - name: Tag frontend image
         run: |
@@ -483,9 +492,7 @@ jobs:
           docker tag people360-frontend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
 
-      # --------------------------------------
       # TAG BACKEND IMAGE
-      # --------------------------------------
 
       - name: Tag backend image
         run: |
@@ -495,9 +502,7 @@ jobs:
           docker tag people360-backend:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
 
-      # --------------------------------------
       # TAG ATTENDANCE IMAGE
-      # --------------------------------------
 
       - name: Tag Attendance image
         run: |
@@ -507,27 +512,21 @@ jobs:
           docker tag people360-attendance:${{ github.sha }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-attendance:latest
 
-      # --------------------------------------
       # PUSH FRONTEND IMAGE
-      # --------------------------------------
 
       - name: Push frontend image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-frontend:latest
 
-      # --------------------------------------
       # PUSH BACKEND IMAGE
-      # --------------------------------------
 
       - name: Push backend image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/kts-people360-backend:latest
 
-      # --------------------------------------
       # PUSH ATTENDANCE IMAGE
-      # --------------------------------------
 
       - name: Push Attendance image
         run: |
