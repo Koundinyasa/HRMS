@@ -43,6 +43,7 @@ jobs:
   # =====================================================
   # JOB 0: SONARCLOUD QUALITY ANALYSIS
   # =====================================================
+  
   sonarcloud:
     name: SonarCloud Quality Analysis
     runs-on: ubuntu-latest
